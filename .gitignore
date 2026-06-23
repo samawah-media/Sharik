@@ -11,6 +11,7 @@ id_ed25519
 
 # Dependencies
 node_modules/
+node_modules.partial/
 .pnpm-store/
 
 # Build and framework outputs
@@ -40,3 +41,4 @@ Thumbs.db
 tmp/
 temp/
 *.tmp
+*.tsbuildinfo

@@ -1,0 +1,53 @@
+{
+  "name": "shrek-platform",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node node_modules/next/dist/bin/next dev",
+    "build": "node node_modules/next/dist/bin/next build",
+    "start": "node node_modules/next/dist/bin/next start",
+    "lint": "node node_modules/eslint/bin/eslint.js . --max-warnings=0",
+    "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
+    "test": "node node_modules/vitest/vitest.mjs run --project unit",
+    "test:unit": "node node_modules/vitest/vitest.mjs run --project unit",
+    "test:integration": "node node_modules/vitest/vitest.mjs run --project integration",
+    "test:rls": "node node_modules/vitest/vitest.mjs run --project rls",
+    "test:component": "node node_modules/vitest/vitest.mjs run --project component",
+    "test:e2e": "node node_modules/@playwright/test/cli.js test",
+    "test:e2e:list": "node node_modules/@playwright/test/cli.js test --list",
+    "secret:scan": "node scripts/secret-scan.mjs"
+  },
+  "dependencies": {
+    "@supabase/ssr": "0.12.0",
+    "@supabase/supabase-js": "2.108.2",
+    "clsx": "2.1.1",
+    "lucide-react": "0.546.0",
+    "next": "16.2.9",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "tailwind-merge": "3.4.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "3.3.3",
+    "@tailwindcss/postcss": "4.1.18",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@testing-library/user-event": "14.6.1",
+    "@types/node": "24.10.0",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.39.2",
+    "eslint-config-next": "16.2.9",
+    "jsdom": "27.3.0",
+    "@playwright/test": "1.61.0",
+    "prettier": "3.7.4",
+    "tailwindcss": "4.1.18",
+    "typescript": "5.9.3",
+    "vitest": "4.1.9"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}

@@ -1,0 +1,14 @@
+standards:
+  - id: samawah-project-standards
+    file: project-standards.md
+    applies_to:
+      - typescript
+      - nextjs
+      - react
+      - supabase
+      - rls
+      - files
+      - tests
+      - rtl
+      - audit
+      - docs

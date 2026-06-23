@@ -28,6 +28,10 @@ Thumbs.db
 *.log
 .vscode/
 .idea/
+.agents/**
+!.agents/
+!.agents/skills/
+!.agents/skills/**
 
 # Supabase local state
 .supabase/

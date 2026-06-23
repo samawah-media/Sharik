@@ -1,0 +1,9 @@
+version: "3.0"
+project: "sharik-samawah-platform"
+standards_path: "agent-os/standards"
+source_of_truth:
+  - "AGENTS.md"
+  - ".specify/memory/constitution.md"
+  - "docs/06-decisions"
+  - "docs/07-spec-driven-delivery"
+update_policy: "Update standards through documented planning changes; use ADR for architecture/security/stack changes."

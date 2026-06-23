@@ -10,13 +10,13 @@ Blocked pending real local Supabase verification.
 
 `supabase db reset` could not be run because Docker is unavailable in the current shell. A1 cannot be fully accepted until migrations are applied from a clean local database at least once, and preferably twice, to prove reproducibility.
 
-### HIGH - No actual database RLS test suite exists yet
+### HIGH - Actual database RLS test suite is prepared but not executed successfully
 
-`supabase/tests/database/` is not present. The project has useful simulator tests, but it does not yet have pgTAP tests that prove RLS behavior inside PostgreSQL.
+`supabase/tests/database/a1r_rls_foundation.test.sql` now exists and targets tenant visibility, disabled membership denial, cross-tenant audit insert denial, and audit immutability. It has not passed yet because the local Supabase/PostgreSQL stack is unavailable.
 
-### MEDIUM - Supabase local config is not present
+### RESOLVED - Supabase local config is present
 
-The `supabase/` folder currently contains migrations, but no `supabase/config.toml`. Before running the local stack, initialize or restore config carefully without overwriting existing migrations.
+`supabase/config.toml` was created with the pinned Supabase CLI without `--force`, preserving existing migrations. Seed loading is disabled so A1R reset focuses on migration replay and RLS verification.
 
 ### MEDIUM - Data API grants need explicit review
 

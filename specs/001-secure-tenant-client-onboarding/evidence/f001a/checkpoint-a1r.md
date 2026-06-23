@@ -6,7 +6,7 @@ Blocked.
 
 A1 remains functionally complete, but it is not fully verified against a real local Supabase/PostgreSQL stack yet. The blocker is environmental: Docker is not available in the current shell, so the local Supabase stack cannot be started and `supabase db reset` / `supabase test db` cannot be executed.
 
-This checkpoint intentionally does not approve A1 for A2. It records A1R-0 readiness findings only.
+This checkpoint intentionally does not approve A1 for A2. It records A1R readiness findings only.
 
 ## Scope Guard
 
@@ -34,8 +34,8 @@ This checkpoint intentionally does not approve A1 for A2. It records A1R-0 readi
 | Supabase CLI pinned via npx | Pass | `npx supabase@2.107.0 --version` returned `2.107.0` |
 | Docker CLI | Blocked | `docker` command not recognized in current shell |
 | Local Supabase stack | Not run | Requires Docker |
-| `supabase db reset` | Not run | Requires local Supabase stack |
-| `supabase test db` | Not run | Requires local Supabase stack |
+| `supabase db reset` | Blocked | `npx supabase@2.107.0 db reset --local --no-seed` reached Docker inspection and failed because Docker daemon/pipe is unavailable |
+| `supabase test db` | Blocked | `npm run test:rls:db` reached the Supabase CLI but failed to connect to local Postgres |
 
 ## Existing A1 Verification Commands
 
@@ -45,7 +45,8 @@ This checkpoint intentionally does not approve A1 for A2. It records A1R-0 readi
 | `npm run typecheck` | 0 | Passed |
 | `npm run test:unit` | 0 | 5 files, 15 tests passed |
 | `npm run test:integration` | 0 | 2 files, 4 tests passed |
-| `npm run test:rls` | 0 | 2 files, 7 tests passed; simulator/Vitest only |
+| `npm run test:rls:simulator` | 0 | 2 files, 7 tests passed; simulator/Vitest only |
+| `npm run test:rls:db` | 1 | Blocked: local Postgres connection failed because Supabase local stack is unavailable |
 | `npm run test:component` | 0 | 2 files, 3 tests passed |
 | `npm run secret:scan` | 0 | No high-confidence secrets found |
 | `npm run build` | 0 | Next.js production build passed |
@@ -54,24 +55,24 @@ This checkpoint intentionally does not approve A1 for A2. It records A1R-0 readi
 
 - `supabase/migrations/202606230001_f001a_identity_security_foundation.sql` exists.
 - `supabase/migrations/202606230002_f001a_rls_helpers_and_policies.sql` exists.
-- `supabase/config.toml` is not present yet.
-- `supabase/tests/database/` is not present yet.
-- Actual pgTAP RLS tests have not been created yet.
+- `supabase/config.toml` exists and disables seed loading for A1R reset focus.
+- `supabase/tests/database/a1r_rls_foundation.test.sql` exists.
+- Actual pgTAP RLS tests are prepared but have not passed against PostgreSQL yet.
 
 ## RLS Verification Gap
 
-`npm run test:rls` currently runs the Vitest `rls` project. These tests are useful fast checks, but they do not prove that PostgreSQL RLS policies behave correctly after migrations are applied to a real Supabase database.
+`npm run test:rls:simulator` runs the Vitest RLS simulator project. These tests are useful fast checks, but they do not prove that PostgreSQL RLS policies behave correctly after migrations are applied to a real Supabase database. `npm run test:rls` now runs the simulator first, then the pgTAP database test command.
 
 Required next verification remains:
 
 1. Make Docker available in the shell.
-2. Initialize or restore `supabase/config.toml` without overwriting migrations.
-3. Start the local Supabase stack with the pinned CLI.
-4. Run `supabase db reset` from a clean local database.
-5. Repeat `supabase db reset` to prove reproducibility.
-6. Add pgTAP tests under `supabase/tests/database/`.
+2. Start the local Supabase stack with the pinned CLI.
+3. Run `supabase db reset` from a clean local database.
+4. Repeat `supabase db reset` to prove reproducibility.
+5. Confirm migrations apply without seed dependency.
+6. Review and run pgTAP tests under `supabase/tests/database/`.
 7. Run `supabase test db`.
-8. Split naming so simulator checks are clearly distinguished from actual database RLS checks.
+8. Keep simulator and actual database RLS checks separated in reporting.
 
 ## Supabase Documentation Notes
 
@@ -87,7 +88,7 @@ Conditionally verified at the application/simulator level, blocked for real data
 A1 is not fully verified until actual Supabase/PostgreSQL RLS tests pass with:
 
 - `supabase db reset`
-- `supabase test db`
+- `npm run test:rls:db`
 - cross-tenant denial cases
 - disabled membership denial cases
 - audit immutability cases

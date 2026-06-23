@@ -28,7 +28,7 @@ export default defineConfig({
       }),
       defineProject({
         test: {
-          name: "rls",
+          name: "rls-simulator",
           environment: "node",
           include: ["tests/rls/**/*.test.ts"],
           setupFiles: ["tests/setup/vitest.ts"],

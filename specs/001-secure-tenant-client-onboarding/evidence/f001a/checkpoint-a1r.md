@@ -33,6 +33,7 @@ This checkpoint intentionally does not approve A1 for A2. It records A1R readine
 | npm | Pass | `11.6.2` |
 | Supabase CLI pinned via npx | Pass | `npx supabase@2.107.0 --version` returned `2.107.0` |
 | Docker CLI | Blocked | `docker` command not recognized in current shell |
+| WSL fallback | Blocked | `wsl -l -v` reports WSL is not installed |
 | Local Supabase stack | Not run | Requires Docker |
 | `supabase db reset` | Blocked | `npx supabase@2.107.0 db reset --local --no-seed` reached Docker inspection and failed because Docker daemon/pipe is unavailable |
 | `supabase test db` | Blocked | `npm run test:rls:db` reached the Supabase CLI but failed to connect to local Postgres |

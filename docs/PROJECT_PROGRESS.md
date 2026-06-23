@@ -34,6 +34,7 @@ npm run lint
 npm run secret:scan
 npx supabase@2.107.0 db reset --local --no-seed
 npm run test:rls:db
+wsl -l -v
 ```
 
 Results:
@@ -44,6 +45,7 @@ Results:
 - `npm run secret:scan`: passed, no high-confidence secrets found.
 - `npx supabase@2.107.0 db reset --local --no-seed`: blocked at Docker daemon/pipe inspection.
 - `npm run test:rls:db`: failed before assertions because the Supabase CLI could not connect to local Postgres.
+- `wsl -l -v`: failed because WSL is not installed, so there is no WSL Docker fallback in this environment.
 
 Prepared but not fully verified:
 
@@ -54,7 +56,7 @@ Prepared but not fully verified:
 
 ## Blocker
 
-Docker is not available in the current shell, so the local Supabase stack cannot be started and actual PostgreSQL RLS verification cannot pass.
+Docker is not available in the current shell, and WSL is not installed, so the local Supabase stack cannot be started and actual PostgreSQL RLS verification cannot pass.
 
 ## Out of Scope Until A1R Passes
 

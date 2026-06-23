@@ -4,7 +4,7 @@ create extension if not exists pgtap with schema extensions;
 
 set search_path = public, extensions;
 
-select plan(14);
+select plan(15);
 
 -- These grants are test-local and rolled back at the end. They isolate RLS
 -- behavior from the separate Data API grant decision documented for A1R.

@@ -123,6 +123,17 @@ This guide describes how to validate F-001 after implementation. It is not a ful
 - Security Evidence: no tenant-wide client list; no management console.
 - Cleanup: disable membership after test run.
 
+#### A4 Evidence - 2026-06-24
+
+- Unit: `tests/unit/invitations/client-invitation-rules.test.ts` verifies allowed client roles, exact one-client scope, multi-client denial, non-client-role denial, and cross-tenant client scope denial.
+- Integration: `tests/integration/invitations/invite-client-member.test.ts` verifies `ClientMemberInvited`, pending `RoleAssigned` intent, local email capture, client self-service/admin-action denial, existing-user acceptance, and new-user acceptance through the client invitation path.
+- RLS simulator: `tests/rls/client-member-isolation.test.ts` verifies client users can read only their own client basics and cannot read tenant invitation or internal audit records.
+- Database RLS: `supabase/tests/database/a1r_rls_foundation.test.sql` now covers client invitation insert/read by tenant management, client-user Client A-only read, and client-user audit/invitation denial.
+- Component: `tests/component/client/client-onboarding.test.tsx` verifies client invite form controls, client portal first-entry surface, empty state, denied state, and absence of Client B/admin leakage.
+- E2E spec added: `tests/e2e/invitations/client-invite.spec.ts` covers the `/client` first-entry surface across desktop, mobile, and RTL projects.
+- Audit events: `ClientMemberInvited`, `RoleAssigned` with `intent_pending_acceptance`, `ClientMembershipActivated`, `InvitationAccepted`, `AuthorizationDenied`, `ClientInvitationDenied`, and `InvitationAcceptanceDenied` for safe mismatch/expiry validation.
+- Out of scope: resend, revoke, supersede lifecycle hardening, general membership/role lifecycle, role-aware navigation beyond the minimal client portal entry surface, deliverables, files, SLA, approvals, and production Supabase usage.
+
 ### 10. Verify Navigation
 
 - Expected Result: tenant admin sees management clients/members/audit surfaces; internal member sees assigned client/team surfaces; client viewer sees client-facing surfaces only.

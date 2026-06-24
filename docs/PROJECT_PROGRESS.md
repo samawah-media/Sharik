@@ -9,10 +9,10 @@ Last updated: 2026-06-24
 | Feature | F-001A Secure Client Foundation |
 | Worktree | `D:\code - projects\shrek-platform-f001a` |
 | Branch | `feat/f001a-secure-client-foundation` |
-| Current allowed stage | A3 - Internal Member Invitation |
-| Status | A3 COMPLETE AND VERIFIED |
-| Next gate | Stop before A4 Client Member Invitation |
-| Owner decision required | Required before any A4 Client Member Invitation or lifecycle hardening work |
+| Current allowed stage | A4 - Client Member Invitation |
+| Status | A4 COMPLETE AND VERIFIED |
+| Next gate | Stop before Phase 5 Invitation Lifecycle Hardening |
+| Owner decision required | Required before any resend/revoke/supersede lifecycle hardening, membership/role lifecycle, or broad role-aware navigation work |
 
 ## Stage Status
 
@@ -23,6 +23,41 @@ Last updated: 2026-06-24
 | A1R Real Supabase RLS Verification | FULLY VERIFIED | Local Docker Desktop/WSL2 stack is running; local Supabase database reset passed twice; pgTAP RLS tests passed. |
 | A2 Client Foundation | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a2.md`. |
 | A3 Internal Member Invitation | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a3.md`. |
+| A4 Client Member Invitation | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a4.md`. |
+
+## Latest A4 Checkpoint
+
+A4 Client Member Invitation completed and verified on 2026-06-24 after owner approval.
+
+Implemented scope:
+
+- Client invitation role/scope validation for `client_admin`, `client_approver`, and `client_viewer`.
+- Exact one-client scope enforcement for client invitations.
+- `invite-client-member` command with tenant-management authorization, client role validation, idempotent pending retry, local email dispatch capture, delivery state, and audit.
+- Existing-user and new-user client invitation acceptance path that activates client membership and scoped client role assignment.
+- `public.invitations` support for client invitations while preserving tenant-management-only invitation/audit RLS.
+- Minimal client portal first-entry surface at `/client`.
+
+Out of scope and not started:
+
+- Resend, revoke, supersede, and invitation lifecycle hardening.
+- General membership/role lifecycle.
+- Broad role-aware navigation.
+- Deliverables, contracts, files, SLA, approvals, Kanban, and production Supabase usage.
+
+Verification results:
+
+- `npx supabase@2.107.0 db reset --local --no-seed`: passed with Docker Hub registry override.
+- `npm run test:rls:db`: passed, 1 pgTAP file and 29 tests.
+- `npm run test:rls`: passed; simulator 5 files / 16 tests and pgTAP 1 file / 29 tests.
+- `npm run lint`: passed.
+- `npm run typecheck`: passed.
+- `npm run test:unit`: passed, 7 files and 22 tests.
+- `npm run test:integration`: passed, 5 files and 15 tests.
+- `npm run test:component`: passed, 5 files and 13 tests.
+- `npm run secret:scan`: passed, no high-confidence secrets found.
+- `npm run build`: passed.
+- Targeted `npm run test:e2e -- tests/e2e/invitations/client-invite.spec.ts`: passed, 3 tests across desktop, mobile, and RTL projects.
 
 ## Latest A3 Checkpoint
 
@@ -131,8 +166,10 @@ The local Supabase stack initially attempted to pull images from the default reg
 
 ## Out of Scope Until Owner Approval
 
-- Starting A4 Client Member Invitation.
 - Invitation lifecycle hardening beyond A3 internal valid acceptance.
+- Invitation lifecycle hardening beyond A4 client valid acceptance.
+- Membership/role lifecycle.
+- Broad role-aware navigation.
 - Production Supabase usage.
 - Real customer data.
 - Merging into `main`.

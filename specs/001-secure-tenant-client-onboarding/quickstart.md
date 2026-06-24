@@ -94,6 +94,17 @@ This guide describes how to validate F-001 after implementation. It is not a ful
 - Security Evidence: repeated acceptance creates no duplicate membership/role.
 - Cleanup: disable membership after test run.
 
+#### A3 Evidence - 2026-06-24
+
+- Unit: `tests/unit/invitations/internal-invitation-rules.test.ts` verifies internal role allow-list, required client scope, and cross-tenant client scope denial.
+- Integration: `tests/integration/invitations/invite-internal.test.ts` verifies `TenantMembershipInvited`, pending role intent audit, local email capture, unauthorized invite denial, and valid existing-user internal acceptance.
+- RLS simulator: `tests/rls/internal-assigned-clients.test.ts` verifies an assigned internal user can read Client A but not Client C, and that invitation/audit read is tenant-management only.
+- Database RLS: `supabase/tests/database/a1r_rls_foundation.test.sql` verifies `public.invitations` RLS, tenant-management invitation insert/read, non-management invitation denial, and tightened management-only audit read.
+- Component: `tests/component/invitations/internal-invite-form.test.tsx` verifies the internal invite form, role selector, scope selector, loading, failure, empty invitation state, and assigned-client portfolio state.
+- E2E spec added: `tests/e2e/invitations/internal-invite.spec.ts` covers the internal invite form route and assigned-client portfolio surface.
+- Audit events: `TenantMembershipInvited`, `RoleAssigned` with `intent_pending_acceptance`, `TenantMembershipActivated`, `InvitationAccepted`, and sensitive denial events for unauthorized invite/mismatch/expiry paths covered by command logic.
+- Out of scope: client member invitations, resend/revoke/supersede lifecycle hardening, client portal invitation acceptance, deliverables, files, SLA, approvals, and production Supabase usage.
+
 ### 8. Invite Client Viewer
 
 - Expected Result: pending invitation created for `client-viewer-a@example.test` with exactly one Client A scope.

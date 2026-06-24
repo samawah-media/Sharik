@@ -9,10 +9,10 @@ Last updated: 2026-06-24
 | Feature | F-001A Secure Client Foundation |
 | Worktree | `D:\code - projects\shrek-platform-f001a` |
 | Branch | `feat/f001a-secure-client-foundation` |
-| Current allowed stage | A2 - Client Foundation |
-| Status | A2 COMPLETE AND VERIFIED |
-| Next gate | Stop before A3 invitation lifecycle |
-| Owner decision required | Required before any A3 invitation lifecycle work |
+| Current allowed stage | A3 - Internal Member Invitation |
+| Status | A3 COMPLETE AND VERIFIED |
+| Next gate | Stop before A4 Client Member Invitation |
+| Owner decision required | Required before any A4 Client Member Invitation or lifecycle hardening work |
 
 ## Stage Status
 
@@ -22,6 +22,41 @@ Last updated: 2026-06-24
 | A1 Identity and Tenant Context | VERIFIED AFTER A1R | Existing evidence: `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a1.md`; real DB verification completed in A1R. |
 | A1R Real Supabase RLS Verification | FULLY VERIFIED | Local Docker Desktop/WSL2 stack is running; local Supabase database reset passed twice; pgTAP RLS tests passed. |
 | A2 Client Foundation | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a2.md`. |
+| A3 Internal Member Invitation | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a3.md`. |
+
+## Latest A3 Checkpoint
+
+A3 Internal Member Invitation completed and verified on 2026-06-24 after owner approval of commit `0966128`.
+
+Implemented scope:
+
+- Internal invitation role/scope validation for approved internal roles only.
+- `invite-internal-member` command with tenant-management authorization, tenant/client scoped validation, local email dispatch capture, idempotent pending retry, and audit events.
+- Existing-user internal invitation acceptance path that activates tenant membership and scoped client role assignments.
+- `public.invitations` table for internal invitations only, with RLS enabled and tenant-management insert/read/update policies.
+- Assigned internal client portfolio surface.
+- Tenant-management-only read policy for internal audit events, replacing the broader active-tenant-member audit read policy.
+
+Out of scope and not started:
+
+- Client member invitation.
+- Resend, revoke, supersede, expiry hardening beyond valid internal acceptance and simple expiry denial.
+- Client portal invitation acceptance.
+- Deliverables, contracts, files, SLA, approvals, Kanban, and production Supabase usage.
+
+Verification results:
+
+- `npx supabase@2.107.0 db reset --local --no-seed`: passed with Docker Hub registry override.
+- `npm run test:rls:db`: passed, 1 pgTAP file and 25 tests.
+- `npm run test:rls`: passed; simulator 4 files / 13 tests and pgTAP 1 file / 25 tests.
+- `npm run lint`: passed.
+- `npm run typecheck`: passed.
+- `npm run test:unit`: passed, 6 files and 19 tests.
+- `npm run test:integration`: passed, 4 files and 11 tests.
+- `npm run test:component`: passed, 4 files and 10 tests.
+- `npm run secret:scan`: passed, no high-confidence secrets found.
+- `npm run build`: passed.
+- Targeted Playwright E2E after installing Chromium: passed, 6 tests across desktop, mobile, and RTL projects.
 
 ## Latest A2 Checkpoint
 
@@ -96,9 +131,8 @@ The local Supabase stack initially attempted to pull images from the default reg
 
 ## Out of Scope Until Owner Approval
 
-- Starting A2 Client Foundation.
-- Invitation lifecycle implementation.
-- Client management implementation.
+- Starting A4 Client Member Invitation.
+- Invitation lifecycle hardening beyond A3 internal valid acceptance.
 - Production Supabase usage.
 - Real customer data.
 - Merging into `main`.

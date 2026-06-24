@@ -9,10 +9,10 @@ Last updated: 2026-06-24
 | Feature | F-001A Secure Client Foundation |
 | Worktree | `D:\code - projects\shrek-platform-f001a` |
 | Branch | `feat/f001a-secure-client-foundation` |
-| Current allowed stage | A1R - Real Supabase RLS Verification |
-| Status | FULLY VERIFIED |
-| Next gate | Stop for owner decision before A2 starts |
-| Owner decision required | Approve whether to proceed to A2 Client Foundation |
+| Current allowed stage | A2 - Client Foundation |
+| Status | A2 COMPLETE AND VERIFIED |
+| Next gate | Stop before A3 invitation lifecycle |
+| Owner decision required | Required before any A3 invitation lifecycle work |
 
 ## Stage Status
 
@@ -21,7 +21,28 @@ Last updated: 2026-06-24
 | A0 Project Foundation | COMPLETE | Existing evidence: `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a0.md` |
 | A1 Identity and Tenant Context | VERIFIED AFTER A1R | Existing evidence: `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a1.md`; real DB verification completed in A1R. |
 | A1R Real Supabase RLS Verification | FULLY VERIFIED | Local Docker Desktop/WSL2 stack is running; local Supabase database reset passed twice; pgTAP RLS tests passed. |
-| A2 Client Foundation | NOT STARTED | Must not start until owner approves crossing the A1R gate. |
+| A2 Client Foundation | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a2.md`. |
+
+## Latest A2 Checkpoint
+
+A2 Client Foundation completed on 2026-06-24.
+
+Implemented scope:
+
+- `public.clients` table with tenant scope and RLS.
+- Tenant-management client create/update/list command surface.
+- Server-side authorization before sensitive client mutations.
+- Audit events for client creation/update and sensitive denials.
+- Arabic RTL client management empty/create/edit UI surface.
+- A2-only integration, RLS simulator, pgTAP database, component, and E2E specs.
+
+Out of scope and not started:
+
+- Invitation lifecycle.
+- Internal member invitation.
+- Client member invitation.
+- Membership/role lifecycle beyond existing A1 foundations.
+- Deliverables, contracts, files, SLA, approvals, Kanban, and production Supabase usage.
 
 ## Latest A1R Checkpoint
 

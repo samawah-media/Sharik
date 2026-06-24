@@ -27,6 +27,36 @@ create table if not exists public.client_memberships (
   disabled_at timestamptz
 );
 
+create table if not exists public.clients (
+  id uuid primary key,
+  tenant_id uuid not null references public.tenants(id),
+  name text not null,
+  slug text not null,
+  status text not null default 'active' check (status in ('active', 'archived')),
+  primary_contact_name text,
+  primary_contact_email text,
+  created_by uuid,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  archived_at timestamptz,
+  unique (tenant_id, slug)
+);
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'client_memberships_client_id_fkey'
+      and conrelid = 'public.client_memberships'::regclass
+  ) then
+    alter table public.client_memberships
+      add constraint client_memberships_client_id_fkey
+      foreign key (client_id) references public.clients(id);
+  end if;
+end;
+$$;
+
 create table if not exists public.role_assignments (
   id uuid primary key,
   tenant_id uuid not null references public.tenants(id),
@@ -76,6 +106,7 @@ execute function public.f001_prevent_audit_event_mutation();
 alter table public.tenants enable row level security;
 alter table public.tenant_memberships enable row level security;
 alter table public.client_memberships enable row level security;
+alter table public.clients enable row level security;
 alter table public.role_assignments enable row level security;
 alter table public.permission_references enable row level security;
 alter table public.audit_events enable row level security;

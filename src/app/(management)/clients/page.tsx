@@ -1,10 +1,16 @@
+import { ClientEmptyState } from "@/ui/management/client-form";
+
 export default function ClientsPage() {
   return (
-    <main>
+    <main className="grid gap-6">
       <h1 className="text-2xl font-semibold">العملاء</h1>
-      <p className="mt-3 text-sm text-muted">
-        ستظهر قائمة العملاء المصرح بها بعد تنفيذ أساس الصلاحيات.
-      </p>
+      <ClientEmptyState />
+      <a
+        className="w-fit rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+        href="/clients/new"
+      >
+        إضافة عميل
+      </a>
     </main>
   );
 }

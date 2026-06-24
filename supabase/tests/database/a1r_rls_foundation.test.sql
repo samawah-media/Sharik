@@ -4,7 +4,7 @@ create extension if not exists pgtap with schema extensions;
 
 set search_path = public, extensions;
 
-select plan(15);
+select plan(20);
 
 -- These grants are test-local and rolled back at the end. They isolate RLS
 -- behavior from the separate Data API grant decision documented for A1R.
@@ -12,6 +12,7 @@ grant usage on schema public to authenticated;
 grant select on public.tenants to authenticated;
 grant select on public.tenant_memberships to authenticated;
 grant select on public.client_memberships to authenticated;
+grant select, insert, update on public.clients to authenticated;
 grant select on public.role_assignments to authenticated;
 grant select, insert, update, delete on public.audit_events to authenticated;
 
@@ -28,6 +29,11 @@ select ok(
 select ok(
   (select relrowsecurity from pg_class where oid = 'public.client_memberships'::regclass),
   'client_memberships has RLS enabled'
+);
+
+select ok(
+  (select relrowsecurity from pg_class where oid = 'public.clients'::regclass),
+  'clients has RLS enabled'
 );
 
 select ok(
@@ -64,6 +70,30 @@ values
     '00000000-0000-4000-8000-000000000001',
     '00000000-0000-4000-8000-000000000203',
     'disabled'
+  );
+
+insert into public.clients (id, tenant_id, name, slug, created_by)
+values
+  (
+    '00000000-0000-4000-8000-000000000401',
+    '00000000-0000-4000-8000-000000000001',
+    'Client A',
+    'client-a',
+    '00000000-0000-4000-8000-000000000201'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000402',
+    '00000000-0000-4000-8000-000000000001',
+    'Client C',
+    'client-c',
+    '00000000-0000-4000-8000-000000000201'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000403',
+    '00000000-0000-4000-8000-000000000002',
+    'Client B',
+    'client-b',
+    '00000000-0000-4000-8000-000000000202'
   );
 
 insert into public.client_memberships (id, tenant_id, client_id, auth_user_id, status)
@@ -119,6 +149,27 @@ select is(
   (select count(*)::integer from public.client_memberships),
   1,
   'active member can see own active client membership only'
+);
+
+select is(
+  (select count(*)::integer from public.clients),
+  2,
+  'tenant administrator can see all clients in own tenant'
+);
+
+insert into public.clients (id, tenant_id, name, slug, created_by)
+values (
+  '00000000-0000-4000-8000-000000000404',
+  '00000000-0000-4000-8000-000000000001',
+  'Client Created By Admin',
+  'client-created-by-admin',
+  '00000000-0000-4000-8000-000000000201'
+);
+
+select is(
+  (select count(*)::integer from public.clients where slug = 'client-created-by-admin'),
+  1,
+  'tenant administrator can insert a tenant-scoped client'
 );
 
 select is(
@@ -200,6 +251,32 @@ select is(
   (select count(*)::integer from public.tenants),
   0,
   'disabled tenant membership cannot read tenant rows'
+);
+
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000202', true);
+
+select throws_ok(
+  $$
+    insert into public.clients (id, tenant_id, name, slug, created_by)
+    values (
+      '00000000-0000-4000-8000-000000000405',
+      '00000000-0000-4000-8000-000000000002',
+      'Client Created By Non Admin',
+      'client-created-by-non-admin',
+      '00000000-0000-4000-8000-000000000202'
+    )
+  $$,
+  '42501',
+  'new row violates row-level security policy for table "clients"',
+  'active tenant member without management role cannot insert clients'
+);
+
+select is(
+  (select count(*)::integer from public.clients),
+  0,
+  'tenant member without management role cannot infer tenant clients'
 );
 
 select * from finish();

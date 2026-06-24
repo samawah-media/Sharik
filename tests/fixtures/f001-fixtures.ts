@@ -21,6 +21,12 @@ export const clientB = {
   name: "Client B",
 };
 
+export const clientC = {
+  id: "client_c",
+  tenantId: tenantA.id,
+  name: "Client C",
+};
+
 const session = (userId: string): AuthSession => ({
   userId,
   email: `${userId}@example.test`,
@@ -126,6 +132,32 @@ export const tenantViewerA = {
     userId: viewerSession.userId,
     membership: viewerMembership,
     roles: [],
+  }),
+};
+
+const assignedInternalSession = session("assigned_internal_a");
+const assignedInternalMembership = tenantMembership(
+  "tm_internal_a",
+  assignedInternalSession.userId,
+  tenantA.id,
+);
+const assignedInternalRole = roleAssignment({
+  id: "ra_internal_client_a",
+  tenantId: tenantA.id,
+  membershipId: assignedInternalMembership.id,
+  roleKey: "account_manager",
+  scopeType: "client",
+  scopeId: clientA.id,
+  status: "active",
+});
+
+export const assignedInternalA = {
+  session: assignedInternalSession,
+  tenantMemberships: [assignedInternalMembership],
+  authorizationActor: actor({
+    userId: assignedInternalSession.userId,
+    membership: assignedInternalMembership,
+    roles: [assignedInternalRole],
   }),
 };
 

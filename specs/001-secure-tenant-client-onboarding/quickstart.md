@@ -67,6 +67,15 @@ This guide describes how to validate F-001 after implementation. It is not a ful
 - Security Evidence: creation fails for user without `PERM.CLIENT.CREATE`.
 - Cleanup: archive/delete fixture only through test reset process.
 
+#### A2 Evidence - 2026-06-24
+
+- Integration: `tests/integration/clients/client-management.test.ts` verifies allowed create/update, unauthorized create denial, no unauthorized client creation, `ClientCreated`, `ClientUpdated`, and authorization denial audit events.
+- RLS simulator: `tests/rls/client-access.test.ts` verifies tenant admins can read/insert scoped clients, assigned internal users can read only their assigned client, unassigned users are denied, and cross-tenant client reads are denied.
+- Database RLS: `supabase/tests/database/a1r_rls_foundation.test.sql` now includes `public.clients` RLS, tenant-management insert, tenant-scoped select, and non-management denial assertions.
+- Component: `tests/component/clients/client-form.test.tsx` verifies Arabic labels, empty state, and safe denied state.
+- E2E spec added: `tests/e2e/management/create-client.spec.ts` covers the Arabic empty client list and create-client form route; this remains limited to A2 UI surfaces.
+- Out of scope: invitation lifecycle, membership lifecycle, client portal access, deliverables, files, SLA, approvals, and production Supabase usage.
+
 ### 6. Invite Internal Member
 
 - Expected Result: pending invitation created for `internal-a@example.test` with Client A scope and internal role.

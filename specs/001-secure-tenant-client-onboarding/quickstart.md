@@ -171,6 +171,17 @@ This guide describes how to validate F-001 after implementation. It is not a ful
 - Security Evidence: no IDOR, no enumeration, no leaked identifiers.
 - Cleanup: none.
 
+#### Phase 7 UX Evidence - 2026-06-25
+
+- Unit: `tests/unit/navigation/navigation-resolver.test.ts` verifies tenant admin, assigned internal, client viewer, client approver, and no-assigned-client navigation states. Navigation items are marked advisory and do not grant authorization.
+- Unit: `tests/unit/navigation/f001-copy.test.ts` verifies the Arabic Saudi F-001 copy catalog covers loading, empty, invitation lifecycle, denial, session, save/network failure, membership-disabled, and no-assigned-client states without mojibake.
+- Component: `tests/component/navigation/denial-states.test.tsx` verifies permission denied, not found, no assigned clients, session expired, and membership disabled states do not name unauthorized tenants, clients, or IDs.
+- E2E security: `tests/e2e/security/denial-ux.spec.ts` verifies direct URL tampering, same-tenant unassigned client denial, cross-tenant Client B denial, client-viewer admin-action denial, and no-client state without resource enumeration.
+- E2E accessibility/mobile: `tests/e2e/accessibility/rtl-mobile.spec.ts` verifies RTL direction, labelled navigation, keyboard focus, visible form labels, mobile client portal primary navigation, and accessible denial recovery action.
+- Server guard evidence: `src/server/navigation/route-guards.ts` repeats authorization for direct URLs. `src/modules/navigation/navigation-resolver.ts` only resolves visible navigation and marks items as advisory.
+- UI evidence: `src/ui/shared/access-states.tsx` and `src/ui/navigation/role-aware-nav.tsx` provide shared Arabic RTL denial and navigation surfaces.
+- Out of scope: Phase 8 verification package, deliverables, Kanban, SLA, files, approvals, production Supabase usage, push, merge, amend, and rebase.
+
 ### 13. Resend Invitation
 
 - Expected Result: old pending invitation is superseded and new pending invitation is issued.

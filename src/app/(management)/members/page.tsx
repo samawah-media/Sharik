@@ -3,6 +3,11 @@ import {
   MemberList,
   ResponsibilityTransferBlockedState,
 } from "@/ui/management/member-list";
+import {
+  guardManagementRoute,
+  resolveRouteActor,
+} from "@/server/navigation/route-guards";
+import { AccessDeniedState } from "@/ui/shared/access-states";
 
 const members = [
   {
@@ -38,7 +43,19 @@ const invitations = [
   },
 ];
 
-export default function MembersPage() {
+export default async function MembersPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ as?: string }>;
+}) {
+  const params = await searchParams;
+  const actor = resolveRouteActor(params?.as);
+  const access = guardManagementRoute({ actor, route: "members" });
+
+  if (!access.allowed) {
+    return <AccessDeniedState />;
+  }
+
   return (
     <main className="grid gap-6">
       <header className="grid gap-2">

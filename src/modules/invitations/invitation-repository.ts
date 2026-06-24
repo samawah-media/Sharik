@@ -76,6 +76,12 @@ export type InvitationRepository = {
     supersededBy: string;
     supersededAt: string;
   }): Promise<InvitationRecord | undefined>;
+  revokePendingForEmail(input: {
+    tenantId: string;
+    invitedEmail: string;
+    revokedBy: string;
+    revokedAt: string;
+  }): Promise<InvitationRecord[]>;
   listByTenant(tenantId: string): Promise<InvitationRecord[]>;
 };
 
@@ -256,6 +262,35 @@ export class InMemoryInvitationRepository implements InvitationRepository {
 
     this.invitations.set(superseded.id, superseded);
     return superseded;
+  }
+
+  async revokePendingForEmail(input: {
+    tenantId: string;
+    invitedEmail: string;
+    revokedBy: string;
+    revokedAt: string;
+  }) {
+    const invitedEmail = normalizeEmail(input.invitedEmail);
+    const revoked: InvitationRecord[] = [];
+
+    for (const invitation of this.invitations.values()) {
+      if (
+        invitation.tenantId === input.tenantId &&
+        invitation.invitedEmail === invitedEmail &&
+        invitation.status === "pending"
+      ) {
+        const updated: InvitationRecord = {
+          ...invitation,
+          status: "revoked",
+          revokedBy: input.revokedBy,
+          revokedAt: input.revokedAt,
+        };
+        this.invitations.set(updated.id, updated);
+        revoked.push(updated);
+      }
+    }
+
+    return revoked;
   }
 
   async listByTenant(tenantId: string) {

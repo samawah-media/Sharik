@@ -9,10 +9,10 @@ Last updated: 2026-06-24
 | Feature | F-001A Secure Client Foundation |
 | Worktree | `D:\code - projects\shrek-platform-f001a` |
 | Branch | `feat/f001a-secure-client-foundation` |
-| Current allowed stage | A5 - Invitation Lifecycle Hardening |
-| Status | A5 COMPLETE AND VERIFIED |
-| Next gate | Stop before Phase 6 Membership and Role Lifecycle |
-| Owner decision required | Required before any membership/role lifecycle, broad role-aware navigation, or Phase 6+ work |
+| Current allowed stage | A6 - Membership and Role Lifecycle |
+| Status | A6 COMPLETE AND VERIFIED |
+| Next gate | Stop before Phase 7 Role-Aware Navigation |
+| Owner decision required | Required before any broad role-aware navigation, Phase 7, Phase 8 verification, deploy, or production Supabase work |
 
 ## Stage Status
 
@@ -25,6 +25,42 @@ Last updated: 2026-06-24
 | A3 Internal Member Invitation | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a3.md`. |
 | A4 Client Member Invitation | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a4.md`. |
 | A5 Invitation Lifecycle Hardening | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a5.md`. |
+| A6 Membership and Role Lifecycle | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a6.md`. |
+
+## Latest A6 Checkpoint
+
+A6 Membership and Role Lifecycle completed and verified on 2026-06-24 after owner approval.
+
+Implemented scope:
+
+- Role assignment authority rules for role/scope compatibility, active membership, actor authority, and cross-tenant denial.
+- `assignRoleCommand` with validation, tenant/client scoped authority checks, and `RoleAssigned` / denial audit.
+- `changeRoleAssignmentCommand` with old/new scope authority checks and `RoleUpdated` or `RoleRevoked` audit.
+- `removeClientScopeCommand` with client-scope role revocation and `ClientScopeRemoved` audit.
+- `disableMembershipCommand` with active responsibility guard, role revocation, pending invitation cancellation, and `MembershipSuspended` / `InvitationRevoked` audit.
+- Management members surface at `/members` with role selector, resend/revoke controls, disabled membership state, and responsibility-transfer blocked state.
+- Offboarding prerequisite documentation for later delivery-domain responsibility transfer.
+
+Out of scope and not started:
+
+- Phase 7 Role-Aware Navigation.
+- Phase 8 Verification and Acceptance.
+- Deliverable responsibility transfer implementation.
+- Deliverables, contracts, files, SLA, approvals, Kanban, deploy, production Supabase usage, and real client data.
+
+Verification results:
+
+- Targeted unit tests: passed, 1 file and 4 tests.
+- Targeted integration tests: passed, 3 files and 6 tests.
+- Targeted component tests: passed, 1 file and 3 tests.
+- Targeted member lifecycle E2E: passed, 3 tests across desktop, mobile, and RTL projects.
+- `npm run test:unit`: passed, 10 files and 30 tests.
+- `npm run test:integration`: passed, 13 files and 32 tests.
+- `npm run test:component`: passed, 6 files and 16 tests.
+- `npm run lint`: passed.
+- `npm run typecheck`: passed.
+- `npm run secret:scan`: passed, no high-confidence secrets found.
+- `npm run build`: passed and included `/members`.
 
 ## Latest A5 Checkpoint
 
@@ -206,10 +242,8 @@ The local Supabase stack initially attempted to pull images from the default reg
 
 ## Out of Scope Until Owner Approval
 
-- Invitation lifecycle hardening beyond A3 internal valid acceptance.
-- Invitation lifecycle hardening beyond A4 client valid acceptance.
-- Membership/role lifecycle.
 - Broad role-aware navigation.
+- Phase 8 verification package.
 - Production Supabase usage.
 - Real customer data.
 - Merging into `main`.

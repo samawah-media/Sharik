@@ -1,7 +1,10 @@
 import type {
   ClientMembership,
+  MembershipKind,
+  MembershipStatus,
   RoleKey,
   RoleAssignment,
+  ScopeType,
   TenantMembership,
 } from "./membership";
 
@@ -10,6 +13,13 @@ export type MembershipRepository = {
     tenantId: string;
     userId: string;
   }): Promise<TenantMembership | undefined>;
+  findTenantMembershipById(id: string): Promise<TenantMembership | undefined>;
+  findClientMembershipById(id: string): Promise<ClientMembership | undefined>;
+  findMembershipById(input: {
+    membershipKind: MembershipKind;
+    membershipId: string;
+  }): Promise<TenantMembership | ClientMembership | undefined>;
+  findRoleAssignmentById(id: string): Promise<RoleAssignment | undefined>;
   activateTenantMembership(input: {
     id: string;
     tenantId: string;
@@ -26,9 +36,32 @@ export type MembershipRepository = {
     tenantId: string;
     membershipId: string;
     roleKey: RoleKey;
-    scopeType: "client";
+    scopeType: ScopeType;
     scopeId: string;
   }): Promise<RoleAssignment>;
+  updateRoleAssignment(input: {
+    assignmentId: string;
+    roleKey?: RoleKey;
+    scopeType?: ScopeType;
+    scopeId?: string;
+    status?: MembershipStatus;
+  }): Promise<RoleAssignment | undefined>;
+  removeClientScope(input: {
+    tenantId: string;
+    membershipId: string;
+    clientId: string;
+  }): Promise<{
+    clientMembership?: ClientMembership;
+    revokedRoleAssignments: RoleAssignment[];
+  }>;
+  disableMembership(input: {
+    membershipKind: MembershipKind;
+    membershipId: string;
+  }): Promise<TenantMembership | ClientMembership | undefined>;
+  revokeRoleAssignmentsForMembership(input: {
+    tenantId: string;
+    membershipId: string;
+  }): Promise<RoleAssignment[]>;
   listTenantMemberships(tenantId: string): Promise<TenantMembership[]>;
   listClientMemberships(tenantId: string): Promise<ClientMembership[]>;
   listRoleAssignments(tenantId: string): Promise<RoleAssignment[]>;
@@ -67,6 +100,27 @@ export class InMemoryMembershipRepository implements MembershipRepository {
         membership.tenantId === input.tenantId &&
         membership.userId === input.userId,
     );
+  }
+
+  async findTenantMembershipById(id: string) {
+    return this.tenantMemberships.get(id);
+  }
+
+  async findClientMembershipById(id: string) {
+    return this.clientMemberships.get(id);
+  }
+
+  async findMembershipById(input: {
+    membershipKind: MembershipKind;
+    membershipId: string;
+  }) {
+    return input.membershipKind === "tenant"
+      ? this.findTenantMembershipById(input.membershipId)
+      : this.findClientMembershipById(input.membershipId);
+  }
+
+  async findRoleAssignmentById(id: string) {
+    return this.roleAssignments.get(id);
   }
 
   async activateTenantMembership(input: {
@@ -129,7 +183,7 @@ export class InMemoryMembershipRepository implements MembershipRepository {
     tenantId: string;
     membershipId: string;
     roleKey: RoleKey;
-    scopeType: "client";
+    scopeType: ScopeType;
     scopeId: string;
   }) {
     const existing = Array.from(this.roleAssignments.values()).find(
@@ -149,6 +203,124 @@ export class InMemoryMembershipRepository implements MembershipRepository {
     const assignment: RoleAssignment = { ...input, status: "active" };
     this.roleAssignments.set(assignment.id, assignment);
     return assignment;
+  }
+
+  async updateRoleAssignment(input: {
+    assignmentId: string;
+    roleKey?: RoleKey;
+    scopeType?: ScopeType;
+    scopeId?: string;
+    status?: MembershipStatus;
+  }) {
+    const existing = this.roleAssignments.get(input.assignmentId);
+
+    if (!existing) {
+      return undefined;
+    }
+
+    const updated: RoleAssignment = {
+      ...existing,
+      roleKey: input.roleKey ?? existing.roleKey,
+      scopeType: input.scopeType ?? existing.scopeType,
+      scopeId: input.scopeId ?? existing.scopeId,
+      status: input.status ?? existing.status,
+    };
+
+    this.roleAssignments.set(updated.id, updated);
+    return updated;
+  }
+
+  async removeClientScope(input: {
+    tenantId: string;
+    membershipId: string;
+    clientId: string;
+  }) {
+    const clientMembership = Array.from(this.clientMemberships.values()).find(
+      (membership) =>
+        membership.tenantId === input.tenantId &&
+        membership.id === input.membershipId &&
+        membership.clientId === input.clientId,
+    );
+
+    const disabledClientMembership = clientMembership
+      ? { ...clientMembership, status: "disabled" as const }
+      : undefined;
+
+    if (disabledClientMembership) {
+      this.clientMemberships.set(
+        disabledClientMembership.id,
+        disabledClientMembership,
+      );
+    }
+
+    const revokedRoleAssignments: RoleAssignment[] = [];
+
+    for (const assignment of this.roleAssignments.values()) {
+      if (
+        assignment.tenantId === input.tenantId &&
+        assignment.membershipId === input.membershipId &&
+        assignment.scopeType === "client" &&
+        assignment.scopeId === input.clientId &&
+        assignment.status === "active"
+      ) {
+        const revoked = { ...assignment, status: "removed" as const };
+        this.roleAssignments.set(revoked.id, revoked);
+        revokedRoleAssignments.push(revoked);
+      }
+    }
+
+    return {
+      clientMembership: disabledClientMembership,
+      revokedRoleAssignments,
+    };
+  }
+
+  async disableMembership(input: {
+    membershipKind: MembershipKind;
+    membershipId: string;
+  }) {
+    if (input.membershipKind === "tenant") {
+      const existing = this.tenantMemberships.get(input.membershipId);
+
+      if (!existing) {
+        return undefined;
+      }
+
+      const disabled = { ...existing, status: "disabled" as const };
+      this.tenantMemberships.set(disabled.id, disabled);
+      return disabled;
+    }
+
+    const existing = this.clientMemberships.get(input.membershipId);
+
+    if (!existing) {
+      return undefined;
+    }
+
+    const disabled = { ...existing, status: "disabled" as const };
+    this.clientMemberships.set(disabled.id, disabled);
+    return disabled;
+  }
+
+  async revokeRoleAssignmentsForMembership(input: {
+    tenantId: string;
+    membershipId: string;
+  }) {
+    const revoked: RoleAssignment[] = [];
+
+    for (const assignment of this.roleAssignments.values()) {
+      if (
+        assignment.tenantId === input.tenantId &&
+        assignment.membershipId === input.membershipId &&
+        assignment.status === "active"
+      ) {
+        const updated = { ...assignment, status: "removed" as const };
+        this.roleAssignments.set(updated.id, updated);
+        revoked.push(updated);
+      }
+    }
+
+    return revoked;
   }
 
   async listTenantMemberships(tenantId: string) {

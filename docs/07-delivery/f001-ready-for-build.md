@@ -2,12 +2,12 @@
 
 Date: 2026-06-25
 Branch: `feat/f001a-secure-client-foundation`
-HEAD: `9112a80f5d9cff221456f701779522524fdf4c5a`
+HEAD: `76bfbb6c1af2b5f1dc2d1472fcc05ce49f20a280`
 Package scope: F-001 secure tenant and client onboarding.
 
 ## Gate Result
 
-CONDITIONAL PASS.
+PASS.
 
 Owner may review Phase 8B evidence. This file does not approve the owner gate and does not authorize merge, push, deployment, or the next feature.
 
@@ -26,6 +26,7 @@ Owner may review Phase 8B evidence. This file does not approve the owner gate an
 - `ae52387 feat: add role-aware navigation denial ux`
 - `4f1bde2 test: stabilize Playwright readiness probe`
 - `9112a80 fix: harden route actor fixtures`
+- `76bfbb6 docs: record phase 8b evidence package`
 
 ## Build Acceptance Summary
 
@@ -33,8 +34,8 @@ Owner may review Phase 8B evidence. This file does not approve the owner gate an
 |---|---|---|
 | Product scope | PASS | F-001 remains limited to onboarding, roles, invitations, scope, navigation, denial UX, and audit foundations. |
 | Spec and traceability | PASS | Requirements, contracts, ACs, tasks, and verification tasks are mapped in `tasks.md`; Phase 8B evidence note added. |
-| Security | CONDITIONAL PASS | No critical/high findings. Watch items documented in `docs/06-security/f001-security-review.md`. |
-| Testing | CONDITIONAL PASS | Full Phase 8A verification passed before the Phase 8B fix; targeted post-fix route guard, typecheck, lint, and focused E2E passed on the current HEAD lineage. |
+| Security | PASS | No critical/high findings. Watch items documented in `docs/06-security/f001-security-review.md`. |
+| Testing | PASS | Full T094-T098 verification passed on HEAD `76bfbb6c1af2b5f1dc2d1472fcc05ce49f20a280`: unit, integration, RLS simulator, RLS pgTAP, component, and E2E. |
 | Production safety | PASS | No production connection, deployment, push, merge, rebase, or amend. |
 | Dependency safety | PASS | No dependency change in Phase 8B; audit has no high/critical advisory. |
 | Scope control | PASS | Excluded V1 items remain excluded and documented in acceptance evidence. |
@@ -50,8 +51,6 @@ The owner can review this package by reading:
 
 Recommended owner decision before final acceptance:
 
-- either accept the targeted post-fix verification as sufficient for Phase 8B;
-- or request a final full T094-T098 rerun from `9112a80`.
+- review the PASS evidence package and decide whether to approve Phase 8B / T099-T103.
 
 No next feature should start until Final F-001 Owner Acceptance is explicitly granted.
-

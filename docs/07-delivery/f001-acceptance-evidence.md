@@ -2,36 +2,29 @@
 
 Date: 2026-06-25
 Branch: `feat/f001a-secure-client-foundation`
-HEAD: `9112a80f5d9cff221456f701779522524fdf4c5a`
+HEAD: `76bfbb6c1af2b5f1dc2d1472fcc05ce49f20a280`
 Scope: Phase 8B / T100-T102 evidence for F-001 secure tenant and client onboarding.
 
 ## Status
 
-CONDITIONAL PASS for owner review.
+PASS for owner review.
 
 This evidence records the implementation and verification state. It does not self-approve the owner gate and does not authorize merge, push, deployment, or another feature.
 
 ## Verification Summary
 
-Phase 8A full verification evidence was recorded before the Phase 8B fix:
+Final full verification on HEAD `76bfbb6c1af2b5f1dc2d1472fcc05ce49f20a280`:
 
-| Suite | Result |
+| Suite or Check | Result |
 |---|---|
-| Unit | 12 files, 35 tests, exit 0 |
-| Integration | 13 files, 44 tests, exit 0 |
-| RLS simulator | 5 files, 16 tests, exit 0 |
-| RLS pgTAP | 1 file, 29 tests, exit 0 |
-| Component | 7 files, 19 tests, exit 0 |
-| E2E | 54 total, 52 passed, 2 skipped, exit 0 |
-
-Post-fix verification on the current HEAD lineage:
-
-| Check | Result |
-|---|---|
-| `npm run test:unit -- tests/unit/navigation/route-guards.test.ts` | 1 file, 3 tests, exit 0 |
+| `npm run test:unit` | 13 files, 38 tests, exit 0 |
+| `npm run test:integration` | 13 files, 44 tests, exit 0 |
+| `npm run test:rls:simulator` | 5 files, 16 tests, exit 0 |
+| `npm run test:rls:db` | 1 file, 29 tests, exit 0 |
+| `npm run test:component` | 7 files, 19 tests, exit 0 |
+| `npm run test:e2e` | 54 total, 52 passed, 2 expected mobile-only skips, exit 0 |
 | `npm run typecheck` | exit 0 |
 | `npm run lint` | exit 0 |
-| Focused E2E: `tests/e2e/security/denial-ux.spec.ts` and `tests/e2e/accessibility/rtl-mobile.spec.ts` | 24 total, 22 passed, 2 skipped, exit 0 |
 | `npm run secret:scan` | no high-confidence secrets, exit 0 |
 | `npm audit --audit-level=high` | no high/critical advisories, exit 0 |
 
@@ -79,7 +72,6 @@ Confirmed out of scope for F-001:
 
 ## Residual Risks
 
-- Final owner acceptance should decide whether to rerun the full T094-T098 suite from `9112a80`. The targeted post-fix suite passed, but the full suite was last run before the Phase 8B fix commit.
 - The local Spec Kit prerequisite script remains blocked by the owner-required branch name convention mismatch.
 - Moderate PostCSS audit advisories remain through Next.js with no high/critical advisory and no safe forced fix in this feature scope.
-
+- E2E had one transient warm-up timeout before tests executed; the rerun completed successfully with 52 passed and 2 expected mobile-only skips.

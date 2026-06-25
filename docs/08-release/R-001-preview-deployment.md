@@ -2,9 +2,11 @@
 
 ## Status
 
-CONDITIONAL PASS for preview recovery and protected staging deployment.
+PREVIEW READY — HOSTED WORKFLOW NOT YET ENABLED
 
-Full hosted workflow smoke remains blocked by F-001 UI scope: the hosted production-mode build disables route fixture actors and the sign-in page is a placeholder for a later Supabase Auth wiring slice. No new feature work was started to bypass that boundary.
+Owner decision: R-001 corrected Samawah Preview is accepted in this state. Full hosted workflow smoke remains blocked by F-001 UI scope: the hosted production-mode build disables route fixture actors and the sign-in page is a placeholder for a later Supabase Auth wiring slice. No new feature work was started to bypass that boundary.
+
+This release evidence must not be treated as UAT-ready, and it does not authorize F-002.
 
 ## PR URL
 
@@ -145,7 +147,7 @@ Recovery actions:
 ## Known Residuals
 
 - GitHub/Vercel Git integration remains deferred technical debt.
-- The earlier Omar-account Preview could not be deleted after CLI authentication switched to `samawahpod-2242`; deleting it requires temporary access to `omar-x-arts-projects` or removal from the Omar Vercel dashboard.
+- The earlier Omar-account Preview could not be deleted after CLI authentication switched to `samawahpod-2242`; deleting it is deferred and non-blocking for R-001.
 - Hosted full workflow smoke cannot pass until a later owner-approved scope wires real Supabase Auth and server actions into the UI, or an approved staging-only smoke harness is added.
 - Local `vercel build --target=preview` on Windows failed with an `EPERM` symlink error, so the accepted Samawah Preview uses Vercel remote build from a clean `git archive` instead.
 - `APP_ENV` is `development` because current schema allows `local | development | test`; this does not indicate Production connectivity.
@@ -159,7 +161,8 @@ Recovery actions:
 
 ## Owner Acceptance
 
-Owner decision required:
+Accepted for R-001 closeout as:
 
-- Accept R-001 as Preview-ready with hosted workflow smoke limitation documented.
-- Or authorize a separate follow-up to make hosted login and workflow smoke executable without enabling unsafe fixture bypasses.
+- `PREVIEW READY — HOSTED WORKFLOW NOT YET ENABLED`
+
+Next workflow enablement requires a separate owner-approved F-001B scope and must not use fixture bypasses to make UAT appear successful.

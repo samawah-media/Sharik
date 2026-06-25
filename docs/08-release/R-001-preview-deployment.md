@@ -14,8 +14,9 @@ Full hosted workflow smoke remains blocked by F-001 UI scope: the hosted product
 
 ## Preview URL
 
-- Preview deployment: https://sherk-f001-preview-kyp5iacfa-omar-x-arts-projects.vercel.app
-- Vercel deployment id: `dpl_4KJRx9KiTgY7TaBao1EfbKZZQmcc`
+- Preview deployment: https://sherk-f001-preview-ap9isw9ox-omar-x-arts-projects.vercel.app
+- Stable Vercel alias: https://sherk-f001-preview-omar-x-art-omar-x-arts-projects.vercel.app
+- Vercel deployment id: `dpl_2NoZUyPzNLK2cgAoAiUtPMtPZ1aX`
 - Target: `preview`
 - Protection: Vercel Authentication remains enabled.
 - Alias observed: `sherk-f001-preview-omar-x-art-omar-x-arts-projects.vercel.app`
@@ -31,8 +32,8 @@ Full hosted workflow smoke remains blocked by F-001 UI scope: the hosted product
 
 ## Commit Deployed
 
-- Current source commit before final clean redeploy: `940f20e98f8c71395452543a270ce5795ab2e572`
-- Note: a clean redeploy should be created after this document and `.vercelignore` are committed, so the final deployment metadata no longer reports a dirty worktree.
+- Deployed source commit at the clean Preview recovery point: `7ee3b2477bc1046222be3bf0e715f4a1758c2120`
+- The final deployment was created from a temporary `git archive` of that clean HEAD to avoid uploading untracked local build artifacts.
 
 ## Migration Status
 
@@ -131,6 +132,8 @@ Recovery actions:
 - Deleted each wrong deployment.
 - Created a temporary source deployment and used Vercel REST API redeploy without `target`, which Vercel represents as Preview (`target=null` in API, `target=preview` in CLI inspect).
 - Deleted the temporary Production source deployment.
+- Created the final clean Preview with `vercel deploy --target=preview --archive=tgz` from a temporary `git archive` working directory.
+- Deleted the earlier recovery Preview `dpl_4KJRx9KiTgY7TaBao1EfbKZZQmcc`; only `dpl_2NoZUyPzNLK2cgAoAiUtPMtPZ1aX` remains for this Vercel project.
 
 ## Known Residuals
 

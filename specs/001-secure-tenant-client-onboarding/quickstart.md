@@ -251,3 +251,12 @@ This guide describes how to validate F-001 after implementation. It is not a ful
 - Cross-client and cross-tenant denials do not leak resource existence.
 - RTL layout, labels, focus, and mobile invitation acceptance are usable.
 - No `tasks.md`, product code, SQL, migrations, real secrets, or real client data are required by this guide.
+
+## Phase 8B Evidence - 2026-06-25
+
+- Security review: `docs/06-security/f001-security-review.md` records no CRITICAL/HIGH findings at HEAD `9112a80f5d9cff221456f701779522524fdf4c5a`.
+- Acceptance evidence: `docs/07-delivery/f001-acceptance-evidence.md` records scope confirmation, quickstart evidence mapping, and residual risks.
+- Ready for Build package: `docs/07-delivery/f001-ready-for-build.md` records a conditional owner-review package and does not self-approve an Owner Gate.
+- Commands run for Phase 8B resume: Spec Kit prerequisite check exit 1 due known owner branch-name mismatch; `npm run secret:scan` exit 0; `npm audit --audit-level=high` exit 0; `npm run typecheck` exit 0; `npm run lint` exit 0; route-guard unit test exit 0.
+- Post-fix focused E2E evidence from HEAD lineage: `tests/e2e/security/denial-ux.spec.ts` and `tests/e2e/accessibility/rtl-mobile.spec.ts` ran 24 total tests with 22 passed and 2 expected mobile-only skips.
+- Watch item: full T094-T098 verification passed before the Phase 8B route-actor hardening commit; owner may request a final full-suite rerun from `9112a80` before Final F-001 Acceptance.

@@ -190,6 +190,15 @@
 
 **Checkpoint 8**: Ready for Build evidence package exists. Required result: zero CRITICAL/HIGH analysis findings, no product scope expansion, no untested security invariant.
 
+### Phase 8B Evidence Note - 2026-06-25
+
+- T099 evidence: `docs/06-security/f001-security-review.md` records no CRITICAL/HIGH findings at HEAD `9112a80f5d9cff221456f701779522524fdf4c5a`.
+- T100 evidence: `specs/001-secure-tenant-client-onboarding/quickstart.md` includes Phase 8B command and acceptance evidence.
+- T101 evidence: `docs/07-delivery/f001-acceptance-evidence.md` confirms implementation notes, residual risks, and excluded scope.
+- T102 evidence: this traceability note links Phase 8B evidence back to T099-T103 without changing requirements or ADRs.
+- T103 evidence: `docs/07-delivery/f001-ready-for-build.md` prepares the owner review package and explicitly avoids self-approving the Owner Gate.
+- Residual risk: full T094-T098 verification passed before the Phase 8B route-actor hardening commit; targeted post-fix route guard, typecheck, lint, and focused E2E checks passed on the current HEAD lineage.
+
 ## Traceability Tables
 
 ### Requirement -> Tasks -> Tests

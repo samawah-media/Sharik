@@ -26,6 +26,8 @@ export type RouteAccessDecision =
       safeReturnHref: string;
     };
 
+const routeActorFixturesEnabled = () => process.env.NODE_ENV !== "production";
+
 export const routeClients: ClientRecord[] = [
   {
     id: "client_a",
@@ -99,9 +101,24 @@ const actor = (
   roleAssignments,
 });
 
+const unresolvedRouteActor = (): AuthorizationActor => {
+  const membership = tenantMembership(
+    "tm_route_actor_unresolved",
+    "route_actor_unresolved",
+    "tenant_a",
+    "disabled",
+  );
+
+  return actor("route_actor_unresolved", membership, []);
+};
+
 export const resolveRouteActor = (
   key: string | undefined,
 ): AuthorizationActor => {
+  if (!routeActorFixturesEnabled()) {
+    return unresolvedRouteActor();
+  }
+
   if (key === "assigned_internal_a") {
     const membership = tenantMembership("tm_internal_a", key);
     return actor(key, membership, [
@@ -144,6 +161,10 @@ export const resolveRouteActor = (
         scopeId: "tenant_a",
       }),
     ]);
+  }
+
+  if (key !== undefined && key !== "tenant_admin_a") {
+    return unresolvedRouteActor();
   }
 
   const membership = tenantMembership("tm_admin_a", "tenant_admin_a");
@@ -195,14 +216,18 @@ export const guardManagementRoute = ({
   route,
 }: {
   actor: AuthorizationActor;
-  route: "clients" | "members" | "audit";
+  route: "clients" | "clientWrite" | "members" | "invitations" | "audit";
 }): RouteAccessDecision => {
   const permission =
     route === "clients"
       ? PERMISSIONS.CLIENT_VIEW_ALL_IN_TENANT
+      : route === "clientWrite"
+        ? PERMISSIONS.CLIENT_CREATE
       : route === "members"
         ? PERMISSIONS.USER_VIEW
-        : PERMISSIONS.AUDIT_USER_VIEW;
+        : route === "invitations"
+          ? PERMISSIONS.USER_INVITE
+          : PERMISSIONS.AUDIT_USER_VIEW;
 
   return decision(actor, permission, { tenantId: actor.tenantId });
 };

@@ -16,7 +16,7 @@ export default defineConfig({
     command: "node scripts/playwright-webserver.mjs",
     url: "http://127.0.0.1:3210/ready",
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 240_000,
   },
   projects: [
     { name: "desktop-chromium", use: { ...devices["Desktop Chrome"] } },

@@ -14,12 +14,14 @@ Full hosted workflow smoke remains blocked by F-001 UI scope: the hosted product
 
 ## Preview URL
 
-- Preview deployment: https://sherk-f001-preview-ap9isw9ox-omar-x-arts-projects.vercel.app
-- Stable Vercel alias: https://sherk-f001-preview-omar-x-art-omar-x-arts-projects.vercel.app
-- Vercel deployment id: `dpl_2NoZUyPzNLK2cgAoAiUtPMtPZ1aX`
+- Preview deployment: https://sherk-f001-preview-ejin6wyo2-samawahs-projects.vercel.app
+- Stable Vercel alias: https://sherk-f001-preview-samawahpod-2242-samawahs-projects.vercel.app
+- Vercel deployment id: `dpl_2kKpGMeVJVocrBeSYGK2WbbLHRUn`
+- Vercel account: `samawahpod-2242`
+- Vercel team/scope: `samawahs-projects`
 - Target: `preview`
 - Protection: Vercel Authentication remains enabled.
-- Alias observed: `sherk-f001-preview-omar-x-art-omar-x-arts-projects.vercel.app`
+- Alias observed: `sherk-f001-preview-samawahpod-2242-samawahs-projects.vercel.app`
 - Production root alias `sherk-f001-preview.vercel.app`: not assigned after recovery.
 
 ## Staging Environment
@@ -32,7 +34,7 @@ Full hosted workflow smoke remains blocked by F-001 UI scope: the hosted product
 
 ## Commit Deployed
 
-- Deployed source commit at the clean Preview recovery point: `7ee3b2477bc1046222be3bf0e715f4a1758c2120`
+- Deployed source commit at the Samawah Preview recovery point: `628455dddf8b4fa1e06272121db9cf99aeb58372`
 - The final deployment was created from a temporary `git archive` of that clean HEAD to avoid uploading untracked local build artifacts.
 
 ## Migration Status
@@ -133,18 +135,24 @@ Recovery actions:
 - Created a temporary source deployment and used Vercel REST API redeploy without `target`, which Vercel represents as Preview (`target=null` in API, `target=preview` in CLI inspect).
 - Deleted the temporary Production source deployment.
 - Created the final clean Preview with `vercel deploy --target=preview --archive=tgz` from a temporary `git archive` working directory.
-- Deleted the earlier recovery Preview `dpl_4KJRx9KiTgY7TaBao1EfbKZZQmcc`; only `dpl_2NoZUyPzNLK2cgAoAiUtPMtPZ1aX` remains for this Vercel project.
+- Deleted the earlier recovery Preview `dpl_4KJRx9KiTgY7TaBao1EfbKZZQmcc`; `dpl_2NoZUyPzNLK2cgAoAiUtPMtPZ1aX` was then identified as being under the wrong Omar Vercel account and is no longer the accepted R-001 Preview.
+- Owner identified the previous Preview was deployed under the wrong Vercel account (`omar-x-arts-projects`).
+- Re-authenticated Vercel CLI as `samawahpod-2242`, linked `samawahs-projects/sherk-f001-preview`, and configured Preview-only staging environment variables.
+- The first Samawah deployment was incorrectly assigned `target=production` by Vercel because it was the first deployment for the new project; Production env vars were empty. It was deleted: `dpl_2EncQxyacuucSyKdFFaegrNE3Lsp`.
+- A same-artifact API Preview without env metadata was also deleted: `dpl_EdCETGwRaH32RtuD8y3Mkq5xrw3M`.
+- The remaining Samawah deployment is the verified Preview: `dpl_2kKpGMeVJVocrBeSYGK2WbbLHRUn`.
 
 ## Known Residuals
 
 - GitHub/Vercel Git integration remains deferred technical debt.
+- The earlier Omar-account Preview could not be deleted after CLI authentication switched to `samawahpod-2242`; deleting it requires temporary access to `omar-x-arts-projects` or removal from the Omar Vercel dashboard.
 - Hosted full workflow smoke cannot pass until a later owner-approved scope wires real Supabase Auth and server actions into the UI, or an approved staging-only smoke harness is added.
-- Local `vercel build --target=preview` on Windows failed with an `EPERM` symlink error, so the final Preview uses Vercel remote build/API redeploy instead.
+- Local `vercel build --target=preview` on Windows failed with an `EPERM` symlink error, so the accepted Samawah Preview uses Vercel remote build from a clean `git archive` instead.
 - `APP_ENV` is `development` because current schema allows `local | development | test`; this does not indicate Production connectivity.
 
 ## Rollback Procedure
 
-1. Delete the Preview deployment by id with `vercel remove <deployment-id> --yes --scope=omar-x-arts-projects`.
+1. Delete the Preview deployment by id with `vercel remove <deployment-id> --yes --scope=samawahs-projects`.
 2. Remove Preview env vars only if the project is being retired.
 3. Keep Supabase staging project for audit unless owner approves deletion.
 4. Do not merge or push to `main` as part of rollback.

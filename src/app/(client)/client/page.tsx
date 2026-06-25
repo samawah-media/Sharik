@@ -1,12 +1,17 @@
 import { ClientHome } from "@/ui/client/client-home";
 import { resolveRoleAwareNavigation } from "@/modules/navigation/navigation-resolver";
 import {
+  canUseRouteActorFixtures,
   guardClientDetailRoute,
-  resolveRouteActor,
-  routeClients,
+  resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
 import { RoleAwareNavigation } from "@/ui/navigation/role-aware-nav";
-import { AccessDeniedState } from "@/ui/shared/access-states";
+import {
+  AccessDeniedState,
+  MembershipDisabledState,
+  NoAssignedClientState,
+  SessionExpiredState,
+} from "@/ui/shared/access-states";
 
 export default async function ClientPage({
   searchParams,
@@ -14,8 +19,41 @@ export default async function ClientPage({
   searchParams?: Promise<{ as?: string }>;
 }) {
   const params = await searchParams;
-  const actor = resolveRouteActor(params?.as ?? "client_viewer_a");
-  const access = guardClientDetailRoute({ actor, clientId: "client_a" });
+  const runtime = await resolveRouteRuntime(
+    params?.as ?? (canUseRouteActorFixtures() ? "client_viewer_a" : undefined),
+  );
+
+  if (!runtime.ok) {
+    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") {
+      return <SessionExpiredState />;
+    }
+
+    if (runtime.reason === "membership_disabled") {
+      return <MembershipDisabledState returnHref="/sign-in" />;
+    }
+
+    return <AccessDeniedState returnHref="/sign-in" />;
+  }
+
+  const { actor, clients } = runtime;
+  const primaryClient = clients.find((client) =>
+    actor.roleAssignments.some(
+      (assignment) =>
+        assignment.status === "active" &&
+        assignment.scopeType === "client" &&
+        assignment.scopeId === client.id,
+    ),
+  );
+
+  if (!primaryClient) {
+    return <NoAssignedClientState returnHref="/sign-in" />;
+  }
+
+  const access = guardClientDetailRoute({
+    actor,
+    clientId: primaryClient.id,
+    clients,
+  });
 
   if (!access.allowed) {
     return <AccessDeniedState />;
@@ -23,13 +61,13 @@ export default async function ClientPage({
 
   const navigation = resolveRoleAwareNavigation({
     actor,
-    assignedClients: routeClients.filter((client) => client.id === "client_a"),
+    assignedClients: clients.filter((client) => client.id === primaryClient.id),
   });
 
   return (
     <>
       <RoleAwareNavigation items={navigation.items} label="تنقل بوابة العميل" />
-      <ClientHome />
+      <ClientHome clientName={primaryClient.name} />
     </>
   );
 }

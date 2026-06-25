@@ -36,7 +36,15 @@ const child = spawn(
     String(appPort),
   ],
   {
-    env: process.env,
+    env: {
+      ...process.env,
+      APP_ENV: process.env.APP_ENV ?? "test",
+      NEXT_PUBLIC_SUPABASE_URL:
+        process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321",
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+        "local-e2e-publishable-key",
+    },
     stdio: "inherit",
     windowsHide: true,
   },

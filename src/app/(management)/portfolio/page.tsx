@@ -2,11 +2,15 @@ import { AssignedClients } from "@/ui/management/assigned-clients";
 import { resolveRoleAwareNavigation } from "@/modules/navigation/navigation-resolver";
 import {
   guardPortfolioRoute,
-  resolveRouteActor,
-  routeClients,
+  resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
 import { RoleAwareNavigation } from "@/ui/navigation/role-aware-nav";
-import { NoAssignedClientState } from "@/ui/shared/access-states";
+import {
+  AccessDeniedState,
+  MembershipDisabledState,
+  NoAssignedClientState,
+  SessionExpiredState,
+} from "@/ui/shared/access-states";
 
 export default async function PortfolioPage({
   searchParams,
@@ -14,14 +18,28 @@ export default async function PortfolioPage({
   searchParams?: Promise<{ as?: string }>;
 }) {
   const params = await searchParams;
-  const actor = resolveRouteActor(params?.as);
-  const access = guardPortfolioRoute({ actor });
+  const runtime = await resolveRouteRuntime(params?.as);
+
+  if (!runtime.ok) {
+    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") {
+      return <SessionExpiredState />;
+    }
+
+    if (runtime.reason === "membership_disabled") {
+      return <MembershipDisabledState returnHref="/sign-in" />;
+    }
+
+    return <AccessDeniedState returnHref="/sign-in" />;
+  }
+
+  const { actor } = runtime;
+  const access = guardPortfolioRoute({ actor, clients: runtime.clients });
 
   if (!access.allowed) {
     return <NoAssignedClientState />;
   }
 
-  const clients = routeClients.filter((client) => client.tenantId === actor.tenantId);
+  const clients = runtime.clients.filter((client) => client.tenantId === actor.tenantId);
   const navigation = resolveRoleAwareNavigation({
     actor,
     assignedClients: clients,

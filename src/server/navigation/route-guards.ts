@@ -8,6 +8,7 @@ import type {
   RoleAssignment,
   TenantMembership,
 } from "@/modules/memberships/membership";
+import { resolveRuntimeContext } from "@/server/auth/runtime-context";
 
 export type RouteActorKey =
   | "tenant_admin_a"
@@ -27,6 +28,22 @@ export type RouteAccessDecision =
     };
 
 const routeActorFixturesEnabled = () => process.env.NODE_ENV !== "production";
+
+export const canUseRouteActorFixtures = ({
+  appEnv = process.env.APP_ENV,
+  nodeEnv = process.env.NODE_ENV,
+}: {
+  appEnv?: string;
+  nodeEnv?: string;
+} = {}) => {
+  const effectiveAppEnv = appEnv ?? "local";
+  return (
+    nodeEnv !== "production" &&
+    (effectiveAppEnv === "local" ||
+      effectiveAppEnv === "development" ||
+      effectiveAppEnv === "test")
+  );
+};
 
 export const routeClients: ClientRecord[] = [
   {
@@ -115,7 +132,7 @@ const unresolvedRouteActor = (): AuthorizationActor => {
 export const resolveRouteActor = (
   key: string | undefined,
 ): AuthorizationActor => {
-  if (!routeActorFixturesEnabled()) {
+  if (!routeActorFixturesEnabled() || !canUseRouteActorFixtures()) {
     return unresolvedRouteActor();
   }
 
@@ -179,6 +196,19 @@ export const resolveRouteActor = (
   ]);
 };
 
+export const resolveRouteRuntime = async (key?: string) => {
+  if (canUseRouteActorFixtures()) {
+    return {
+      ok: true as const,
+      actor: resolveRouteActor(key),
+      clients: routeClients,
+      clientMemberships: [],
+    };
+  }
+
+  return resolveRuntimeContext();
+};
+
 const decision = (
   actorInput: AuthorizationActor,
   permission: (typeof PERMISSIONS)[keyof typeof PERMISSIONS],
@@ -235,11 +265,13 @@ export const guardManagementRoute = ({
 export const guardClientDetailRoute = ({
   actor,
   clientId,
+  clients = routeClients,
 }: {
   actor: AuthorizationActor;
   clientId: string;
+  clients?: ClientRecord[];
 }): RouteAccessDecision => {
-  const client = routeClients.find((item) => item.id === clientId);
+  const client = clients.find((item) => item.id === clientId);
 
   if (!client) {
     return {
@@ -258,8 +290,10 @@ export const guardClientDetailRoute = ({
 
 export const guardPortfolioRoute = ({
   actor,
+  clients = routeClients,
 }: {
   actor: AuthorizationActor;
+  clients?: ClientRecord[];
 }): RouteAccessDecision => {
   if (actor.tenantMembership.status !== "active") {
     return {
@@ -270,7 +304,7 @@ export const guardPortfolioRoute = ({
     };
   }
 
-  const hasAssignedClient = routeClients
+  const hasAssignedClient = clients
     .filter((client) => client.tenantId === actor.tenantId)
     .some(
       (client) =>

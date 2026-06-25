@@ -1,6 +1,6 @@
 import {
   guardClientDetailRoute,
-  resolveRouteActor,
+  resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
 import {
   AccessDeniedState,
@@ -15,8 +15,17 @@ export default async function ClientDetailPage({
   searchParams?: Promise<{ as?: string }>;
 }) {
   const [{ clientId }, query] = await Promise.all([params, searchParams]);
-  const actor = resolveRouteActor(query?.as);
-  const access = guardClientDetailRoute({ actor, clientId });
+  const runtime = await resolveRouteRuntime(query?.as);
+
+  if (!runtime.ok) {
+    return <AccessDeniedState returnHref="/sign-in" />;
+  }
+
+  const access = guardClientDetailRoute({
+    actor: runtime.actor,
+    clientId,
+    clients: runtime.clients,
+  });
 
   if (!access.allowed && access.reason === "not_found") {
     return <ResourceNotFoundState />;

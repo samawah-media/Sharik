@@ -1,7 +1,8 @@
 import {
+  canUseRouteActorFixtures,
   guardClientDetailRoute,
   guardManagementRoute,
-  resolveRouteActor,
+  resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
 import { ClientForm } from "@/ui/management/client-form";
 import {
@@ -17,9 +18,21 @@ export default async function EditClientPage({
   searchParams?: Promise<{ as?: string }>;
 }) {
   const [{ clientId }, query] = await Promise.all([params, searchParams]);
-  const actor = resolveRouteActor(query?.as);
-  const detailAccess = guardClientDetailRoute({ actor, clientId });
-  const writeAccess = guardManagementRoute({ actor, route: "clientWrite" });
+  const runtime = await resolveRouteRuntime(query?.as);
+
+  if (!runtime.ok || !canUseRouteActorFixtures()) {
+    return <AccessDeniedState />;
+  }
+
+  const detailAccess = guardClientDetailRoute({
+    actor: runtime.actor,
+    clientId,
+    clients: runtime.clients,
+  });
+  const writeAccess = guardManagementRoute({
+    actor: runtime.actor,
+    route: "clientWrite",
+  });
 
   if (!detailAccess.allowed && detailAccess.reason === "not_found") {
     return <ResourceNotFoundState />;

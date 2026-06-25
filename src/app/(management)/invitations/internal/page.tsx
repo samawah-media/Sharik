@@ -3,8 +3,9 @@ import {
   InternalInviteForm,
 } from "@/ui/management/internal-invite-form";
 import {
+  canUseRouteActorFixtures,
   guardManagementRoute,
-  resolveRouteActor,
+  resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
 import { AccessDeniedState } from "@/ui/shared/access-states";
 
@@ -14,8 +15,16 @@ export default async function InternalInvitationPage({
   searchParams?: Promise<{ as?: string }>;
 }) {
   const params = await searchParams;
-  const actor = resolveRouteActor(params?.as);
-  const access = guardManagementRoute({ actor, route: "invitations" });
+  const runtime = await resolveRouteRuntime(params?.as);
+
+  if (!runtime.ok || !canUseRouteActorFixtures()) {
+    return <AccessDeniedState />;
+  }
+
+  const access = guardManagementRoute({
+    actor: runtime.actor,
+    route: "invitations",
+  });
 
   if (!access.allowed) {
     return <AccessDeniedState />;

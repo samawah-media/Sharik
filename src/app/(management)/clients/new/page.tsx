@@ -1,6 +1,7 @@
 import {
+  canUseRouteActorFixtures,
   guardManagementRoute,
-  resolveRouteActor,
+  resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
 import { ClientForm } from "@/ui/management/client-form";
 import { AccessDeniedState } from "@/ui/shared/access-states";
@@ -11,8 +12,13 @@ export default async function NewClientPage({
   searchParams?: Promise<{ as?: string }>;
 }) {
   const params = await searchParams;
-  const actor = resolveRouteActor(params?.as);
-  const access = guardManagementRoute({ actor, route: "clientWrite" });
+  const runtime = await resolveRouteRuntime(params?.as);
+
+  if (!runtime.ok || !canUseRouteActorFixtures()) {
+    return <AccessDeniedState />;
+  }
+
+  const access = guardManagementRoute({ actor: runtime.actor, route: "clientWrite" });
 
   if (!access.allowed) {
     return <AccessDeniedState />;

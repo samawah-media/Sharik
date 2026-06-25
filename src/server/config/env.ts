@@ -9,7 +9,9 @@ const publicEnvSchema = z.object({
 
 const serverEnvSchema = publicEnvSchema.extend({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
-  APP_ENV: z.enum(["local", "development", "test"]).default("local"),
+  APP_ENV: z
+    .enum(["local", "development", "test", "preview", "staging", "production"])
+    .default("local"),
 });
 
 export type PublicEnv = z.infer<typeof publicEnvSchema>;

@@ -20,6 +20,9 @@ Base: `origin/main` at `6e8c4b0662ff362983866c49970f01d74f3576e5`
 - Applied the F-001B migration to Supabase staging project `kbntdgjzsfuqqdythmrn`.
 - Applied the idempotent UAT seed to staging; verified Samawah is active, Hudna is active, and the three dummy UAT role accounts exist.
 - Confirmed Vercel Preview env names are scoped to Preview and reset `APP_ENV` to `preview`.
+- Continued on 2026-06-26: generated UAT passwords into local ignored `.env.uat.local`, set them in Supabase staging, and did not print credentials.
+- Fixed UAT auth seed compatibility by ensuring GoTrue token fields use empty strings instead of nulls for manually seeded Auth rows.
+- Hosted authenticated smoke passed on the final Preview deployment for tenant administrator, account manager, client viewer, fixture denial, direct URL denial, cross-client/archived denial, invalid session denial, and service-role non-exposure.
 
 ## Quality Evidence
 
@@ -37,6 +40,8 @@ Base: `origin/main` at `6e8c4b0662ff362983866c49970f01d74f3576e5`
 - `npm run build`: PASS.
 - `npm audit --audit-level=high`: PASS, no high or critical findings; 2 moderate PostCSS findings remain transitive through Next.js.
 - Post-seed fix checks: `npm run lint`, `npm run typecheck`, `npm run test:unit -- tests/unit/auth/runtime-context.test.ts`, `npm run secret:scan`, and `npm run build`: PASS.
+- GitHub PR quality workflow: PASS on PR #4.
+- Hosted authenticated smoke: PASS, 9/9 route/security checks on `https://sherk-f001-preview-3lraogy56-samawahs-projects.vercel.app`.
 
 ## Out of Scope Confirmed
 

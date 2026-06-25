@@ -9,6 +9,7 @@ const eslintConfig = [
       ".next/**",
       "node_modules/**",
       "node_modules.partial/**",
+      ".vercel/**",
       "demo/**",
       "coverage/**",
       "test-results/**",

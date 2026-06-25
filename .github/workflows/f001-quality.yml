@@ -18,6 +18,8 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:unit
       - run: npm run test:integration
+      - run: npx supabase@2.107.0 db start
+      - run: npx supabase@2.107.0 db reset --local
       - run: npm run test:rls
       - run: npm run test:component
       - run: npm run test:e2e:list

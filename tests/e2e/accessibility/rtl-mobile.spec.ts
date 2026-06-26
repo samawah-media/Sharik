@@ -12,21 +12,18 @@ test("role-aware navigation is RTL, labelled, and keyboard reachable", async ({
   await expect(teamNavigation).toBeVisible();
   const portfolioLink = teamNavigation.getByRole("link", { name: "عملائي" });
   await expect(portfolioLink).toBeVisible();
-  const portfolioElement = await portfolioLink.elementHandle();
-  expect(portfolioElement).not.toBeNull();
+  const isPortfolioLinkFocused = () =>
+    portfolioLink.evaluate((element) => element === document.activeElement);
 
   for (let index = 0; index < 6; index += 1) {
-    const isFocused = await portfolioElement!.evaluate(
-      (element) => element === document.activeElement,
-    );
-
-    if (isFocused) {
+    if (await isPortfolioLinkFocused()) {
       break;
     }
 
     await page.keyboard.press("Tab");
   }
-  await expect(portfolioLink).toBeFocused();
+
+  expect(await isPortfolioLinkFocused()).toBe(true);
 });
 
 test("client portal mobile navigation keeps primary actions visible", async ({

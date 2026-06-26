@@ -36,7 +36,15 @@ export default async function PortfolioPage({
   const access = guardPortfolioRoute({ actor, clients: runtime.clients });
 
   if (!access.allowed) {
-    return <NoAssignedClientState />;
+    if (access.reason === "membership_disabled") {
+      return <MembershipDisabledState returnHref={access.safeReturnHref} />;
+    }
+
+    if (access.reason === "no_assigned_clients") {
+      return <NoAssignedClientState returnHref={access.safeReturnHref} />;
+    }
+
+    return <AccessDeniedState returnHref={access.safeReturnHref} />;
   }
 
   const clients = runtime.clients.filter((client) => client.tenantId === actor.tenantId);

@@ -35,15 +35,21 @@ export default async function ClientsPage({
   const access = guardManagementRoute({ actor, route: "clients" });
 
   if (!access.allowed) {
-    return <AccessDeniedState />;
+    if (access.reason === "membership_disabled") {
+      return <MembershipDisabledState returnHref={access.safeReturnHref} />;
+    }
+
+    return <AccessDeniedState returnHref={access.safeReturnHref} />;
   }
+
+  const visibleClients = clients.filter((client) => client.tenantId === actor.tenantId);
 
   return (
     <main className="grid gap-6">
       <h1 className="text-2xl font-semibold">العملاء</h1>
-      {clients.length > 0 && !canUseRouteActorFixtures() ? (
+      {visibleClients.length > 0 && !canUseRouteActorFixtures() ? (
         <section aria-label="قائمة العملاء" className="grid gap-3">
-          {clients.map((client) => (
+          {visibleClients.map((client) => (
             <article className="rounded-lg border border-border p-4" key={client.id}>
               <h2 className="text-base font-semibold">{client.name}</h2>
               <p className="mt-1 font-mono text-xs text-muted">{client.slug}</p>

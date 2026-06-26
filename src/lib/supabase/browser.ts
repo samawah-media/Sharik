@@ -1,11 +1,13 @@
 import { createBrowserClient } from "@supabase/ssr";
-import { parsePublicEnv } from "@/server/config/env";
 
 export function createSupabaseBrowserClient() {
-  const env = parsePublicEnv();
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabasePublishableKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-  return createBrowserClient(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-  );
+  if (!supabaseUrl || !supabasePublishableKey) {
+    throw new Error("Supabase public environment is not configured.");
+  }
+
+  return createBrowserClient(supabaseUrl, supabasePublishableKey);
 }

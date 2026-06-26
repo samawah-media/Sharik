@@ -4,7 +4,9 @@ import {
 } from "@/server/navigation/route-guards";
 import {
   AccessDeniedState,
+  MembershipDisabledState,
   ResourceNotFoundState,
+  SessionExpiredState,
 } from "@/ui/shared/access-states";
 
 export default async function ClientDetailPage({
@@ -18,6 +20,14 @@ export default async function ClientDetailPage({
   const runtime = await resolveRouteRuntime(query?.as);
 
   if (!runtime.ok) {
+    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") {
+      return <SessionExpiredState />;
+    }
+
+    if (runtime.reason === "membership_disabled") {
+      return <MembershipDisabledState returnHref="/sign-in" />;
+    }
+
     return <AccessDeniedState returnHref="/sign-in" />;
   }
 
@@ -32,7 +42,11 @@ export default async function ClientDetailPage({
   }
 
   if (!access.allowed) {
-    return <AccessDeniedState />;
+    if (access.reason === "membership_disabled") {
+      return <MembershipDisabledState returnHref={access.safeReturnHref} />;
+    }
+
+    return <AccessDeniedState returnHref={access.safeReturnHref} />;
   }
 
   return (

@@ -26,6 +26,7 @@ describe("route guard actor fixtures", () => {
 
   it("keeps explicit non-production fixtures available for E2E denial coverage", () => {
     vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("APP_ENV", "test");
 
     const actor = resolveRouteActor("client_viewer_a");
     const access = guardManagementRoute({ actor, route: "members" });
@@ -39,6 +40,7 @@ describe("route guard actor fixtures", () => {
 
   it("does not promote unknown non-production fixture keys to tenant admin", () => {
     vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("APP_ENV", "test");
 
     const actor = resolveRouteActor("unknown_actor");
     const access = guardManagementRoute({ actor, route: "clients" });

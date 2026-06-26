@@ -23,6 +23,7 @@ Base: `origin/main` at `6e8c4b0662ff362983866c49970f01d74f3576e5`
 - Continued on 2026-06-26: generated UAT passwords into local ignored `.env.uat.local`, set them in Supabase staging, and did not print credentials.
 - Fixed UAT auth seed compatibility by ensuring GoTrue token fields use empty strings instead of nulls for manually seeded Auth rows.
 - Hosted authenticated smoke passed on the final Preview deployment for tenant administrator, account manager, client viewer, fixture denial, direct URL denial, cross-client/archived denial, invalid session denial, and service-role non-exposure.
+- Addressed CodeRabbit PR #4 follow-up by making route fixtures fail closed unless `APP_ENV` is explicitly local/development/test, keeping Playwright webserver fallback on `preview`, and adding missing read-only RLS coverage for permission references.
 
 ## Quality Evidence
 
@@ -40,6 +41,7 @@ Base: `origin/main` at `6e8c4b0662ff362983866c49970f01d74f3576e5`
 - `npm run build`: PASS.
 - `npm audit --audit-level=high`: PASS, no high or critical findings; 2 moderate PostCSS findings remain transitive through Next.js.
 - Post-seed fix checks: `npm run lint`, `npm run typecheck`, `npm run test:unit -- tests/unit/auth/runtime-context.test.ts`, `npm run secret:scan`, and `npm run build`: PASS.
+- CodeRabbit follow-up checks: `npm run lint`, `npm run typecheck`, `npm run test:unit` (17 files / 48 tests), `npm run test:integration`, `npm run test:component`, `npm run test:rls:simulator`, `npm run test:rls:db`, `npm run test:e2e:list`, `npm run secret:scan`, `npm run build`, and `npm audit --audit-level=high`: PASS.
 - GitHub PR quality workflow: PASS on PR #4.
 - Hosted authenticated smoke: PASS, 9/9 route/security checks on `https://sherk-f001-preview-3lraogy56-samawahs-projects.vercel.app`.
 

@@ -197,6 +197,29 @@ where
   and id <> '20000000-0000-4000-8000-000000000001'
   and slug like 'demo-%';
 
+delete from public.invitations
+where tenant_id = '10000000-0000-4000-8000-000000000001';
+
+delete from public.role_assignments
+where tenant_id = '10000000-0000-4000-8000-000000000001'
+  and id not in (
+    '60000000-0000-4000-8000-000000000002',
+    '60000000-0000-4000-8000-000000000003',
+    '60000000-0000-4000-8000-000000000008'
+  );
+
+delete from public.client_memberships
+where tenant_id = '10000000-0000-4000-8000-000000000001'
+  and id not in ('50000000-0000-4000-8000-000000000003');
+
+delete from public.tenant_memberships
+where tenant_id = '10000000-0000-4000-8000-000000000001'
+  and id not in (
+    '40000000-0000-4000-8000-000000000002',
+    '40000000-0000-4000-8000-000000000003',
+    '40000000-0000-4000-8000-000000000008'
+  );
+
 insert into public.tenant_memberships (
   id,
   tenant_id,

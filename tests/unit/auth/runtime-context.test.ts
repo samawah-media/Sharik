@@ -92,4 +92,52 @@ describe("runtime auth context", () => {
 
     expect(result).toEqual({ ok: false, reason: "access_denied" });
   });
+
+  it("fails closed when membership status is unexpected", () => {
+    const result = deriveRuntimeActor({
+      claims: {
+        sub: "30000000-0000-4000-8000-000000000011",
+        email: "unexpected-status@preview.example.test",
+      },
+      tenantMemberships: [
+        {
+          id: "40000000-0000-4000-8000-000000000011",
+          tenant_id: "10000000-0000-4000-8000-000000000001",
+          auth_user_id: "30000000-0000-4000-8000-000000000011",
+          status: "enabled",
+        },
+      ],
+      clientMemberships: [],
+      roleAssignments: [],
+    });
+
+    expect(result).toEqual({ ok: false, reason: "membership_disabled" });
+  });
+
+  it("fails closed when a session has multiple active tenant memberships", () => {
+    const result = deriveRuntimeActor({
+      claims: {
+        sub: "30000000-0000-4000-8000-000000000012",
+        email: "multi-tenant@preview.example.test",
+      },
+      tenantMemberships: [
+        {
+          id: "40000000-0000-4000-8000-000000000012",
+          tenant_id: "10000000-0000-4000-8000-000000000001",
+          auth_user_id: "30000000-0000-4000-8000-000000000012",
+          status: "active",
+        },
+        {
+          id: "40000000-0000-4000-8000-000000000013",
+          tenant_id: "10000000-0000-4000-8000-000000000002",
+          auth_user_id: "30000000-0000-4000-8000-000000000012",
+          status: "active",
+        },
+      ],
+      clientMemberships: [],
+      roleAssignments: [],
+    });
+
+    expect(result).toEqual({ ok: false, reason: "access_denied" });
+  });
 });

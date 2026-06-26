@@ -28,3 +28,12 @@ using (
   auth_user_id = auth.uid()
   and status in ('active', 'disabled')
 );
+
+drop policy if exists "f001 permission references select authenticated" on public.permission_references;
+create policy "f001 permission references select authenticated"
+on public.permission_references
+for select
+using (
+  auth.uid() is not null
+  and status = 'active'
+);

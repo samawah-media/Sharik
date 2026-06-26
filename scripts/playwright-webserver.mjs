@@ -38,7 +38,7 @@ const child = spawn(
   {
     env: {
       ...process.env,
-      APP_ENV: process.env.APP_ENV ?? "test",
+      APP_ENV: process.env.APP_ENV ?? "preview",
       NEXT_PUBLIC_SUPABASE_URL:
         process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321",
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:

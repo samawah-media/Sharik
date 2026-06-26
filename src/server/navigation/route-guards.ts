@@ -27,8 +27,6 @@ export type RouteAccessDecision =
       safeReturnHref: string;
     };
 
-const routeActorFixturesEnabled = () => process.env.NODE_ENV !== "production";
-
 export const canUseRouteActorFixtures = ({
   appEnv = process.env.APP_ENV,
   nodeEnv = process.env.NODE_ENV,
@@ -36,12 +34,13 @@ export const canUseRouteActorFixtures = ({
   appEnv?: string;
   nodeEnv?: string;
 } = {}) => {
-  const effectiveAppEnv = appEnv ?? "local";
+  if (!appEnv) {
+    return false;
+  }
+
   return (
     nodeEnv !== "production" &&
-    (effectiveAppEnv === "local" ||
-      effectiveAppEnv === "development" ||
-      effectiveAppEnv === "test")
+    (appEnv === "local" || appEnv === "development" || appEnv === "test")
   );
 };
 
@@ -132,7 +131,7 @@ const unresolvedRouteActor = (): AuthorizationActor => {
 export const resolveRouteActor = (
   key: string | undefined,
 ): AuthorizationActor => {
-  if (!routeActorFixturesEnabled() || !canUseRouteActorFixtures()) {
+  if (!canUseRouteActorFixtures()) {
     return unresolvedRouteActor();
   }
 

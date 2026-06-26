@@ -31,19 +31,24 @@ export function SignInForm() {
     }
 
     setIsSubmitting(true);
-    const supabase = createSupabaseBrowserClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword(
-      parsed.data,
-    );
-    setIsSubmitting(false);
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword(
+        parsed.data,
+      );
 
-    if (signInError) {
-      setError(getSafeAuthErrorMessage(signInError.code));
-      return;
+      if (signInError) {
+        setError(getSafeAuthErrorMessage(signInError.code));
+        return;
+      }
+
+      router.replace(getSafeRedirectPath(searchParams.get("next")));
+      router.refresh();
+    } catch {
+      setError(getSafeAuthErrorMessage());
+    } finally {
+      setIsSubmitting(false);
     }
-
-    router.replace(getSafeRedirectPath(searchParams.get("next")));
-    router.refresh();
   }
 
   return (

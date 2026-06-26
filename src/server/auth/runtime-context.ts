@@ -71,8 +71,13 @@ export type RuntimeContext =
     }
   | { ok: false; reason: RuntimeContextReason };
 
-const toMembershipStatus = (status: string): MembershipStatus =>
-  status === "disabled" || status === "removed" ? status : "active";
+const toMembershipStatus = (status: string): MembershipStatus => {
+  if (status === "active" || status === "disabled" || status === "removed") {
+    return status;
+  }
+
+  return "disabled";
+};
 
 const toTenantMembership = (row: TenantMembershipRow): TenantMembership => ({
   id: row.id,
@@ -129,12 +134,17 @@ const selectActiveTenantMembership = ({
   const ownTenantMemberships = tenantMemberships
     .map(toTenantMembership)
     .filter((membership) => membership.userId === claims.sub);
-  const activeTenantMembership = ownTenantMemberships.find((membership) =>
+  const activeTenantMemberships = ownTenantMemberships.filter((membership) =>
     isActive(membership.status),
   );
+  const activeTenantMembership = activeTenantMemberships[0];
 
   if (ownTenantMemberships.length > 0 && !activeTenantMembership) {
     return { ok: false, reason: "membership_disabled" };
+  }
+
+  if (activeTenantMemberships.length > 1) {
+    return { ok: false, reason: "access_denied" };
   }
 
   if (!activeTenantMembership) {

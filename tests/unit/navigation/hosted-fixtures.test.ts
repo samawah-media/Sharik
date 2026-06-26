@@ -16,6 +16,7 @@ describe("hosted route actor fixtures", () => {
       true,
     );
     expect(canUseRouteActorFixtures({ appEnv: "test", nodeEnv: "test" })).toBe(true);
+    expect(canUseRouteActorFixtures({ nodeEnv: "development" })).toBe(false);
     expect(canUseRouteActorFixtures({ appEnv: "local", nodeEnv: "production" })).toBe(
       false,
     );

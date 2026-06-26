@@ -2,10 +2,21 @@ import http from "node:http";
 import net from "node:net";
 import { spawn } from "node:child_process";
 
-const appHost = "127.0.0.1";
-const appPort = 3000;
-const readyPort = 3210;
-const baseUrl = `http://${appHost}:${appPort}`;
+const parsePort = (name, fallback) => {
+  const rawValue = process.env[name];
+  const value = rawValue === undefined ? fallback : Number(rawValue);
+
+  if (!Number.isInteger(value) || value < 1 || value > 65535) {
+    throw new Error(`${name} must be a valid TCP port.`);
+  }
+
+  return value;
+};
+
+const appHost = process.env.PLAYWRIGHT_APP_HOST ?? "127.0.0.1";
+const appPort = parsePort("PLAYWRIGHT_APP_PORT", 3310);
+const readyPort = parsePort("PLAYWRIGHT_READY_PORT", 3210);
+const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? `http://${appHost}:${appPort}`;
 const warmRouteTimeoutMs = 150_000;
 
 const routesToWarm = [
@@ -24,6 +35,32 @@ const routesToWarm = [
   "/invite/expired",
 ];
 
+const assertPortAvailable = (host, port, label) =>
+  new Promise((resolve, reject) => {
+    const socket = net.createConnection({ host, port });
+
+    socket.once("connect", () => {
+      socket.end();
+      reject(
+        new Error(
+          `Refusing to start Playwright ${label} server: ${host}:${port} already has a listener.`,
+        ),
+      );
+    });
+
+    socket.once("error", (error) => {
+      if (error && error.code === "ECONNREFUSED") {
+        resolve();
+        return;
+      }
+
+      reject(error);
+    });
+  });
+
+await assertPortAvailable(appHost, appPort, "app");
+await assertPortAvailable(appHost, readyPort, "readiness");
+
 const child = spawn(
   process.execPath,
   [
@@ -38,7 +75,7 @@ const child = spawn(
   {
     env: {
       ...process.env,
-      APP_ENV: process.env.APP_ENV ?? "preview",
+      APP_ENV: process.env.APP_ENV ?? "test",
       NEXT_PUBLIC_SUPABASE_URL:
         process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321",
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:

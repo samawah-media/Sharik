@@ -10,11 +10,29 @@ Last updated: 2026-06-28
 | Package slug | `sharik-platform` |
 | Feature | F-002 Deliverables Core |
 | Worktree | `D:\code - projects\sharik-worktrees\f002-deliverables-core` |
-| Branch | `fix/f002-rls-db-gate-and-governance` |
-| Current allowed stage | F-002A/F-002 database foundation only |
-| Status | RLS DB gate repair ready for review |
-| Next gate | PR review to remove the F-002 blocker |
-| Owner decision required | Required before hosted staging migration, production usage, real data, merge, or scope expansion |
+| Branch | `main` after PR #7 merge |
+| Current allowed stage | F-002A Contract Context only |
+| Status | F-002 RLS DB gate verified; blocker removed |
+| Next gate | F-002A Contract Context slice only |
+| Owner decision required | Required before hosted staging migration, production usage, real data, Packages, Deliverables creation, Kanban, files, comments, approvals, SLA engine, or scope expansion |
+
+## F-002 RLS DB Gate Follow-up - 2026-06-28
+
+Scope:
+
+- PR #7 merged into `main`.
+- F-002 RLS DB gate is verified.
+- The F-002 blocker is removed.
+- The next allowed phase is F-002A Contract Context only.
+- The no-direct-write RLS gate now includes `TRUNCATE`, and the F-002 migration explicitly revokes `TRUNCATE` from `anon` and `authenticated` on F-002 tables.
+- GitHub Actions and `npm run test:rls:db` use the documented local Docker Hub registry override for Supabase test images to avoid public ECR rate-limit failures in CI.
+- No Packages implementation, Deliverables creation, Kanban, files, comments, approvals, SLA engine, hosted migration, production usage, real client data, or dependency changes are allowed in this follow-up.
+
+Owner Decision:
+
+- For F-002A only, `project_manager` is temporarily treated as equivalent to `tenant_administrator` for contract context authority.
+- `project_manager` must not be added to `RoleKey` or seeded as a new role without a separate ADR and owner approval.
+- If a distinct `project_manager` role is still needed after F-002A, open a separate ADR before implementation.
 
 ## F-002 RLS DB Gate Repair - 2026-06-28
 
@@ -44,11 +62,12 @@ Verification:
 - `npm run test:rls`: passed; simulator 6 files / 19 tests and pgTAP 2 files / 68 tests.
 - Full gate evidence captured in `specs/002-deliverables-core/evidence/f002-rls-db-gate.md`.
 
-Owner/ADR finding:
+Owner/ADR decision:
 
 - F-002 spec references `project_manager`, but `RoleKey` currently does not include it.
 - No role was added in this repair.
-- Owner should decide whether to map `project_manager` to `tenant_administrator` temporarily or add `project_manager` later through a separate ADR.
+- Owner decision for F-002A: temporarily map `project_manager` authority to `tenant_administrator`.
+- A distinct `project_manager` role remains deferred until a separate ADR is opened and accepted.
 
 ## F-002 Deliverables Core - 2026-06-28
 

@@ -67,14 +67,14 @@ select ok(
       'package_ledger_entries',
       'deliverable_allocations'
     ]) as f002_table(table_name)
-    cross join unnest(array['INSERT', 'UPDATE', 'DELETE']) as f002_privilege(privilege_name)
+    cross join unnest(array['INSERT', 'UPDATE', 'DELETE', 'TRUNCATE']) as f002_privilege(privilege_name)
     where has_table_privilege(
       'authenticated',
       format('public.%I', f002_table.table_name),
       f002_privilege.privilege_name
     )
   ),
-  'authenticated has no direct insert/update/delete grants on F-002 tables'
+  'authenticated has no direct insert/update/delete/truncate grants on F-002 tables'
 );
 
 select ok(

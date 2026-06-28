@@ -332,13 +332,13 @@ grant select on public.deliverables to authenticated;
 grant select on public.package_ledger_entries to authenticated;
 grant select on public.deliverable_allocations to authenticated;
 
-revoke insert, update, delete on public.contracts from anon, authenticated;
-revoke insert, update, delete on public.contract_amendments from anon, authenticated;
-revoke insert, update, delete on public.packages from anon, authenticated;
-revoke insert, update, delete on public.package_lines from anon, authenticated;
-revoke insert, update, delete on public.deliverables from anon, authenticated;
-revoke insert, update, delete on public.package_ledger_entries from anon, authenticated;
-revoke insert, update, delete on public.deliverable_allocations from anon, authenticated;
+revoke insert, update, delete, truncate on public.contracts from anon, authenticated;
+revoke insert, update, delete, truncate on public.contract_amendments from anon, authenticated;
+revoke insert, update, delete, truncate on public.packages from anon, authenticated;
+revoke insert, update, delete, truncate on public.package_lines from anon, authenticated;
+revoke insert, update, delete, truncate on public.deliverables from anon, authenticated;
+revoke insert, update, delete, truncate on public.package_ledger_entries from anon, authenticated;
+revoke insert, update, delete, truncate on public.deliverable_allocations from anon, authenticated;
 
 drop policy if exists "f002 management select contracts" on public.contracts;
 create policy "f002 management select contracts"

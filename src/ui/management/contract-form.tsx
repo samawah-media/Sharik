@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import type { ContractSafeSummary } from "@/modules/contracts/contract-repository";
@@ -167,6 +168,12 @@ export function ContractList({
               {contract.periodStart ?? "غير محدد"} - {contract.periodEnd ?? "غير محدد"}
             </p>
           ) : null}
+          <Link
+            className="mt-4 inline-flex w-fit rounded-md border border-border px-3 py-2 text-sm font-semibold"
+            href={`/clients/${contract.clientId}/contracts/${contract.id}/packages`}
+          >
+            الباقات
+          </Link>
         </article>
       ))}
     </section>

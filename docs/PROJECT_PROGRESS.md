@@ -25,6 +25,7 @@ Scope:
 - The F-002 blocker is removed.
 - The next allowed phase is F-002A Contract Context only.
 - The no-direct-write RLS gate now includes `TRUNCATE`, and the F-002 migration explicitly revokes `TRUNCATE` from `anon` and `authenticated` on F-002 tables.
+- GitHub Actions and `npm run test:rls:db` use the documented local Docker Hub registry override for Supabase test images to avoid public ECR rate-limit failures in CI.
 - No Packages implementation, Deliverables creation, Kanban, files, comments, approvals, SLA engine, hosted migration, production usage, real client data, or dependency changes are allowed in this follow-up.
 
 Owner Decision:

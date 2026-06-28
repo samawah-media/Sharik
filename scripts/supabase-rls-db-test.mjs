@@ -22,6 +22,8 @@ const childOptions = {
     ...sanitizedEnv,
     DO_NOT_TRACK: "1",
     SUPABASE_TELEMETRY_DISABLED: "1",
+    SUPABASE_INTERNAL_IMAGE_REGISTRY:
+      sanitizedEnv.SUPABASE_INTERNAL_IMAGE_REGISTRY ?? "docker.io",
   },
 };
 

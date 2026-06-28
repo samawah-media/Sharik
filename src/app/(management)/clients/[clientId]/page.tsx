@@ -53,13 +53,21 @@ export default async function ClientDetailPage({
   }
 
   const client = runtime.clients.find((item) => item.id === clientId);
-  const canViewContracts =
-    client &&
-    evaluatePermission({
-      actor: runtime.actor,
-      permission: PERMISSIONS.CONTRACT_VIEW,
-      resource: { tenantId: client.tenantId, clientId: client.id },
-    }).allowed;
+
+  if (!client) {
+    return <ResourceNotFoundState />;
+  }
+
+  const canViewContracts = evaluatePermission({
+    actor: runtime.actor,
+    permission: PERMISSIONS.CONTRACT_VIEW,
+    resource: { tenantId: client.tenantId, clientId: client.id },
+  }).allowed;
+  const canViewDeliverables = evaluatePermission({
+    actor: runtime.actor,
+    permission: PERMISSIONS.CONTRACT_VIEW,
+    resource: { tenantId: client.tenantId, clientId: client.id },
+  }).allowed;
 
   return (
     <main className="grid gap-4">
@@ -67,12 +75,20 @@ export default async function ClientDetailPage({
       <p className="text-sm text-muted">
         تظهر هذه الصفحة فقط عند اجتياز تحقق الصلاحية من جهة السيرفر.
       </p>
-      {client && canViewContracts ? (
+      {canViewContracts ? (
         <Link
           className="w-fit rounded-md border border-border px-4 py-2 text-sm font-semibold"
           href={`/clients/${client.id}/contracts`}
         >
           عرض العقود
+        </Link>
+      ) : null}
+      {canViewDeliverables ? (
+        <Link
+          className="w-fit rounded-md border border-border px-4 py-2 text-sm font-semibold"
+          href={`/clients/${client.id}/deliverables`}
+        >
+          عرض المخرجات
         </Link>
       ) : null}
     </main>

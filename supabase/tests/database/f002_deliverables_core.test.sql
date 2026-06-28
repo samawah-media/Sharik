@@ -4,7 +4,7 @@ create extension if not exists pgtap with schema extensions;
 
 set search_path = public, extensions;
 
-select plan(48);
+select plan(63);
 
 grant usage on schema public to authenticated;
 grant select on public.tenants to authenticated;
@@ -115,6 +115,20 @@ select ok(
     'public.f002_adjust_package_commitment(uuid, uuid, uuid, numeric, text, text)'
   ) is not null,
   'F-002B exposes a reviewed package adjustment RPC'
+);
+
+select ok(
+  to_regprocedure(
+    'public.f002_create_deliverable_reservation(uuid, uuid, uuid, uuid, uuid, uuid, uuid, uuid, text, text, text, text, uuid, uuid[], date, date, date, date, boolean, boolean, numeric, text)'
+  ) is not null,
+  'F-002C exposes a reviewed deliverable reservation RPC'
+);
+
+select ok(
+  to_regprocedure(
+    'public.f002_create_approved_extra_deliverable(uuid, uuid, uuid, text, text, text, text, uuid, uuid[], date, date, date, date, boolean, boolean, text, text)'
+  ) is not null,
+  'F-002C exposes a reviewed approved extra deliverable RPC'
 );
 
 insert into public.tenants (id, name)
@@ -638,6 +652,197 @@ select throws_ok(
   'package adjustment RPC requires an explicit reason'
 );
 
+select is(
+  (
+    select id::text
+    from public.f002_create_deliverable_reservation(
+      '05000000-0000-4000-8000-000000000010',
+      '07000000-0000-4000-8000-000000000010',
+      '06000000-0000-4000-8000-000000000020',
+      '09000000-0000-4000-8000-000000000020',
+      '01000000-0000-4000-8000-000000000301',
+      '02000000-0000-4000-8000-000000000001',
+      '03000000-0000-4000-8000-000000000001',
+      '04000000-0000-4000-8000-000000000001',
+      'Reserved Deliverable By RPC',
+      'Scoped reservation summary',
+      'post',
+      'normal',
+      null,
+      '{}'::uuid[],
+      '2026-07-02'::date,
+      '2026-07-03'::date,
+      '2026-07-04'::date,
+      '2026-07-05'::date,
+      true,
+      true,
+      2,
+      'f002c-deliverable-create-client-a'
+    )
+  ),
+  '05000000-0000-4000-8000-000000000010',
+  'tenant administrator can create a scoped deliverable reservation through the audited RPC path'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.package_ledger_entries
+    where deliverable_id = '05000000-0000-4000-8000-000000000010'
+      and entry_type = 'quantity_reserved'
+      and quantity = 2
+  ),
+  1,
+  'deliverable reservation RPC appends a quantity_reserved package ledger entry'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.deliverable_allocations
+    where deliverable_id = '05000000-0000-4000-8000-000000000010'
+      and package_line_id = '04000000-0000-4000-8000-000000000001'
+      and reserved_quantity = 2
+      and status = 'reserved'
+  ),
+  1,
+  'deliverable reservation RPC creates the deliverable allocation'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.audit_events
+    where action = 'DeliverableCreated'
+      and target_id = '05000000-0000-4000-8000-000000000010'
+  ),
+  1,
+  'deliverable reservation RPC records DeliverableCreated audit event'
+);
+
+select is(
+  (
+    select id::text
+    from public.f002_create_deliverable_reservation(
+      '05000000-0000-4000-8000-000000000011',
+      '07000000-0000-4000-8000-000000000011',
+      '06000000-0000-4000-8000-000000000021',
+      '09000000-0000-4000-8000-000000000021',
+      '01000000-0000-4000-8000-000000000301',
+      '02000000-0000-4000-8000-000000000001',
+      '03000000-0000-4000-8000-000000000001',
+      '04000000-0000-4000-8000-000000000001',
+      'Duplicate Reservation',
+      null,
+      'post',
+      'normal',
+      null,
+      '{}'::uuid[],
+      null,
+      null,
+      null,
+      null,
+      true,
+      true,
+      1,
+      'f002c-deliverable-create-client-a'
+    )
+  ),
+  '05000000-0000-4000-8000-000000000010',
+  'deliverable reservation RPC returns the existing deliverable for a repeated idempotency key'
+);
+
+select throws_ok(
+  $$
+    select *
+    from public.f002_create_deliverable_reservation(
+      '05000000-0000-4000-8000-000000000012',
+      '07000000-0000-4000-8000-000000000012',
+      '06000000-0000-4000-8000-000000000022',
+      '09000000-0000-4000-8000-000000000022',
+      '01000000-0000-4000-8000-000000000301',
+      '02000000-0000-4000-8000-000000000001',
+      '03000000-0000-4000-8000-000000000001',
+      '04000000-0000-4000-8000-000000000001',
+      'Over Capacity Reservation',
+      null,
+      'post',
+      'normal',
+      null,
+      '{}'::uuid[],
+      null,
+      null,
+      null,
+      null,
+      true,
+      true,
+      99,
+      'f002c-deliverable-over-capacity'
+    )
+  $$,
+  '42501',
+  'insufficient package capacity',
+  'deliverable reservation RPC denies over-capacity package reservations'
+);
+
+select is(
+  (
+    select id::text
+    from public.f002_create_approved_extra_deliverable(
+      '05000000-0000-4000-8000-000000000020',
+      '09000000-0000-4000-8000-000000000030',
+      '01000000-0000-4000-8000-000000000301',
+      'Approved Extra Deliverable',
+      'Out-of-package scoped extra',
+      'report',
+      'high',
+      null,
+      '{}'::uuid[],
+      null,
+      null,
+      null,
+      null,
+      true,
+      true,
+      'Client approved a separate paid extra deliverable',
+      'f002c-approved-extra-client-a'
+    )
+  ),
+  '05000000-0000-4000-8000-000000000020',
+  'tenant administrator can create an approved extra deliverable through the audited RPC path'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.package_ledger_entries
+    where deliverable_id = '05000000-0000-4000-8000-000000000020'
+  ),
+  0,
+  'approved extra deliverable RPC does not reserve package capacity by default'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.deliverable_allocations
+    where deliverable_id = '05000000-0000-4000-8000-000000000020'
+  ),
+  0,
+  'approved extra deliverable RPC does not create a package allocation'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.audit_events
+    where action = 'ApprovedExtraDeliverableCreated'
+      and target_id = '05000000-0000-4000-8000-000000000020'
+  ),
+  1,
+  'approved extra deliverable RPC records ApprovedExtraDeliverableCreated audit event'
+);
+
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '01000000-0000-4000-8000-000000000202', true);
@@ -650,7 +855,7 @@ select is(
 
 select is(
   (select count(*)::integer from public.package_ledger_entries),
-  5,
+  6,
   'account manager can see assigned Client A package ledger'
 );
 
@@ -710,6 +915,66 @@ select throws_ok(
   'account manager cannot use the package create RPC'
 );
 
+select is(
+  (
+    select id::text
+    from public.f002_create_deliverable_reservation(
+      '05000000-0000-4000-8000-000000000030',
+      '07000000-0000-4000-8000-000000000030',
+      '06000000-0000-4000-8000-000000000030',
+      '09000000-0000-4000-8000-000000000040',
+      '01000000-0000-4000-8000-000000000301',
+      '02000000-0000-4000-8000-000000000001',
+      '03000000-0000-4000-8000-000000000001',
+      '04000000-0000-4000-8000-000000000001',
+      'Account Manager Reserved Deliverable',
+      null,
+      'post',
+      'normal',
+      null,
+      '{}'::uuid[],
+      null,
+      null,
+      null,
+      null,
+      true,
+      true,
+      1,
+      'f002c-account-manager-deliverable-create'
+    )
+  ),
+  '05000000-0000-4000-8000-000000000030',
+  'account manager can create an in-package deliverable reservation for their assigned client'
+);
+
+select throws_ok(
+  $$
+    select *
+    from public.f002_create_approved_extra_deliverable(
+      '05000000-0000-4000-8000-000000000031',
+      '09000000-0000-4000-8000-000000000041',
+      '01000000-0000-4000-8000-000000000301',
+      'Account Manager Extra Denied',
+      null,
+      'post',
+      'normal',
+      null,
+      '{}'::uuid[],
+      null,
+      null,
+      null,
+      null,
+      true,
+      true,
+      'Account manager cannot approve extras',
+      'f002c-account-manager-extra-denied'
+    )
+  $$,
+  '42501',
+  'not authorized',
+  'account manager cannot create approved extra deliverables'
+);
+
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '01000000-0000-4000-8000-000000000203', true);
@@ -761,6 +1026,7 @@ reset role;
 select col_not_null('public', 'contracts', 'tenant_id', 'contracts.tenant_id is required');
 select col_not_null('public', 'contracts', 'client_id', 'contracts.client_id is required');
 select has_column('public', 'contracts', 'idempotency_key', 'contracts.idempotency_key supports command idempotency');
+select has_column('public', 'deliverables', 'idempotency_key', 'deliverables.idempotency_key supports command idempotency');
 select col_not_null('public', 'packages', 'tenant_id', 'packages.tenant_id is required');
 select col_not_null('public', 'package_lines', 'client_id', 'package_lines.client_id is required');
 select col_not_null('public', 'deliverables', 'tenant_id', 'deliverables.tenant_id is required');

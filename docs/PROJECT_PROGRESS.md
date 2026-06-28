@@ -9,12 +9,46 @@ Last updated: 2026-06-28
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
 | Feature | F-002 Deliverables Core |
-| Worktree | `D:\code - projects\sherk-f002-deliverables-core` pending canonical recreation under `D:\code - projects\sharik-worktrees\f002-deliverables-core` |
-| Branch | `002-deliverables-core` |
+| Worktree | `D:\code - projects\sharik-worktrees\f002-deliverables-core` |
+| Branch | `fix/f002-rls-db-gate-and-governance` |
 | Current allowed stage | F-002A/F-002 database foundation only |
-| Status | IN BUILD - local domain/RLS simulator foundation started |
-| Next gate | Local Supabase pgTAP verification once Docker Desktop is available |
+| Status | RLS DB gate repair ready for review |
+| Next gate | PR review to remove the F-002 blocker |
 | Owner decision required | Required before hosted staging migration, production usage, real data, merge, or scope expansion |
+
+## F-002 RLS DB Gate Repair - 2026-06-28
+
+Scope:
+
+- Gate repair only for F-002 database/RLS verification.
+- No Phase 3 server commands or UI.
+- No production Supabase, hosted migration, real client data, dependencies, or feature scope expansion.
+
+Official active worktree:
+
+- `D:\code - projects\sharik-worktrees\f002-deliverables-core`
+
+Legacy path governance:
+
+- `shrek` and `sherk` paths are historical evidence only and must not be used for active Sharik work.
+- A local historical Docker project named `shrek-platform-f001a` was stopped only to free port `54322` for Sharik Supabase local verification.
+
+Fixes:
+
+- Restored `supabase/tests/database/f002_deliverables_core.test.sql` to its declared `plan(31)` by adding the two missing pgTAP governance assertions for direct authenticated write grants and direct write RLS policies.
+- Added `scripts/supabase-rls-db-test.mjs` so `npm run test:rls:db` uses Supabase CLI `2.107.0` with telemetry disabled, avoiding PostHog shutdown timeouts after successful pgTAP runs.
+
+Verification:
+
+- `npm run test:rls:db`: passed, 2 pgTAP files / 68 tests.
+- `npm run test:rls`: passed; simulator 6 files / 19 tests and pgTAP 2 files / 68 tests.
+- Full gate evidence captured in `specs/002-deliverables-core/evidence/f002-rls-db-gate.md`.
+
+Owner/ADR finding:
+
+- F-002 spec references `project_manager`, but `RoleKey` currently does not include it.
+- No role was added in this repair.
+- Owner should decide whether to map `project_manager` to `tenant_administrator` temporarily or add `project_manager` later through a separate ADR.
 
 ## F-002 Deliverables Core - 2026-06-28
 
@@ -38,10 +72,10 @@ Verification completed:
 - `npm run build`: passed; Next.js production build completed.
 - `npm audit --audit-level=high`: passed high/critical threshold; two moderate PostCSS advisories remain through Next.js.
 
-Blocked local verification:
+Historical blocked local verification, superseded by the F-002 RLS DB Gate Repair above:
 
-- `npm run test:rls:db`: blocked because local Supabase cannot connect.
-- `npx supabase@2.107.0 start`: blocked because Docker Desktop is unavailable in this environment.
+- `npm run test:rls:db`: was blocked because local Supabase could not connect in the original F-002 foundation run.
+- `npx supabase@2.107.0 start`: was blocked because Docker Desktop was unavailable in the original F-002 foundation run.
 
 Out of scope confirmed:
 

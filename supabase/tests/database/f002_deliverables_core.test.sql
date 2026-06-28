@@ -55,6 +55,47 @@ select ok(
   'deliverable_allocations has RLS enabled'
 );
 
+select ok(
+  not exists (
+    select 1
+    from unnest(array[
+      'contracts',
+      'contract_amendments',
+      'packages',
+      'package_lines',
+      'deliverables',
+      'package_ledger_entries',
+      'deliverable_allocations'
+    ]) as f002_table(table_name)
+    cross join unnest(array['INSERT', 'UPDATE', 'DELETE']) as f002_privilege(privilege_name)
+    where has_table_privilege(
+      'authenticated',
+      format('public.%I', f002_table.table_name),
+      f002_privilege.privilege_name
+    )
+  ),
+  'authenticated has no direct insert/update/delete grants on F-002 tables'
+);
+
+select ok(
+  not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename in (
+        'contracts',
+        'contract_amendments',
+        'packages',
+        'package_lines',
+        'deliverables',
+        'package_ledger_entries',
+        'deliverable_allocations'
+      )
+      and cmd in ('INSERT', 'UPDATE', 'DELETE', 'ALL')
+  ),
+  'F-002 tables expose no direct write RLS policies'
+);
+
 insert into public.tenants (id, name)
 values
   ('01000000-0000-4000-8000-000000000001', 'Tenant A'),

@@ -9,12 +9,59 @@ Last updated: 2026-06-28
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
 | Feature | F-002 Deliverables Core |
-| Worktree | `D:\code - projects\sharik-worktrees\f002b-package-commitments` |
-| Branch | `codex/f002b-package-commitments` from `main` after PR #9 merge |
-| Current allowed stage | F-002B Package Commitments and Balance Projection only |
-| Status | F-002B Package Commitments locally verified; PR ready to open |
-| Next gate | Review and merge F-002B only before any later F-002 slice |
-| Owner decision required | Required before hosted staging migration, production usage, real data, Deliverables creation, Kanban, files, comments, approvals, SLA engine, or scope expansion |
+| Worktree | `D:\code - projects\sharik-worktrees\f002c-deliverable-reservation` |
+| Branch | `codex/f002c-deliverable-reservation` from `main` after PR #10 merge |
+| Current allowed stage | F-002C Deliverable Creation and Package Reservation only |
+| Status | F-002C Deliverable Creation and Package Reservation locally verified; PR ready to open |
+| Next gate | Review and merge F-002C only before F-002D reservation release or later F-002 slices |
+| Owner decision required | Required before hosted staging migration, production usage, real data, cancellation/reservation release, safe summaries, Kanban, files, comments, approvals, SLA engine, or scope expansion |
+
+## F-002C Deliverable Creation and Package Reservation - 2026-06-28
+
+Scope implemented:
+
+- PR #10 / F-002B Package Commitments and Balance Projection was merged into `main` before starting F-002C.
+- Deliverable repository and safe deliverable summary mapper for tenant/client-scoped deliverable records and allocations.
+- Server-side in-package deliverable command with Zod validation, actor authorization, tenant/client/contract/package/package-line scope validation, package capacity validation, idempotency key handling, deliverable allocation, append-only `quantity_reserved` package ledger entry, audit event, and audit-failure rollback.
+- Server-side approved extra deliverable command with administrative authority, required explicit reason, no package reservation by default, idempotency key handling, and audit event.
+- Supabase migration `20260628135816_f002c_deliverable_reservation.sql` for `deliverables.idempotency_key`, reviewed deliverable reservation RPC, reviewed approved-extra RPC, and F-002C pgTAP coverage.
+- Arabic RTL deliverable create/list UI under `/clients/[clientId]/deliverables` and `/clients/[clientId]/deliverables/new` with reservation impact preview, over-capacity recovery copy, denied/empty states, and no Kanban/workflow actions.
+- Client detail page links to scoped deliverables only when the actor has the existing scoped view permission.
+
+Owner decision applied:
+
+- For F-002C only, `project_manager` authority continues to be represented by existing `tenant_administrator` authority.
+- `project_manager` was not added to `RoleKey`.
+- No new role, dependency, ADR, production migration, hosted migration, or real client data was introduced.
+
+Verification:
+
+- `npm run lint`: passed.
+- `npm run typecheck`: passed.
+- `npm run test:unit`: passed, 22 files / 65 tests.
+- `npm run test:integration`: passed, 16 files / 65 tests.
+- `npm run test:rls`: passed; simulator 6 files / 19 tests and pgTAP 2 files / 100 tests.
+- `npm run test:component`: passed, 10 files / 34 tests.
+- `npm run secret:scan`: passed, no high-confidence secrets found.
+- `npm run build`: passed; routes include `/clients/[clientId]/deliverables` and `/clients/[clientId]/deliverables/new`.
+- Targeted `npm run test:integration -- tests/integration/deliverables/deliverable-creation.test.ts`: passed, 1 file / 7 tests.
+- Targeted `npm run test:component -- tests/component/deliverables/deliverable-form.test.tsx`: passed, 1 file / 5 tests.
+- `npx supabase@2.107.0 db reset --local`: passed after applying the F-002C migration locally.
+
+Out of scope confirmed:
+
+- F-002 full acceptance.
+- Cancellation or reservation release; this remains F-002D.
+- Kanban.
+- Files.
+- Comments.
+- Approvals.
+- SLA engine.
+- Hosted migration.
+- Production usage.
+- Real client data.
+- Dependency changes.
+- `RoleKey` changes or adding `project_manager` as a standalone role.
 
 ## F-002B Package Commitments and Balance Projection - 2026-06-28
 

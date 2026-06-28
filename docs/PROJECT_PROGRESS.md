@@ -9,12 +9,55 @@ Last updated: 2026-06-28
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
 | Feature | F-002 Deliverables Core |
-| Worktree | `D:\code - projects\sharik-worktrees\f002-deliverables-core` |
-| Branch | `main` after PR #7 merge |
+| Worktree | `D:\code - projects\sharik-worktrees\f002a-contract-context` |
+| Branch | `codex/f002a-contract-context` from `main` after PR #8 merge |
 | Current allowed stage | F-002A Contract Context only |
-| Status | F-002 RLS DB gate verified; blocker removed |
-| Next gate | F-002A Contract Context slice only |
+| Status | F-002A Contract Context locally verified; PR ready for review |
+| Next gate | Merge F-002A only before any later F-002 slice |
 | Owner decision required | Required before hosted staging migration, production usage, real data, Packages, Deliverables creation, Kanban, files, comments, approvals, SLA engine, or scope expansion |
+
+## F-002A Contract Context - 2026-06-28
+
+Scope implemented:
+
+- Scoped contract repository and safe contract summary mapper.
+- Server-side create contract command with Zod validation, actor authorization, tenant/client scope validation, idempotency key handling, required audit event, and audit-failure rollback.
+- Supabase migration `20260628120805_f002a_contract_context.sql` for `contracts.idempotency_key`, unique tenant idempotency index, and audited `f002_create_contract_context` RPC.
+- Direct authenticated writes to F-002 tables remain closed; contract creation is through the reviewed RPC/command path only.
+- Arabic RTL contract create/list UI under `/clients/[clientId]/contracts` and `/clients/[clientId]/contracts/new`.
+- Client detail page links to scoped contracts only when `CONTRACT_VIEW` is allowed.
+
+Owner decision applied:
+
+- For F-002A only, `project_manager` authority is represented by existing `tenant_administrator` authority.
+- `project_manager` was not added to `RoleKey`.
+- No new role, dependency, ADR, production migration, hosted migration, or real client data was introduced.
+
+Verification:
+
+- `npm run lint`: passed.
+- `npm run typecheck`: passed.
+- `npm run test:unit`: passed, 22 files / 65 tests.
+- `npm run test:integration`: passed, 14 files / 50 tests.
+- `npm run test:rls`: passed; simulator 6 files / 19 tests and pgTAP 2 files / 75 tests.
+- `npm run test:component`: passed, 8 files / 24 tests.
+- `npm run secret:scan`: passed, no high-confidence secrets found.
+- `npm run build`: passed; routes include `/clients/[clientId]/contracts` and `/clients/[clientId]/contracts/new`.
+
+Out of scope confirmed:
+
+- F-002 full acceptance.
+- Packages implementation.
+- Deliverables creation.
+- Kanban.
+- Files.
+- Comments.
+- Approvals.
+- SLA engine.
+- Hosted migration.
+- Production usage.
+- Real client data.
+- Dependency changes.
 
 ## F-002 RLS DB Gate Follow-up - 2026-06-28
 

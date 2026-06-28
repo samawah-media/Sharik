@@ -4,7 +4,7 @@ create extension if not exists pgtap with schema extensions;
 
 set search_path = public, extensions;
 
-select plan(31);
+select plan(38);
 
 grant usage on schema public to authenticated;
 grant select on public.tenants to authenticated;
@@ -94,6 +94,13 @@ select ok(
       and cmd in ('INSERT', 'UPDATE', 'DELETE', 'ALL')
   ),
   'F-002 tables expose no direct write RLS policies'
+);
+
+select ok(
+  to_regprocedure(
+    'public.f002_create_contract_context(uuid, uuid, uuid, text, text, text, date, date, text, text)'
+  ) is not null,
+  'F-002A exposes a reviewed contract create RPC'
 );
 
 insert into public.tenants (id, name)
@@ -426,14 +433,75 @@ select throws_ok(
   'authenticated actors cannot directly insert contracts outside audited command path'
 );
 
+select is(
+  (
+    select id::text
+    from public.f002_create_contract_context(
+      '02000000-0000-4000-8000-000000000004',
+      '09000000-0000-4000-8000-000000000001',
+      '01000000-0000-4000-8000-000000000301',
+      'Contract Created By RPC',
+      'F002A-CTR-A',
+      'Safe scoped contract summary',
+      '2026-07-01'::date,
+      '2026-12-31'::date,
+      'draft',
+      'f002a-contract-create-client-a'
+    )
+  ),
+  '02000000-0000-4000-8000-000000000004',
+  'tenant administrator can create a scoped contract through the audited RPC path'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.audit_events
+    where action = 'ContractCreated'
+      and target_id = '02000000-0000-4000-8000-000000000004'
+  ),
+  1,
+  'contract create RPC records ContractCreated audit event'
+);
+
+select is(
+  (
+    select id::text
+    from public.f002_create_contract_context(
+      '02000000-0000-4000-8000-000000000005',
+      '09000000-0000-4000-8000-000000000002',
+      '01000000-0000-4000-8000-000000000301',
+      'Duplicate Idempotency Contract',
+      null,
+      null,
+      null,
+      null,
+      'draft',
+      'f002a-contract-create-client-a'
+    )
+  ),
+  '02000000-0000-4000-8000-000000000004',
+  'contract create RPC returns the existing contract for a repeated idempotency key'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.contracts
+    where idempotency_key = 'f002a-contract-create-client-a'
+  ),
+  1,
+  'contract create RPC does not duplicate contracts for a repeated idempotency key'
+);
+
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '01000000-0000-4000-8000-000000000202', true);
 
 select is(
   (select count(*)::integer from public.contracts),
-  1,
-  'account manager can see only assigned Client A contract'
+  2,
+  'account manager can see only assigned Client A contracts'
 );
 
 select is(
@@ -446,6 +514,27 @@ select is(
   (select count(*)::integer from public.contracts where client_id = '01000000-0000-4000-8000-000000000302'),
   0,
   'account manager cannot read unassigned Client C contract'
+);
+
+select throws_ok(
+  $$
+    select *
+    from public.f002_create_contract_context(
+      '02000000-0000-4000-8000-000000000006',
+      '09000000-0000-4000-8000-000000000003',
+      '01000000-0000-4000-8000-000000000301',
+      'Account Manager Contract Denied',
+      null,
+      null,
+      null,
+      null,
+      'draft',
+      'f002a-contract-account-manager-denied'
+    )
+  $$,
+  '42501',
+  'not authorized',
+  'account manager cannot use the contract create RPC'
 );
 
 reset role;
@@ -498,6 +587,7 @@ reset role;
 
 select col_not_null('public', 'contracts', 'tenant_id', 'contracts.tenant_id is required');
 select col_not_null('public', 'contracts', 'client_id', 'contracts.client_id is required');
+select has_column('public', 'contracts', 'idempotency_key', 'contracts.idempotency_key supports command idempotency');
 select col_not_null('public', 'packages', 'tenant_id', 'packages.tenant_id is required');
 select col_not_null('public', 'package_lines', 'client_id', 'package_lines.client_id is required');
 select col_not_null('public', 'deliverables', 'tenant_id', 'deliverables.tenant_id is required');

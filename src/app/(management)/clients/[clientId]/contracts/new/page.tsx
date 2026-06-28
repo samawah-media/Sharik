@@ -1,10 +1,14 @@
-import Link from "next/link";
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
+import { createContractAction } from "@/server/actions/contracts";
 import {
   guardClientDetailRoute,
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
+import {
+  ContractDeniedState,
+  ContractForm,
+} from "@/ui/management/contract-form";
 import {
   AccessDeniedState,
   MembershipDisabledState,
@@ -12,7 +16,7 @@ import {
   SessionExpiredState,
 } from "@/ui/shared/access-states";
 
-export default async function ClientDetailPage({
+export default async function NewClientContractPage({
   params,
   searchParams,
 }: {
@@ -53,28 +57,32 @@ export default async function ClientDetailPage({
   }
 
   const client = runtime.clients.find((item) => item.id === clientId);
-  const canViewContracts =
-    client &&
-    evaluatePermission({
-      actor: runtime.actor,
-      permission: PERMISSIONS.CONTRACT_VIEW,
-      resource: { tenantId: client.tenantId, clientId: client.id },
-    }).allowed;
+
+  if (!client) {
+    return <ResourceNotFoundState />;
+  }
+
+  const canCreateContracts = evaluatePermission({
+    actor: runtime.actor,
+    permission: PERMISSIONS.CONTRACT_CREATE,
+    resource: { tenantId: client.tenantId, clientId: client.id },
+  }).allowed;
+
+  if (!canCreateContracts) {
+    return <ContractDeniedState />;
+  }
 
   return (
-    <main className="grid gap-4">
-      <h1 className="text-2xl font-semibold">مساحة العميل</h1>
-      <p className="text-sm text-muted">
-        تظهر هذه الصفحة فقط عند اجتياز تحقق الصلاحية من جهة السيرفر.
-      </p>
-      {client && canViewContracts ? (
-        <Link
-          className="w-fit rounded-md border border-border px-4 py-2 text-sm font-semibold"
-          href={`/clients/${client.id}/contracts`}
-        >
-          عرض العقود
-        </Link>
-      ) : null}
+    <main className="grid max-w-3xl gap-5" dir="rtl">
+      <div>
+        <h1 className="text-2xl font-semibold">إنشاء عقد جديد</h1>
+        <p className="mt-2 text-sm text-muted">{client.name}</p>
+      </div>
+      <ContractForm
+        action={createContractAction}
+        clientId={client.id}
+        idempotencyKey={crypto.randomUUID()}
+      />
     </main>
   );
 }

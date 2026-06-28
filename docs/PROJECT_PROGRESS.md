@@ -9,12 +9,58 @@ Last updated: 2026-06-28
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
 | Feature | F-002 Deliverables Core |
-| Worktree | `D:\code - projects\sharik-worktrees\f002a-contract-context` |
-| Branch | `codex/f002a-contract-context` from `main` after PR #8 merge |
-| Current allowed stage | F-002A Contract Context only |
-| Status | F-002A Contract Context locally verified; PR ready for review |
-| Next gate | Merge F-002A only before any later F-002 slice |
-| Owner decision required | Required before hosted staging migration, production usage, real data, Packages, Deliverables creation, Kanban, files, comments, approvals, SLA engine, or scope expansion |
+| Worktree | `D:\code - projects\sharik-worktrees\f002b-package-commitments` |
+| Branch | `codex/f002b-package-commitments` from `main` after PR #9 merge |
+| Current allowed stage | F-002B Package Commitments and Balance Projection only |
+| Status | F-002B Package Commitments locally verified; PR ready to open |
+| Next gate | Review and merge F-002B only before any later F-002 slice |
+| Owner decision required | Required before hosted staging migration, production usage, real data, Deliverables creation, Kanban, files, comments, approvals, SLA engine, or scope expansion |
+
+## F-002B Package Commitments and Balance Projection - 2026-06-28
+
+Scope implemented:
+
+- PR #9 / F-002A Contract Context was merged into `main` before starting F-002B.
+- Package repository for packages, package lines, append-only package ledger entries, and safe balance summaries.
+- Server-side create package command with Zod validation, actor authorization, tenant/client/contract scope validation, idempotency key handling, commitment ledger entries, audit event, and audit-failure rollback.
+- Server-side package adjustment command with required reason, capacity guard, idempotency key handling, administrative adjustment ledger entry, and audit event.
+- Supabase migration `20260628125542_f002b_package_commitments.sql` for `packages.idempotency_key`, reviewed package create/adjust RPC paths, and package line balance projection.
+- Arabic RTL package create/list UI under `/clients/[clientId]/contracts/[contractId]/packages` and `/clients/[clientId]/contracts/[contractId]/packages/new`.
+
+Owner decision applied:
+
+- For F-002B only, `project_manager` authority continues to be represented by existing `tenant_administrator` authority.
+- `project_manager` was not added to `RoleKey`.
+- No new dependency, ADR, production migration, hosted migration, or real client data was introduced.
+
+Verification:
+
+- `npm run lint`: passed.
+- `npm run typecheck`: passed.
+- `npm run test:unit`: passed, 22 files / 65 tests.
+- `npm run test:integration`: passed, 15 files / 58 tests.
+- `npm run test:rls`: passed; simulator 6 files / 19 tests and pgTAP 2 files / 85 tests.
+- `npm run test:component`: passed, 9 files / 29 tests.
+- `npm run secret:scan`: passed, no high-confidence secrets found.
+- `npm run build`: passed; routes include `/clients/[clientId]/contracts/[contractId]/packages` and `/clients/[clientId]/contracts/[contractId]/packages/new`.
+- Targeted `npm run test:integration -- tests/integration/packages/package-management.test.ts`: passed, 1 file / 8 tests.
+- Targeted `npm run test:component -- tests/component/packages/package-form.test.tsx tests/component/contracts/contract-form.test.tsx`: passed, 2 files / 9 tests.
+- `npx supabase@2.107.0 db reset --local --no-seed`: passed after applying the F-002B migration.
+- `npm run test:rls:db`: passed, 2 pgTAP files / 85 tests.
+
+Out of scope confirmed:
+
+- F-002 full acceptance.
+- Deliverables creation.
+- Kanban.
+- Files.
+- Comments.
+- Approvals.
+- SLA engine.
+- Hosted migration.
+- Production usage.
+- Real client data.
+- Dependency changes.
 
 ## F-002A Contract Context - 2026-06-28
 

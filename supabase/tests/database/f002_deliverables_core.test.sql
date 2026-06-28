@@ -4,7 +4,7 @@ create extension if not exists pgtap with schema extensions;
 
 set search_path = public, extensions;
 
-select plan(38);
+select plan(48);
 
 grant usage on schema public to authenticated;
 grant select on public.tenants to authenticated;
@@ -101,6 +101,20 @@ select ok(
     'public.f002_create_contract_context(uuid, uuid, uuid, text, text, text, date, date, text, text)'
   ) is not null,
   'F-002A exposes a reviewed contract create RPC'
+);
+
+select ok(
+  to_regprocedure(
+    'public.f002_create_package_commitments(uuid, uuid, uuid, uuid, text, text, date, date, jsonb, text)'
+  ) is not null,
+  'F-002B exposes a reviewed package create RPC'
+);
+
+select ok(
+  to_regprocedure(
+    'public.f002_adjust_package_commitment(uuid, uuid, uuid, numeric, text, text)'
+  ) is not null,
+  'F-002B exposes a reviewed package adjustment RPC'
 );
 
 insert into public.tenants (id, name)
@@ -494,6 +508,136 @@ select is(
   'contract create RPC does not duplicate contracts for a repeated idempotency key'
 );
 
+select is(
+  (
+    select id::text
+    from public.f002_create_package_commitments(
+      '03000000-0000-4000-8000-000000000010',
+      '09000000-0000-4000-8000-000000000010',
+      '01000000-0000-4000-8000-000000000301',
+      '02000000-0000-4000-8000-000000000004',
+      'Package Created By RPC',
+      'draft',
+      '2026-07-01'::date,
+      '2026-07-31'::date,
+      '[
+        {
+          "id": "04000000-0000-4000-8000-000000000010",
+          "ledger_entry_id": "06000000-0000-4000-8000-000000000010",
+          "service_label": "Posts",
+          "deliverable_type_hint": "post",
+          "unit_label": "post",
+          "committed_quantity": 4
+        },
+        {
+          "id": "04000000-0000-4000-8000-000000000011",
+          "ledger_entry_id": "06000000-0000-4000-8000-000000000011",
+          "service_label": "Report",
+          "deliverable_type_hint": "report",
+          "unit_label": "report",
+          "committed_quantity": 1
+        }
+      ]'::jsonb,
+      'f002b-package-create-client-a'
+    )
+  ),
+  '03000000-0000-4000-8000-000000000010',
+  'tenant administrator can create a scoped package through the audited RPC path'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.package_lines
+    where package_id = '03000000-0000-4000-8000-000000000010'
+  ),
+  2,
+  'package create RPC creates package lines'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.package_ledger_entries
+    where package_id = '03000000-0000-4000-8000-000000000010'
+      and entry_type = 'commitment_added'
+  ),
+  2,
+  'package create RPC records commitment ledger entries for every line'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.audit_events
+    where action = 'PackageCreated'
+      and target_id = '03000000-0000-4000-8000-000000000010'
+  ),
+  1,
+  'package create RPC records PackageCreated audit event'
+);
+
+select is(
+  (
+    select id::text
+    from public.f002_create_package_commitments(
+      '03000000-0000-4000-8000-000000000011',
+      '09000000-0000-4000-8000-000000000011',
+      '01000000-0000-4000-8000-000000000301',
+      '02000000-0000-4000-8000-000000000004',
+      'Duplicate Package',
+      'draft',
+      '2026-07-01'::date,
+      '2026-07-31'::date,
+      '[
+        {
+          "id": "04000000-0000-4000-8000-000000000012",
+          "ledger_entry_id": "06000000-0000-4000-8000-000000000012",
+          "service_label": "Duplicate",
+          "unit_label": "unit",
+          "committed_quantity": 99
+        }
+      ]'::jsonb,
+      'f002b-package-create-client-a'
+    )
+  ),
+  '03000000-0000-4000-8000-000000000010',
+  'package create RPC returns existing package for a repeated idempotency key'
+);
+
+select is(
+  (
+    select available::numeric
+    from public.f002_adjust_package_commitment(
+      '06000000-0000-4000-8000-000000000012',
+      '09000000-0000-4000-8000-000000000012',
+      '04000000-0000-4000-8000-000000000010',
+      2,
+      'Approved commitment increase',
+      'f002b-package-adjust-client-a'
+    )
+  ),
+  6::numeric,
+  'package adjustment RPC appends an adjustment and returns the derived balance'
+);
+
+select throws_ok(
+  $$
+    select *
+    from public.f002_adjust_package_commitment(
+      '06000000-0000-4000-8000-000000000013',
+      '09000000-0000-4000-8000-000000000013',
+      '04000000-0000-4000-8000-000000000010',
+      1,
+      '',
+      'f002b-package-adjust-missing-reason'
+    )
+  $$,
+  'P0001',
+  'adjustment reason required',
+  'package adjustment RPC requires an explicit reason'
+);
+
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '01000000-0000-4000-8000-000000000202', true);
@@ -506,7 +650,7 @@ select is(
 
 select is(
   (select count(*)::integer from public.package_ledger_entries),
-  2,
+  5,
   'account manager can see assigned Client A package ledger'
 );
 
@@ -535,6 +679,35 @@ select throws_ok(
   '42501',
   'not authorized',
   'account manager cannot use the contract create RPC'
+);
+
+select throws_ok(
+  $$
+    select *
+    from public.f002_create_package_commitments(
+      '03000000-0000-4000-8000-000000000012',
+      '09000000-0000-4000-8000-000000000014',
+      '01000000-0000-4000-8000-000000000301',
+      '02000000-0000-4000-8000-000000000001',
+      'Account Manager Package Denied',
+      'draft',
+      null,
+      null,
+      '[
+        {
+          "id": "04000000-0000-4000-8000-000000000013",
+          "ledger_entry_id": "06000000-0000-4000-8000-000000000014",
+          "service_label": "Denied",
+          "unit_label": "unit",
+          "committed_quantity": 1
+        }
+      ]'::jsonb,
+      'f002b-package-account-manager-denied'
+    )
+  $$,
+  '42501',
+  'not authorized',
+  'account manager cannot use the package create RPC'
 );
 
 reset role;

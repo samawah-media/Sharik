@@ -1,18 +1,58 @@
 # Project Progress
 
-Last updated: 2026-06-27
+Last updated: 2026-06-28
 
 ## Current Execution Gate
 
 | Item | Value |
 |---|---|
-| Feature | F-001B Cycle 2B Hosted Staging Migration and UAT Gate |
-| Worktree | `D:\code - projects\sherk-f001b-uat` |
-| Branch | `feat/f001b-staging-uat-enablement` |
-| Current allowed stage | Cycle 2B review/evidence only |
-| Status | BLOCKED - staging migration not applied |
-| Next gate | Owner/architect decision on client write grant hardening |
-| Owner decision required | Required before applying `202606270001` to staging, running hosted UAT, merging, or using production Supabase |
+| Product name | `Sharik` |
+| Package slug | `sharik-platform` |
+| Feature | F-002 Deliverables Core |
+| Worktree | `D:\code - projects\sherk-f002-deliverables-core` pending canonical recreation under `D:\code - projects\sharik-worktrees\f002-deliverables-core` |
+| Branch | `002-deliverables-core` |
+| Current allowed stage | F-002A/F-002 database foundation only |
+| Status | IN BUILD - local domain/RLS simulator foundation started |
+| Next gate | Local Supabase pgTAP verification once Docker Desktop is available |
+| Owner decision required | Required before hosted staging migration, production usage, real data, merge, or scope expansion |
+
+## F-002 Deliverables Core - 2026-06-28
+
+Scope started:
+
+- Spec Kit package created under `specs/002-deliverables-core/`.
+- Official English spelling confirmed as `Sharik`; package slug updated to `sharik-platform`.
+- Worktree/branching standard added at `docs/07-spec-driven-delivery/worktree-and-branching-standard.md`.
+- Phase 1 domain foundation completed for package ledger projection, deliverable status/progress rules, F-002 permission catalog, and synthetic fixtures.
+- Phase 2 database/RLS foundation started with `202606280001_f002_deliverables_core.sql`, pgTAP coverage, and RLS simulator coverage.
+
+Verification completed:
+
+- `npm run test:unit`: passed, 22 files and 65 tests.
+- `npm run test:integration`: passed, 13 files and 44 tests.
+- `npm run test:component`: passed, 7 files and 20 tests.
+- `npm run test:rls:simulator`: passed, 6 files and 19 tests.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `npm run secret:scan`: passed, no high-confidence secrets found.
+- `npm run build`: passed; Next.js production build completed.
+- `npm audit --audit-level=high`: passed high/critical threshold; two moderate PostCSS advisories remain through Next.js.
+
+Blocked local verification:
+
+- `npm run test:rls:db`: blocked because local Supabase cannot connect.
+- `npx supabase@2.107.0 start`: blocked because Docker Desktop is unavailable in this environment.
+
+Out of scope confirmed:
+
+- No hosted staging migration.
+- No production Supabase.
+- No real client data.
+- No Kanban, files, comments, approvals, delivery, billing, social scheduling, or full SLA engine.
+
+## F-001B Completion Note - 2026-06-28
+
+F-001B was later completed through Cycle 2C/2D, pushed, reviewed, and merged via PR #5. Any older Cycle 2B blocked notes below are historical pre-hardening evidence and are superseded by the merged F-001B result.
 
 ## F-001B Cycle 2B - 2026-06-27
 

@@ -24,7 +24,9 @@ export type TenantSelectPolicy =
   | "role_assignment_select_by_tenant_member"
   | "audit_select_tenant_management"
   | "client_basics_select_authorized_scope"
-  | "invitation_select_tenant_management";
+  | "invitation_select_tenant_management"
+  | "commercial_raw_select_management_or_assigned"
+  | "commercial_ledger_select_management_or_account_manager";
 
 export type TenantInsertPolicy =
   | "audit_insert_own_tenant"
@@ -37,6 +39,35 @@ const hasActiveTenantMembership = (actor: RlsActor, tenantId: string) =>
       membership.userId === actor.userId &&
       membership.tenantId === tenantId &&
       isActive(membership.status),
+  );
+
+const hasActiveTenantManagement = (actor: RlsActor, tenantId: string) =>
+  actor.roleAssignments?.some(
+    (assignment) =>
+      assignment.tenantId === tenantId &&
+      assignment.roleKey.match(/^tenant_(owner|administrator)$/) &&
+      assignment.scopeType === "tenant" &&
+      assignment.scopeId === tenantId &&
+      isActive(assignment.status),
+  );
+
+const hasActiveClientRole = ({
+  actor,
+  row,
+  roleKeys,
+}: {
+  actor: RlsActor;
+  row: TenantScopedRow;
+  roleKeys: readonly string[];
+}) =>
+  Boolean(row.clientId) &&
+  actor.roleAssignments?.some(
+    (assignment) =>
+      assignment.tenantId === row.tenantId &&
+      assignment.scopeType === "client" &&
+      assignment.scopeId === row.clientId &&
+      roleKeys.includes(assignment.roleKey) &&
+      isActive(assignment.status),
   );
 
 export const canSelectTenantScopedRow = ({
@@ -52,20 +83,35 @@ export const canSelectTenantScopedRow = ({
     return false;
   }
 
-  const hasTenantManagement = actor.roleAssignments?.some(
-    (assignment) =>
-      assignment.tenantId === row.tenantId &&
-      assignment.roleKey.match(/^tenant_(owner|administrator)$/) &&
-      assignment.scopeType === "tenant" &&
-      assignment.scopeId === row.tenantId &&
-      isActive(assignment.status),
-  );
+  const hasTenantManagement = hasActiveTenantManagement(actor, row.tenantId);
 
   if (
     policy === "audit_select_tenant_management" ||
     policy === "invitation_select_tenant_management"
   ) {
     return Boolean(hasTenantManagement);
+  }
+
+  if (policy === "commercial_raw_select_management_or_assigned") {
+    return Boolean(
+      hasTenantManagement ||
+        hasActiveClientRole({
+          actor,
+          row,
+          roleKeys: ["account_manager", "content_writer", "designer"],
+        }),
+    );
+  }
+
+  if (policy === "commercial_ledger_select_management_or_account_manager") {
+    return Boolean(
+      hasTenantManagement ||
+        hasActiveClientRole({
+          actor,
+          row,
+          roleKeys: ["account_manager"],
+        }),
+    );
   }
 
   if (policy !== "client_basics_select_authorized_scope") {

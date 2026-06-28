@@ -14,7 +14,7 @@
     "test:integration": "node node_modules/vitest/vitest.mjs run --project integration",
     "test:rls": "npm run test:rls:simulator && npm run test:rls:db",
     "test:rls:simulator": "node node_modules/vitest/vitest.mjs run --project rls-simulator",
-    "test:rls:db": "npx supabase@2.107.0 test db --local supabase/tests/database",
+    "test:rls:db": "node scripts/supabase-rls-db-test.mjs",
     "test:component": "node node_modules/vitest/vitest.mjs run --project component",
     "test:e2e": "node node_modules/@playwright/test/cli.js test",
     "test:e2e:list": "node node_modules/@playwright/test/cli.js test --list",

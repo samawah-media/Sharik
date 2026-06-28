@@ -22,3 +22,5 @@
 | DEC-018 | Delay owner detail internal only. | Assumed | Blocking before client portal spec | Phase 7 instruction |
 | DEC-019 | Exact SLA policy after reopening. | Open | Blocking before delivery/SLA implementation | Architecture risks |
 | DEC-020 | Tiptap vs Markdown fallback. | Open | Blocking before comments implementation | AGENTS.md, tech assessment |
+| DEC-021 | Official English product spelling is `Sharik`, from Arabic `شريك`. Use `sharik-platform` for package/project slugs. | Confirmed | Product/Implementation | Owner direction, 2026-06-28 |
+| DEC-022 | Active feature worktrees should live under `D:\code - projects\sharik-worktrees\`; legacy `shrek`/`sherk` paths remain historical evidence only. | Confirmed | Delivery/Implementation | Owner direction, 2026-06-28 |

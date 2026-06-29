@@ -9,12 +9,54 @@ Last updated: 2026-06-29
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
 | Feature | F-002 Deliverables Core |
-| Worktree | `D:\code - projects\shrek.platform-f002d` |
-| Branch | `codex/f002d-reservation-release-summaries` from `main` after PR #11 merge |
-| Current allowed stage | F-002D Reservation Release and Scope-Safe Summaries only |
-| Status | F-002D Reservation Release and Scope-Safe Summaries locally verified; PR ready to open |
-| Next gate | Review and merge F-002D only before F-002E verification/evidence or later F-002 slices |
-| Owner decision required | Required before hosted staging migration, production usage, real data, Kanban, files, comments, approvals, SLA engine, F-002 full acceptance, or scope expansion |
+| Worktree | `D:\code - projects\shrek.platform-f002-progress` |
+| Branch | `codex/f002-progress-after-evidence` from `main` after PR #13 merge |
+| Current allowed stage | F-002 progress update after F-002E evidence merge only |
+| Status | F-002E evidence is merged; F-002 is review-ready for owner review only, not production accepted |
+| Next gate | Owner review of F-002 evidence before any acceptance, hosted staging migration, production usage, or next implementation phase |
+| Owner decision required | Required before marking F-002 accepted, running hosted/staging migration, using production or real client data, starting F-003 SLA MVP, or expanding scope |
+
+## F-002E Verification Evidence Merge and Review-Ready Status - 2026-06-29
+
+Scope recorded:
+
+- PR #13 / F-002E Verification Evidence and Traceability was merged into `main` before this progress update.
+- F-002E evidence documents local review-readiness verification and traceability for F-002.
+- This progress update changes `docs/PROJECT_PROGRESS.md` only and does not add features, migrations, dependencies, or product behavior.
+
+F-002 status:
+
+- F-002 is review-ready for owner review based on the merged F-002E local evidence.
+- F-002 is not production accepted and must not be treated as final production acceptance.
+- Hosted/non-production staging migration has not been run.
+- Production Supabase usage and real client data remain out of scope.
+- Staging, production, and real client data use require a separate owner-approved gate and a separate evidence update.
+
+Evidence basis:
+
+- F-002E recorded passing local `npm run test:unit`, `npm run test:integration`, `npm run test:rls`, `npm run test:component`, `npm run test:e2e`, `npm run typecheck`, `npm run lint`, `npm run secret:scan`, `npm audit --audit-level=high`, and `npm run build`.
+- F-002E recorded no CRITICAL or HIGH known blockers in the local security review evidence.
+- The evidence remains local review-readiness evidence only; it is not hosted staging evidence and is not production acceptance.
+
+Next proposed phase:
+
+- After owner review, the proposed next implementation phase is F-003 SLA MVP.
+- F-003 SLA MVP must not start until the owner explicitly approves crossing the F-002 review gate.
+
+Out of scope confirmed:
+
+- Production acceptance.
+- Hosted staging migration.
+- Production usage.
+- Real client data.
+- Kanban.
+- Files.
+- Comments.
+- Approvals.
+- SLA engine or F-003 implementation.
+- Dependency changes.
+- Migrations.
+- `RoleKey` changes or adding `project_manager` as a standalone role.
 
 ## F-002D Reservation Release and Scope-Safe Summaries - 2026-06-29
 

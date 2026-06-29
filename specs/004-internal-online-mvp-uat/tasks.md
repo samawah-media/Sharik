@@ -50,10 +50,10 @@
 
 **Purpose**: Stop before any hosted database mutation until approval is explicit.
 
-- [ ] T022 [US2] Obtain explicit owner approval matching `contracts/uat-gates.md` Gate H1 before hosted Supabase migration; Req: FR-006; Verification: approval recorded without secrets; Dependencies: T021; Category: Hosted Gate
+- [ ] T022 [US2] Obtain explicit owner approval matching `contracts/uat-gates.md` Gate H1 before hosted Supabase migration; Req: FR-006; Verification: approval recorded without secrets and without the literal `<PROJECT_REF>` placeholder; Dependencies: T021; Category: Hosted Gate
 - [ ] T023 [US2] Verify target Supabase project is non-production and contains no real client data; Req: FR-005, SR-001; Verification: project/ref evidence without secrets; Dependencies: T022; Category: Hosted Gate
 - [ ] T024 [US2] Run hosted non-production migration only after T022-T023; Req: FR-006; Verification: migration list/evidence; Dependencies: T023; Category: Hosted Migration
-- [ ] T025 [US2] Seed synthetic data only after migration approval and target verification; Req: FR-005, SR-003; Verification: seed manifest and row counts without secrets; Dependencies: T024; Category: Hosted Data
+- [ ] T025 [US2] Seed synthetic data from `supabase/seeds/r004_internal_online_mvp_uat.sql` only after migration approval and target verification; Req: FR-005, SR-003, SR-007; Verification: seed manifest and row counts without secrets; Dependencies: T024; Category: Hosted Data
 
 ## Phase 5: Protected Preview Deployment
 
@@ -82,6 +82,15 @@
 - [ ] T036 [US3] Update `docs/PROJECT_PROGRESS.md` with UAT status, blockers, and out-of-scope confirmations; Req: FR-012; Verification: progress doc updated; Dependencies: T035; Category: Documentation
 - [ ] T037 [US3] Commit and push branch `codex/internal-online-mvp-uat`; Req: FR-013; Verification: remote branch exists; Dependencies: T036; Category: PR
 - [ ] T038 [US3] Open PR clearly marked internal online UAT, not Production, and do not merge; Req: FR-013; Verification: PR URL exists; Dependencies: T037; Category: PR
+
+## Phase 8: R-004A Follow-up Corrections
+
+**Purpose**: Fix follow-up gate issues discovered after PR #18 review without running hosted operations.
+
+- [x] T039 [US1] Allow `.specify/feature.json` to satisfy `check-prerequisites.ps1` branch validation for pinned feature directories; Req: FR-012; Verification: `.specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks` passes on `codex/*` branch; Dependencies: T010; Category: Tooling
+- [x] T040 [US2] Add guarded R-004 synthetic Client A/B seed at `supabase/seeds/r004_internal_online_mvp_uat.sql`; Req: FR-005, SR-003, SR-007; Verification: seed SQL guard and local validation; Dependencies: T021; Category: Hosted Data Preparation
+- [x] T041 [US2] Update H1 approval docs so placeholder `<PROJECT_REF>` remains blocked; Req: FR-006, SR-001; Verification: `quickstart.md` and `contracts/uat-gates.md`; Dependencies: T022; Category: Hosted Gate
+- [x] T042 [US2] Document that `paused_waiting_internal_decision` is not persisted in the current MVP seed without a future schema change; Req: FR-007, FR-011; Verification: `plan.md`, `quickstart.md`, `data-model.md`; Dependencies: T040; Category: Scope Control
 
 ## Dependencies & Execution Order
 

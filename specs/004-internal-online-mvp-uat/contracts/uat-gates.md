@@ -29,18 +29,19 @@ Failure criteria:
 Required approval text:
 
 ```text
-I approve running the hosted non-production Supabase migration for Sharik Internal Online MVP UAT against project ref <PROJECT_REF>. Synthetic data only. No Production and no real client data.
+أوافق على تشغيل hosted non-production Supabase migration لـ Sharik Internal Online MVP UAT ضد project ref <PROJECT_REF>. Synthetic data only. No Production and no real client data.
 ```
 
 Pass criteria:
 
-- Approval names or confirms the target non-production project.
+- Approval names the target non-production project ref by replacing `<PROJECT_REF>` with the real Supabase ref.
 - Approval confirms synthetic data only.
 - Rollback and evidence path are prepared.
 
 Failure criteria:
 
 - Approval is ambiguous.
+- Approval still contains the literal `<PROJECT_REF>` placeholder.
 - Target is Production.
 - Real client data is requested.
 

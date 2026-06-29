@@ -10,11 +10,48 @@ Last updated: 2026-06-29
 | Package slug | `sharik-platform` |
 | Feature | R-004 Internal Online MVP UAT |
 | Worktree | `D:\code - projects\sharik-worktrees\internal-online-mvp-uat` |
-| Branch | `codex/internal-online-mvp-uat` from PR #17 merge commit on `origin/main` |
+| Branch | `codex/r004-uat-gate-follow-up` from PR #18 merge commit on `origin/main` |
 | Current allowed stage | Spec Kit, non-production UAT planning, local verification, and PR preparation only |
-| Status | PR #17 is merged; internal online UAT is documented and gated; no hosted Supabase migration, protected Preview deployment, Production usage, or real client data has been run in this branch |
-| Next gate | Owner review of the UAT plan and explicit approval before any hosted non-production Supabase migration |
+| Status | PR #18 is merged; follow-up corrections are preparing Spec Kit tooling and a guarded R-004 synthetic seed only; no hosted Supabase migration, protected Preview deployment, Production usage, or real client data has been run in this branch |
+| Next gate | Owner must provide the real non-production Supabase project ref in the exact H1 approval text before any hosted non-production Supabase migration |
 | Owner decision required | Required before hosted non-production Supabase migration, synthetic hosted seed, protected Preview deployment sharing, or marking hosted UAT checks as passed |
+
+## R-004A UAT Gate Follow-up Corrections - 2026-06-29
+
+Scope corrected:
+
+- PR #18, `chore(R-004): prepare internal online MVP UAT gate`, is now merged into `main`.
+- Follow-up branch `codex/r004-uat-gate-follow-up` starts from the PR #18 merge commit.
+- `.specify/scripts/powershell/check-prerequisites.ps1` now honors `.specify/feature.json` when it pins the active feature directory, matching existing `setup-plan.ps1` and `setup-tasks.ps1` behavior.
+- Dedicated guarded R-004 hosted UAT seed prepared at `supabase/seeds/r004_internal_online_mvp_uat.sql`.
+- R-004 hosted UAT must use the dedicated seed, not the older local `supabase/seed.sql`.
+- The seed includes Client Alpha/Beta synthetic data, approved existing roles only, contracts, packages, deliverables, commercial-summary data, and currently persistable SLA cases.
+- `paused_waiting_internal_decision` is not represented as hosted persisted seed data because the accepted current MVP has no persisted SLA segment table; it remains covered by F-003 domain/unit evidence until a future approved schema change.
+
+Current blocker:
+
+- The approval text received still contains the literal `<PROJECT_REF>` placeholder. H1 remains `BLOCKED`; no hosted Supabase link, migration, seed, or deployment was run.
+
+Verification:
+
+- `.specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks`: passed and resolved `specs/004-internal-online-mvp-uat`.
+- `git diff --check`: passed; line-ending warnings only.
+- `npm run secret:scan`: passed, no high-confidence secrets found.
+- `npx supabase@2.107.0 db reset --local --no-seed`: passed.
+- Local R-004 seed apply via `psql` inside `supabase_db_sharik-platform`: passed with `ON_ERROR_STOP=1`.
+- Local R-004 seed idempotency re-run: passed; append-only ledger conflicts were skipped with `ON CONFLICT DO NOTHING`.
+- Local R-004 seed row counts: 2 clients, 5 auth users, 2 contracts, 2 packages, 2 package lines, 7 deliverables, 6 Client Alpha deliverables, and 1 Client Beta deliverable.
+
+Out of scope confirmed:
+
+- Production deployment.
+- Production Supabase usage.
+- Real client data.
+- New dependencies.
+- Product feature expansion.
+- Database schema changes or migrations.
+- Kanban, files, comments, approvals, social scheduling, AI, background jobs.
+- `RoleKey` changes or adding standalone `project_manager`.
 
 ## R-004 Internal Online MVP UAT Prep - 2026-06-29
 

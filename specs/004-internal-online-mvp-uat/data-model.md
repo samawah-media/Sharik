@@ -36,7 +36,7 @@ Fields:
 - `contracts`: synthetic contract examples.
 - `packages`: synthetic package examples.
 - `deliverables`: synthetic deliverables covering accepted statuses.
-- `sla_cases`: on track, at risk, overdue, paused waiting client, paused waiting internal decision, completed, cancelled.
+- `sla_cases`: on track, at risk, overdue, paused waiting client, completed, cancelled.
 
 Validation:
 
@@ -44,6 +44,8 @@ Validation:
 - No real client emails.
 - No production credentials.
 - Client A/B records must support isolation checks.
+- The seed must refuse to run if the target contains client/auth data outside the approved synthetic R-004 fixture set.
+- `paused_waiting_internal_decision` remains domain/unit evidence only until a future approved persisted SLA segment model exists.
 
 ## Hosted Migration Gate
 

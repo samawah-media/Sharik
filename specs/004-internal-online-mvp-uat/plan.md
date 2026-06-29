@@ -4,13 +4,13 @@
 
 **Input**: Feature specification from `specs/004-internal-online-mvp-uat/spec.md`
 
-**Status**: Documentation and gate preparation complete in this branch; hosted Supabase migration and hosted UAT execution require explicit owner approval before running.
+**Status**: Documentation, gate preparation, Spec Kit prerequisite repair, and a dedicated non-auto-run R-004 synthetic seed are prepared; hosted Supabase migration, hosted seed execution, and hosted UAT execution require explicit owner approval before running.
 
 ## Summary
 
 This plan prepares the smallest protected internal online UAT for Sharik after PR #17. The approach is a release/UAT gate, not a product feature: define the non-production environment, synthetic data policy, hosted migration approval gate, protected Preview deployment expectations, smoke/security/UAT checks, evidence capture, and PR review process.
 
-No code, dependencies, schema changes, role changes, Kanban, files, comments, approvals, social scheduling, AI, background jobs, Production deployment, Production Supabase, or real client data are included in this plan.
+No product source code, dependencies, schema changes, role changes, Kanban, files, comments, approvals, social scheduling, AI, background jobs, Production deployment, Production Supabase, or real client data are included in this plan. The only SQL addition is a gated synthetic UAT seed file that is not part of automatic local seed execution.
 
 ## Technical Context
 
@@ -18,7 +18,7 @@ No code, dependencies, schema changes, role changes, Kanban, files, comments, ap
 
 **Primary Dependencies**: Existing dependencies only. No dependency changes are allowed.
 
-**Storage**: Existing Supabase/PostgreSQL schema from merged F-001, F-002, and F-003 context. Hosted non-production migration is gated by explicit owner approval.
+**Storage**: Existing Supabase/PostgreSQL schema from merged F-001, F-002, and F-003 context. Hosted non-production migration is gated by explicit owner approval. R-004 synthetic data uses `supabase/seeds/r004_internal_online_mvp_uat.sql` after migration approval and target verification only.
 
 **Testing**: Existing local gates plus hosted smoke/security/UAT evidence after approved hosted setup. Local gates include typecheck, lint, unit, integration, RLS, component, E2E, secret scan, audit high threshold, and build as appropriate.
 
@@ -104,10 +104,16 @@ specs/004-internal-online-mvp-uat/
 ### Source Code
 
 ```text
-No source code changes are planned for this branch.
+No product source code or schema migration changes are planned for this branch.
 ```
 
-**Structure Decision**: This is a release/UAT Spec Kit package and documentation update. Product source code and migrations stay unchanged unless a later reviewed PR explicitly approves a narrow fix.
+### Seed Fixture
+
+```text
+supabase/seeds/r004_internal_online_mvp_uat.sql
+```
+
+**Structure Decision**: This is a release/UAT Spec Kit package and gated synthetic data preparation. Product source code and migrations stay unchanged unless a later reviewed PR explicitly approves a narrow fix. The R-004 seed is separate from `supabase/seed.sql` and must be executed manually only after H1 approval, target verification, and hosted migration.
 
 ## Environment Plan
 
@@ -116,7 +122,7 @@ No source code changes are planned for this branch.
 | Host | Vercel Preview under approved Sharik/Samawah scope | Verify account/scope before deploy |
 | Protection | Vercel Authentication or approved equivalent | Must be enabled before sharing URL |
 | Database | Separate non-production Supabase project | Migration requires explicit owner approval |
-| Data | Synthetic only | Seed and screenshots must avoid real data |
+| Data | Synthetic only through `supabase/seeds/r004_internal_online_mvp_uat.sql` | Seed and screenshots must avoid real data |
 | Env vars | Preview/staging scoped only | No Production env mutation |
 | Service role | Server-only secret | Never printed or committed |
 | Rollback | Remove deployment and optionally retire non-production data | Record deployment id/project ref |
@@ -137,7 +143,7 @@ Required before any hosted operation:
 Required before hosted non-production migration:
 
 - Owner approval explicitly says to run hosted non-production Supabase migration.
-- Approval names or confirms the target project/ref.
+- Approval names the target project/ref; the literal `<PROJECT_REF>` placeholder is not valid approval.
 - Approval confirms synthetic data only.
 - Rollback and evidence commands are ready.
 
@@ -179,12 +185,14 @@ Minimum synthetic data set:
 
 - Tenant: `Samawah UAT`.
 - Clients: `Client Alpha UAT`, `Client Beta UAT`, optionally `Client Gamma UAT`.
-- Internal users: tenant admin, marketing manager, account manager for Client Alpha only.
+- Internal users: tenant administrator and account manager for Client Alpha only.
 - Client users: approver/viewer for Client Alpha and viewer for Client Beta.
 - Contracts/packages: one active synthetic contract and package for Client Alpha, one negative-control set for Client Beta.
-- Deliverables/SLA: on track, at risk, overdue, paused waiting client, paused waiting internal decision, completed, and cancelled examples.
+- Deliverables/SLA: on track, at risk, overdue, paused waiting client, completed, and cancelled examples.
 
 All emails must use reserved domains such as `.example.test`.
+
+`paused_waiting_internal_decision` remains covered by F-003 domain/unit evidence because the accepted MVP has no persisted SLA segment table. Seeding it as hosted data would require a schema change, which is outside R-004.
 
 ## Verification Plan
 
@@ -207,6 +215,7 @@ Hosted after explicit approval:
 - Protected Preview unauthenticated access blocked.
 - Authorized tester can reach accepted MVP surfaces.
 - Hosted fixture actors disabled.
+- R-004 synthetic seed applied with approved `psql` or Supabase SQL Editor using `supabase/seeds/r004_internal_online_mvp_uat.sql`; secret connection values are not printed or committed.
 - Client A cannot see Client B data.
 - Client user cannot reach management-only surfaces.
 - Management-scoped SLA summaries show synthetic statuses.

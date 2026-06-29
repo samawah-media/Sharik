@@ -16,13 +16,13 @@ This guide describes how to prepare and validate a protected internal online UAT
 
 ## Explicit Approval Required For Hosted Supabase
 
-Do not run hosted non-production Supabase migration until the owner provides an explicit approval like:
+Do not run hosted non-production Supabase migration until the owner provides an explicit approval in this exact shape, with a real Supabase project ref replacing `<PROJECT_REF>`:
 
 ```text
-I approve running the hosted non-production Supabase migration for Sharik Internal Online MVP UAT against project ref <PROJECT_REF>. Synthetic data only. No Production and no real client data.
+أوافق على تشغيل hosted non-production Supabase migration لـ Sharik Internal Online MVP UAT ضد project ref <PROJECT_REF>. Synthetic data only. No Production and no real client data.
 ```
 
-If this approval is missing, mark hosted migration and data-backed hosted UAT as `BLOCKED`.
+If this approval is missing, ambiguous, or still contains the literal `<PROJECT_REF>` placeholder, mark hosted migration and data-backed hosted UAT as `BLOCKED`.
 
 ## Local Baseline Checks
 
@@ -75,8 +75,12 @@ After explicit approval only:
 
 ```powershell
 npx supabase@2.107.0 --version
+npx supabase@2.107.0 link --project-ref <PROJECT_REF>
 npx supabase@2.107.0 migration list --linked
-# Apply the approved hosted non-production migration workflow only after target verification.
+npx supabase@2.107.0 db push --linked --dry-run
+# Apply only after the dry-run output, project identity, and no-real-data checks are reviewed.
+npx supabase@2.107.0 db push --linked
+npx supabase@2.107.0 migration list --linked
 ```
 
 Evidence to record:
@@ -91,17 +95,35 @@ Do not run this section without explicit approval.
 
 ## Synthetic Data Seed Requirements
 
+The approved R-004 seed file is:
+
+```text
+supabase/seeds/r004_internal_online_mvp_uat.sql
+```
+
+Do not use `supabase/seed.sql` for R-004 hosted UAT. That older local seed is not sufficient for Client A/B isolation and accepted MVP surface checks.
+
+After migration approval, target verification, and successful hosted migration only, apply the R-004 seed with an approved `psql` client or the Supabase SQL Editor. Do not print the database URL or password.
+
+```powershell
+psql "$env:R004_UAT_DB_URL" -v ON_ERROR_STOP=1 -f supabase/seeds/r004_internal_online_mvp_uat.sql
+```
+
+Do not use `supabase db query --file` for this seed because Supabase CLI 2.107 executes SQL through a prepared statement path that rejects this multi-command seed file.
+
+The seed has guards that refuse to run if the target contains client/auth data outside the approved synthetic R-004 fixture set.
+
 Minimum data:
 
 | Type | Required examples |
 |---|---|
 | Tenant | `Samawah UAT` |
 | Clients | `Client Alpha UAT`, `Client Beta UAT` |
-| Internal users | tenant admin, marketing manager, account manager for Client Alpha |
+| Internal users | tenant administrator and account manager for Client Alpha |
 | Client users | Client Alpha approver/viewer, Client Beta viewer |
 | Contracts/packages | at least one active synthetic contract/package for Client Alpha |
 | Deliverables | active, completed, cancelled examples |
-| SLA cases | on track, at risk, overdue, paused waiting client, paused waiting internal decision |
+| SLA cases | on track, at risk, overdue, paused waiting client, completed, cancelled |
 
 Rules:
 
@@ -109,6 +131,8 @@ Rules:
 - No real client names.
 - No real client emails.
 - No screenshots with secrets or real data.
+
+`paused_waiting_internal_decision` is not currently seedable as hosted persisted data because the accepted F-003 MVP has no persisted SLA segment table. It remains covered by domain/unit evidence until a future approved schema change adds persisted SLA segments.
 
 ## Protected Preview Deploy
 

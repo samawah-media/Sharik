@@ -20,7 +20,7 @@ The UAT scope is deliberately narrow: authentication and protected access, tenan
 - The UAT branch is `codex/internal-online-mvp-uat`, created from `origin/main` after PR #17.
 - This feature is an internal online UAT gate, not a product feature expansion.
 - The UAT environment must be non-production and protected.
-- Hosted Supabase migration is blocked until a separate explicit owner approval names the non-production project and confirms synthetic data only.
+- Hosted Supabase migration is blocked until a separate explicit owner approval names the non-production project ref and confirms synthetic data only; approvals that keep `<PROJECT_REF>` as a placeholder are not valid.
 - No real client data, real client emails, production credentials, or production Supabase project may be used.
 - No dependency changes are allowed.
 - No `RoleKey` changes and no standalone `project_manager` role are allowed.
@@ -32,7 +32,7 @@ The smallest online UAT that is useful and still safe is:
 
 1. A protected Preview deployment under the approved Sharik/Samawah Vercel scope.
 2. A separate non-production Supabase project, never Production.
-3. Synthetic tenant, client, user, contract, package, deliverable, and SLA examples only.
+3. Synthetic tenant, client, user, contract, package, deliverable, and currently persistable SLA examples only.
 4. Smoke checks for protected access, sign-in surface, fixture disablement in hosted runtime, build health, and no secret exposure.
 5. Security checks for tenant/client isolation, unauthorized denial, role boundaries, and service role non-exposure.
 6. UAT checks for existing accepted surfaces only: client management, contracts, packages, deliverables, commercial summaries, and SLA MVP summaries.
@@ -95,7 +95,7 @@ As the reviewer, I want UAT evidence recorded and the PR opened without merging 
 - The Preview project is missing Vercel Authentication or equivalent protection.
 - The non-production Supabase project is missing required migrations.
 - Hosted migration approval is not explicit enough.
-- A seed script attempts to use real domains, real names, or real client emails.
+- A seed script attempts to use real domains, real names, real client emails, or a hosted project that already contains non-synthetic users/clients.
 - A route works locally through fixtures but fails in hosted Preview because fixtures are correctly disabled.
 - A smoke check can only prove protected shell access until hosted migration is approved.
 - A tester tries to treat local evidence as hosted UAT evidence.
@@ -126,11 +126,12 @@ As the reviewer, I want UAT evidence recorded and the PR opened without merging 
 - **SR-004**: Hosted UAT evidence must not be marked passed unless it was run against the hosted non-production environment.
 - **SR-005**: Cross-tenant and cross-client denial checks must avoid resource enumeration.
 - **SR-006**: Any hosted mutation, migration, or seed must have rollback instructions and evidence.
+- **SR-007**: The hosted UAT seed MUST refuse to run when the target contains client/auth data outside the approved synthetic R-004 fixture set.
 
 ### Key Entities
 
 - **UAT Environment**: The protected Preview deployment plus its approved non-production data backend.
-- **Synthetic Data Set**: Non-real tenant/client/user/contract/package/deliverable/SLA records used only for UAT.
+- **Synthetic Data Set**: Non-real tenant/client/user/contract/package/deliverable/currently-persistable SLA records used only for UAT.
 - **Hosted Migration Gate**: Explicit owner approval required before applying migrations to a non-production Supabase project.
 - **Evidence Record**: A dated result for a smoke, security, or UAT check, including status and blocker if not run.
 - **Review PR**: The branch publication mechanism; it is not an approval to merge.

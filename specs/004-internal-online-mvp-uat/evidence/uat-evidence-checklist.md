@@ -11,8 +11,9 @@ This checklist separates local evidence from hosted evidence. Do not mark hosted
 | BASE-001 | PR #17 merged to `main` | PASS | `gh pr view 17` reported `MERGED` at `2026-06-29T12:30:38Z`, merge commit `6c406049203230c6b7e34eb0708bac0f82c981f8`. |
 | BASE-002 | UAT branch isolated after PR #17 | PASS | Branch/worktree `codex/internal-online-mvp-uat` at PR #17 merge commit. |
 | BASE-003 | `AGENTS.md` and project progress reviewed | PASS | Reviewed before edits. |
-| BASE-004 | Hosted Supabase approval | BLOCKED | Explicit owner approval not recorded in this branch. |
+| BASE-004 | Hosted Supabase approval | BLOCKED | Owner approval message received with literal `<PROJECT_REF>` placeholder; H1 requires the real non-production project ref before any hosted migration. |
 | BASE-005 | Hosted Preview deployment | BLOCKED | Vercel CLI is authenticated as `omarhussien2`; approved Samawah scope is not available in `vercel teams ls`. |
+| BASE-006 | Spec Kit prerequisite check on `codex/*` branch | PASS | `check-prerequisites.ps1` now honors `.specify/feature.json` when it pins the active feature directory. |
 
 ## Local Verification
 
@@ -29,6 +30,9 @@ This checklist separates local evidence from hosted evidence. Do not mark hosted
 | LOCAL-009 | `npm run secret:scan` | PASS | No high-confidence secrets found. |
 | LOCAL-010 | `npm audit --audit-level=high` | PASS | No high/critical findings; existing moderate PostCSS advisory through Next remains. |
 | LOCAL-011 | `npm run build` | PASS | Next.js production build completed successfully. |
+| LOCAL-012 | `npx supabase@2.107.0 db reset --local --no-seed` | PASS | Local migrations replayed successfully before seed validation. |
+| LOCAL-013 | R-004 seed local apply via `psql` | PASS | `supabase/seeds/r004_internal_online_mvp_uat.sql` applied twice locally with `ON_ERROR_STOP=1`; second run stayed idempotent and did not mutate append-only package ledger rows. |
+| LOCAL-014 | R-004 seed row-count validation | PASS | Local DB shows 2 clients, 5 auth users, 2 contracts, 2 packages, 2 package lines, 7 deliverables, 6 Alpha deliverables, and 1 Beta deliverable. |
 
 ## Hosted Environment Gates
 
@@ -40,7 +44,8 @@ This checklist separates local evidence from hosted evidence. Do not mark hosted
 | HOST-004 | Production env vars untouched | NOT RUN | No deployment/env mutation was attempted from the wrong account. |
 | HOST-005 | Hosted Supabase project non-production | BLOCKED | Requires H1 approval. |
 | HOST-006 | Hosted migration applied | BLOCKED | Requires H1 approval. |
-| HOST-007 | Synthetic seed applied | BLOCKED | Requires migration approval and target verification. |
+| HOST-007 | Synthetic seed prepared | PASS | Dedicated guarded seed added at `supabase/seeds/r004_internal_online_mvp_uat.sql`; it is separate from `supabase/seed.sql`. |
+| HOST-008 | Synthetic seed applied | BLOCKED | Requires real project ref approval, non-production target verification, hosted migration, and approved `psql`/SQL Editor execution of `supabase/seeds/r004_internal_online_mvp_uat.sql`. |
 
 ## Smoke Checks
 
@@ -61,6 +66,7 @@ This checklist separates local evidence from hosted evidence. Do not mark hosted
 | SEC-003 | Unauthorized deliverable/SLA access denies safely | BLOCKED | Requires hosted synthetic data. |
 | SEC-004 | Service role not exposed in browser | NOT RUN | Requires Preview URL. |
 | SEC-005 | No real client data in seed/screenshots | BLOCKED | Requires hosted synthetic data plan execution. |
+| SEC-006 | Seed refuses non-R-004 client/auth data | PASS | Seed guards abort when existing client/auth data is outside the approved synthetic R-004 fixture set. |
 
 ## UAT Checks
 
@@ -72,6 +78,7 @@ This checklist separates local evidence from hosted evidence. Do not mark hosted
 | UAT-004 | Deliverables | BLOCKED | Requires hosted migration/seed. |
 | UAT-005 | Commercial summaries | BLOCKED | Requires hosted migration/seed. |
 | UAT-006 | SLA MVP summaries | BLOCKED | Requires hosted migration/seed. |
+| UAT-007 | `paused_waiting_internal_decision` hosted persisted case | BLOCKED | Current accepted MVP has no persisted SLA segment table; covered by F-003 domain/unit evidence only until a future approved schema change. |
 
 ## Out Of Scope Confirmed
 

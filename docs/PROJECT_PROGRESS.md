@@ -8,13 +8,57 @@ Last updated: 2026-06-29
 |---|---|
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
-| Feature | F-003 SLA MVP Implementation |
-| Worktree | `D:\code - projects\sharik-worktrees\f003-sla-mvp-implementation` |
-| Branch | `codex/f003-sla-mvp-implementation` from PR #16 merge commit on `origin/main` |
-| Current allowed stage | Local F-003 SLA MVP foundation implementation and PR preparation only |
-| Status | PR #16 is merged; F-003 local implementation is limited to SLA MVP foundation; no production/staging migration or real client data |
-| Next gate | PR review for F-003 SLA MVP foundation before any hosted/staging migration, production usage, real client data, or expanded SLA engine |
-| Owner decision required | Required before marking F-002 production accepted, running hosted/staging migration, using production or real client data, adding persisted SLA engine/background jobs/workflow integrations, or expanding scope |
+| Feature | R-004 Internal Online MVP UAT |
+| Worktree | `D:\code - projects\sharik-worktrees\internal-online-mvp-uat` |
+| Branch | `codex/internal-online-mvp-uat` from PR #17 merge commit on `origin/main` |
+| Current allowed stage | Spec Kit, non-production UAT planning, local verification, and PR preparation only |
+| Status | PR #17 is merged; internal online UAT is documented and gated; no hosted Supabase migration, protected Preview deployment, Production usage, or real client data has been run in this branch |
+| Next gate | Owner review of the UAT plan and explicit approval before any hosted non-production Supabase migration |
+| Owner decision required | Required before hosted non-production Supabase migration, synthetic hosted seed, protected Preview deployment sharing, or marking hosted UAT checks as passed |
+
+## R-004 Internal Online MVP UAT Prep - 2026-06-29
+
+Scope prepared:
+
+- PR #17, `feat(F-003): implement SLA MVP foundation`, was merged into `main` before this branch started.
+- PR #17 merge commit verified: `6c406049203230c6b7e34eb0708bac0f82c981f8`.
+- Branch `codex/internal-online-mvp-uat` starts from `origin/main` after PR #17.
+- Spec Kit package created at `specs/004-internal-online-mvp-uat/`.
+- Release gate record created at `docs/08-release/R-004-internal-online-mvp-uat.md`.
+- Least internal online MVP UAT defined as protected Preview plus synthetic non-production data for accepted existing surfaces only.
+
+Gates and blockers:
+
+- Hosted non-production Supabase migration is `BLOCKED` until explicit owner approval names or confirms the non-production target and synthetic-only data policy.
+- Data-backed hosted UAT checks are `BLOCKED` until hosted migration and synthetic seed are approved and completed.
+- Protected Preview deployment is `BLOCKED`: Vercel CLI currently reports `omarhussien2`, and `vercel teams ls` shows only `omarhussien2s-projects`; the approved Samawah scope is not available in this session.
+- Local evidence remains separate from hosted UAT evidence.
+
+Local verification:
+
+- `git diff --check`: passed; line-ending warnings only.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `npm run test:unit`: passed, 23 files / 72 tests.
+- `npm run test:integration`: passed, 19 files / 76 tests.
+- `npm run test:rls`: passed; simulator 7 files / 21 tests and pgTAP 2 files / 110 tests.
+- `npm run test:component`: passed, 12 files / 39 tests.
+- `npm run test:e2e`: passed, 61 passed / 2 expected skips.
+- `npm run secret:scan`: passed, no high-confidence secrets found.
+- `npm audit --audit-level=high`: passed; existing moderate PostCSS advisory through Next remains.
+- `npm run build`: passed.
+
+Out of scope confirmed:
+
+- Production deployment.
+- Production Supabase usage.
+- Real client data.
+- New dependencies.
+- Product feature expansion.
+- Database schema changes in this branch.
+- Kanban, files, comments, approvals, social scheduling, AI, background jobs.
+- `RoleKey` changes or adding standalone `project_manager`.
+- Merging the UAT PR without review.
 
 ## F-003 SLA MVP Implementation PR Prep - 2026-06-29
 

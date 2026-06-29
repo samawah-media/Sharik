@@ -79,7 +79,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/002-deliverables-core/plan.md
+at specs/004-internal-online-mvp-uat/plan.md
 <!-- SPECKIT END -->
 
 أي اقتراح لا يخدم هذه العناصر يجب تأجيله أو توثيقه كخارج نطاق V1.

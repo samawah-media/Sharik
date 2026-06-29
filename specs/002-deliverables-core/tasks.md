@@ -121,17 +121,32 @@
 
 **Purpose**: Prove F-002 is reviewable without scope expansion or production data.
 
-- [ ] T045 [P] Run unit tests for package ledger, deliverable rules, permissions, and fixtures with `npm run test:unit`; Req: SC-002, SC-005, SC-006; Verification: all unit tests pass; Dependencies: T001-T007; Category: Verification
-- [ ] T046 [P] Run integration tests for contracts, packages, deliverables, cancellation, summaries, and audit/idempotency with `npm run test:integration`; Req: SC-001, SC-005, SC-006; Verification: all integration tests pass; Dependencies: T014, T020, T027, T034, T039; Category: Verification
-- [ ] T047 [P] Run RLS simulator and pgTAP database tests with `npm run test:rls`; Req: SC-003, NFR-002; Verification: cross-client and client-safe summary tests pass; Dependencies: T008-T013; Category: Verification
-- [ ] T048 [P] Run component tests for contract, package, deliverable, cancellation, and summary surfaces with `npm run test:component`; Req: UX-001 through UX-006; Verification: Arabic RTL, focus, loading, empty, and denied states pass; Dependencies: T015, T021, T028, T035, T041; Category: Verification
-- [ ] T049 Run Playwright E2E suite for F-002 quickstart scenarios with `npm run test:e2e`; Req: AC-001 through AC-010, SC-001 through SC-007; Verification: management/client summaries and direct URL denial pass; Dependencies: T040; Category: Verification
-- [ ] T050 Run quality gate `npm run typecheck`, `npm run lint`, `npm run secret:scan`, and `npm audit --audit-level=high`; Req: AGENTS.md Quality Gates, constitution No Secrets; Verification: zero type/lint/secret/high audit blockers; Dependencies: T045-T049; Category: Verification
-- [ ] T051 Update `specs/002-deliverables-core/quickstart.md` with local/staging evidence commands and pass/fail notes; Req: SC-001 through SC-007; Verification: evidence uses synthetic data only and no production Supabase; Dependencies: T045-T050; Category: Documentation
-- [ ] T052 [P] Add F-002 security/evidence review in `specs/002-deliverables-core/evidence/f002-security-review.md`; Req: SR-001 through SR-007; Verification: no CRITICAL/HIGH issues remain and no internal client leakage; Dependencies: T047, T050; Category: Documentation
-- [ ] T053 [P] Update traceability in this `specs/002-deliverables-core/tasks.md`; Req: constitution Traceability Requirement to Test; Verification: every FR/SR/contract/AC/entity maps to task/test/evidence; Dependencies: T001-T052; Category: Documentation
+- [x] T045 [P] Run unit tests for package ledger, deliverable rules, permissions, and fixtures with `npm run test:unit`; Req: SC-002, SC-005, SC-006; Verification: all unit tests pass; Dependencies: T001-T007; Category: Verification
+- [x] T046 [P] Run integration tests for contracts, packages, deliverables, cancellation, summaries, and audit/idempotency with `npm run test:integration`; Req: SC-001, SC-005, SC-006; Verification: all integration tests pass; Dependencies: T014, T020, T027, T034, T039; Category: Verification
+- [x] T047 [P] Run RLS simulator and pgTAP database tests with `npm run test:rls`; Req: SC-003, NFR-002; Verification: cross-client and client-safe summary tests pass; Dependencies: T008-T013; Category: Verification
+- [x] T048 [P] Run component tests for contract, package, deliverable, cancellation, and summary surfaces with `npm run test:component`; Req: UX-001 through UX-006; Verification: Arabic RTL, focus, loading, empty, and denied states pass; Dependencies: T015, T021, T028, T035, T041; Category: Verification
+- [x] T049 Run Playwright E2E suite for F-002 quickstart scenarios with `npm run test:e2e`; Req: AC-001 through AC-010, SC-001 through SC-007; Verification: management/client summaries and direct URL denial pass; Dependencies: T040; Category: Verification
+- [x] T050 Run quality gate `npm run typecheck`, `npm run lint`, `npm run secret:scan`, and `npm audit --audit-level=high`; Req: AGENTS.md Quality Gates, constitution No Secrets; Verification: zero type/lint/secret/high audit blockers; Dependencies: T045-T049; Category: Verification
+- [x] T051 Update `specs/002-deliverables-core/quickstart.md` with local/staging evidence commands and pass/fail notes; Req: SC-001 through SC-007; Verification: evidence uses synthetic data only and no production Supabase; Dependencies: T045-T050; Category: Documentation
+- [x] T052 [P] Add F-002 security/evidence review in `specs/002-deliverables-core/evidence/f002-security-review.md`; Req: SR-001 through SR-007; Verification: no CRITICAL/HIGH issues remain and no internal client leakage; Dependencies: T047, T050; Category: Documentation
+- [x] T053 [P] Update traceability in this `specs/002-deliverables-core/tasks.md`; Req: constitution Traceability Requirement to Test; Verification: every FR/SR/contract/AC/entity maps to task/test/evidence; Dependencies: T001-T052; Category: Documentation
 
 **Checkpoint 8**: F-002 is ready for review. Required result: all quality gates pass, no production usage, no real client data, no Kanban/files/comments/approvals/delivery/SLA engine/billing/social scheduling scope expansion.
+
+### F-002E Evidence Traceability - 2026-06-29
+
+This traceability update is for review readiness only. It does not expand scope and does not accept F-002 for production.
+
+| Evidence | Result | Requirement / contract coverage |
+|---|---:|---|
+| `npm run test:unit` | PASS, 22 files / 65 tests | Package ledger projection, deliverable status/progress and cancellation rules, approved-extra rules, permission catalog, fixtures; covers SC-002, SC-005, SC-006, SR-003, SR-006, entities Package Ledger Entry, Deliverable, Deliverable Allocation. |
+| `npm run test:integration` | PASS, 18 files / 73 tests | Contract/package/deliverable creation, package adjustment, reservation, cancellation release, safe summaries, audit failure rollback, idempotency; covers FR-001 through FR-019 and C-001 through C-008 through synthetic repository scenarios. |
+| Acceptance scenario mapping | PASS | AC-001 and AC-002 map to contract integration allow/deny/audit coverage; AC-003 and AC-004 map to package integration and ledger coverage; AC-005 and AC-006 map to deliverable creation/over-capacity integration coverage; AC-007 and AC-008 map to commercial summary integration, RLS, and E2E denial coverage; AC-009 and AC-010 map to cancellation/release integration coverage. |
+| `npm run test:rls` | PASS, simulator 7 files / 21 tests and pgTAP 2 files / 110 tests | Tenant/client isolation, safe summaries, raw commercial row denial, append-only audit/ledger expectations, direct unsafe write denial; covers SR-001 through SR-007, SC-003, NFR-002, and entities Contract, Package, Package Line, Package Ledger Entry, Deliverable, Deliverable Allocation, Audit Event. |
+| `npm run test:component` | PASS, 12 files / 39 tests | Arabic RTL forms, cancellation controls, safe summaries, empty/denied states, focus/loading states; covers UX-001 through UX-006 and client/internal leakage prevention expectations. |
+| `npm run test:e2e` | PASS, 61 passed / 2 skipped | Management/client commercial summary navigation, direct URL tampering denial, client/internal navigation boundaries across desktop, mobile, and RTL projects; covers AC-007, AC-008, SC-003, SC-004, and review-readiness coverage for F-002 quickstart flows without full production acceptance. |
+| `npm run typecheck`, `npm run lint`, `npm run secret:scan`, `npm audit --audit-level=high`, `npm run build` | PASS | AGENTS.md quality gates, no secrets, no HIGH/CRITICAL dependency blockers, buildability of contract/package/deliverable/commercial summary routes. |
+| `specs/002-deliverables-core/quickstart.md` and `specs/002-deliverables-core/evidence/f002-security-review.md` | UPDATED | Local evidence, staging status, no-production/no-real-data constraints, security review for tenant/client isolation, raw internal leakage prevention, audit/idempotency, direct unsafe writes, and CRITICAL/HIGH blocker status. |
 
 ## Dependencies & Execution Order
 

@@ -99,7 +99,50 @@ npm run test:component
 npm run test:e2e
 npm run secret:scan
 npm audit --audit-level=high
+npm run build
 ```
+
+## F-002E Local Evidence - 2026-06-29
+
+Evidence scope: local review-readiness verification only. This evidence does not accept F-002 in full and does not use hosted staging migration, production Supabase, production credentials, or real client data.
+
+Worktree and branch:
+
+```text
+D:\code - projects\shrek.platform-f002e
+codex/f002e-verification-evidence
+```
+
+Environment preparation:
+
+| Command | Result | Notes |
+|---|---:|---|
+| `npm ci` | PASS | Installed from committed `package-lock.json`; no dependency changes were made. |
+
+Local verification results:
+
+| Command | Result | Evidence summary |
+|---|---:|---|
+| `npm run test:unit` | PASS | 22 files / 65 tests. |
+| `npm run test:integration` | PASS | 18 files / 73 tests. |
+| `npm run test:rls` | PASS | RLS simulator 7 files / 21 tests; pgTAP 2 files / 110 tests. |
+| `npm run test:component` | PASS | 12 files / 39 tests. |
+| `npm run test:e2e` | PASS | 61 passed / 2 skipped across desktop, mobile, and RTL projects. |
+| `npm run typecheck` | PASS | TypeScript completed with exit 0. |
+| `npm run lint` | PASS | ESLint completed with exit 0 and `--max-warnings=0`. |
+| `npm run secret:scan` | PASS | No high-confidence secrets found. |
+| `npm audit --audit-level=high` | PASS | No HIGH/CRITICAL audit blockers; two moderate PostCSS advisories remain through Next.js and are outside this F-002E slice. |
+| `npm run build` | PASS | Next.js production build completed; routes include contract, package, deliverable, and commercial summary surfaces. |
+
+Staging evidence status:
+
+| Target | Result | Notes |
+|---|---:|---|
+| Owner-approved staging command set | NOT RUN | Use the same command list from Required Verification Commands against synthetic non-production staging data only after a separate approval. |
+| Hosted/non-production staging migration | NOT RUN | Out of scope for F-002E without owner approval. |
+| Production Supabase / real client data | NOT RUN | Explicitly prohibited for this evidence slice. |
+
+When a separate owner-approved staging gate exists, run the same verification commands against synthetic staging data only and record pass/fail results in a separate evidence update. Do not reuse this local evidence as production acceptance.
 
 ## Acceptance Evidence Checklist
 

@@ -95,3 +95,5 @@ export const createContractViaRpc = async ({
 
   return { ok: true as const, value: toContractSafeSummaryFromWriteRow(row) };
 };
+
+export type { ContractWriteRow };

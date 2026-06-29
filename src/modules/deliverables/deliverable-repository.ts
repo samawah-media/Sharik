@@ -109,11 +109,33 @@ export type DeliverableAllocationCreateInput = {
   reservationLedgerEntryId: string;
 };
 
+export type DeliverableCancelInput = {
+  tenantId: string;
+  clientId: string;
+  deliverableId: string;
+};
+
+export type DeliverableAllocationReleaseInput = {
+  tenantId: string;
+  clientId: string;
+  allocationId: string;
+  releaseLedgerEntryId: string;
+};
+
 export type DeliverableRepository = TransactionalResource & {
   create(input: DeliverableCreateInput): Promise<DeliverableRecord>;
   createAllocation(
     input: DeliverableAllocationCreateInput,
   ): Promise<DeliverableAllocationRecord>;
+  cancelNotStarted(input: DeliverableCancelInput): Promise<DeliverableRecord>;
+  releaseAllocation(
+    input: DeliverableAllocationReleaseInput,
+  ): Promise<DeliverableAllocationRecord>;
+  findByTenantClientAndId(
+    tenantId: string,
+    clientId: string,
+    deliverableId: string,
+  ): Promise<DeliverableRecord | undefined>;
   findByTenantAndIdempotencyKey(
     tenantId: string,
     idempotencyKey: string,
@@ -175,6 +197,65 @@ export class InMemoryDeliverableRepository implements DeliverableRepository {
 
     this.allocations.set(record.id, record);
     return record;
+  }
+
+  async cancelNotStarted(input: DeliverableCancelInput) {
+    const deliverable = this.deliverables.get(input.deliverableId);
+
+    if (
+      !deliverable ||
+      deliverable.tenantId !== input.tenantId ||
+      deliverable.clientId !== input.clientId
+    ) {
+      throw new Error("DELIVERABLE_NOT_FOUND");
+    }
+
+    const now = new Date().toISOString();
+    const updated: DeliverableRecord = {
+      ...deliverable,
+      status: "cancelled",
+      progressPercentage: 0,
+      cancelledAt: now,
+      updatedAt: now,
+      revision: deliverable.revision + 1,
+    };
+
+    this.deliverables.set(updated.id, updated);
+    return updated;
+  }
+
+  async releaseAllocation(input: DeliverableAllocationReleaseInput) {
+    const allocation = this.allocations.get(input.allocationId);
+
+    if (
+      !allocation ||
+      allocation.tenantId !== input.tenantId ||
+      allocation.clientId !== input.clientId
+    ) {
+      throw new Error("ALLOCATION_NOT_FOUND");
+    }
+
+    const updated: DeliverableAllocationRecord = {
+      ...allocation,
+      status: "released",
+      releaseLedgerEntryId: input.releaseLedgerEntryId,
+      releasedAt: new Date().toISOString(),
+    };
+
+    this.allocations.set(updated.id, updated);
+    return updated;
+  }
+
+  async findByTenantClientAndId(
+    tenantId: string,
+    clientId: string,
+    deliverableId: string,
+  ) {
+    const deliverable = this.deliverables.get(deliverableId);
+
+    return deliverable?.tenantId === tenantId && deliverable.clientId === clientId
+      ? deliverable
+      : undefined;
   }
 
   async findByTenantAndIdempotencyKey(

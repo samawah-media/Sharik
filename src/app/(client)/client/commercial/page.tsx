@@ -1,0 +1,114 @@
+import { evaluatePermission } from "@/modules/authorization/evaluator";
+import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  fixtureClientCommercialSummary,
+  readCommercialSummary,
+} from "@/server/actions/commercial-summary-read";
+import {
+  canUseRouteActorFixtures,
+  guardClientDetailRoute,
+  resolveRouteRuntime,
+} from "@/server/navigation/route-guards";
+import { ClientCommercialSummaryCards } from "@/ui/client/commercial-summary";
+import { RoleAwareNavigation } from "@/ui/navigation/role-aware-nav";
+import { resolveRoleAwareNavigation } from "@/modules/navigation/navigation-resolver";
+import {
+  AccessDeniedState,
+  MembershipDisabledState,
+  NoAssignedClientState,
+  SessionExpiredState,
+} from "@/ui/shared/access-states";
+
+export default async function ClientCommercialSummaryPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ as?: string }>;
+}) {
+  const params = await searchParams;
+  const runtime = await resolveRouteRuntime(
+    params?.as ?? (canUseRouteActorFixtures() ? "client_viewer_a" : undefined),
+  );
+
+  if (!runtime.ok) {
+    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") {
+      return <SessionExpiredState />;
+    }
+
+    if (runtime.reason === "membership_disabled") {
+      return <MembershipDisabledState returnHref="/sign-in" />;
+    }
+
+    return <AccessDeniedState returnHref="/sign-in" />;
+  }
+
+  const { actor, clients } = runtime;
+  const primaryClient = clients.find((client) =>
+    actor.roleAssignments.some(
+      (assignment) =>
+        assignment.status === "active" &&
+        assignment.scopeType === "client" &&
+        assignment.scopeId === client.id,
+    ),
+  );
+
+  if (!primaryClient) {
+    return <NoAssignedClientState returnHref="/sign-in" />;
+  }
+
+  const access = guardClientDetailRoute({
+    actor,
+    clientId: primaryClient.id,
+    clients,
+  });
+
+  if (!access.allowed) {
+    return <AccessDeniedState />;
+  }
+
+  const canViewSummary =
+    evaluatePermission({
+      actor,
+      permission: PERMISSIONS.CONTRACT_VIEW,
+      resource: { tenantId: primaryClient.tenantId, clientId: primaryClient.id },
+    }).allowed &&
+    evaluatePermission({
+      actor,
+      permission: PERMISSIONS.LEDGER_VIEW_SUMMARY,
+      resource: { tenantId: primaryClient.tenantId, clientId: primaryClient.id },
+    }).allowed;
+
+  if (!canViewSummary) {
+    return <AccessDeniedState />;
+  }
+
+  const navigation = resolveRoleAwareNavigation({
+    actor,
+    assignedClients: clients.filter((client) => client.id === primaryClient.id),
+  });
+  const summary = canUseRouteActorFixtures()
+    ? { ok: true as const, value: fixtureClientCommercialSummary }
+    : await readCommercialSummary({
+        supabase: await createSupabaseServerClient(),
+        tenantId: primaryClient.tenantId,
+        clientId: primaryClient.id,
+        audience: "client",
+      });
+
+  if (!summary.ok || summary.value.audience !== "client") {
+    return <AccessDeniedState />;
+  }
+
+  return (
+    <>
+      <RoleAwareNavigation items={navigation.items} label="تنقل بوابة العميل" />
+      <main className="mx-auto grid w-full max-w-4xl gap-5 px-4 py-8" dir="rtl">
+        <div>
+          <h1 className="text-2xl font-semibold">ملخص الباقة</h1>
+          <p className="mt-2 text-sm text-muted">{primaryClient.name}</p>
+        </div>
+        <ClientCommercialSummaryCards summary={summary.value} />
+      </main>
+    </>
+  );
+}

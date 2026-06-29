@@ -12,6 +12,7 @@ import {
   type DeliverableAllocationRow,
   type DeliverableWriteRow,
 } from "@/server/actions/deliverable-write-rpc";
+import { cancelNotStartedDeliverableAction } from "@/server/actions/deliverable-cancellations";
 import {
   DeliverableDeniedState,
   DeliverableEmptyState,
@@ -170,6 +171,16 @@ export default async function ClientDeliverablesPage({
           {query?.saved === "extra-created" ? (
             <p className="mt-2 text-sm text-success">تم حفظ المخرج الإضافي.</p>
           ) : null}
+          {query?.saved === "cancelled" ? (
+            <p className="mt-2 text-sm text-success">
+              تم إلغاء المخرج وإرجاع السعة المحجوزة.
+            </p>
+          ) : null}
+          {query?.saved === "denied" ? (
+            <p className="mt-2 text-sm text-danger">
+              تعذر تنفيذ الطلب بأمان.
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
           {canCreateDeliverables ? (
@@ -191,7 +202,10 @@ export default async function ClientDeliverablesPage({
         </div>
       </div>
       {deliverableList.deliverables.length > 0 ? (
-        <DeliverableList deliverables={deliverableList.deliverables} />
+        <DeliverableList
+          cancellationAction={cancelNotStartedDeliverableAction}
+          deliverables={deliverableList.deliverables}
+        />
       ) : (
         <DeliverableEmptyState />
       )}

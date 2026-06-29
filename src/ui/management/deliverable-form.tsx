@@ -8,6 +8,7 @@ import {
   type DeliverableFormState,
 } from "@/modules/deliverables/deliverable-form-state";
 import type { PackageLineSafeSummary } from "@/modules/packages/package-repository";
+import { DeliverableCancellationControl } from "./deliverable-actions";
 
 type DeliverableFormAction = (
   previousState: DeliverableFormState,
@@ -361,8 +362,10 @@ export function DeliverableForm({
 
 export function DeliverableList({
   deliverables,
+  cancellationAction,
 }: {
   deliverables: DeliverableSafeSummary[];
+  cancellationAction?: (formData: FormData) => void | Promise<void>;
 }) {
   return (
     <section aria-label="قائمة المخرجات" className="grid gap-3" dir="rtl">
@@ -390,6 +393,11 @@ export function DeliverableList({
             ) : null}
             {deliverable.approvedExtra ? <span>إضافي معتمد</span> : null}
           </div>
+          <DeliverableCancellationControl
+            action={cancellationAction}
+            deliverable={deliverable}
+            idempotencyKey={`f002d-cancel-${deliverable.id}`}
+          />
         </article>
       ))}
     </section>

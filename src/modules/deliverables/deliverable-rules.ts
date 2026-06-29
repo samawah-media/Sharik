@@ -21,7 +21,11 @@ export type CancellationDecision =
   | { allowed: true }
   | {
       allowed: false;
-      reason: "deliverable_already_cancelled" | "deliverable_already_progressed";
+      reason:
+        | "deliverable_already_cancelled"
+        | "deliverable_already_progressed"
+        | "expected_state_mismatch"
+        | "reservation_not_available";
     };
 
 const progressByStatus: Record<DeliverableLifecycleStatus, number> = {

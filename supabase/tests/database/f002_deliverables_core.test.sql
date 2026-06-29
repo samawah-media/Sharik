@@ -4,7 +4,7 @@ create extension if not exists pgtap with schema extensions;
 
 set search_path = public, extensions;
 
-select plan(63);
+select plan(73);
 
 grant usage on schema public to authenticated;
 grant select on public.tenants to authenticated;
@@ -129,6 +129,13 @@ select ok(
     'public.f002_create_approved_extra_deliverable(uuid, uuid, uuid, text, text, text, text, uuid, uuid[], date, date, date, date, boolean, boolean, text, text)'
   ) is not null,
   'F-002C exposes a reviewed approved extra deliverable RPC'
+);
+
+select ok(
+  to_regprocedure(
+    'public.f002_cancel_not_started_deliverable(uuid, uuid, uuid, uuid, text, text, integer, text)'
+  ) is not null,
+  'F-002D exposes a reviewed not-started cancellation RPC'
 );
 
 insert into public.tenants (id, name)
@@ -973,6 +980,169 @@ select throws_ok(
   '42501',
   'not authorized',
   'account manager cannot create approved extra deliverables'
+);
+
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '01000000-0000-4000-8000-000000000202', true);
+
+select is(
+  (
+    select status
+    from public.f002_cancel_not_started_deliverable(
+      '05000000-0000-4000-8000-000000000010',
+      '06000000-0000-4000-8000-000000000040',
+      '09000000-0000-4000-8000-000000000042',
+      '01000000-0000-4000-8000-000000000301',
+      'Cancel before execution',
+      'not_started',
+      1,
+      'f002d-cancel-deliverable-client-a'
+    )
+  ),
+  'cancelled',
+  'account manager can cancel a not-started reserved deliverable'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.package_ledger_entries
+    where deliverable_id = '05000000-0000-4000-8000-000000000010'
+      and entry_type = 'reservation_released'
+      and idempotency_key = 'f002d-cancel-deliverable-client-a:reservation_release'
+  ),
+  1,
+  'not-started cancellation appends exactly one reservation_released ledger entry'
+);
+
+select is(
+  (
+    select status
+    from public.deliverable_allocations
+    where deliverable_id = '05000000-0000-4000-8000-000000000010'
+  ),
+  'released',
+  'not-started cancellation marks the allocation released'
+);
+
+select set_config('request.jwt.claim.sub', '01000000-0000-4000-8000-000000000201', true);
+
+select is(
+  (
+    select count(*)::integer
+    from public.audit_events
+    where action = 'DeliverableCancelled'
+      and decision = 'allowed'
+      and target_id = '05000000-0000-4000-8000-000000000010'
+  ),
+  1,
+  'not-started cancellation records an allowed audit event'
+);
+
+select set_config('request.jwt.claim.sub', '01000000-0000-4000-8000-000000000202', true);
+
+select is(
+  (
+    select status
+    from public.f002_cancel_not_started_deliverable(
+      '05000000-0000-4000-8000-000000000010',
+      '06000000-0000-4000-8000-000000000041',
+      '09000000-0000-4000-8000-000000000043',
+      '01000000-0000-4000-8000-000000000301',
+      'Repeated cancel retry',
+      'not_started',
+      1,
+      'f002d-cancel-deliverable-client-a'
+    )
+  ),
+  'cancelled',
+  'not-started cancellation retry returns the existing cancelled deliverable'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.package_ledger_entries
+    where deliverable_id = '05000000-0000-4000-8000-000000000010'
+      and entry_type = 'reservation_released'
+  ),
+  1,
+  'not-started cancellation retry does not duplicate release ledger entries'
+);
+
+select set_config('request.jwt.claim.sub', '01000000-0000-4000-8000-000000000201', true);
+
+select lives_ok(
+  $$
+    select *
+    from public.f002_create_deliverable_reservation(
+      '05000000-0000-4000-8000-000000000040',
+      '07000000-0000-4000-8000-000000000040',
+      '06000000-0000-4000-8000-000000000042',
+      '09000000-0000-4000-8000-000000000044',
+      '01000000-0000-4000-8000-000000000301',
+      '02000000-0000-4000-8000-000000000001',
+      '03000000-0000-4000-8000-000000000001',
+      '04000000-0000-4000-8000-000000000001',
+      'Progressed Cancellation Denied',
+      null,
+      'post',
+      'normal',
+      null,
+      '{}'::uuid[],
+      null,
+      null,
+      null,
+      null,
+      true,
+      true,
+      1,
+      'f002d-progressed-deliverable-setup'
+    )
+  $$,
+  'setup deliverable for progressed cancellation denial'
+);
+
+reset role;
+update public.deliverables
+set status = 'in_progress', progress_percentage = 30, revision = revision + 1
+where id = '05000000-0000-4000-8000-000000000040';
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '01000000-0000-4000-8000-000000000202', true);
+
+select is(
+  (
+    select count(*)::integer
+    from public.f002_cancel_not_started_deliverable(
+      '05000000-0000-4000-8000-000000000040',
+      '06000000-0000-4000-8000-000000000043',
+      '09000000-0000-4000-8000-000000000045',
+      '01000000-0000-4000-8000-000000000301',
+      'Unsafe progressed cancellation',
+      'not_started',
+      1,
+      'f002d-progressed-cancel-denied'
+    )
+  ),
+  0,
+  'progressed deliverable cancellation returns no deliverable'
+);
+
+select set_config('request.jwt.claim.sub', '01000000-0000-4000-8000-000000000201', true);
+
+select is(
+  (
+    select reason
+    from public.audit_events
+    where action = 'DeliverableCancellationDenied'
+      and target_id = '05000000-0000-4000-8000-000000000040'
+    order by occurred_at desc
+    limit 1
+  ),
+  'deliverable_already_progressed',
+  'progressed deliverable cancellation records a safe denial audit reason'
 );
 
 reset role;

@@ -75,7 +75,19 @@ export const createApprovedExtraDeliverableSchema = deliverableBaseSchema.extend
   extraReason: z.string().trim().min(3).max(500),
 });
 
+export const cancelNotStartedDeliverableSchema = z.object({
+  clientId: z.string().trim().min(1),
+  deliverableId: z.string().trim().min(1),
+  expectedStatus: z.literal("not_started").optional(),
+  expectedRevision: z.coerce.number().int().positive().optional(),
+  reason: z.string().trim().min(3).max(500),
+  idempotencyKey: z.string().trim().min(8).max(120),
+});
+
 export type CreateDeliverableInput = z.infer<typeof createDeliverableSchema>;
 export type CreateApprovedExtraDeliverableInput = z.infer<
   typeof createApprovedExtraDeliverableSchema
+>;
+export type CancelNotStartedDeliverableInput = z.infer<
+  typeof cancelNotStartedDeliverableSchema
 >;

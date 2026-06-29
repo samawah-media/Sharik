@@ -1,6 +1,6 @@
 # Project Progress
 
-Last updated: 2026-06-28
+Last updated: 2026-06-29
 
 ## Current Execution Gate
 
@@ -9,12 +9,57 @@ Last updated: 2026-06-28
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
 | Feature | F-002 Deliverables Core |
-| Worktree | `D:\code - projects\sharik-worktrees\f002c-deliverable-reservation` |
-| Branch | `codex/f002c-deliverable-reservation` from `main` after PR #10 merge |
-| Current allowed stage | F-002C Deliverable Creation and Package Reservation only |
-| Status | F-002C Deliverable Creation and Package Reservation locally verified; PR ready to open |
-| Next gate | Review and merge F-002C only before F-002D reservation release or later F-002 slices |
-| Owner decision required | Required before hosted staging migration, production usage, real data, cancellation/reservation release, safe summaries, Kanban, files, comments, approvals, SLA engine, or scope expansion |
+| Worktree | `D:\code - projects\shrek.platform-f002d` |
+| Branch | `codex/f002d-reservation-release-summaries` from `main` after PR #11 merge |
+| Current allowed stage | F-002D Reservation Release and Scope-Safe Summaries only |
+| Status | F-002D Reservation Release and Scope-Safe Summaries locally verified; PR ready to open |
+| Next gate | Review and merge F-002D only before F-002E verification/evidence or later F-002 slices |
+| Owner decision required | Required before hosted staging migration, production usage, real data, Kanban, files, comments, approvals, SLA engine, F-002 full acceptance, or scope expansion |
+
+## F-002D Reservation Release and Scope-Safe Summaries - 2026-06-29
+
+Scope implemented:
+
+- PR #11 / F-002C Deliverable Creation and Package Reservation was merged into `main` before starting F-002D.
+- Not-started deliverable cancellation eligibility, safe cancellation command, server action, and Arabic RTL cancellation control rendered only for eligible reserved `not_started` deliverables.
+- Reservation release through the reviewed command/RPC path with actor authorization, tenant/client/contract/package/package-line validation, expected status/revision checks, idempotency key handling, append-only `reservation_released` package ledger entry, released allocation status, and audit events.
+- Safe denial handling for progressed, invalid, stale, unreserved, and cross-scope cancellation attempts without leaking internal implementation details.
+- Management and client commercial summary read models and Arabic RTL summary cards/pages.
+- Deliverable safe summary read model for management/client-safe presentation.
+- RLS simulator and pgTAP coverage for safe summary access and direct raw-row denial expectations.
+
+Owner decision applied:
+
+- For F-002D only, `project_manager` authority continues to be represented by existing `tenant_administrator` authority where management authority is needed.
+- `project_manager` was not added to `RoleKey`.
+- No new dependency, ADR, hosted migration, production migration, real client data, Kanban, files, comments, approvals, or SLA engine was introduced.
+
+Verification:
+
+- `npm run lint`: passed.
+- `npm run typecheck`: passed.
+- `npm run test:unit`: passed, 22 files / 65 tests.
+- `npm run test:integration`: passed, 18 files / 73 tests.
+- `npm run test:rls`: passed; simulator 7 files / 21 tests and pgTAP 2 files / 110 tests.
+- `npm run test:component`: passed, 12 files / 39 tests.
+- `npm run secret:scan`: passed, no high-confidence secrets found.
+- `npm run build`: passed; routes include `/clients/[clientId]/commercial` and `/client/commercial`.
+- Targeted `npm run test:e2e -- tests/e2e/commercial/commercial-summary.spec.ts`: passed, 9 tests across desktop, mobile, and RTL projects.
+- `npx supabase@2.107.0 db reset --local --no-seed`: passed after applying the F-002D migration locally.
+
+Out of scope confirmed:
+
+- F-002 full acceptance.
+- Kanban.
+- Files.
+- Comments.
+- Approvals.
+- SLA engine.
+- Hosted migration.
+- Production usage.
+- Real client data.
+- Dependency changes.
+- `RoleKey` changes or adding `project_manager` as a standalone role.
 
 ## F-002C Deliverable Creation and Package Reservation - 2026-06-28
 

@@ -287,4 +287,47 @@ export const createApprovedExtraDeliverableViaRpc = async ({
   return { ok: true as const, value: toDeliverableRecordFromWriteRow(row) };
 };
 
+export const cancelNotStartedDeliverableViaRpc = async ({
+  supabase,
+  input,
+}: {
+  supabase: SupabaseClient;
+  input: {
+    deliverableId: string;
+    releaseLedgerEntryId: string;
+    auditEventId: string;
+    clientId: string;
+    reason: string;
+    expectedStatus: "not_started";
+    expectedRevision: number | null;
+    idempotencyKey: string;
+  };
+}) => {
+  const { data, error } = await supabase.rpc(
+    "f002_cancel_not_started_deliverable",
+    {
+      target_deliverable_id: input.deliverableId,
+      release_ledger_entry_id: input.releaseLedgerEntryId,
+      audit_event_id: input.auditEventId,
+      target_client_id: input.clientId,
+      cancellation_reason: input.reason,
+      expected_status: input.expectedStatus,
+      expected_revision: input.expectedRevision,
+      idempotency_key: input.idempotencyKey,
+    },
+  );
+
+  if (error) {
+    return { ok: false as const, error };
+  }
+
+  const row = selectSingleRow(data);
+
+  if (!row) {
+    return { ok: false as const, error: { code: "PGRST116" } };
+  }
+
+  return { ok: true as const, value: toDeliverableRecordFromWriteRow(row) };
+};
+
 export type { DeliverableAllocationRow, DeliverableWriteRow };

@@ -26,7 +26,8 @@ export type TenantSelectPolicy =
   | "client_basics_select_authorized_scope"
   | "invitation_select_tenant_management"
   | "commercial_raw_select_management_or_assigned"
-  | "commercial_ledger_select_management_or_account_manager";
+  | "commercial_ledger_select_management_or_account_manager"
+  | "commercial_safe_summary_select_authorized_scope";
 
 export type TenantInsertPolicy =
   | "audit_insert_own_tenant"
@@ -111,6 +112,34 @@ export const canSelectTenantScopedRow = ({
           row,
           roleKeys: ["account_manager"],
         }),
+    );
+  }
+
+  if (policy === "commercial_safe_summary_select_authorized_scope") {
+    const hasClientMembership = Boolean(row.clientId) &&
+      actor.clientMemberships?.some(
+        (membership) =>
+          membership.userId === actor.userId &&
+          membership.tenantId === row.tenantId &&
+          membership.clientId === row.clientId &&
+          isActive(membership.status),
+      );
+
+    return Boolean(
+      hasTenantManagement ||
+        hasActiveClientRole({
+          actor,
+          row,
+          roleKeys: [
+            "account_manager",
+            "content_writer",
+            "designer",
+            "client_admin",
+            "client_approver",
+            "client_viewer",
+          ],
+        }) ||
+        hasClientMembership,
     );
   }
 

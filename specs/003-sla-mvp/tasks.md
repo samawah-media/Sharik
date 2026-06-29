@@ -18,7 +18,7 @@
 
 **Purpose**: Confirm the F-003 SLA MVP scope is ready for owner review before implementation.
 
-- [ ] T001 Review `specs/003-sla-mvp/spec.md` with the owner and confirm F-003 remains SLA MVP only; Req: FR-001 through FR-011; Verification: explicit owner review note; Dependencies: PR #15 merged; Category: Spec Gate
+- [ ] T001 Review `specs/003-sla-mvp/spec.md` with the owner and confirm F-003 remains SLA MVP only; Req: FR-001 through FR-013; Verification: explicit owner review note; Dependencies: PR #15 merged; Category: Spec Gate
 - [ ] T002 Review `specs/003-sla-mvp/plan.md` for AGENTS.md compliance and confirm no implementation is authorized; Req: Included Scope and Excluded Scope; Verification: no migration, dependency, or code work approved by this task; Dependencies: T001; Category: Spec Gate
 - [ ] T003 Review `specs/003-sla-mvp/quickstart.md` and confirm all scenarios use synthetic local or non-production data only; Req: SR-001 through SR-005; Verification: quickstart scenarios require no production or real client data; Dependencies: T001; Category: Spec Gate
 
@@ -28,8 +28,8 @@
 
 **Purpose**: Capture the next planning steps that must happen in a later owner-approved PR before code.
 
-- [ ] T004 [P] Expand future SLA data model planning in `specs/003-sla-mvp/plan.md`; Req: FR-002, FR-003, FR-007; Verification: due-date, pause segment, and audit boundaries are fully specified; Dependencies: owner approval to continue planning; Category: Planning
-- [ ] T005 [P] Expand future test matrix in `specs/003-sla-mvp/quickstart.md`; Req: SC-001 through SC-005; Verification: on-track, at-risk, overdue, pause, resume, and scoped visibility scenarios are mapped to future evidence; Dependencies: owner approval to continue planning; Category: Future Verification
+- [ ] T004 [P] Expand future SLA data model planning in `specs/003-sla-mvp/plan.md`; Req: FR-002, FR-003, FR-007, FR-012, FR-013; Verification: due-date, deterministic owner-approved at-risk threshold, pause segment, internal-decision pause, and audit boundaries are fully specified; Dependencies: owner approval to continue planning; Category: Planning
+- [ ] T005 [P] Expand future test matrix in `specs/003-sla-mvp/quickstart.md`; Req: SC-001 through SC-007; Verification: on-track, deterministic owner-approved at-risk threshold, overdue, client-waiting pause, internal-decision pause, resume, and scoped visibility scenarios are mapped to future evidence; Dependencies: owner approval to continue planning; Category: Future Verification
 - [ ] T006 Draft a later implementation task breakdown in `specs/003-sla-mvp/tasks.md`; Req: all F-003 requirements; Verification: tasks include tests first and exact file paths before any code starts; Dependencies: F-002 owner gate and F-003 spec approval; Category: Planning
 
 **Checkpoint 2**: A later PR can turn the scaffold into executable implementation tasks only after owner approval.

@@ -103,9 +103,10 @@ Browser-supplied tenant/client/deliverable identifiers must not be trusted as au
 The MVP specification uses these business boundaries:
 
 - Active Samawah-owned work can be `on_track`, `at_risk`, or `overdue`.
+- `at_risk` must use a deterministic, documented, owner-approved threshold policy before any implementation starts.
 - Client-waiting work must be `paused_waiting_client`.
 - Client waiting time must not count against Samawah delay.
-- Internal-decision waiting can be represented by `paused_waiting_internal_decision` where applicable.
+- Internal-decision waiting can be represented by `paused_waiting_internal_decision` where applicable, but it must remain distinct from `paused_waiting_client` and must not be attributed as client delay.
 - Completion and cancellation stop active SLA delay.
 - Pause and resume events must be explainable by audit expectations.
 
@@ -113,7 +114,8 @@ The MVP specification uses these business boundaries:
 
 - Exact persisted data shape for SLA segments.
 - Exact management UI placement for SLA status.
-- Exact at-risk threshold policy.
+- Exact owner-approved at-risk threshold policy.
+- Exact internal-decision pause policy and its effect on Samawah running time.
 - Exact relationship between future approval workflow states and SLA pause/resume.
 - Exact migration/RLS details.
 - Exact tests and evidence files for implementation.

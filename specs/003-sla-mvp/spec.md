@@ -19,7 +19,9 @@ This specification intentionally stops before implementation. It does not add an
 - F-002 is review-ready only and is not production accepted unless explicit written owner approval exists.
 - F-003 in this branch is Spec Kit preparation only.
 - SLA must be based on timeline/state boundaries, not a mutable manual counter.
+- The `at_risk` threshold must be deterministic, documented, and owner-approved before any implementation starts.
 - `paused_waiting_client` is mandatory for any client-waiting period.
+- `paused_waiting_internal_decision` remains a distinct SLA pause status, must not be conflated with `paused_waiting_client`, and must not be attributed as client delay.
 - Client waiting time must be excluded from Samawah delay calculations.
 - Pause/resume decisions require audit expectations.
 - Management must be able to see SLA status for scoped deliverables.
@@ -38,9 +40,10 @@ As a management user, I want every scoped deliverable to have a clear SLA status
 **Acceptance Scenarios**:
 
 1. **Given** a deliverable is active and before its risk boundary, **When** management views its SLA state, **Then** the status is `on_track`.
-2. **Given** a deliverable is active and approaching its due boundary, **When** management views its SLA state, **Then** the status is `at_risk`.
+2. **Given** a deliverable is active and inside the owner-approved at-risk threshold, **When** management views its SLA state, **Then** the status is `at_risk`.
 3. **Given** a deliverable is active and past the applicable due boundary, **When** management views its SLA state, **Then** the status is `overdue`.
 4. **Given** a deliverable is completed or cancelled, **When** management views its SLA state, **Then** the status is `completed` or `cancelled` and no active Samawah delay continues to accrue.
+5. **Given** a deliverable is explicitly paused for an internal management decision in a future approved workflow, **When** management views its SLA state, **Then** the status is `paused_waiting_internal_decision` and it remains separate from client waiting time.
 
 ---
 
@@ -80,13 +83,14 @@ As a management user, I want to see SLA status on scoped deliverables so that I 
 | ID | Scenario | Actor | Expected Decision | Audit Expectation | Scope Requirement |
 |---|---|---|---|---|---|
 | AC-001 | Active deliverable before risk boundary | Management | `on_track` | No manual override required | Tenant/client scoped |
-| AC-002 | Active deliverable near due boundary | Management | `at_risk` | Evaluation basis is explainable | Tenant/client scoped |
+| AC-002 | Active deliverable inside owner-approved at-risk threshold | Management | `at_risk` | Evaluation basis is explainable | Tenant/client scoped |
 | AC-003 | Active deliverable past due boundary | Management | `overdue` | Evaluation basis is explainable | Tenant/client scoped |
 | AC-004 | Client-waiting deliverable | Management | `paused_waiting_client` | Pause expectation recorded | Tenant/client scoped |
 | AC-005 | Client waiting period in delay summary | Management | Client time excluded from Samawah delay | Pause segment explains exclusion | Tenant/client scoped |
 | AC-006 | Client change request or return to Samawah work | Management | SLA resumes from resume boundary | Resume expectation recorded | Tenant/client scoped |
 | AC-007 | Management scoped list | Management | SLA status visible | Internal audit remains protected | Allowed client scope only |
 | AC-008 | Unauthorized SLA access | Unauthorized actor | Deny/not found | Sensitive denial eligible | No resource enumeration |
+| AC-009 | Internal decision pause | Management | `paused_waiting_internal_decision` | Pause expectation recorded | Tenant/client scoped |
 
 ## Edge Cases
 
@@ -94,6 +98,7 @@ As a management user, I want to see SLA status on scoped deliverables so that I 
 - A deliverable has an internal due date after its client/final due date.
 - A deliverable enters client waiting when it was already overdue.
 - A deliverable returns from client waiting after the original due date.
+- A deliverable is paused for an internal decision while not waiting on client action.
 - A deliverable is cancelled while paused.
 - A deliverable is completed while paused.
 - Multiple pause/resume cycles occur on the same deliverable.
@@ -115,6 +120,8 @@ As a management user, I want to see SLA status on scoped deliverables so that I 
 - **FR-009**: Unauthorized users MUST NOT be able to view or infer another client's SLA status or deliverable existence.
 - **FR-010**: Client-facing surfaces are not expanded by this MVP; if any later client view reuses SLA data, it MUST hide internal audit reasoning and management-only delay details.
 - **FR-011**: This feature MUST NOT implement an SLA engine, background jobs, migrations, dependencies, Kanban, files, comments, approvals, hosted migration, production usage, real client data, `RoleKey` changes, or a standalone `project_manager` role.
+- **FR-012**: If a future approved workflow uses `paused_waiting_internal_decision`, it MUST remain distinct from `paused_waiting_client`, MUST NOT be attributed as client waiting or client delay, be tenant/client scoped, and carry pause/resume audit expectations.
+- **FR-013**: The `at_risk` threshold policy MUST be deterministic, documented, and owner-approved before any F-003 implementation starts.
 
 ### Security And Audit Requirements
 
@@ -138,6 +145,7 @@ As a management user, I want to see SLA status on scoped deliverables so that I 
 - SLA status foundation.
 - Due-date field meaning and status calculation boundaries.
 - `paused_waiting_client`.
+- `paused_waiting_internal_decision` as a distinct status expectation only.
 - Pause/resume audit expectations.
 - Excluding client waiting time from Samawah delay.
 - Management-visible SLA status.
@@ -171,12 +179,14 @@ As a management user, I want to see SLA status on scoped deliverables so that I 
 - **SC-003**: `paused_waiting_client` is explicitly required wherever a deliverable waits on client action.
 - **SC-004**: Management-visible SLA status is specified without adding client-facing workflow scope.
 - **SC-005**: The out-of-scope list blocks SLA engine, background jobs, migrations, dependencies, hosted migration, production usage, and real client data for this PR.
+- **SC-006**: Internal decision pause is distinguished from client waiting so future implementation cannot attribute internal waiting to the client.
+- **SC-007**: The `at_risk` threshold cannot be implemented until reviewers can find its deterministic, documented, owner-approved policy.
 
 ## Traceability
 
 | Story | Requirement IDs | Security IDs | Evidence target |
 |---|---|---|---|
-| US-1 SLA status foundation | FR-001, FR-002, FR-003 | SR-001 | Future unit/domain and management summary tests |
+| US-1 SLA status foundation | FR-001, FR-002, FR-003, FR-012, FR-013 | SR-001, SR-003 | Future unit/domain and management summary tests |
 | US-2 Client waiting pause/resume | FR-004, FR-005, FR-006, FR-007 | SR-003, SR-004 | Future pause/resume and audit tests |
 | US-3 Management-visible status | FR-008, FR-009, FR-010 | SR-001, SR-002, SR-005 | Future scoped read and visibility tests |
 | Scope guard | FR-011 | SR-001 through SR-005 | This documentation-only PR |

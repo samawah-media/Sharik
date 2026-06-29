@@ -2,46 +2,60 @@
 
 **Input**: Design documents from `specs/003-sla-mvp/`
 
-**Prerequisites**: `spec.md`, `plan.md`, `quickstart.md`, `AGENTS.md`, `.specify/memory/constitution.md`, F-002 owner review gate.
+**Prerequisites**: `spec.md`, `plan.md`, `quickstart.md`, `AGENTS.md`, `.specify/memory/constitution.md`, PR #16 merged to `main`, owner approval to open F-003 SLA MVP implementation.
 
-**Status**: Initial Spec Kit task scaffold only. No F-003 implementation tasks are executed by this PR.
+**Status**: Implementation-ready F-003 SLA MVP task list.
 
-**Scope Guard**: This PR must not implement F-003. It must not add an SLA engine, background jobs, migrations, dependencies, Kanban, files, comments, approvals, hosted/staging migration, production usage, real client data, `RoleKey` changes, or a standalone `project_manager` role.
+**Scope Guard**: This branch may implement SLA MVP foundation only. It must not add background jobs, production/staging migrations, dependencies, Kanban, files, comments, approvals workflow, hosted/staging migration, production usage, real client data, `RoleKey` changes, or a standalone `project_manager` role.
 
-**Tests**: No product tests are added in this documentation-only PR. Future implementation must add tests before sensitive SLA logic.
+**At-Risk Policy**: Owner-approved F-003 MVP threshold is deterministic: active Samawah-owned work becomes `at_risk` when an applicable due boundary exists, `now` is before that boundary, and remaining calendar time is less than or equal to 24 hours. Date-only due dates are normalized to the end of that UTC calendar day for deterministic local tests. Tenant/type/business-calendar thresholds are deferred.
 
 **Task Format**: `- [ ] T### [P?] [Story?] Description with file path; Req; Verification; Dependencies; Category`
 
-**Categories**: Spec Gate, Planning, Future Verification.
+## Phase 1: Context And Task Readiness
 
-## Phase 1: Spec Gate Closure
+**Purpose**: Confirm gate context and convert the PR #16 scaffold into implementation-ready tasks before code.
 
-**Purpose**: Confirm the F-003 SLA MVP scope is ready for owner review before implementation.
+- [X] T001 Confirm PR #16 is merged on `origin/main` and branch `codex/f003-sla-mvp-implementation` starts from latest `origin/main`; Req: FR-011; Verification: git log/status evidence; Dependencies: none; Category: Spec Gate
+- [X] T002 Update `specs/003-sla-mvp/spec.md`, `plan.md`, `tasks.md`, and `quickstart.md` with implementation scope and deterministic `at_risk` policy; Req: FR-001 through FR-013, SC-001 through SC-007; Verification: docs show allowed and excluded scope; Dependencies: T001; Category: Planning
 
-- [ ] T001 Review `specs/003-sla-mvp/spec.md` with the owner and confirm F-003 remains SLA MVP only; Req: FR-001 through FR-013; Verification: explicit owner review note; Dependencies: PR #15 merged; Category: Spec Gate
-- [ ] T002 Review `specs/003-sla-mvp/plan.md` for AGENTS.md compliance and confirm no implementation is authorized; Req: Included Scope and Excluded Scope; Verification: no migration, dependency, or code work approved by this task; Dependencies: T001; Category: Spec Gate
-- [ ] T003 Review `specs/003-sla-mvp/quickstart.md` and confirm all scenarios use synthetic local or non-production data only; Req: SR-001 through SR-005; Verification: quickstart scenarios require no production or real client data; Dependencies: T001; Category: Spec Gate
+## Phase 2: Domain Tests First
 
-**Checkpoint 1**: F-003 has a reviewed specification gate, but implementation remains blocked.
+**Purpose**: Lock down sensitive SLA math before implementation.
 
-## Phase 2: Future Implementation Planning Placeholder
+- [X] T003 [P] Add unit tests in `tests/unit/sla/sla-policy.test.ts` for `on_track`, deterministic `at_risk`, `overdue`, terminal `completed/cancelled`, and due-date boundary selection; Req: FR-001, FR-002, FR-003, FR-013; Verification: `npm run test:unit`; Dependencies: T002; Category: Tests
+- [X] T004 [P] Add unit tests in `tests/unit/sla/sla-policy.test.ts` for `paused_waiting_client`, `paused_waiting_internal_decision`, Samawah/client/internal delay attribution, and pause/resume audit event shape; Req: FR-004, FR-005, FR-006, FR-007, FR-012, SC-002, SC-003, SC-006; Verification: `npm run test:unit`; Dependencies: T002; Category: Tests
+- [X] T005 Add integration tests in `tests/integration/sla/management-sla-summary.test.ts` for management scoped SLA visibility, same-tenant/cross-tenant denial, and denial audit representation; Req: FR-008, FR-009, FR-010, SR-001, SR-002, SR-005; Verification: `npm run test:integration`; Dependencies: T002; Category: Tests
 
-**Purpose**: Capture the next planning steps that must happen in a later owner-approved PR before code.
+## Phase 3: SLA Domain Foundation
 
-- [ ] T004 [P] Expand future SLA data model planning in `specs/003-sla-mvp/plan.md`; Req: FR-002, FR-003, FR-007, FR-012, FR-013; Verification: due-date, deterministic owner-approved at-risk threshold, pause segment, internal-decision pause, and audit boundaries are fully specified; Dependencies: owner approval to continue planning; Category: Planning
-- [ ] T005 [P] Expand future test matrix in `specs/003-sla-mvp/quickstart.md`; Req: SC-001 through SC-007; Verification: on-track, deterministic owner-approved at-risk threshold, overdue, client-waiting pause, internal-decision pause, resume, and scoped visibility scenarios are mapped to future evidence; Dependencies: owner approval to continue planning; Category: Future Verification
-- [ ] T006 Draft a later implementation task breakdown in `specs/003-sla-mvp/tasks.md`; Req: all F-003 requirements; Verification: tasks include tests first and exact file paths before any code starts; Dependencies: F-002 owner gate and F-003 spec approval; Category: Planning
+**Purpose**: Implement pure, deterministic SLA status and timeline attribution without background jobs or persisted SLA segments.
 
-**Checkpoint 2**: A later PR can turn the scaffold into executable implementation tasks only after owner approval.
+- [X] T006 Implement `src/modules/sla/sla-policy.ts` with SLA status types, applicable due boundary selection, deterministic 24-hour `at_risk`, pause status derivation, delay attribution, and pause/resume audit event builders; Req: FR-001 through FR-007, FR-012, FR-013; Verification: T003/T004 pass; Dependencies: T003, T004; Category: Core
+- [X] T007 Implement `src/modules/sla/sla-summary.ts` to produce management-safe SLA summaries from existing deliverable safe summaries without exposing client-facing internal reasoning; Req: FR-008, FR-010, SR-005; Verification: T005 pass; Dependencies: T006; Category: Core
+
+## Phase 4: Server-Side Scoped Read
+
+**Purpose**: Expose management SLA summaries through server-side authorization and Zod input validation only.
+
+- [X] T008 Implement `src/server/commands/sla/list-management-sla-summaries.ts` with Zod `clientId` validation, actor tenant derivation, existing scoped permission checks, management-role-only access, tenant/client-scoped repository reads, and denial audit representation; Req: FR-008, FR-009, SR-001, SR-002; Verification: T005 pass; Dependencies: T005, T007; Category: Integration
+
+## Phase 5: Verification
+
+**Purpose**: Run the allowed local gates and capture remaining risks.
+
+- [X] T009 Run `git diff --check`; Req: implementation hygiene; Verification: command passes; Dependencies: T006-T008; Category: Verification
+- [X] T010 Run `npm run typecheck`; Req: TypeScript strict where possible; Verification: command passes; Dependencies: T006-T008; Category: Verification
+- [X] T011 Run `npm run lint`; Req: implementation gate; Verification: command passes; Dependencies: T006-T008; Category: Verification
+- [X] T012 Run `npm run test:unit`; Req: sensitive SLA domain logic covered; Verification: command passes; Dependencies: T006; Category: Verification
+- [X] T013 Run `npm run test:integration`; Req: scoped management read behavior covered; Verification: command passes; Dependencies: T008; Category: Verification
+- [X] T014 Run `npm run build`; Req: server/module changes compile in app build; Verification: command passes; Dependencies: T006-T008; Category: Verification
 
 ## Explicitly Deferred Implementation Tasks
 
-These items are intentionally not tasks in this PR:
-
-- SLA engine.
 - Background job scheduling.
-- Database migrations.
-- Runtime code.
+- Production/staging migration execution.
+- New database tables or persisted SLA timeline segments.
 - New dependencies.
 - Kanban integration.
 - File integration.
@@ -51,31 +65,12 @@ These items are intentionally not tasks in this PR:
 - Production rollout.
 - Real client data verification.
 - `RoleKey` or standalone `project_manager` changes.
+- Tenant/type/business-calendar at-risk thresholds beyond the documented 24-hour MVP threshold.
 
 ## Dependencies & Execution Order
 
-- PR #15 must be merged before this scaffold is created.
-- F-002 remains review-ready only until explicit written owner approval says otherwise.
-- F-003 implementation must not start from this scaffold.
-- The next allowed step is owner review of the F-003 SLA MVP Spec only.
-
-## Implementation Strategy
-
-### Current PR
-
-1. Record PR #15 merge and F-002 review-ready status in `docs/PROJECT_PROGRESS.md`.
-2. Create initial F-003 SLA MVP Spec Kit files.
-3. Run documentation evidence checks only.
-4. Open a PR for review.
-
-### Later Owner-Approved PR
-
-1. Resolve any owner comments on the F-003 spec.
-2. Expand tasks into implementation-ready, test-first tasks with exact file paths.
-3. Only then start code, tests, or migrations if explicitly approved.
-
-## Notes
-
-- `[P]` means the planning tasks touch different documentation sections and can be reviewed in parallel.
-- This file is intentionally conservative because the current request is Spec Kit preparation only.
-- Any future implementation task must preserve tenant/client isolation, auditability, and the rule that client waiting time does not count against Samawah.
+1. Phase 1 must complete before code.
+2. Phase 2 tests are written before domain/server implementation.
+3. Phase 3 domain foundation must pass unit tests before server scoped read is considered complete.
+4. Phase 4 must preserve tenant/client scoped reads and deny without resource enumeration.
+5. Phase 5 must run before presenting the branch for merge/hold recommendation.

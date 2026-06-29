@@ -4,22 +4,23 @@
 
 **Created**: 2026-06-29
 
-**Status**: Draft - Spec gate only, no implementation started
+**Status**: Implementation approved for F-003 SLA MVP only after PR #16 merge
 
-**Input**: Prepare an initial Spec Kit package for F-003 SLA MVP after PR #15, without code, migrations, dependencies, hosted migration, production usage, or real client data.
+**Input**: Start F-003 SLA MVP implementation after PR #16 merge, without production/staging migration, dependencies, hosted migration, production usage, real client data, or scope outside SLA MVP.
 
 ## Overview
 
 F-003 defines the first SLA foundation for deliverables created in F-002. The feature specifies SLA status values, due-date boundaries, client-waiting pause behavior, pause/resume audit expectations, and management-visible SLA status. It preserves the AGENTS.md rule that client waiting time must not count against Samawah.
 
-This specification intentionally stops before implementation. It does not add an SLA engine, background jobs, migrations, dependencies, Kanban, files, comments, approvals, hosted migration, production usage, or real client data.
+This implementation remains limited to SLA MVP foundations. It does not add background jobs, production/staging migrations, new dependencies, Kanban, files, comments, approvals workflow, hosted migration, production usage, or real client data.
 
 ## Confirmed Decisions For This Specification
 
-- F-002 is review-ready only and is not production accepted unless explicit written owner approval exists.
-- F-003 in this branch is Spec Kit preparation only.
+- PR #16 is merged into `main`; this branch starts from the PR #16 merge commit.
+- F-002 remains not production accepted unless explicit written owner approval exists.
+- F-003 implementation is approved for SLA MVP only.
 - SLA must be based on timeline/state boundaries, not a mutable manual counter.
-- The `at_risk` threshold must be deterministic, documented, and owner-approved before any implementation starts.
+- Owner-approved F-003 MVP `at_risk` policy: active Samawah-owned work is `at_risk` when an applicable due boundary exists, `now` is before that boundary, and the remaining calendar time is less than or equal to 24 hours. Date-only due dates are treated as the end of that UTC calendar day for deterministic local tests. Tenant/type/business-calendar thresholds remain out of scope for this MVP.
 - `paused_waiting_client` is mandatory for any client-waiting period.
 - `paused_waiting_internal_decision` remains a distinct SLA pause status, must not be conflated with `paused_waiting_client`, and must not be attributed as client delay.
 - Client waiting time must be excluded from Samawah delay calculations.
@@ -119,9 +120,9 @@ As a management user, I want to see SLA status on scoped deliverables so that I 
 - **FR-008**: Management users MUST be able to see SLA status for deliverables within their allowed tenant/client scope.
 - **FR-009**: Unauthorized users MUST NOT be able to view or infer another client's SLA status or deliverable existence.
 - **FR-010**: Client-facing surfaces are not expanded by this MVP; if any later client view reuses SLA data, it MUST hide internal audit reasoning and management-only delay details.
-- **FR-011**: This feature MUST NOT implement an SLA engine, background jobs, migrations, dependencies, Kanban, files, comments, approvals, hosted migration, production usage, real client data, `RoleKey` changes, or a standalone `project_manager` role.
+- **FR-011**: This feature MUST NOT implement background jobs, production/staging migrations, dependencies, Kanban, files, comments, approvals workflow, hosted migration, production usage, real client data, `RoleKey` changes, or a standalone `project_manager` role.
 - **FR-012**: If a future approved workflow uses `paused_waiting_internal_decision`, it MUST remain distinct from `paused_waiting_client`, MUST NOT be attributed as client waiting or client delay, be tenant/client scoped, and carry pause/resume audit expectations.
-- **FR-013**: The `at_risk` threshold policy MUST be deterministic, documented, and owner-approved before any F-003 implementation starts.
+- **FR-013**: The `at_risk` threshold policy MUST be deterministic, documented, and owner-approved before the threshold is implemented.
 
 ### Security And Audit Requirements
 
@@ -153,10 +154,9 @@ As a management user, I want to see SLA status on scoped deliverables so that I 
 
 ## Excluded Scope
 
-- F-003 implementation.
-- SLA engine.
+- Full persisted SLA engine beyond this MVP foundation.
 - Background jobs.
-- Migrations.
+- Production/staging migrations.
 - Dependency changes.
 - Kanban.
 - Files.
@@ -178,23 +178,23 @@ As a management user, I want to see SLA status on scoped deliverables so that I 
 - **SC-002**: 100% of SLA pause/resume scenarios in this spec state whether time counts against Samawah.
 - **SC-003**: `paused_waiting_client` is explicitly required wherever a deliverable waits on client action.
 - **SC-004**: Management-visible SLA status is specified without adding client-facing workflow scope.
-- **SC-005**: The out-of-scope list blocks SLA engine, background jobs, migrations, dependencies, hosted migration, production usage, and real client data for this PR.
+- **SC-005**: The out-of-scope list blocks background jobs, production/staging migrations, dependencies, hosted migration, production usage, real client data, and non-SLA MVP scope for this PR.
 - **SC-006**: Internal decision pause is distinguished from client waiting so future implementation cannot attribute internal waiting to the client.
-- **SC-007**: The `at_risk` threshold cannot be implemented until reviewers can find its deterministic, documented, owner-approved policy.
+- **SC-007**: The `at_risk` threshold is implemented only with a deterministic, documented, owner-approved F-003 MVP policy.
 
 ## Traceability
 
 | Story | Requirement IDs | Security IDs | Evidence target |
 |---|---|---|---|
-| US-1 SLA status foundation | FR-001, FR-002, FR-003, FR-012, FR-013 | SR-001, SR-003 | Future unit/domain and management summary tests |
-| US-2 Client waiting pause/resume | FR-004, FR-005, FR-006, FR-007 | SR-003, SR-004 | Future pause/resume and audit tests |
-| US-3 Management-visible status | FR-008, FR-009, FR-010 | SR-001, SR-002, SR-005 | Future scoped read and visibility tests |
-| Scope guard | FR-011 | SR-001 through SR-005 | This documentation-only PR |
+| US-1 SLA status foundation | FR-001, FR-002, FR-003, FR-012, FR-013 | SR-001, SR-003 | Unit/domain and management summary tests |
+| US-2 Client waiting pause/resume | FR-004, FR-005, FR-006, FR-007 | SR-003, SR-004 | Pause/resume timeline and audit expectation tests |
+| US-3 Management-visible status | FR-008, FR-009, FR-010 | SR-001, SR-002, SR-005 | Scoped read and visibility tests |
+| Scope guard | FR-011 | SR-001 through SR-005 | This SLA MVP implementation PR |
 
 ## Assumptions
 
 - F-002 deliverable records and due-date fields are the immediate context for F-003 planning.
 - F-002 remains review-ready only until explicit written owner approval changes that gate.
-- F-003 implementation will require a later owner-approved branch and task breakdown.
+- Any expansion beyond this MVP foundation will require a later owner-approved branch and task breakdown.
 - Synthetic local or non-production data will be used for any future validation.
 - No hosted/staging migration, production usage, or real client data is allowed by this specification.

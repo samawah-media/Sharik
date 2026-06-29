@@ -8,13 +8,44 @@ Last updated: 2026-06-29
 |---|---|
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
-| Feature | F-003 SLA MVP Spec Gate Prep |
-| Worktree | `D:\code - projects\shrek.platform-f003-sla-spec-prep` |
-| Branch | `codex/f003-sla-spec-prep` from updated `main` after PR #15 merge |
-| Current allowed stage | Documentation-only F-003 SLA MVP Spec Kit preparation |
-| Status | PR #15 is merged; F-002 remains review-ready for owner review only, not production accepted |
-| Next gate | Owner review of F-002 evidence and F-003 SLA MVP Spec before any implementation, hosted/staging migration, production usage, or real client data |
-| Owner decision required | Required before marking F-002 production accepted, running hosted/staging migration, using production or real client data, starting F-003 implementation, or expanding scope |
+| Feature | F-003 SLA MVP Implementation |
+| Worktree | `D:\code - projects\sharik-worktrees\f003-sla-mvp-implementation` |
+| Branch | `codex/f003-sla-mvp-implementation` from PR #16 merge commit on `origin/main` |
+| Current allowed stage | Local F-003 SLA MVP foundation implementation and PR preparation only |
+| Status | PR #16 is merged; F-003 local implementation is limited to SLA MVP foundation; no production/staging migration or real client data |
+| Next gate | PR review for F-003 SLA MVP foundation before any hosted/staging migration, production usage, real client data, or expanded SLA engine |
+| Owner decision required | Required before marking F-002 production accepted, running hosted/staging migration, using production or real client data, adding persisted SLA engine/background jobs/workflow integrations, or expanding scope |
+
+## F-003 SLA MVP Implementation PR Prep - 2026-06-29
+
+Scope implemented:
+
+- Branch `codex/f003-sla-mvp-implementation` starts from PR #16 merge commit `05290b737a2d28af59dcb6b77677c37ebe4ccb9d` on `origin/main`.
+- Deterministic SLA status foundation for deliverables: `on_track`, `at_risk`, `overdue`, `paused_waiting_client`, `paused_waiting_internal_decision`, `completed`, and `cancelled`.
+- Owner-approved F-003 MVP `at_risk` policy: active Samawah-owned work is `at_risk` when the applicable due boundary is 24 hours or less away and not overdue; date-only due dates normalize to the end of the UTC day.
+- Client-waiting timeline attribution is separated from Samawah running time, and internal-decision waiting is tracked separately from client waiting.
+- Management SLA summaries use tenant/client scoped deliverable reads, existing role/permission primitives, and deny unauthorized or client-facing users without resource enumeration.
+- Pause/resume audit expectations are represented through scoped audit event builders and metadata.
+
+Verification:
+
+- `git diff --check`: passed.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `npm run test:unit`: passed, 23 files / 72 tests.
+- `npm run test:integration`: passed, 19 files / 76 tests.
+- `npm run build`: passed.
+- `npm run test:rls`: not run because this branch does not touch DB/RLS/migrations or the permission catalog.
+
+Out of scope confirmed:
+
+- Production/staging migration.
+- Hosted/staging migration.
+- Production usage.
+- Real client data.
+- New dependencies.
+- `RoleKey` changes or standalone `project_manager` role.
+- Kanban, files, comments, approvals workflow, background jobs, persisted SLA engine, social scheduling, or AI generation.
 
 ## PR #15 Merge And F-003 SLA MVP Spec Gate Prep - 2026-06-29
 

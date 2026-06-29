@@ -10,6 +10,7 @@ export type AuditEvent = {
   targetId: string;
   reason?: string;
   occurredAt?: string;
+  metadata?: Record<string, string | number | boolean | null>;
 };
 
 export type AuditSink = {

@@ -4,23 +4,21 @@
 
 **Input**: Feature specification from `specs/003-sla-mvp/spec.md`
 
-**Status**: Draft - planning artifact only. No implementation, migrations, dependencies, hosted migration, production usage, or real client data are included in this PR.
+**Status**: F-003 SLA MVP implementation branch after PR #16. No production/staging migration, dependencies, hosted migration, production usage, or real client data are included.
 
 ## Summary
 
-F-003 SLA MVP defines the first deliverable-level SLA foundation for Sharik. The plan records the intended boundaries for SLA statuses, due-date meaning, `paused_waiting_client`, pause/resume audit expectations, client waiting exclusion from Samawah delay, and management-visible SLA status.
-
-This branch is a specification gate only. Future implementation requires a separate owner-approved gate after F-002 owner review.
+F-003 SLA MVP implements the first deliverable-level SLA foundation for Sharik. The plan records and implements boundaries for SLA statuses, due-date meaning, `paused_waiting_client`, `paused_waiting_internal_decision`, pause/resume audit expectations, client waiting exclusion from Samawah delay, and management-visible SLA status.
 
 ## Technical Context
 
-**Language/Version**: Existing TypeScript and Next.js App Router stack from the repository baseline. No code changes in this PR.
+**Language/Version**: Existing TypeScript and Next.js App Router stack from the repository baseline.
 
 **Primary Dependencies**: Existing dependencies only. No dependency changes are planned or allowed in this PR.
 
-**Storage**: Existing Supabase/PostgreSQL deliverable context from F-002 is the planning baseline. No migrations are created in this PR.
+**Storage**: Existing Supabase/PostgreSQL deliverable context from F-002 is the baseline. This MVP does not run hosted/staging/production migrations.
 
-**Testing**: No tests are added or run for implementation behavior in this PR. Future implementation should use unit/domain, integration, RLS, component, E2E, typecheck, lint, secret scan, audit, and build gates.
+**Testing**: Unit/domain tests cover SLA calculation and timeline attribution. Integration tests cover management scoped reads and denial/audit representation. Existing typecheck, lint, unit, integration, and build gates apply.
 
 **Target Platform**: Web SaaS, Arabic RTL management experience, tenant/client scoped data.
 
@@ -31,9 +29,8 @@ This branch is a specification gate only. Future implementation requires a separ
 **Constraints**:
 
 - F-002 is review-ready only, not production accepted without explicit written owner approval.
-- No SLA engine.
 - No background jobs.
-- No migrations.
+- No production/staging migrations.
 - No dependencies.
 - No hosted/staging migration.
 - No production usage.
@@ -41,7 +38,7 @@ This branch is a specification gate only. Future implementation requires a separ
 - No Kanban, files, comments, or approvals.
 - No `RoleKey` changes and no standalone `project_manager` role.
 
-**Scale/Scope**: Specification for F-003 SLA MVP only, centered on deliverable-level SLA state and management visibility.
+**Scale/Scope**: F-003 SLA MVP only, centered on deliverable-level SLA state and management visibility.
 
 ## Constitution Check
 
@@ -49,7 +46,7 @@ This branch is a specification gate only. Future implementation requires a separ
 
 | Principle | Result | Evidence |
 |---|---:|---|
-| Spec before code | PASS | This branch creates `spec.md` before any F-003 implementation. |
+| Spec before code | PASS | F-003 spec exists before implementation and is updated with implementation policy. |
 | Approved acceptance criteria | PASS | `spec.md` defines acceptance scenarios and measurable success criteria. |
 | Tenant/client isolation | PASS | SLA visibility and future behavior are scoped to tenant/client access. |
 | Deny by default | PASS | Unauthorized SLA status access must deny without resource enumeration. |
@@ -58,9 +55,9 @@ This branch is a specification gate only. Future implementation requires a separ
 | Append-only auditability | PASS | Pause/resume audit expectations are append-only. |
 | SLA timeline, not counters | PASS | The plan centers pause/resume boundaries and excludes client waiting time. |
 | No new dependency without review | PASS | No dependency changes are included. |
-| Scope control | PASS | SLA engine, background jobs, migrations, Kanban, files, comments, approvals, production, and real client data are out of scope. |
+| Scope control | PASS | Full SLA engine beyond MVP, background jobs, production/staging migrations, Kanban, files, comments, approvals, production, and real client data are out of scope. |
 
-No constitution violation is introduced by this documentation-only PR.
+No constitution violation is introduced by this SLA MVP branch.
 
 ## Project Structure
 
@@ -77,10 +74,21 @@ specs/003-sla-mvp/
 ### Source Code
 
 ```text
-No source code changes are included in this PR.
+src/modules/sla/
+|-- sla-policy.ts
+`-- sla-summary.ts
+
+src/server/commands/sla/
+`-- list-management-sla-summaries.ts
+
+tests/unit/sla/
+`-- sla-policy.test.ts
+
+tests/integration/sla/
+`-- management-sla-summary.test.ts
 ```
 
-Future implementation targets must be defined in a later owner-approved plan before code, migrations, tests, or dependencies are added.
+No Kanban, files, comments, approvals workflow, background jobs, or new dependencies are added.
 
 ## Data And Authorization Boundary
 
@@ -103,7 +111,7 @@ Browser-supplied tenant/client/deliverable identifiers must not be trusted as au
 The MVP specification uses these business boundaries:
 
 - Active Samawah-owned work can be `on_track`, `at_risk`, or `overdue`.
-- `at_risk` must use a deterministic, documented, owner-approved threshold policy before any implementation starts.
+- Owner-approved F-003 MVP `at_risk` policy: active Samawah-owned work is `at_risk` when an applicable due boundary exists, `now` is before that boundary, and remaining calendar time is less than or equal to 24 hours. Date-only due dates are normalized to the end of that UTC calendar day for deterministic local tests.
 - Client-waiting work must be `paused_waiting_client`.
 - Client waiting time must not count against Samawah delay.
 - Internal-decision waiting can be represented by `paused_waiting_internal_decision` where applicable, but it must remain distinct from `paused_waiting_client` and must not be attributed as client delay.
@@ -114,19 +122,18 @@ The MVP specification uses these business boundaries:
 
 - Exact persisted data shape for SLA segments.
 - Exact management UI placement for SLA status.
-- Exact owner-approved at-risk threshold policy.
-- Exact internal-decision pause policy and its effect on Samawah running time.
+- Tenant/type/business-calendar at-risk threshold policy beyond this 24-hour MVP threshold.
+- Persisted internal-decision pause policy and its effect on Samawah running time beyond the local timeline representation.
 - Exact relationship between future approval workflow states and SLA pause/resume.
 - Exact migration/RLS details.
-- Exact tests and evidence files for implementation.
 
-These deferred decisions must be resolved before any F-003 implementation starts.
+These deferred decisions must be resolved before any later implementation that depends on persisted SLA segments, workflow integration, migrations, or expanded threshold policy.
 
 ## Post-Design Constitution Check
 
 | Principle | Result | Evidence |
 |---|---:|---|
-| Scope control | PASS | This PR is documentation-only and blocks implementation scope. |
+| Scope control | PASS | This PR implements SLA MVP foundation only and blocks non-SLA scope. |
 | Tenant/client isolation | PASS | Requirements preserve scoped visibility. |
 | Auditability | PASS | Pause/resume audit expectations are explicit. |
 | SLA timeline | PASS | Client waiting is modeled as paused time, not Samawah delay. |

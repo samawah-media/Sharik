@@ -2,15 +2,16 @@
 
 Date: 2026-06-29
 
-This guide describes future validation scenarios for F-003 SLA MVP. It is not an implementation guide and includes no code, migrations, secrets, hosted migration, production usage, or real client data.
+This guide describes validation scenarios for the F-003 SLA MVP implementation branch. It includes no secrets, hosted/staging migration, production usage, or real client data.
 
 ## Preconditions
 
-- F-002 owner review gate is resolved before F-003 implementation starts.
+- F-003 implementation starts from the PR #16 merge commit on `origin/main` and remains limited to the SLA MVP foundation.
 - Synthetic deliverables exist for Client A and Client B in local or explicitly approved non-production data.
 - Due-date fields are populated with synthetic dates for on-track, at-risk under an owner-approved threshold, overdue, client-waiting pause, internal-decision pause, completed, and cancelled scenarios.
 - Test users and emails use `.example.test` or equivalent non-real values.
 - No production Supabase, production credentials, real client names, real emails, or real client data are used.
+- The F-003 MVP `at_risk` threshold is deterministic: active Samawah-owned work is `at_risk` when the applicable due boundary is less than or equal to 24 hours away and has not yet passed. Date-only due dates are evaluated at the end of that UTC calendar day for deterministic local tests.
 
 ## Future Test Accounts
 
@@ -31,9 +32,9 @@ This guide describes future validation scenarios for F-003 SLA MVP. It is not an
 
 ## Scenario 2: At-Risk SLA
 
-- Create or select a synthetic active deliverable inside the owner-approved at-risk threshold.
+- Create or select a synthetic active deliverable with an applicable due boundary 24 hours or less away, but not yet past due.
 - Expected result: management-visible SLA status is `at_risk`.
-- Evidence expectation: the at-risk boundary is deterministic, documented, and owner-approved before implementation.
+- Evidence expectation: the 24-hour at-risk boundary is deterministic, documented, and owner-approved for F-003 MVP.
 - Scope expectation: unauthorized users cannot infer the deliverable exists.
 
 ## Scenario 3: Overdue SLA
@@ -121,18 +122,18 @@ npm run build
 
 | Target | Result | Notes |
 |---|---:|---|
-| F-003 implementation | NOT RUN | Explicitly out of scope. |
-| SLA engine | NOT RUN | Explicitly out of scope. |
-| Background jobs | NOT RUN | Explicitly out of scope. |
-| Migrations | NOT RUN | Explicitly out of scope. |
+| F-003 SLA MVP foundation | LOCAL VERIFIED | Covered by local unit, integration, typecheck, lint, and build gates in this branch. |
+| Full persisted SLA engine | DEFERRED | Background jobs, persisted SLA segments, workflow integrations, and expanded threshold policies are out of scope. |
+| Background jobs | NOT ADDED | Explicitly out of scope. |
+| Migrations | NOT ADDED | No production/staging migration or database schema change is included. |
 | Hosted/staging migration | NOT RUN | Explicitly out of scope. |
-| Production Supabase / real client data | NOT RUN | Explicitly prohibited. |
+| Production Supabase / real client data | NOT USED | Explicitly prohibited. |
 
 ## Acceptance Evidence Checklist For Future Implementation
 
 - SLA statuses include `on_track`, `at_risk`, `overdue`, `paused_waiting_client`, `paused_waiting_internal_decision`, `completed`, and `cancelled`.
 - Due-date boundaries are deterministic and documented.
-- The `at_risk` threshold is deterministic, documented, and owner-approved before implementation.
+- The `at_risk` threshold is deterministic, documented, and owner-approved for this MVP foundation.
 - SLA pauses when waiting for the client.
 - Client waiting time does not count against Samawah.
 - Internal-decision pause remains distinct from client waiting and cannot attribute internal waiting as client waiting or client delay.

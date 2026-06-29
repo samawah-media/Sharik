@@ -8,13 +8,51 @@ Last updated: 2026-06-29
 |---|---|
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
-| Feature | F-002 Deliverables Core |
-| Worktree | `D:\code - projects\shrek.platform-f002-progress` |
-| Branch | `codex/f002-progress-after-evidence` from `main` after PR #13 merge |
-| Current allowed stage | F-002 progress update after F-002E evidence merge only |
-| Status | F-002E evidence is merged; F-002 is review-ready for owner review only, not production accepted |
-| Next gate | Owner review of F-002 evidence before any acceptance, hosted staging migration, production usage, or next implementation phase |
-| Owner decision required | Required before marking F-002 accepted, running hosted/staging migration, using production or real client data, starting F-003 SLA MVP, or expanding scope |
+| Feature | F-003 SLA MVP Spec Gate Prep |
+| Worktree | `D:\code - projects\shrek.platform-f003-sla-spec-prep` |
+| Branch | `codex/f003-sla-spec-prep` from updated `main` after PR #15 merge |
+| Current allowed stage | Documentation-only F-003 SLA MVP Spec Kit preparation |
+| Status | PR #15 is merged; F-002 remains review-ready for owner review only, not production accepted |
+| Next gate | Owner review of F-002 evidence and F-003 SLA MVP Spec before any implementation, hosted/staging migration, production usage, or real client data |
+| Owner decision required | Required before marking F-002 production accepted, running hosted/staging migration, using production or real client data, starting F-003 implementation, or expanding scope |
+
+## PR #15 Merge And F-003 SLA MVP Spec Gate Prep - 2026-06-29
+
+Scope recorded:
+
+- PR #15, `chore(F-002): update project progress after verification evidence`, was merged into `main` before this F-003 preparation branch started.
+- This update changes `docs/PROJECT_PROGRESS.md` and adds documentation-only Spec Kit starter files under `specs/003-sla-mvp/`.
+- The F-003 work in this branch is Spec Kit preparation only. It does not add implementation, migrations, dependencies, runtime behavior, or hosted changes.
+
+F-002 gate status:
+
+- F-002 remains review-ready for owner review only.
+- F-002 is not production accepted unless an explicit written owner approval exists.
+- Hosted/non-production staging migration has not been run.
+- Production usage and real client data remain out of scope.
+- Local F-002 evidence must not be reused as hosted staging evidence or production acceptance.
+
+Next proposed phase:
+
+- The next proposed step is F-003 SLA MVP Spec only.
+- F-003 implementation must not start from this PR.
+- A separate owner-approved gate is required before any F-003 code, SLA engine, migration, hosted/staging migration, production usage, or real client data.
+
+Out of scope confirmed:
+
+- F-003 implementation.
+- SLA engine.
+- Background jobs.
+- Migrations.
+- Dependency changes.
+- Kanban.
+- Files.
+- Comments.
+- Approvals.
+- Hosted/staging migration.
+- Production usage.
+- Real client data.
+- `RoleKey` changes or adding `project_manager` as a standalone role.
 
 ## F-002E Verification Evidence Merge and Review-Ready Status - 2026-06-29
 
@@ -40,8 +78,9 @@ Evidence basis:
 
 Next proposed phase:
 
-- After owner review, the proposed next implementation phase is F-003 SLA MVP.
-- F-003 SLA MVP must not start until the owner explicitly approves crossing the F-002 review gate.
+- This section is superseded by the PR #15 merge note above for the immediate next step.
+- The next proposed step is F-003 SLA MVP Spec only.
+- F-003 implementation must not start until the owner explicitly approves crossing the F-002 review gate and separately approves the F-003 implementation gate.
 
 Out of scope confirmed:
 

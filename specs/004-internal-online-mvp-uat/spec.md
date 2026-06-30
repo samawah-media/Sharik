@@ -4,15 +4,15 @@
 
 **Created**: 2026-06-29
 
-**Status**: Draft for PR review - hosted operations are gated and Supabase is deferred
+**Status**: Hosted UAT evidence update - Supabase UAT migration/seed and Vercel hosting are complete; full authenticated browser UAT remains gated by synthetic sign-in credentials
 
-**Input**: Prepare the smallest internal online UAT after PR #17, with strict AGENTS.md and Spec Kit compliance, Vercel Hobby/free allowed by owner decision, Vercel Production target allowed for hosting only, synthetic data only, no new feature scope, and no hosted Supabase migration until a real Supabase UAT project exists and is explicitly approved.
+**Input**: Prepare the smallest internal online UAT after PR #17, with strict AGENTS.md and Spec Kit compliance, Vercel Hobby/free allowed by owner decision, Vercel Production target allowed for hosting only, synthetic data only, no new feature scope, and hosted Supabase migration only after a real Supabase UAT project exists and is explicitly approved.
 
 ## Overview
 
 This feature prepares Sharik for an internal online UAT pass after PR #17 (`feat(F-003): implement SLA MVP foundation`) is merged to `main`. The goal is not Production readiness. The current owner decision allows Vercel Hobby/free and allows a Vercel Production target for hosting only. This does not authorize Production Supabase, real client data, or marking Sharik production-accepted.
 
-The UAT scope is deliberately narrow: deployed access, authentication surface, tenant/client isolation after Supabase UAT exists, existing client, contract, package, deliverable, and SLA MVP surfaces, and smoke/security checks. This feature must not expand into Kanban, files, comments, approvals, social scheduling, AI, background jobs, new dependencies, `RoleKey` changes, or a standalone `project_manager` role.
+The UAT scope is deliberately narrow: deployed access, authentication surface, tenant/client isolation on the approved Supabase UAT target, existing client, contract, package, deliverable, and SLA MVP surfaces, and smoke/security checks. This feature must not expand into Kanban, files, comments, approvals, social scheduling, AI, background jobs, new dependencies, `RoleKey` changes, or a standalone `project_manager` role.
 
 ## Confirmed Decisions
 
@@ -21,7 +21,10 @@ The UAT scope is deliberately narrow: deployed access, authentication surface, t
 - This feature is an internal online UAT gate, not a product feature expansion.
 - Owner decision on 2026-06-30: Vercel Hobby/free is acceptable for Sharik UAT; a Vercel Production target is acceptable as a hosting target only.
 - The Vercel deployment target decision does not authorize Production Supabase, real client data, or Production acceptance.
-- Hosted Supabase migration is deferred until a separate Supabase UAT project exists and a later explicit approval names the project ref and confirms synthetic data only; approvals that keep `<PROJECT_REF>` as a placeholder are not valid.
+- Hosted Supabase migration is allowed only after a separate Supabase UAT project exists and an explicit approval names the project ref and confirms synthetic data only; approvals that keep `<PROJECT_REF>` as a placeholder are not valid.
+- Owner later supplied project ref `jnvuccapgsabrwwkxnbh`; hosted no-real-data checks, migration, and R-004 synthetic seed completed on 2026-06-30.
+- Vercel project `sharik-platform` is deployed at `https://sharik-platform.vercel.app` as Production hosting-only, not Production acceptance.
+- Full authenticated browser UAT remains gated because the hosted synthetic users do not yet have an approved temporary password/sign-in path.
 - No real client data, real client emails, Production Supabase project, or production data may be used.
 - No dependency changes are allowed.
 - No `RoleKey` changes and no standalone `project_manager` role are allowed.
@@ -33,8 +36,8 @@ The smallest online UAT that is useful and still safe is:
 
 1. A Vercel Hobby/free deployment under the approved owner account.
 2. A Vercel Production target may be used for hosting only after recording the owner decision and rollback path.
-3. A separate Supabase UAT project remains required before data-backed hosted checks.
-4. Synthetic tenant, client, user, contract, package, deliverable, and currently persistable SLA examples only after Supabase UAT is available.
+3. A separate Supabase UAT project is required before data-backed hosted checks; for this run the approved UAT project is `jnvuccapgsabrwwkxnbh`.
+4. Synthetic tenant, client, user, contract, package, deliverable, and currently persistable SLA examples only after Supabase UAT is verified.
 5. Smoke checks for deployed access, sign-in surface, fixture disablement in hosted runtime, build health, and no secret exposure.
 6. Security checks for tenant/client isolation, unauthorized denial, role boundaries, and service role non-exposure only after Supabase UAT data exists.
 7. UAT checks for existing accepted surfaces only: client management, contracts, packages, deliverables, commercial summaries, and SLA MVP summaries.

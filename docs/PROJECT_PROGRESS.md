@@ -10,11 +10,44 @@ Last updated: 2026-06-30
 | Package slug | `sharik-platform` |
 | Feature | R-004 Internal Online MVP UAT |
 | Worktree | `D:\code - projects\sharik-worktrees\r004-hosted-uat` |
-| Branch | `codex/r004-supabase-db-password-blocker` from PR #21 merge commit on `origin/main` |
-| Current allowed stage | Evidence and hosted-readiness verification only; migration/seed remains blocked until DB password access is available |
-| Status | PR #18, PR #19, PR #20, and PR #21 are merged on `main`; PR #22 is open and green; owner supplied Supabase project ref `jnvuccapgsabrwwkxnbh`; project metadata is visible and `supabase link` succeeds, but database/auth inspection requires `SUPABASE_DB_PASSWORD`; Vercel CLI is logged in as `omarhussien2`, but no Vercel project is linked for this worktree |
-| Next gate | Owner must provide database-password access through a secure local environment path before no-real-data verification, migration, seed, data-backed UAT, or team-ready online deployment |
-| Owner decision required | Required to enable DB password access locally and confirm whether to create/link a new free Vercel project named `sharik-platform`; no hosted migration, hosted seed, Vercel env mutation, or deploy can proceed until no-real-data checks pass |
+| Branch | `codex/r004-hosted-uat-results` from PR #22 merge commit on `origin/main` |
+| Current allowed stage | Hosted UAT evidence and review PR only; no merge without explicit review |
+| Status | PR #18 through PR #22 are merged on `main`; hosted non-production Supabase migration and R-004 synthetic seed completed against `sharik-uat`; Vercel project `sharik-platform` is deployed to Production target as hosting-only at `https://sharik-platform.vercel.app`; smoke/security checks passed for public/sign-in/fixture-disablement and scoped RLS counts; full authenticated browser UAT is still blocked until synthetic users receive an approved temporary password/sign-in path |
+| Next gate | Open a new PR for hosted UAT results and leave it unmerged for review |
+| Owner decision required | Decide whether to create temporary passwords for synthetic `@r004.example.test` users through a secure process, then rotate the exposed Supabase DB password and revoke any exposed access token after this work |
+
+## R-004F Hosted Supabase/Vercel UAT Results - 2026-06-30
+
+Verification:
+
+- `origin/main` is `20b84984913e8f707fcf5dabad54eea5b03eff64`, the merge commit for PR #22.
+- GitHub check-runs for `20b84984913e8f707fcf5dabad54eea5b03eff64` returned zero checks; combined commit status has no contexts.
+- New results branch `codex/r004-hosted-uat-results` starts from `origin/main` after PR #22.
+- Supabase project ref `jnvuccapgsabrwwkxnbh` resolves to project `sharik-uat`, region `eu-west-1`, status `ACTIVE_HEALTHY`.
+- Pre-migration no-real-data checks passed with counts only: 0 auth users, 0 non-R-004 auth users, and 0 public base tables.
+- Hosted migration dry-run listed exactly 11 local migrations; hosted `db push --linked` completed.
+- Post-migration `migration list --linked` shows all 11 local migrations matched on remote.
+- Hosted seed used only `supabase/seeds/r004_internal_online_mvp_uat.sql`; `supabase/seed.sql` was not used.
+- Direct Docker seed to the database host failed on DNS resolution; pooler-based `psql` seed succeeded.
+- Post-seed counts: 5 synthetic auth users, 2 clients, 2 contracts, 2 packages, 2 package lines, 7 deliverables, 0 non-R-004 auth users, and 0 non-R-004 clients.
+- Vercel CLI `50.11.0` is authenticated as `omarhussien2`; project `sharik-platform` is linked.
+- Vercel production env key names only are `APP_ENV`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; values remain encrypted and no service-role env was set.
+- Vercel deployment `dpl_D3QBhGPnecEcoHtf223NvGNBVosL` is Ready with alias `https://sharik-platform.vercel.app`; target is Production hosting-only, not Production acceptance.
+- Smoke checks for `/`, `/sign-in`, `/clients?actor=tenant_admin_a`, and `/client/commercial?actor=client_viewer_a` returned HTTP 200.
+- Hosted HTML checks found no `service_role`, `SUPABASE_SERVICE_ROLE_KEY`, or `sb_secret` markers and did not expose fixture client names.
+- Hosted RLS count simulation: account-manager Alpha sees 1 client and 6 deliverables; Alpha/Beta client viewers each see 1 client and 0 management deliverables.
+- `SUPABASE_DB_PASSWORD` and `PGPASSWORD` were confirmed absent from the shell environment after hosted operations.
+
+Result:
+
+- R-004 hosted migration is complete for the approved non-production UAT project.
+- R-004 hosted synthetic seed is complete and scoped to the approved fixture set.
+- Sharik is online for internal review at `https://sharik-platform.vercel.app`.
+- The deployment is public on Vercel Hobby/free; do not use real client data.
+- Full authenticated browser UAT for client management, contracts, packages, deliverables, commercial summaries, and SLA summaries remains blocked until synthetic users receive an approved temporary password/sign-in path.
+- A non-blocking Supabase pg-delta catalog cache certificate warning appeared after `db push`.
+- One tenant-admin RLS simulation retry was blocked by a temporary Supabase pooler auth circuit breaker after parallel checks; scoped account-manager/client-viewer simulations passed.
+- No Production Supabase, real client data, new dependency, RoleKey change, standalone `project_manager` role, Kanban/files/comments/approvals/social scheduling/AI expansion, or PR merge was introduced in this results branch.
 
 ## R-004E Vercel Readiness And Remaining Hosted Blockers - 2026-06-30
 

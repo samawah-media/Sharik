@@ -9,11 +9,22 @@ This guide describes how to prepare and validate an internal online UAT for Shar
 - PR #17 is merged into `main`.
 - Branch `codex/internal-online-mvp-uat` starts from `origin/main` after PR #17.
 - This Spec Kit package has been reviewed.
-- Hosted Supabase migration is deferred until a Supabase UAT project exists and has explicit approval before it runs.
+- Hosted Supabase migration is forbidden until a Supabase UAT project exists and has explicit approval before it runs.
 - Vercel account is confirmed as the owner-approved Hobby/free account before deployment.
 - Vercel Production target may be used for hosting only; it is not Production acceptance.
 - Protection status is recorded before sharing any URL. If protection is unavailable on the free account, record the public exposure limitation.
 - All data is synthetic.
+
+## Current Hosted Result For This Run
+
+As of 2026-06-30:
+
+- Approved Supabase UAT project ref: `jnvuccapgsabrwwkxnbh`.
+- Hosted non-production migration has been applied.
+- Hosted R-004 synthetic seed has been applied using only `supabase/seeds/r004_internal_online_mvp_uat.sql`.
+- Vercel Production target is deployed as hosting-only at `https://sharik-platform.vercel.app`.
+- Full authenticated browser UAT remains blocked until synthetic users receive an approved temporary password/sign-in path.
+- Do not use real client data and do not treat the Vercel Production target as Production acceptance.
 
 ## Explicit Approval Required For Hosted Supabase
 
@@ -191,7 +202,7 @@ Expected result:
 - Env vars do not point to Production Supabase or real client data.
 - Protection/public exposure status is recorded.
 
-Do not treat a Vercel Production target as a complete UAT pass while Supabase is deferred. Data-backed smoke/security/UAT checks remain `BLOCKED`.
+Do not treat a Vercel Production target as a complete UAT pass. If Supabase UAT migration/seed or synthetic sign-in credentials are not complete, affected data-backed smoke/security/UAT checks remain `BLOCKED`.
 
 ## Smoke Checks
 
@@ -215,7 +226,7 @@ Do not treat a Vercel Production target as a complete UAT pass while Supabase is
 
 ## UAT Checks
 
-Only run data-backed UAT after hosted migration and synthetic seed are explicitly approved and complete. While Supabase is deferred, mark these checks `BLOCKED`.
+Only run data-backed UAT after hosted migration and synthetic seed are explicitly approved and complete. Only mark authenticated browser UAT `PASS` after a secure synthetic sign-in path exists; otherwise mark those checks `BLOCKED`.
 
 | ID | Surface | Expected |
 |---|---|---|

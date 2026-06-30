@@ -4,11 +4,11 @@
 
 **Input**: Feature specification from `specs/004-internal-online-mvp-uat/spec.md`
 
-**Status**: Documentation, gate preparation, Spec Kit prerequisite repair, and a dedicated non-auto-run R-004 synthetic seed are prepared; Vercel Hobby/free and Vercel Production target are owner-approved for hosting only; hosted Supabase migration and hosted seed execution are deferred until a Supabase UAT project exists.
+**Status**: Documentation, gate preparation, Spec Kit prerequisite repair, dedicated R-004 synthetic seed, hosted Supabase migration/seed, and Vercel Production hosting-only deployment are complete; full authenticated browser UAT remains gated by approved synthetic sign-in credentials.
 
 ## Summary
 
-This plan prepares the smallest internal online UAT for Sharik after PR #17. The approach is a release/UAT gate, not a product feature: define the owner-approved Vercel Hobby/free deployment path, the Vercel Production target decision, synthetic data policy, hosted Supabase approval gate, smoke/security/UAT checks, evidence capture, and PR review process.
+This plan prepares the smallest internal online UAT for Sharik after PR #17. The approach is a release/UAT gate, not a product feature: define and record the owner-approved Vercel Hobby/free deployment path, the Vercel Production target decision, synthetic data policy, hosted Supabase approval gate, smoke/security/UAT checks, evidence capture, and PR review process.
 
 No product source code, dependencies, schema changes, role changes, Kanban, files, comments, approvals, social scheduling, AI, background jobs, Production Supabase, real client data, or Production acceptance are included in this plan. The only SQL addition is a gated synthetic UAT seed file that is not part of automatic local seed execution.
 
@@ -18,11 +18,11 @@ No product source code, dependencies, schema changes, role changes, Kanban, file
 
 **Primary Dependencies**: Existing dependencies only. No dependency changes are allowed.
 
-**Storage**: Existing Supabase/PostgreSQL schema from merged F-001, F-002, and F-003 context. Hosted non-production migration is gated by explicit owner approval. R-004 synthetic data uses `supabase/seeds/r004_internal_online_mvp_uat.sql` after migration approval and target verification only.
+**Storage**: Existing Supabase/PostgreSQL schema from merged F-001, F-002, and F-003 context. Hosted non-production migration is gated by explicit owner approval. R-004 synthetic data uses `supabase/seeds/r004_internal_online_mvp_uat.sql` after migration approval and target verification only; this run applied it to the approved UAT project `jnvuccapgsabrwwkxnbh`.
 
 **Testing**: Existing local gates plus hosted smoke/security/UAT evidence after approved hosted setup. Local gates include typecheck, lint, unit, integration, RLS, component, E2E, secret scan, audit high threshold, and build as appropriate.
 
-**Target Platform**: Owner-approved Vercel Hobby/free deployment. Vercel Production target may be used for hosting only; data-backed checks require a later Supabase UAT project.
+**Target Platform**: Owner-approved Vercel Hobby/free deployment. Vercel Production target may be used for hosting only; this run deployed `sharik-platform` to `https://sharik-platform.vercel.app`.
 
 **Project Type**: Full-stack web application, modular monolith.
 
@@ -34,7 +34,7 @@ No product source code, dependencies, schema changes, role changes, Kanban, file
 - Vercel Hobby/free account is allowed by owner decision.
 - Vercel Production target is allowed for hosting only and does not mean Production acceptance.
 - Synthetic data only.
-- No hosted Supabase migration until a Supabase UAT project exists and receives explicit owner approval.
+- No hosted Supabase migration until a Supabase UAT project exists and receives explicit owner approval; this condition was satisfied for project ref `jnvuccapgsabrwwkxnbh` on 2026-06-30.
 - No deploy before the plan, tasks, quickstart, and data risks are documented.
 - No real client data.
 - No new dependencies.
@@ -54,7 +54,7 @@ No product source code, dependencies, schema changes, role changes, Kanban, file
 | Tenant/client isolation | PASS | UAT checks require Client A/B synthetic isolation and denial evidence. |
 | Deny by default | PASS | Deployed access and unauthorized denial checks are required; data-backed denial checks wait for Supabase UAT. |
 | Server-side sensitive commands | PASS | Hosted migration, seed, and mutations are gated and must be evidenced. |
-| RLS defense in depth | PASS | Hosted Supabase migration is blocked until explicit approval and must include RLS evidence. |
+| RLS defense in depth | PASS | Hosted Supabase migration ran only after explicit approval and includes scoped RLS count evidence. |
 | Append-only auditability | PASS | Existing audit-sensitive flows remain in scope for verification only, not new implementation. |
 | No new dependency without review | PASS | No dependencies are added. |
 | No social scheduling or microservices | PASS | Both are out of scope. |
@@ -69,7 +69,7 @@ The minimum useful UAT is:
 1. Owner-approved Vercel Hobby/free deployment.
 2. Vercel Production target may be used for hosting only with rollback evidence.
 3. Supabase UAT target only after the owner creates a project and gives explicit migration approval.
-4. Synthetic data set with Client A and Client B isolation checks after Supabase UAT exists.
+4. Synthetic data set with Client A and Client B isolation checks after Supabase UAT exists; this run applied the R-004 fixture to `jnvuccapgsabrwwkxnbh`.
 5. Accepted existing surfaces only:
    - deployed access and sign-in surface;
    - client management;
@@ -78,7 +78,7 @@ The minimum useful UAT is:
    - deliverables;
    - commercial summaries;
    - SLA MVP summaries and status behavior.
-6. Smoke/security/UAT evidence, with data-backed checks blocked while Supabase is deferred.
+6. Smoke/security/UAT evidence, with full authenticated browser UAT blocked until synthetic sign-in credentials are approved.
 7. Progress and PR documentation.
 
 Anything outside this list is deferred.

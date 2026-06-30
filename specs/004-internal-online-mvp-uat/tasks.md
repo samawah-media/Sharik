@@ -4,7 +4,7 @@
 
 **Prerequisites**: `spec.md`, `plan.md`, `quickstart.md`, `AGENTS.md`, `.specify/memory/constitution.md`, PR #17 merged to `main`.
 
-**Status**: UAT gate task list. Vercel Hobby/free and Vercel Production hosting target are owner-approved; hosted Supabase migration and data-backed UAT remain blocked until a Supabase UAT project exists and receives explicit approval.
+**Status**: UAT gate task list. Vercel Hobby/free and Vercel Production hosting target are owner-approved; hosted Supabase migration, R-004 synthetic seed, and Vercel Production hosting deployment were executed on 2026-06-30 against the approved UAT target. Full interactive browser UAT remains limited until synthetic users receive an approved temporary password/sign-in path.
 
 **Scope Guard**: This branch prepares internal online MVP UAT only. It must not add product features, dependencies, database schema changes, Kanban, files, comments, approvals, social scheduling, AI, `RoleKey` changes, a standalone `project_manager` role, Production Supabase usage, real client data, or Production acceptance. Vercel Production target is allowed only as hosting.
 
@@ -51,35 +51,35 @@
 **Purpose**: Stop before any hosted database mutation until approval is explicit.
 
 - [x] T022 [US2] Obtain explicit owner approval matching `contracts/uat-gates.md` Gate H1 before hosted Supabase migration; Req: FR-006; Verification: owner supplied project ref `jnvuccapgsabrwwkxnbh` without secrets; Dependencies: T021; Category: Hosted Gate
-- [ ] T023 [US2] Verify target Supabase project is non-production and contains no real client data; Req: FR-005, SR-001; Verification: project/ref evidence without secrets; Dependencies: T022; Category: Hosted Gate
-- [ ] T024 [US2] Run hosted non-production migration only after T022-T023; Req: FR-006; Verification: migration list/evidence; Dependencies: T023; Category: Hosted Migration
-- [ ] T025 [US2] Seed synthetic data from `supabase/seeds/r004_internal_online_mvp_uat.sql` only after migration approval and target verification; Req: FR-005, SR-003, SR-007; Verification: seed manifest and row counts without secrets; Dependencies: T024; Category: Hosted Data
+- [x] T023 [US2] Verify target Supabase project is non-production and contains no real client data; Req: FR-005, SR-001; Verification: project `sharik-uat`, ref `jnvuccapgsabrwwkxnbh`, pre-migration counts showed 0 auth users and 0 public base tables; Dependencies: T022; Category: Hosted Gate
+- [x] T024 [US2] Run hosted non-production migration only after T022-T023; Req: FR-006; Verification: `db push --linked` applied 11 local migrations and `migration list --linked` matched local/remote; Dependencies: T023; Category: Hosted Migration
+- [x] T025 [US2] Seed synthetic data from `supabase/seeds/r004_internal_online_mvp_uat.sql` only after migration approval and target verification; Req: FR-005, SR-003, SR-007; Verification: guarded R-004 seed applied through the Supabase pooler with expected synthetic row counts and 0 non-R-004 users/clients; Dependencies: T024; Category: Hosted Data
 
 ## Phase 5: Vercel Hobby/Free Deployment
 
 **Purpose**: Publish the owner-approved Vercel deployment only after documentation and environment gates.
 
-- [ ] T026 [US2] Confirm Vercel account is the owner-approved Hobby/free account; Req: FR-004, SR-001; Verification: `vercel whoami` and project link evidence without secrets; Dependencies: T021; Category: Deploy Gate
-- [ ] T027 [US2] Configure or confirm deployment environment variables and protection/public exposure status; Req: FR-004, SR-002; Verification: env/protection evidence without secret values and without Production Supabase; Dependencies: T026; Category: Deploy Gate
-- [ ] T028 [US2] Deploy Vercel target approved by owner; Production target is hosting-only, not Production acceptance; Req: FR-004, SR-001; Verification: deployment URL/id, target evidence, and rollback path; Dependencies: T027; Category: Deploy
+- [x] T026 [US2] Confirm Vercel account is the owner-approved Hobby/free account; Req: FR-004, SR-001; Verification: `vercel whoami` reports `omarhussien2`; project `sharik-platform` linked without secrets; Dependencies: T021; Category: Deploy Gate
+- [x] T027 [US2] Configure or confirm deployment environment variables and protection/public exposure status; Req: FR-004, SR-002; Verification: production env key names only are `APP_ENV`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; no service role env was set; free deployment is publicly reachable; Dependencies: T026; Category: Deploy Gate
+- [x] T028 [US2] Deploy Vercel target approved by owner; Production target is hosting-only, not Production acceptance; Req: FR-004, SR-001; Verification: deployment `dpl_D3QBhGPnecEcoHtf223NvGNBVosL`, alias `https://sharik-platform.vercel.app`, status Ready, target production hosting-only; Dependencies: T027; Category: Deploy
 
 ## Phase 6: Smoke, Security, And UAT Checks
 
 **Purpose**: Record evidence only for checks actually run against the correct environment.
 
-- [ ] T029 [P] [US2] Run Vercel URL smoke against the deployed URL; Req: FR-009; Verification: target/account/response recorded and no secrets exposed; Dependencies: T028; Category: Smoke
-- [ ] T030 [P] [US2] Run sign-in surface and hosted fixture-disablement smoke; Req: FR-009; Verification: fixture actors disabled in hosted runtime; Dependencies: T028; Category: Smoke
-- [ ] T031 [P] [US2] Run browser response and secret exposure checks; Req: SR-002; Verification: no service role or secret values exposed; Dependencies: T028; Category: Security
-- [ ] T032 [US2] Run Client A/B tenant and client isolation checks; Req: FR-010, SR-003, SR-005; Verification: unauthorized data is denied/not found; Dependencies: T025, T028; Category: Security
-- [ ] T033 [US2] Run role boundary checks for internal and client users; Req: FR-010; Verification: client users cannot reach management-only surfaces; Dependencies: T025, T028; Category: Security
+- [x] T029 [P] [US2] Run Vercel URL smoke against the deployed URL; Req: FR-009; Verification: root, sign-in, and guarded fixture routes returned HTTP 200 without secret markers; Dependencies: T028; Category: Smoke
+- [x] T030 [P] [US2] Run sign-in surface and hosted fixture-disablement smoke; Req: FR-009; Verification: query-selected fixture actor routes returned the sign-in/session surface and did not expose fixture client data; Dependencies: T028; Category: Smoke
+- [x] T031 [P] [US2] Run browser response and secret exposure checks; Req: SR-002; Verification: HTML checks found no `service_role`, `SUPABASE_SERVICE_ROLE_KEY`, or `sb_secret` markers; Dependencies: T028; Category: Security
+- [x] T032 [US2] Run Client A/B tenant and client isolation checks; Req: FR-010, SR-003, SR-005; Verification: hosted RLS count simulation showed account-manager Alpha sees one client and six deliverables, while Alpha/Beta client viewers each see one client and zero management deliverables; Dependencies: T025, T028; Category: Security
+- [x] T033 [US2] Run role boundary checks for internal and client users; Req: FR-010; Verification: hosted routes redirect unauthenticated access to sign-in/session and RLS simulation keeps client viewers out of management deliverables; Dependencies: T025, T028; Category: Security
 - [ ] T034 [US2] Run accepted MVP UAT surface checks for client management, contracts, packages, deliverables, commercial summaries, and SLA summaries; Req: FR-011; Verification: UAT evidence rows; Dependencies: T025, T028; Category: UAT
 
 ## Phase 7: Evidence, Progress, And PR
 
 **Purpose**: Publish the reviewable branch and stop before merge.
 
-- [ ] T035 [US3] Update `specs/004-internal-online-mvp-uat/evidence/uat-evidence-checklist.md` with local and hosted statuses; Req: FR-012, SR-004; Verification: evidence checklist is current; Dependencies: T011-T034 as applicable; Category: Evidence
-- [ ] T036 [US3] Update `docs/PROJECT_PROGRESS.md` with UAT status, blockers, and out-of-scope confirmations; Req: FR-012; Verification: progress doc updated; Dependencies: T035; Category: Documentation
+- [x] T035 [US3] Update `specs/004-internal-online-mvp-uat/evidence/uat-evidence-checklist.md` with local and hosted statuses; Req: FR-012, SR-004; Verification: evidence checklist is current through R-004F hosted UAT results; Dependencies: T011-T034 as applicable; Category: Evidence
+- [x] T036 [US3] Update `docs/PROJECT_PROGRESS.md` with UAT status, blockers, and out-of-scope confirmations; Req: FR-012; Verification: progress doc updated with R-004F hosted migration/seed/deploy evidence and remaining authenticated UAT limitation; Dependencies: T035; Category: Documentation
 - [ ] T037 [US3] Commit and push branch `codex/internal-online-mvp-uat`; Req: FR-013; Verification: remote branch exists; Dependencies: T036; Category: PR
 - [ ] T038 [US3] Open PR clearly marked internal online UAT, not Production, and do not merge; Req: FR-013; Verification: PR URL exists; Dependencies: T037; Category: PR
 
@@ -114,7 +114,7 @@
 
 - [x] T049 [US2] Record Supabase UAT metadata and link success for project `sharik-uat`; Req: FR-005, SR-001; Verification: evidence checklist and progress docs updated without secrets; Dependencies: T048; Category: Hosted Gate
 - [x] T050 [US2] Attempt hosted schema metadata inspection through `db query --linked`; Req: FR-005, SR-001; Verification: Supabase-managed auth base tables listed, no Sharik public client tables present before migration; Dependencies: T049; Category: Hosted Gate
-- [ ] T051 [US2] Verify auth/user counts and no-real-data state after `SUPABASE_DB_PASSWORD` is available locally; Req: FR-005, SR-001, SR-007; Verification: counts only, no emails or row data printed; Dependencies: T050; Category: Hosted Gate
+- [x] T051 [US2] Verify auth/user counts and no-real-data state after `SUPABASE_DB_PASSWORD` is available locally; Req: FR-005, SR-001, SR-007; Verification: pre-migration counts were 0 auth users and 0 public base tables; post-seed counts show 5 synthetic auth users, 2 synthetic clients, 7 deliverables, and 0 non-R-004 users/clients; Dependencies: T050; Category: Hosted Gate
 
 ## Phase 12: R-004E Vercel Readiness And PR Check Status
 
@@ -122,7 +122,16 @@
 
 - [x] T052 [US3] Verify latest `main` merge/check status and PR #22 checks; Req: FR-012, FR-013; Verification: `origin/main` at PR #21 merge commit has no check-runs/status contexts; PR #22 `quality` and `CodeRabbit` pass; Dependencies: T049; Category: PR
 - [x] T053 [US2] Verify Vercel CLI account/project readiness without deploy; Req: FR-004, SR-001, SR-002; Verification: `vercel whoami` reports `omarhussien2`, no `.vercel/project.json`, personal project list empty, and no env/deploy mutation occurred; Dependencies: T026; Category: Deploy Gate
-- [ ] T054 [US2] Create or link an owner-approved free Vercel project after Supabase no-real-data verification passes; Req: FR-004, SR-001, SR-002; Verification: `.vercel/project.json`, project name/id, env/protection/public-exposure evidence without secrets; Dependencies: T051; Category: Deploy Gate
+- [x] T054 [US2] Create or link an owner-approved free Vercel project after Supabase no-real-data verification passes; Req: FR-004, SR-001, SR-002; Verification: `.vercel/project.json` links project `sharik-platform`; env names only verified; deployment is public on free Vercel and recorded as hosting-only; Dependencies: T051; Category: Deploy Gate
+
+## Phase 13: R-004F Hosted UAT Results
+
+**Purpose**: Record hosted Supabase migration/seed and Vercel Production hosting-only results after PR #22 merged.
+
+- [x] T055 [US2] Confirm PR #22 merged before starting the results branch; Req: FR-013; Verification: PR #22 merged on 2026-06-30 with merge commit `20b84984913e8f707fcf5dabad54eea5b03eff64`; Category: PR
+- [x] T056 [US2] Create branch `codex/r004-hosted-uat-results` from `origin/main` after PR #22; Req: FR-002; Verification: branch tracks `origin/main` at `20b8498`; Category: Gate
+- [x] T057 [US2] Record hosted Supabase migration/seed, Vercel deployment, smoke/security evidence, and remaining authenticated UAT limitation; Req: FR-009, FR-010, FR-011, FR-012; Verification: evidence checklist, release doc, and progress doc updated; Category: Evidence
+- [x] T058 [US3] Commit, push, and open a new PR for hosted UAT results; Req: FR-013; Verification: PR #23 exists at `https://github.com/samawah-media/Sharik/pull/23` and is not merged; Dependencies: T057; Category: PR
 
 ## Dependencies & Execution Order
 

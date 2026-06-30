@@ -91,6 +91,16 @@ npx supabase@2.107.0 projects list
 npx supabase@2.107.0 link --project-ref <PROJECT_REF>
 ```
 
+If linked database queries request a database password, provide it only through a local environment variable and clear it after the run:
+
+```powershell
+$env:SUPABASE_DB_PASSWORD = Read-Host "Paste Supabase DB password"
+npx supabase@2.107.0 db query --linked --output json "select count(*)::int as auth_user_count from auth.users;"
+Remove-Item Env:\SUPABASE_DB_PASSWORD
+```
+
+Do not paste the database password into chat, docs, screenshots, PR text, or committed files.
+
 ## Hosted Supabase Migration - Blocked Until Approval
 
 After explicit approval only:

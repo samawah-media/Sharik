@@ -18,7 +18,7 @@ This checklist separates local evidence from hosted evidence. Do not mark hosted
 | BASE-008 | CI/checks for latest `main` merge commit | NOT RUN | GitHub check-runs for `466b9eddbbcd2465fb2106907b4b38fb0880196c` returned zero checks; combined commit status has no contexts. Latest visible `main` Actions run is older than PR #18/#19. |
 | BASE-009 | Owner decision: Vercel Hobby/free | PASS | Owner confirmed on 2026-06-30 that Vercel may be used without a paid Team scope. |
 | BASE-010 | Owner decision: Vercel Production hosting target | PASS | Owner confirmed on 2026-06-30 that Vercel Production target may be used; evidence labels this as hosting-only, not Production acceptance. |
-| BASE-011 | Supabase UAT availability | BLOCKED | Project ref `jnvuccapgsabrwwkxnbh` was supplied, but the local Supabase CLI account cannot access it yet. |
+| BASE-011 | Supabase UAT availability | PASS | Project ref `jnvuccapgsabrwwkxnbh` is visible to the local Supabase CLI account; project metadata says `sharik-uat`, `eu-west-1`, `ACTIVE_HEALTHY`. |
 
 ## Supabase Access Attempt - 2026-06-30
 
@@ -26,10 +26,11 @@ This checklist separates local evidence from hosted evidence. Do not mark hosted
 |---|---|---:|---|
 | SUPA-001 | `npx supabase@2.107.0 --version` with telemetry disabled | PASS | CLI reported `2.107.0`. |
 | SUPA-002 | `npx supabase@2.107.0 orgs list` | PASS | Current CLI account can list organizations, confirming the CLI is authenticated to an account. |
-| SUPA-003 | `npx supabase@2.107.0 projects list` | BLOCKED | Target ref `jnvuccapgsabrwwkxnbh` is not visible under the current CLI account. |
-| SUPA-004 | `npx supabase@2.107.0 link --project-ref jnvuccapgsabrwwkxnbh` | BLOCKED | Supabase returned an access-control error: the current account lacks privileges for the target project. |
-| SUPA-005 | Target non-production verification | BLOCKED | Cannot inspect project metadata beyond the supplied ref until account access is granted. |
-| SUPA-006 | Hosted real-data/user inspection | BLOCKED | Cannot inspect database/auth state until account access is granted. |
+| SUPA-003 | `npx supabase@2.107.0 projects list` | PASS | Target ref `jnvuccapgsabrwwkxnbh` is visible under the current CLI account as `sharik-uat`, `eu-west-1`, `ACTIVE_HEALTHY`. |
+| SUPA-004 | `npx supabase@2.107.0 link --project-ref jnvuccapgsabrwwkxnbh` | PASS | Link returned the target project ref without printing secrets. |
+| SUPA-005 | Target non-production metadata verification | PASS | Metadata supports UAT intent: project name is `sharik-uat`; no Production project was selected. |
+| SUPA-006 | Hosted schema metadata inspection | PASS | `db query --linked` listed Supabase-managed auth base tables only before hosted migration; no Sharik public client tables were present. |
+| SUPA-007 | Hosted auth/user count inspection | BLOCKED | `auth.users` count query could not complete Postgres authentication and requested `SUPABASE_DB_PASSWORD`. |
 
 ## Local Verification
 
@@ -73,11 +74,11 @@ This checklist separates local evidence from hosted evidence. Do not mark hosted
 | HOST-002 | Protection/public exposure status recorded | NOT RUN | Free-account protection availability must be checked and documented before URL sharing. |
 | HOST-003 | Vercel env vars avoid Production Supabase/real data | NOT RUN | Requires Vercel project link. |
 | HOST-004 | Vercel Production target hosting-only evidence | NOT RUN | Owner allows Production target for hosting only; deployment URL/id/target and rollback path still need to be recorded. |
-| HOST-005 | Hosted Supabase project non-production | BLOCKED | Ref `jnvuccapgsabrwwkxnbh` was supplied, but `supabase link` failed because the current CLI account lacks project privileges. |
-| HOST-006 | Hosted migration applied | BLOCKED | Not run because target access and non-production/no-real-data verification did not pass. |
+| HOST-005 | Hosted Supabase project non-production | PASS | Ref `jnvuccapgsabrwwkxnbh` resolves to project `sharik-uat`; link succeeds under the current CLI account. |
+| HOST-006 | Hosted migration applied | BLOCKED | Not run because DB/auth no-real-data verification did not pass; CLI requested `SUPABASE_DB_PASSWORD`. |
 | HOST-007 | Synthetic seed prepared | PASS | Dedicated guarded seed added at `supabase/seeds/r004_internal_online_mvp_uat.sql`; it is separate from `supabase/seed.sql`. |
 | HOST-008 | Synthetic seed applied | BLOCKED | Not run; only `supabase/seeds/r004_internal_online_mvp_uat.sql` remains approved after account access and target verification pass. |
-| HOST-009 | Hosted target has no real client data/users | BLOCKED | Cannot verify because the current CLI account cannot access the target project. The guarded R-004 seed was not applied to any hosted target. |
+| HOST-009 | Hosted target has no real client data/users | BLOCKED | Project metadata is available, but `auth.users` count and data inspection are blocked until `SUPABASE_DB_PASSWORD` is available. The guarded R-004 seed was not applied to any hosted target. |
 
 ## Smoke Checks
 

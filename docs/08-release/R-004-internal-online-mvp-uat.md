@@ -2,7 +2,7 @@
 
 ## Status
 
-SUPABASE ACCESS BLOCKED - HOSTED OPERATIONS NOT RUN
+SUPABASE LINKED - DB PASSWORD BLOCKED - HOSTED OPERATIONS NOT RUN
 
 This release gate prepares an internal online UAT after PR #17. It is not Production acceptance and does not authorize real client data or Production Supabase. Owner decision on 2026-06-30 allows Vercel Hobby/free and allows Vercel Production target for hosting only.
 
@@ -19,6 +19,7 @@ This release gate prepares an internal online UAT after PR #17. It is not Produc
 - Spec Kit package: `specs/004-internal-online-mvp-uat/`
 - R-004B owner decision: Vercel Hobby/free accepted; Vercel Production target accepted as hosting-only; Supabase deferred because no new Sharik Supabase project exists yet.
 - R-004C owner supplied Supabase project ref `jnvuccapgsabrwwkxnbh`, but current Supabase CLI account lacks privileges for the target project.
+- R-004D owner logged the machine into Supabase; project `sharik-uat` is visible and link succeeds, but DB/auth inspection still requires `SUPABASE_DB_PASSWORD`.
 
 ## Goal
 
@@ -45,7 +46,8 @@ Prepare the smallest internal online UAT that can validate accepted MVP surfaces
 | Vercel Hobby/free owner decision | PASS | Owner confirmed paid Team scope is not required for this stage. |
 | Vercel Production hosting-only target | PASS | Owner approved Vercel Production target as hosting only, not Production acceptance. |
 | Hosted Supabase approval | PASS | Owner supplied project ref `jnvuccapgsabrwwkxnbh` on 2026-06-30. |
-| Hosted Supabase target/data verification | BLOCKED | `supabase link --project-ref jnvuccapgsabrwwkxnbh` failed because the current CLI account lacks project privileges. |
+| Hosted Supabase target metadata verification | PASS | Project ref `jnvuccapgsabrwwkxnbh` resolves to `sharik-uat`, `eu-west-1`, `ACTIVE_HEALTHY`; `supabase link` succeeds. |
+| Hosted Supabase no-real-data verification | BLOCKED | `auth.users` count query could not complete Postgres authentication and requested `SUPABASE_DB_PASSWORD`. |
 | Vercel deploy | NOT RUN | Deployment checks can proceed next under the owner-approved Vercel account; no deploy was attempted in this documentation update. |
 | Hosted smoke/security/UAT checks | BLOCKED | Data-backed checks require account access, target verification, hosted migration, and synthetic seed. |
 | R-004 synthetic seed preparation | PASS | Guarded seed prepared at `supabase/seeds/r004_internal_online_mvp_uat.sql`; not applied to hosted. |
@@ -70,8 +72,8 @@ Prepare the smallest internal online UAT that can validate accepted MVP surfaces
 
 ## Current Blockers
 
-- Hosted Supabase migration is blocked because the current Supabase CLI account cannot access project `jnvuccapgsabrwwkxnbh`.
-- The hosted Supabase target cannot be confirmed non-production or free of real client data/users until the owner grants access to the target project or logs this machine into the correct Supabase account.
+- Hosted Supabase migration is blocked because DB/auth no-real-data verification still requires `SUPABASE_DB_PASSWORD`.
+- The hosted Supabase target metadata is visible as `sharik-uat`, but the target cannot be confirmed free of real client data/users until database password access is available.
 - Hosted data-backed UAT is blocked until migration and synthetic seed are approved and executed.
 - `paused_waiting_internal_decision` cannot be represented as hosted persisted seed data in the current MVP because no SLA segment table exists yet; it remains domain/unit evidence only.
 - Vercel deployment can proceed under the owner-approved Hobby/free account after account/project/env/protection or public-exposure checks are recorded.

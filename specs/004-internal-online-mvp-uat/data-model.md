@@ -1,6 +1,6 @@
 # Data Model: Internal Online MVP UAT
 
-Date: 2026-06-29
+Date: 2026-06-30
 
 This feature introduces no new production data model, no migration, and no schema changes. The entities below describe UAT planning and evidence records only.
 
@@ -12,17 +12,18 @@ Fields:
 
 - `name`: human-readable environment name.
 - `host_provider`: approved online host.
-- `deployment_target`: Preview only.
-- `protection_status`: enabled, missing, or unknown.
-- `database_project_ref`: non-production Supabase project ref when approved.
-- `app_env`: preview or staging, never production.
+- `deployment_target`: preview or Vercel production target.
+- `deployment_target_meaning`: hosting_only or production_acceptance; R-004 allows hosting_only only.
+- `protection_status`: enabled, missing, public_with_owner_acceptance, or unknown.
+- `database_project_ref`: Supabase UAT project ref when approved.
+- `app_env`: preview, staging, or production-hosting-only.
 - `status`: planned, blocked, deployed, verified, failed, rolled_back.
 
 Validation:
 
-- `deployment_target` must not be Production.
-- `database_project_ref` must not be a Production ref.
-- `protection_status` must be enabled before sharing the URL.
+- `deployment_target` may be Vercel production only when `deployment_target_meaning` is hosting_only.
+- `database_project_ref` must not be a Production Supabase ref.
+- Public exposure limitations must be recorded if protection is unavailable on the free Vercel account.
 
 ## Synthetic Data Set
 
@@ -65,7 +66,8 @@ Validation:
 
 - Must remain blocked without explicit approval.
 - Approval must name or confirm target project and synthetic-only data.
-- Production target is invalid.
+- Production Supabase target is invalid.
+- Vercel Production target is valid only as hosting_only.
 
 ## Evidence Record
 
@@ -84,6 +86,7 @@ Fields:
 
 Validation:
 
-- Hosted checks cannot be marked pass unless run against hosted non-production environment.
+- Hosted checks cannot be marked pass unless run against the correct hosted environment.
+- Data-backed hosted checks cannot be marked pass until a Supabase UAT project exists and is seeded with synthetic data.
 - Secret values must never be stored in evidence.
 - Blocked checks must state the blocker.

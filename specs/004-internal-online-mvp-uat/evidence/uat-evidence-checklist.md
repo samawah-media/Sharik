@@ -1,8 +1,8 @@
 # Evidence Checklist: Internal Online MVP UAT
 
-Date: 2026-06-29
+Date: 2026-06-30
 
-This checklist separates local evidence from hosted evidence. Do not mark hosted checks as passed unless they were run against the approved protected non-production online environment.
+This checklist separates local evidence from hosted evidence. Do not mark hosted checks as passed unless they were run against the approved hosted environment. Data-backed hosted checks remain blocked until a Supabase UAT project exists.
 
 ## Baseline
 
@@ -11,11 +11,14 @@ This checklist separates local evidence from hosted evidence. Do not mark hosted
 | BASE-001 | PR #17 merged to `main` | PASS | `gh pr view 17` reported `MERGED` at `2026-06-29T12:30:38Z`, merge commit `6c406049203230c6b7e34eb0708bac0f82c981f8`. |
 | BASE-002 | UAT branch isolated after PR #17 | PASS | Branch/worktree `codex/internal-online-mvp-uat` at PR #17 merge commit. |
 | BASE-003 | `AGENTS.md` and project progress reviewed | PASS | Reviewed before edits. |
-| BASE-004 | Hosted Supabase approval | BLOCKED | Resume approval text named `REAL_PROJECT_REF_HERE`; this is not a valid Supabase project ref format, so H1 did not pass and no hosted migration/seed was run. |
-| BASE-005 | Hosted Preview deployment | BLOCKED | Vercel CLI is authenticated as `omarhussien2`; `vercel teams ls` shows only `omarhussien2s-projects`, not the approved Samawah scope. |
+| BASE-004 | Hosted Supabase approval | BLOCKED | Owner clarified no new Sharik Supabase project exists yet; no hosted migration/seed was run. |
+| BASE-005 | Owner-approved Vercel deployment | NOT RUN | Owner now allows Vercel Hobby/free and a Production hosting target; deployment still needs account/project/target evidence before URL sharing. |
 | BASE-006 | Spec Kit prerequisite check on `codex/*` branch | PASS | `check-prerequisites.ps1` now honors `.specify/feature.json` when it pins the active feature directory. |
 | BASE-007 | PR #18 and PR #19 merged on `main` | PASS | `origin/main` is `466b9eddbbcd2465fb2106907b4b38fb0880196c`; log shows PR #18 merge `9dac378` followed by PR #19 merge `466b9ed`. |
 | BASE-008 | CI/checks for latest `main` merge commit | NOT RUN | GitHub check-runs for `466b9eddbbcd2465fb2106907b4b38fb0880196c` returned zero checks; combined commit status has no contexts. Latest visible `main` Actions run is older than PR #18/#19. |
+| BASE-009 | Owner decision: Vercel Hobby/free | PASS | Owner confirmed on 2026-06-30 that Vercel may be used without a paid Team scope. |
+| BASE-010 | Owner decision: Vercel Production hosting target | PASS | Owner confirmed on 2026-06-30 that Vercel Production target may be used; evidence labels this as hosting-only, not Production acceptance. |
+| BASE-011 | Supabase UAT availability | BLOCKED | Owner clarified no new Sharik Supabase project exists yet; hosted migration and data-backed checks remain deferred. |
 
 ## Local Verification
 
@@ -55,25 +58,25 @@ This checklist separates local evidence from hosted evidence. Do not mark hosted
 
 | ID | Check | Status | Notes |
 |---|---|---:|---|
-| HOST-001 | Vercel account/scope approved | BLOCKED | `vercel whoami` returned `omarhussien2`; `vercel teams ls` showed only `omarhussien2s-projects`, not the approved Samawah scope. No Vercel project link exists in this worktree. |
-| HOST-002 | Preview protection enabled | BLOCKED | Requires approved Vercel project/scope access. |
-| HOST-003 | Preview env vars are non-production only | BLOCKED | Requires approved Vercel project/scope access. |
-| HOST-004 | Production env vars untouched | NOT RUN | No deployment/env mutation was attempted from the wrong account. |
-| HOST-005 | Hosted Supabase project non-production | BLOCKED | Cannot verify because `REAL_PROJECT_REF_HERE` is not a valid Supabase project ref format. No hosted link or project mutation was attempted. |
-| HOST-006 | Hosted migration applied | BLOCKED | Not run because H1 failed project-ref validation and the target could not be verified as non-production. |
+| HOST-001 | Vercel account approved | NOT RUN | Owner now allows Vercel Hobby/free; next check is `vercel whoami` and project link under the approved personal account. |
+| HOST-002 | Protection/public exposure status recorded | NOT RUN | Free-account protection availability must be checked and documented before URL sharing. |
+| HOST-003 | Vercel env vars avoid Production Supabase/real data | NOT RUN | Requires Vercel project link. |
+| HOST-004 | Vercel Production target hosting-only evidence | NOT RUN | Owner allows Production target for hosting only; deployment URL/id/target and rollback path still need to be recorded. |
+| HOST-005 | Hosted Supabase project non-production | BLOCKED | Owner clarified no new Sharik Supabase project exists yet. No hosted link or project mutation was attempted. |
+| HOST-006 | Hosted migration applied | BLOCKED | Not run because Supabase is deferred until a UAT project exists and receives explicit approval. |
 | HOST-007 | Synthetic seed prepared | PASS | Dedicated guarded seed added at `supabase/seeds/r004_internal_online_mvp_uat.sql`; it is separate from `supabase/seed.sql`. |
 | HOST-008 | Synthetic seed applied | BLOCKED | Not run; only `supabase/seeds/r004_internal_online_mvp_uat.sql` remains approved for R-004 hosted UAT after a valid non-production target is provided and verified. |
-| HOST-009 | Hosted target has no real client data/users | BLOCKED | Cannot verify without a valid non-production Supabase project ref and approved connection path. The guarded R-004 seed was not applied to any hosted target. |
+| HOST-009 | Hosted target has no real client data/users | BLOCKED | Cannot verify until a Supabase UAT project exists and an approved connection path is available. The guarded R-004 seed was not applied to any hosted target. |
 
 ## Smoke Checks
 
 | ID | Check | Status | Notes |
 |---|---|---:|---|
-| SM-001 | Protected Preview blocks unauthenticated access | NOT RUN | Requires approved Samawah Vercel scope and Preview URL; no deploy was attempted from the personal scope. |
-| SM-002 | Sign-in surface loads | NOT RUN | Requires approved Samawah Vercel scope and Preview URL. |
-| SM-003 | Hosted fixture actors disabled | NOT RUN | Requires approved Samawah Vercel scope and Preview URL. |
-| SM-004 | Runtime health on accepted surfaces | NOT RUN | Requires approved Samawah Vercel scope, Preview URL, and data where applicable. |
-| SM-005 | Browser response does not expose secrets | NOT RUN | Requires approved Samawah Vercel scope and Preview URL. |
+| SM-001 | Vercel URL responds | NOT RUN | Requires owner-approved Vercel deployment URL. |
+| SM-002 | Sign-in surface loads | NOT RUN | Requires owner-approved Vercel deployment URL. |
+| SM-003 | Hosted fixture actors disabled | NOT RUN | Requires owner-approved Vercel deployment URL. |
+| SM-004 | Runtime health on accepted surfaces | NOT RUN | Requires owner-approved Vercel deployment URL; data-backed checks remain blocked without Supabase UAT. |
+| SM-005 | Browser response does not expose secrets | NOT RUN | Requires owner-approved Vercel deployment URL. |
 
 ## Security Checks
 
@@ -82,8 +85,8 @@ This checklist separates local evidence from hosted evidence. Do not mark hosted
 | SEC-001 | Client Alpha user cannot access Client Beta data | BLOCKED | Requires hosted synthetic data; no hosted seed was run. |
 | SEC-002 | Client user cannot access management-only surfaces | BLOCKED | Requires hosted synthetic users; no hosted seed was run. |
 | SEC-003 | Unauthorized deliverable/SLA access denies safely | BLOCKED | Requires hosted synthetic data; no hosted seed was run. |
-| SEC-004 | Service role not exposed in browser | NOT RUN | Requires approved Samawah Preview URL. |
-| SEC-005 | No real client data in seed/screenshots | BLOCKED | Seed file remains synthetic-only, but hosted target inspection and screenshots cannot run until a valid non-production target and approved Preview exist. |
+| SEC-004 | Service role not exposed in browser | NOT RUN | Requires owner-approved Vercel deployment URL. |
+| SEC-005 | No real client data in seed/screenshots | BLOCKED | Seed file remains synthetic-only, but hosted Supabase target inspection and data screenshots cannot run until a Supabase UAT project exists. |
 | SEC-006 | Seed refuses non-R-004 client/auth data | PASS | Seed guards abort when existing client/auth data is outside the approved synthetic R-004 fixture set. |
 
 ## UAT Checks
@@ -100,7 +103,7 @@ This checklist separates local evidence from hosted evidence. Do not mark hosted
 
 ## Out Of Scope Confirmed
 
-- Production deployment.
+- Production acceptance.
 - Production Supabase.
 - Real client data.
 - New dependencies.

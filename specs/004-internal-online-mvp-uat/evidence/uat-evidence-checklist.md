@@ -12,13 +12,14 @@ This checklist separates local evidence from hosted evidence. Do not mark hosted
 | BASE-002 | UAT branch isolated after PR #17 | PASS | Branch/worktree `codex/internal-online-mvp-uat` at PR #17 merge commit. |
 | BASE-003 | `AGENTS.md` and project progress reviewed | PASS | Reviewed before edits. |
 | BASE-004 | Hosted Supabase approval | PASS | Owner supplied project ref `jnvuccapgsabrwwkxnbh` on 2026-06-30 after the earlier placeholder blocker. |
-| BASE-005 | Owner-approved Vercel deployment | NOT RUN | Owner now allows Vercel Hobby/free and a Production hosting target; deployment still needs account/project/target evidence before URL sharing. |
+| BASE-005 | Owner-approved Vercel deployment | BLOCKED | `vercel whoami` reports `omarhussien2`, but no `.vercel/project.json` exists, the personal account has no projects, and no project/env/deploy action was run. |
 | BASE-006 | Spec Kit prerequisite check on `codex/*` branch | PASS | `check-prerequisites.ps1` now honors `.specify/feature.json` when it pins the active feature directory. |
-| BASE-007 | PR #18 and PR #19 merged on `main` | PASS | `origin/main` is `466b9eddbbcd2465fb2106907b4b38fb0880196c`; log shows PR #18 merge `9dac378` followed by PR #19 merge `466b9ed`. |
-| BASE-008 | CI/checks for latest `main` merge commit | NOT RUN | GitHub check-runs for `466b9eddbbcd2465fb2106907b4b38fb0880196c` returned zero checks; combined commit status has no contexts. Latest visible `main` Actions run is older than PR #18/#19. |
+| BASE-007 | PR #18 through PR #21 merged on `main` | PASS | `origin/main` is `86119ca350811511dfdc81403a5ae6548e0caf7f`; log shows PR #18, PR #19, PR #20, and PR #21 merged. |
+| BASE-008 | CI/checks for latest `main` merge commit | NOT RUN | GitHub check-runs for `86119ca350811511dfdc81403a5ae6548e0caf7f` returned zero checks; combined commit status has no contexts. Latest visible `main` Actions run is older than the R-004 merge chain. |
 | BASE-009 | Owner decision: Vercel Hobby/free | PASS | Owner confirmed on 2026-06-30 that Vercel may be used without a paid Team scope. |
 | BASE-010 | Owner decision: Vercel Production hosting target | PASS | Owner confirmed on 2026-06-30 that Vercel Production target may be used; evidence labels this as hosting-only, not Production acceptance. |
 | BASE-011 | Supabase UAT availability | PASS | Project ref `jnvuccapgsabrwwkxnbh` is visible to the local Supabase CLI account; project metadata says `sharik-uat`, `eu-west-1`, `ACTIVE_HEALTHY`. |
+| BASE-012 | PR #22 review checks | PASS | PR #22 is open; `quality` and `CodeRabbit` are passing. |
 
 ## Supabase Access Attempt - 2026-06-30
 
@@ -31,6 +32,18 @@ This checklist separates local evidence from hosted evidence. Do not mark hosted
 | SUPA-005 | Target non-production metadata verification | PASS | Metadata supports UAT intent: project name is `sharik-uat`; no Production project was selected. |
 | SUPA-006 | Hosted schema metadata inspection | PASS | `db query --linked` listed Supabase-managed auth base tables only before hosted migration; no Sharik public client tables were present. |
 | SUPA-007 | Hosted auth/user count inspection | BLOCKED | `auth.users` count query could not complete Postgres authentication and requested `SUPABASE_DB_PASSWORD`. |
+| SUPA-008 | Local DB password availability | BLOCKED | `SUPABASE_DB_PASSWORD` is not set in the Codex process environment; no DB password was printed or stored. |
+
+## Vercel Readiness - 2026-06-30
+
+| ID | Command | Status | Notes |
+|---|---|---:|---|
+| VERCEL-001 | `vercel --version` | PASS | Vercel CLI reported `50.11.0`. |
+| VERCEL-002 | `vercel whoami` | PASS | CLI is authenticated as `omarhussien2`. |
+| VERCEL-003 | `.vercel/project.json` link check | BLOCKED | The R-004 worktree is not linked to any Vercel project. |
+| VERCEL-004 | `vercel project list` | BLOCKED | The personal account currently has no projects, so a new project must be created or an existing approved project must be linked before deploy. |
+| VERCEL-005 | Vercel env readiness | BLOCKED | Hosted runtime needs Supabase public env values after the UAT target passes no-real-data verification; no env values were printed or changed. |
+| VERCEL-006 | Vercel deploy | BLOCKED | No deployment was run because project link, env, protection/public-exposure evidence, and Supabase UAT data gates are incomplete. |
 
 ## Local Verification
 
@@ -70,10 +83,10 @@ This checklist separates local evidence from hosted evidence. Do not mark hosted
 
 | ID | Check | Status | Notes |
 |---|---|---:|---|
-| HOST-001 | Vercel account approved | NOT RUN | Owner now allows Vercel Hobby/free; next check is `vercel whoami` and project link under the approved personal account. |
-| HOST-002 | Protection/public exposure status recorded | NOT RUN | Free-account protection availability must be checked and documented before URL sharing. |
-| HOST-003 | Vercel env vars avoid Production Supabase/real data | NOT RUN | Requires Vercel project link. |
-| HOST-004 | Vercel Production target hosting-only evidence | NOT RUN | Owner allows Production target for hosting only; deployment URL/id/target and rollback path still need to be recorded. |
+| HOST-001 | Vercel account approved | PASS | `vercel whoami` reports `omarhussien2` under the owner-approved Hobby/free path. |
+| HOST-002 | Protection/public exposure status recorded | BLOCKED | Requires a linked Vercel project/deployment before protection or public exposure can be recorded. |
+| HOST-003 | Vercel env vars avoid Production Supabase/real data | BLOCKED | Requires Vercel project link and Supabase UAT verification; no Vercel env mutation was run. |
+| HOST-004 | Vercel Production target hosting-only evidence | BLOCKED | Owner allows Production target for hosting only, but no deployment URL/id/target exists yet. |
 | HOST-005 | Hosted Supabase project non-production | PASS | Ref `jnvuccapgsabrwwkxnbh` resolves to project `sharik-uat`; link succeeds under the current CLI account. |
 | HOST-006 | Hosted migration applied | BLOCKED | Not run because DB/auth no-real-data verification did not pass; CLI requested `SUPABASE_DB_PASSWORD`. |
 | HOST-007 | Synthetic seed prepared | PASS | Dedicated guarded seed added at `supabase/seeds/r004_internal_online_mvp_uat.sql`; it is separate from `supabase/seed.sql`. |

@@ -58,6 +58,32 @@ export default async function ClientsPage({
                   <h2 className="text-base font-semibold">{client.name}</h2>
                   <p className="mt-1 font-mono text-xs text-muted">{client.slug}</p>
                 </div>
+                <Link
+                  className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground"
+                  href={`/clients/${client.id}`}
+                >
+                  فتح مساحة العميل
+                </Link>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link
+                  className="rounded-md border border-border px-3 py-2 text-sm font-semibold"
+                  href={`/clients/${client.id}/contracts`}
+                >
+                  العقود
+                </Link>
+                <Link
+                  className="rounded-md border border-border px-3 py-2 text-sm font-semibold"
+                  href={`/clients/${client.id}/deliverables`}
+                >
+                  المخرجات
+                </Link>
+                <Link
+                  className="rounded-md border border-border px-3 py-2 text-sm font-semibold"
+                  href={`/clients/${client.id}/commercial`}
+                >
+                  الملخص التجاري
+                </Link>
                 {writeAccess.allowed ? (
                   <Link
                     className="rounded-md border border-border px-3 py-2 text-sm font-semibold"

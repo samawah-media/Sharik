@@ -11,10 +11,32 @@ Last updated: 2026-06-30
 | Feature | R-004 Internal Online MVP UAT |
 | Worktree | `D:\code - projects\sharik-worktrees\r004-hosted-uat` |
 | Branch | `codex/r004-hosted-uat-run` from PR #20 merge commit on `origin/main` |
-| Current allowed stage | Supabase UAT access verification and evidence update only; migration/seed remains blocked by account privileges |
-| Status | PR #18, PR #19, and PR #20 are merged on `main`; owner supplied Supabase project ref `jnvuccapgsabrwwkxnbh`, but the local Supabase CLI account cannot access it |
-| Next gate | Owner must grant this CLI account access to the Supabase UAT project or log this machine into the new Supabase account before any hosted migration/seed |
-| Owner decision required | Required to grant Supabase access; no hosted migration, hosted seed, Vercel env mutation, or deploy can proceed until target access and no-real-data checks pass |
+| Current allowed stage | Supabase UAT database verification and evidence update only; migration/seed remains blocked until DB password access is available |
+| Status | PR #18, PR #19, and PR #20 are merged on `main`; owner supplied Supabase project ref `jnvuccapgsabrwwkxnbh`; project metadata is visible and `supabase link` succeeds, but database/auth inspection requires `SUPABASE_DB_PASSWORD` |
+| Next gate | Owner must provide database-password access through a secure local environment path before no-real-data verification, migration, or seed |
+| Owner decision required | Required to enable DB password access locally; no hosted migration, hosted seed, Vercel env mutation, or deploy can proceed until no-real-data checks pass |
+
+## R-004D Supabase Link Success And DB Password Blocker - 2026-06-30
+
+Owner action:
+
+- Owner logged the machine into Supabase with a Personal Access Token.
+
+Verification:
+
+- `npx supabase@2.107.0 projects list --output-format json` now shows project ref `jnvuccapgsabrwwkxnbh`.
+- Project metadata: name `sharik-uat`, region `eu-west-1`, status `ACTIVE_HEALTHY`, created `2026-06-30T08:35:34.159437Z`.
+- `npx supabase@2.107.0 link --project-ref jnvuccapgsabrwwkxnbh` passed and returned the target project ref.
+- Initial schema metadata query through `db query --linked` succeeded and showed only Supabase-managed auth base tables before hosted migration.
+- A follow-up `auth.users` count query failed because the CLI could not complete Postgres authentication and requested `SUPABASE_DB_PASSWORD`.
+
+Result:
+
+- Target metadata supports UAT/non-production intent.
+- The target has not been fully verified as free of real client users/data because DB password access is still missing.
+- No hosted Supabase migration was run.
+- No hosted seed was run.
+- `supabase/seeds/r004_internal_online_mvp_uat.sql` remains the only approved R-004 hosted seed after DB verification passes.
 
 ## R-004C Supabase UAT Access Attempt - 2026-06-30
 

@@ -106,7 +106,15 @@
 
 - [x] T046 [US2] Record supplied Supabase project ref `jnvuccapgsabrwwkxnbh`; Req: FR-006, SR-001; Verification: evidence checklist and progress docs updated without secrets; Dependencies: T044; Category: Hosted Gate
 - [x] T047 [US2] Attempt non-secret Supabase CLI access verification; Req: FR-005, SR-001; Verification: `supabase link --project-ref` returned an access-control error; Dependencies: T046; Category: Hosted Gate
-- [ ] T048 [US2] Re-run target verification after owner grants access or logs this machine into the correct Supabase account; Req: FR-005, SR-001; Verification: target metadata and no-real-data inspection without secrets; Dependencies: T047; Category: Hosted Gate
+- [x] T048 [US2] Re-run target verification after owner grants access or logs this machine into the correct Supabase account; Req: FR-005, SR-001; Verification: target metadata visible and `supabase link` succeeds; Dependencies: T047; Category: Hosted Gate
+
+## Phase 11: R-004D Supabase DB Password Blocker
+
+**Purpose**: Stop before hosted migration when DB/auth inspection cannot complete without database password access.
+
+- [x] T049 [US2] Record Supabase UAT metadata and link success for project `sharik-uat`; Req: FR-005, SR-001; Verification: evidence checklist and progress docs updated without secrets; Dependencies: T048; Category: Hosted Gate
+- [x] T050 [US2] Attempt hosted schema metadata inspection through `db query --linked`; Req: FR-005, SR-001; Verification: Supabase-managed auth base tables listed, no Sharik public client tables present before migration; Dependencies: T049; Category: Hosted Gate
+- [ ] T051 [US2] Verify auth/user counts and no-real-data state after `SUPABASE_DB_PASSWORD` is available locally; Req: FR-005, SR-001, SR-007; Verification: counts only, no emails or row data printed; Dependencies: T050; Category: Hosted Gate
 
 ## Dependencies & Execution Order
 

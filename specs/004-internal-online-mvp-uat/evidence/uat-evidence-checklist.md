@@ -8,6 +8,7 @@ This checklist separates local evidence from hosted evidence. Do not mark hosted
 
 Current result:
 
+- PR #23 is merged on `main`; R-004G branch `codex/r004-authenticated-synthetic-uat` starts from `origin/main` after merge commit `4559d14495f76af8596aad79c2afd53617855935`.
 - Supabase project ref `jnvuccapgsabrwwkxnbh` resolves to `sharik-uat`, `eu-west-1`, `ACTIVE_HEALTHY`; this was treated as the approved non-production UAT target.
 - Pre-migration checks found 0 auth users, 0 non-R-004 auth users, and 0 public base tables.
 - `db push --linked --dry-run` listed 11 local migrations and `db push --linked` applied them to the hosted UAT target.
@@ -16,13 +17,19 @@ Current result:
 - The hosted seed was applied through the Supabase pooler after direct database-host DNS resolution failed inside Docker.
 - Post-seed counts: 5 synthetic auth users, 2 clients, 2 contracts, 2 packages, 2 package lines, 7 deliverables, 0 non-R-004 auth users, and 0 non-R-004 clients.
 - Vercel project `sharik-platform` is linked and deployed to Vercel Production as hosting-only, not Production acceptance.
-- Deployment id `dpl_D3QBhGPnecEcoHtf223NvGNBVosL` is Ready with alias `https://sharik-platform.vercel.app`.
+- Root `/` no longer exposes the F-001A placeholder; unauthenticated users are redirected to `/sign-in`, and authenticated users are routed by role/scope.
+- Temporary passwords were activated for the 5 hosted `@r004.example.test` users through local in-memory environment state only; no temporary password was written to docs, git, PR text, or logs.
+- Vercel public runtime env values were refreshed after non-printable BOM characters were detected in pulled values; key names remain `APP_ENV`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; no service role env was set or printed.
+- Deployment id `dpl_9vYzg7XMUAvn1Ftm38pA8SLVdnVB` is Ready with alias `https://sharik-platform.vercel.app`.
 - Vercel production env key names are `APP_ENV`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; no service role env was set or printed.
 - Smoke checks for `/`, `/sign-in`, `/clients?actor=tenant_admin_a`, and `/client/commercial?actor=client_viewer_a` returned HTTP 200 and did not expose fixture client names or service-role/secret markers in HTML.
 - Hosted RLS count simulation passed for scoped access: account-manager Alpha sees 1 client and 6 deliverables; Alpha/Beta client viewers each see 1 client and 0 management deliverables.
-- Full interactive browser UAT is still blocked because the synthetic hosted users currently have no approved temporary password/sign-in path.
+- Authenticated hosted browser UAT passed 22 assertions against `https://sharik-platform.vercel.app` using synthetic users only.
+- Browser UAT covered `/clients`, `/clients/[clientId]`, `/clients/[clientId]/contracts`, `/clients/[clientId]/contracts/[contractId]/packages`, `/clients/[clientId]/deliverables`, `/clients/[clientId]/commercial`, `/client`, and `/client/commercial`.
+- Browser UAT confirmed Client Alpha does not see Beta data, client viewers do not see management deliverables, and scoped internal users see only allowed data.
 - Supabase CLI temp login briefly hit a pooler authentication circuit breaker after parallel RLS checks; this affected one tenant-admin simulation retry only and did not change migration/seed results.
 - `SUPABASE_DB_PASSWORD` and `PGPASSWORD` were confirmed not set in the shell environment after hosted operations.
+- Owner follow-up: rotate or clear the temporary synthetic user passwords and rotate any secrets that may have been exposed during the wider R-004 process.
 
 ## Baseline
 
@@ -76,12 +83,24 @@ Current result:
 | VERCEL-003 | `.vercel/project.json` link check | PASS | Project `sharik-platform` is linked; project/org ids were recorded without secrets. |
 | VERCEL-004 | `vercel env list production --format json` | PASS | Production env key names only: `APP_ENV`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; values remain encrypted and were not printed. |
 | VERCEL-005 | Vercel env readiness | PASS | Hosted runtime uses UAT Supabase public URL/publishable key only; no service role key was set. |
-| VERCEL-006 | Vercel deploy | PASS | `vercel deploy --prod --yes` produced Ready deployment `dpl_D3QBhGPnecEcoHtf223NvGNBVosL`; alias `https://sharik-platform.vercel.app`. |
+| VERCEL-006 | Vercel deploy | PASS | Initial hosted deployment `dpl_D3QBhGPnecEcoHtf223NvGNBVosL` was Ready with alias `https://sharik-platform.vercel.app`. |
+| VERCEL-007 | Public env character cleanup | PASS | Pulled production values revealed non-printable BOM characters in public runtime env values; values were re-added via stdin without printing secrets and rechecked with no non-Latin-1 characters. |
+| VERCEL-008 | R-004G deploy | PASS | `vercel deploy --prod --yes` produced Ready deployment `dpl_9vYzg7XMUAvn1Ftm38pA8SLVdnVB`; alias `https://sharik-platform.vercel.app`. |
 
 ## Local Verification
 
 | ID | Command | Status | Notes |
 |---|---|---:|---|
+| R004G-LOCAL-001 | `git diff --check` | PASS | No whitespace errors; Git reported line-ending warnings only. |
+| R004G-LOCAL-002 | `npm run secret:scan` | PASS | No high-confidence secrets found after hosted UAT evidence updates and env pull to ignored `.env.local`. |
+| R004G-LOCAL-003 | `npm run lint` | PASS | ESLint completed successfully after updating the root component test. |
+| R004G-LOCAL-004 | `npm run typecheck` | PASS | TypeScript completed successfully. |
+| R004G-LOCAL-005 | `npm run test:unit` | PASS | 23 files / 72 tests passed. |
+| R004G-LOCAL-006 | `npm run test:integration` | PASS | 19 files / 76 tests passed. |
+| R004G-LOCAL-007 | `npm run test:rls` | PASS | RLS simulator 7 files / 21 tests and pgTAP 2 files / 110 tests passed. |
+| R004G-LOCAL-008 | `npm run test:component` | PASS | 12 files / 39 tests passed after replacing the placeholder component test with root redirect coverage. |
+| R004G-LOCAL-009 | `npm run test:e2e` | PASS | 61 passed / 2 expected skips. |
+| R004G-LOCAL-010 | `npm run build` | PASS | Next.js production build completed after pulling Vercel production env to ignored `.env.local`; env values were not printed or committed. |
 | LOCAL-001 | `git diff --check` | PASS | No whitespace errors; Git reported line-ending warnings only. |
 | LOCAL-002 | `npm run typecheck` | PASS | TypeScript completed successfully. |
 | LOCAL-003 | `npm run lint` | PASS | ESLint completed successfully. |
@@ -125,6 +144,7 @@ Current result:
 | HOST-007 | Synthetic seed prepared | PASS | Dedicated guarded seed added at `supabase/seeds/r004_internal_online_mvp_uat.sql`; it is separate from `supabase/seed.sql`. |
 | HOST-008 | Synthetic seed applied | PASS | Only `supabase/seeds/r004_internal_online_mvp_uat.sql` was applied to hosted UAT through the pooler; `supabase/seed.sql` was not used. |
 | HOST-009 | Hosted target has no real client data/users | PASS | Counts show 0 non-R-004 auth users and 0 non-R-004 clients after seed. |
+| HOST-010 | Authenticated hosted browser UAT | PASS | 22 browser assertions passed against the Vercel alias with synthetic users only after temporary sign-in activation. |
 
 ## Smoke Checks
 
@@ -133,7 +153,7 @@ Current result:
 | SM-001 | Vercel URL responds | PASS | `https://sharik-platform.vercel.app/` returned HTTP 200. |
 | SM-002 | Sign-in surface loads | PASS | `/sign-in` returned HTTP 200. |
 | SM-003 | Hosted fixture actors disabled | PASS | Fixture query routes returned sign-in/session surface and did not expose fixture client names. |
-| SM-004 | Runtime health on accepted surfaces | PASS | Root/sign-in/guarded routes returned HTTP 200; authenticated full-surface UAT remains blocked pending synthetic sign-in credentials. |
+| SM-004 | Runtime health on accepted surfaces | PASS | Root/sign-in/guarded routes returned safely; authenticated full-surface UAT subsequently passed with synthetic users only. |
 | SM-005 | Browser response does not expose secrets | PASS | HTML checks found no `service_role`, `SUPABASE_SERVICE_ROLE_KEY`, or `sb_secret` markers. |
 
 ## Security Checks
@@ -141,8 +161,8 @@ Current result:
 | ID | Check | Status | Notes |
 |---|---|---:|---|
 | SEC-001 | Client Alpha user cannot access Client Beta data | PASS | Hosted RLS count simulation: account-manager Alpha sees 1 client and 6 Alpha deliverables only; client viewers see one scoped client and zero management deliverables. |
-| SEC-002 | Client user cannot access management-only surfaces | PASS | Client viewer Alpha and Beta each see 0 management deliverables through hosted RLS simulation; hosted browser routes redirect unauthenticated requests to sign-in/session. |
-| SEC-003 | Unauthorized deliverable/SLA access denies safely | PASS | Client viewer hosted RLS simulation returns 0 deliverables without enumerating other client resources. |
+| SEC-002 | Client user cannot access management-only surfaces | PASS | Client viewer Alpha and Beta each see 0 management deliverables through hosted RLS simulation; authenticated browser UAT confirmed client viewers do not see management deliverables. |
+| SEC-003 | Unauthorized deliverable/SLA access denies safely | PASS | Client viewer hosted RLS simulation returns 0 deliverables without enumerating other client resources; cross-client hosted browser route attempts did not expose the other client's contract or deliverable data. |
 | SEC-004 | Service role not exposed in browser | PASS | HTML scans on hosted routes found no service-role or secret markers. |
 | SEC-005 | No real client data in seed/screenshots | PASS | Hosted seed/count evidence remains synthetic-only with 0 non-R-004 users/clients; no screenshots with real data were used. |
 | SEC-006 | Seed refuses non-R-004 client/auth data | PASS | Seed guards abort when existing client/auth data is outside the approved synthetic R-004 fixture set. |
@@ -151,12 +171,12 @@ Current result:
 
 | ID | Surface | Status | Notes |
 |---|---|---:|---|
-| UAT-001 | Client management | BLOCKED | Hosted migration/seed complete, but full browser UAT requires approved synthetic sign-in credentials; unauthenticated hosted route redirects safely. |
-| UAT-002 | Contracts | BLOCKED | Hosted migration/seed complete, but authenticated browser UAT remains blocked until synthetic sign-in credentials are approved. |
-| UAT-003 | Packages | BLOCKED | Hosted migration/seed complete, but authenticated browser UAT remains blocked until synthetic sign-in credentials are approved. |
-| UAT-004 | Deliverables | BLOCKED | Hosted migration/seed complete and RLS count simulation passed; full browser UAT remains blocked until synthetic sign-in credentials are approved. |
-| UAT-005 | Commercial summaries | BLOCKED | Hosted migration/seed complete, but authenticated browser UAT remains blocked until synthetic sign-in credentials are approved. |
-| UAT-006 | SLA MVP summaries | BLOCKED | Hosted migration/seed complete, but authenticated browser UAT remains blocked until synthetic sign-in credentials are approved. |
+| UAT-001 | Client management | PASS | Tenant admin synthetic browser UAT reached `/clients` and both synthetic clients; account-manager Alpha stayed scoped to Alpha. |
+| UAT-002 | Contracts | PASS | Tenant admin synthetic browser UAT reached `/clients/[clientId]/contracts`; cross-client browser attempts did not expose another client's contract data. |
+| UAT-003 | Packages | PASS | Tenant admin synthetic browser UAT reached `/clients/[clientId]/contracts/[contractId]/packages` for synthetic Alpha package data. |
+| UAT-004 | Deliverables | PASS | Tenant admin synthetic browser UAT reached management deliverables; client viewers did not see management deliverables. |
+| UAT-005 | Commercial summaries | PASS | Tenant admin synthetic browser UAT reached `/clients/[clientId]/commercial`; client viewers reached `/client/commercial` only for their assigned synthetic client. |
+| UAT-006 | SLA MVP summaries | PASS | Authenticated hosted browser UAT covered deliverable/commercial surfaces containing seeded SLA summary data; persisted `paused_waiting_internal_decision` remains out of current schema scope. |
 | UAT-007 | `paused_waiting_internal_decision` hosted persisted case | BLOCKED | Current accepted MVP has no persisted SLA segment table; covered by F-003 domain/unit evidence only until a future approved schema change. |
 
 ## Out Of Scope Confirmed

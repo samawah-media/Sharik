@@ -9,12 +9,48 @@ Last updated: 2026-06-30
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
 | Feature | R-004 Internal Online MVP UAT |
-| Worktree | `D:\code - projects\sharik-worktrees\r004-hosted-uat` |
-| Branch | `codex/r004-hosted-uat-results` from PR #22 merge commit on `origin/main` |
+| Worktree | `D:\code - projects\sharik-worktrees\r004g-authenticated-uat` |
+| Branch | `codex/r004-authenticated-synthetic-uat` from PR #23 merge commit on `origin/main` |
 | Current allowed stage | Hosted UAT evidence and review PR only; no merge without explicit review |
-| Status | PR #18 through PR #22 are merged on `main`; hosted non-production Supabase migration and R-004 synthetic seed completed against `sharik-uat`; Vercel project `sharik-platform` is deployed to Production target as hosting-only at `https://sharik-platform.vercel.app`; smoke/security checks passed for public/sign-in/fixture-disablement and scoped RLS counts; full authenticated browser UAT is still blocked until synthetic users receive an approved temporary password/sign-in path |
-| Next gate | Open a new PR for hosted UAT results and leave it unmerged for review |
-| Owner decision required | Decide whether to create temporary passwords for synthetic `@r004.example.test` users through a secure process, then rotate the exposed Supabase DB password and revoke any exposed access token after this work |
+| Status | PR #18 through PR #23 are merged on `main`; hosted non-production Supabase migration and R-004 synthetic seed completed against `sharik-uat`; Vercel project `sharik-platform` is deployed to Production target as hosting-only at `https://sharik-platform.vercel.app`; `/` now redirects through auth; temporary synthetic sign-in was activated safely; authenticated browser UAT passed with synthetic users only |
+| Next gate | Open PR `[codex] R-004 authenticated synthetic UAT` and leave it unmerged for review |
+| Owner decision required | Rotate or clear temporary synthetic `@r004.example.test` passwords and rotate any secrets exposed during the wider R-004 hosted setup process |
+
+## R-004G Authenticated Synthetic UAT - 2026-06-30
+
+Verification:
+
+- `origin/main` contains PR #23 merge commit `4559d14495f76af8596aad79c2afd53617855935`.
+- New branch `codex/r004-authenticated-synthetic-uat` starts from `origin/main` after PR #23.
+- Required R-004 docs and AGENTS guidance were reviewed before implementation.
+- Root `/` no longer exposes the F-001A placeholder; unauthenticated users redirect to `/sign-in`.
+- Authenticated root visits redirect through existing role-aware navigation and assigned client scope.
+- Temporary passwords were activated for 5 hosted `@r004.example.test` users using local in-memory environment state only; no password was written to docs, git, PR text, or logs.
+- Vercel public runtime env values were refreshed after non-printable BOM characters were detected; env key names remain `APP_ENV`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and no service-role env exists.
+- Latest Vercel deployment is `dpl_9vYzg7XMUAvn1Ftm38pA8SLVdnVB`, Ready, target Production hosting-only, alias `https://sharik-platform.vercel.app`.
+- Authenticated hosted browser UAT passed 22 assertions with synthetic users only.
+- Browser UAT covered `/clients`, `/clients/[clientId]`, `/clients/[clientId]/contracts`, `/clients/[clientId]/contracts/[contractId]/packages`, `/clients/[clientId]/deliverables`, `/clients/[clientId]/commercial`, `/client`, and `/client/commercial`.
+- Tenant/client isolation was verified in browser: Client Alpha did not see Beta, client viewers did not see management deliverables, and scoped internal users saw only allowed data.
+
+Result:
+
+- R-004G authenticated synthetic UAT is ready for owner review through a new PR.
+- No Production Supabase, real client data, dependency addition, RoleKey change, standalone `project_manager` role, Kanban/files/comments/approvals/social scheduling/AI expansion, or PR merge was introduced.
+- Owner must rotate or clear temporary synthetic user passwords after review.
+- Owner should rotate any Supabase access token, DB password, or other secret that may have been exposed during the wider R-004 hosted setup process.
+
+Local verification:
+
+- `git diff --check`: passed; line-ending warnings only.
+- `npm run secret:scan`: passed; no high-confidence secrets found.
+- `npm run lint`: passed.
+- `npm run typecheck`: passed.
+- `npm run test:unit`: passed, 23 files / 72 tests.
+- `npm run test:integration`: passed, 19 files / 76 tests.
+- `npm run test:rls`: passed; simulator 7 files / 21 tests and pgTAP 2 files / 110 tests.
+- `npm run test:component`: passed, 12 files / 39 tests.
+- `npm run test:e2e`: passed, 61 passed / 2 expected skips.
+- `npm run build`: passed after pulling Vercel production env to ignored `.env.local`; values were not printed or committed.
 
 ## R-004F Hosted Supabase/Vercel UAT Results - 2026-06-30
 

@@ -2,7 +2,7 @@
 
 ## Status
 
-HOSTED UAT EVIDENCE READY - PRODUCTION HOSTING ONLY - INTERACTIVE SIGN-IN UAT LIMITED
+AUTHENTICATED SYNTHETIC UAT READY - PRODUCTION HOSTING ONLY - OWNER REVIEW REQUIRED
 
 This release gate prepares an internal online UAT after PR #17. It is not Production acceptance and does not authorize real client data or Production Supabase. Owner decision on 2026-06-30 allows Vercel Hobby/free and allows Vercel Production target for hosting only.
 
@@ -17,6 +17,8 @@ This release gate prepares an internal online UAT after PR #17. It is not Produc
 - PR #20 status: merged on 2026-06-30; merge commit `a900a6e206b74a9a6e7afc62356400444bbe47f3`
 - PR #21 status: merged on 2026-06-30; latest `main` merge commit is `86119ca350811511dfdc81403a5ae6548e0caf7f`
 - PR #22 status: merged on 2026-06-30; merge commit `20b84984913e8f707fcf5dabad54eea5b03eff64`; `quality` and `CodeRabbit` were passing before merge.
+- PR #23 status: merged on 2026-06-30 by the owner; merge commit `4559d14495f76af8596aad79c2afd53617855935`.
+- R-004G authenticated UAT branch: `codex/r004-authenticated-synthetic-uat`
 - Hosted UAT results branch: `codex/r004-hosted-uat-results`
 - Hosted UAT resume branch: `codex/r004-hosted-uat-evidence`
 - Hosted UAT access branch: `codex/r004-hosted-uat-run`
@@ -26,6 +28,7 @@ This release gate prepares an internal online UAT after PR #17. It is not Produc
 - R-004D owner logged the machine into Supabase; project `sharik-uat` is visible and link succeeds.
 - R-004E confirmed Vercel CLI was authenticated as `omarhussien2` and recorded the pre-deploy blocker.
 - R-004F completed hosted Supabase no-real-data checks, hosted migration, guarded R-004 seed, Vercel Production hosting-only deploy, smoke checks, and limited hosted security checks.
+- R-004G replaced the `/` placeholder with authenticated routing, safely activated temporary synthetic sign-in, refreshed Vercel public runtime env values, redeployed, and completed authenticated browser UAT with synthetic users only.
 
 ## Goal
 
@@ -51,6 +54,7 @@ Prepare the smallest internal online UAT that can validate accepted MVP surfaces
 | Latest `main` CI/checks | NOT RUN | GitHub check-runs for PR #22 merge commit `20b84984913e8f707fcf5dabad54eea5b03eff64` returned zero checks and no status contexts. |
 | PR #22 checks | PASS | PR #22 had `quality` and `CodeRabbit` passing before merge. |
 | PR #22 merged | PASS | PR #22 merged into `main` with merge commit `20b84984913e8f707fcf5dabad54eea5b03eff64`. |
+| PR #23 merged | PASS | PR #23 was merged by the owner; `origin/main` contains merge commit `4559d14495f76af8596aad79c2afd53617855935`. |
 | Vercel Hobby/free owner decision | PASS | Owner confirmed paid Team scope is not required for this stage. |
 | Vercel Production hosting-only target | PASS | Owner approved Vercel Production target as hosting only, not Production acceptance. |
 | Hosted Supabase approval | PASS | Owner supplied project ref `jnvuccapgsabrwwkxnbh` on 2026-06-30. |
@@ -60,9 +64,9 @@ Prepare the smallest internal online UAT that can validate accepted MVP surfaces
 | Hosted R-004 seed | PASS | Only `supabase/seeds/r004_internal_online_mvp_uat.sql` was applied; post-seed counts show expected synthetic data and 0 non-R-004 users/clients. |
 | Vercel account check | PASS | Vercel CLI `50.11.0` is authenticated as `omarhussien2`. |
 | Vercel project link | PASS | `.vercel/project.json` links project `sharik-platform`. |
-| Vercel deploy | PASS | Deployment `dpl_D3QBhGPnecEcoHtf223NvGNBVosL` is Ready with alias `https://sharik-platform.vercel.app`; target is production hosting-only. |
+| Vercel deploy | PASS | Latest deployment `dpl_9vYzg7XMUAvn1Ftm38pA8SLVdnVB` is Ready with alias `https://sharik-platform.vercel.app`; target is production hosting-only. |
 | Hosted smoke/security checks | PASS | Root/sign-in/guarded routes return HTTP 200, fixture routes do not expose fixture data, HTML exposes no service-role/secret markers, and RLS count simulation passed for scoped users. |
-| Hosted authenticated UAT checks | BLOCKED | Synthetic users have no approved temporary password/sign-in path yet, so full browser UAT for accepted MVP surfaces remains blocked. |
+| Hosted authenticated UAT checks | PASS | 22 browser assertions passed against `https://sharik-platform.vercel.app` using only synthetic `@r004.example.test` users. |
 | R-004 synthetic seed preparation | PASS | Guarded seed prepared and applied at `supabase/seeds/r004_internal_online_mvp_uat.sql`; `supabase/seed.sql` was not used. |
 
 ## Hosted Execution - 2026-06-30
@@ -78,6 +82,17 @@ Prepare the smallest internal online UAT that can validate accepted MVP surfaces
 - Vercel deployment: `dpl_D3QBhGPnecEcoHtf223NvGNBVosL`, Ready, production hosting-only, alias `https://sharik-platform.vercel.app`.
 - Smoke/security: `/`, `/sign-in`, `/clients?actor=tenant_admin_a`, and `/client/commercial?actor=client_viewer_a` returned HTTP 200 and did not expose fixture client names or service-role/secret markers.
 - Hosted RLS count simulation: account-manager Alpha sees 1 client and 6 deliverables; Alpha/Beta client viewers each see 1 client and 0 management deliverables.
+
+## R-004G Authenticated Synthetic UAT - 2026-06-30
+
+- Root `/` no longer exposes the F-001A placeholder; unauthenticated users redirect to `/sign-in`.
+- Authenticated users are routed by existing role-aware navigation and assigned client scope.
+- Temporary passwords were activated for the 5 hosted `@r004.example.test` users using local in-memory environment state only; no password was written to docs, git, PR text, or logs.
+- Vercel public runtime env values were refreshed after detecting non-printable BOM characters; no service-role env was added.
+- Latest Vercel deployment: `dpl_9vYzg7XMUAvn1Ftm38pA8SLVdnVB`, Ready, production hosting-only, alias `https://sharik-platform.vercel.app`.
+- Authenticated browser UAT passed 22 assertions covering `/clients`, `/clients/[clientId]`, `/clients/[clientId]/contracts`, `/clients/[clientId]/contracts/[contractId]/packages`, `/clients/[clientId]/deliverables`, `/clients/[clientId]/commercial`, `/client`, and `/client/commercial`.
+- Tenant/client isolation was verified in browser: Client Alpha did not see Beta, client viewers did not see management deliverables, and scoped internal users saw only allowed data.
+- Owner follow-up required: rotate or clear temporary synthetic passwords and rotate any secrets exposed during the wider R-004 process.
 
 ## Data Policy
 
@@ -99,14 +114,24 @@ Prepare the smallest internal online UAT that can validate accepted MVP surfaces
 
 ## Current Blockers
 
-- Full authenticated browser UAT is blocked until an approved temporary password/sign-in path exists for the synthetic hosted users.
+- Owner must rotate or clear the temporary synthetic user passwords after review.
 - `paused_waiting_internal_decision` cannot be represented as hosted persisted seed data in the current MVP because no SLA segment table exists yet; it remains domain/unit evidence only.
 - Free Vercel deployment is publicly reachable; use it for internal UAT only and avoid real data.
 - Supabase CLI temp login hit a temporary pooler auth circuit breaker after parallel RLS checks; one tenant-admin simulation retry was not completed, but migration/seed/count evidence remains complete.
-- Synthetic hosted users were seeded without passwords by design; do not treat hosted browser UAT as complete until credentials are created through an approved secure process.
+- Rotate any Supabase access tokens, DB passwords, or other secrets that may have been exposed during the wider R-004 hosted setup process.
 
 ## Local Verification
 
+- R-004G `git diff --check`: passed; line-ending warnings only.
+- R-004G `npm run secret:scan`: passed; no high-confidence secrets found.
+- R-004G `npm run lint`: passed.
+- R-004G `npm run typecheck`: passed.
+- R-004G `npm run test:unit`: passed, 23 files / 72 tests.
+- R-004G `npm run test:integration`: passed, 19 files / 76 tests.
+- R-004G `npm run test:rls`: passed; simulator 7 files / 21 tests and pgTAP 2 files / 110 tests.
+- R-004G `npm run test:component`: passed, 12 files / 39 tests.
+- R-004G `npm run test:e2e`: passed, 61 passed / 2 expected skips.
+- R-004G `npm run build`: passed after pulling Vercel production env to ignored `.env.local`; values were not printed or committed.
 - `.specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks`: passed after honoring pinned `.specify/feature.json`.
 - `git diff --check`: passed; line-ending warnings only.
 - `npm run typecheck`: passed.

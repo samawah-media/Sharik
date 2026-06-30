@@ -4,7 +4,7 @@
 
 **Prerequisites**: `spec.md`, `plan.md`, `quickstart.md`, `AGENTS.md`, `.specify/memory/constitution.md`, PR #17 merged to `main`.
 
-**Status**: UAT gate task list. Vercel Hobby/free and Vercel Production hosting target are owner-approved; hosted Supabase migration, R-004 synthetic seed, and Vercel Production hosting deployment were executed on 2026-06-30 against the approved UAT target. Full interactive browser UAT remains limited until synthetic users receive an approved temporary password/sign-in path.
+**Status**: UAT gate task list. Vercel Hobby/free and Vercel Production hosting target are owner-approved; hosted Supabase migration, R-004 synthetic seed, Vercel Production hosting deployment, temporary synthetic sign-in activation, and authenticated browser UAT were executed on 2026-06-30 against the approved UAT target. Temporary synthetic passwords must be rotated or cleared by the owner after review.
 
 **Scope Guard**: This branch prepares internal online MVP UAT only. It must not add product features, dependencies, database schema changes, Kanban, files, comments, approvals, social scheduling, AI, `RoleKey` changes, a standalone `project_manager` role, Production Supabase usage, real client data, or Production acceptance. Vercel Production target is allowed only as hosting.
 
@@ -72,7 +72,7 @@
 - [x] T031 [P] [US2] Run browser response and secret exposure checks; Req: SR-002; Verification: HTML checks found no `service_role`, `SUPABASE_SERVICE_ROLE_KEY`, or `sb_secret` markers; Dependencies: T028; Category: Security
 - [x] T032 [US2] Run Client A/B tenant and client isolation checks; Req: FR-010, SR-003, SR-005; Verification: hosted RLS count simulation showed account-manager Alpha sees one client and six deliverables, while Alpha/Beta client viewers each see one client and zero management deliverables; Dependencies: T025, T028; Category: Security
 - [x] T033 [US2] Run role boundary checks for internal and client users; Req: FR-010; Verification: hosted routes redirect unauthenticated access to sign-in/session and RLS simulation keeps client viewers out of management deliverables; Dependencies: T025, T028; Category: Security
-- [ ] T034 [US2] Run accepted MVP UAT surface checks for client management, contracts, packages, deliverables, commercial summaries, and SLA summaries; Req: FR-011; Verification: UAT evidence rows; Dependencies: T025, T028; Category: UAT
+- [x] T034 [US2] Run accepted MVP UAT surface checks for client management, contracts, packages, deliverables, commercial summaries, and SLA summaries; Req: FR-011; Verification: authenticated hosted browser UAT passed 22 assertions on `https://sharik-platform.vercel.app` with synthetic users only; Dependencies: T025, T028; Category: UAT
 
 ## Phase 7: Evidence, Progress, And PR
 
@@ -132,6 +132,20 @@
 - [x] T056 [US2] Create branch `codex/r004-hosted-uat-results` from `origin/main` after PR #22; Req: FR-002; Verification: branch tracks `origin/main` at `20b8498`; Category: Gate
 - [x] T057 [US2] Record hosted Supabase migration/seed, Vercel deployment, smoke/security evidence, and remaining authenticated UAT limitation; Req: FR-009, FR-010, FR-011, FR-012; Verification: evidence checklist, release doc, and progress doc updated; Category: Evidence
 - [x] T058 [US3] Commit, push, and open a new PR for hosted UAT results; Req: FR-013; Verification: PR #23 exists at `https://github.com/samawah-media/Sharik/pull/23` and is not merged; Dependencies: T057; Category: PR
+
+## Phase 14: R-004G Authenticated Synthetic UAT
+
+**Purpose**: Replace the placeholder root surface, activate synthetic sign-in safely, and record authenticated hosted UAT after PR #23 merged.
+
+- [x] T059 [US2] Confirm PR #23 merged before starting R-004G; Req: FR-013; Verification: `origin/main` contains merge commit `4559d14495f76af8596aad79c2afd53617855935`; Category: Gate
+- [x] T060 [US2] Create branch `codex/r004-authenticated-synthetic-uat` from `origin/main` after PR #23; Req: FR-002; Verification: isolated worktree `D:\code - projects\sharik-worktrees\r004g-authenticated-uat`; Category: Gate
+- [x] T061 [US2] Replace the `/` F-001A placeholder with authenticated runtime routing; Req: FR-009, FR-011; Verification: unauthenticated `/` redirects to `/sign-in`; authenticated users redirect by role-aware navigation; Category: Implementation
+- [x] T062 [US2] Activate temporary passwords for hosted `@r004.example.test` users using local in-memory environment only; Req: FR-011, SR-002; Verification: 5 synthetic auth users updated and verified without writing or printing passwords; Category: Hosted Data
+- [x] T063 [US2] Refresh Vercel public runtime env values after detecting non-printable BOM characters; Req: FR-009, SR-002; Verification: production env names remain `APP_ENV`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; no service-role env exists; Category: Deploy Gate
+- [x] T064 [US2] Redeploy Vercel Production hosting-only target after root routing and env cleanup; Req: FR-009; Verification: deployment `dpl_9vYzg7XMUAvn1Ftm38pA8SLVdnVB` is Ready with alias `https://sharik-platform.vercel.app`; Category: Deploy
+- [x] T065 [US2] Run authenticated hosted browser UAT with synthetic users only; Req: FR-010, FR-011; Verification: 22 browser assertions passed for management, assigned internal, Alpha client viewer, and Beta client viewer routes; Category: UAT
+- [x] T066 [US3] Update R-004G evidence, release, and progress docs; Req: FR-012; Verification: docs record authenticated UAT pass, scope exclusions, and secret rotation follow-up; Category: Evidence
+- [x] T067 [US3] Commit, push, and open PR `[codex] R-004 authenticated synthetic UAT`; Req: FR-013; Verification: PR URL is recorded in the final publication response and remains unmerged; Dependencies: T066; Category: PR
 
 ## Dependencies & Execution Order
 

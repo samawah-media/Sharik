@@ -1,42 +1,40 @@
-import { ShieldCheck } from "lucide-react";
+import { redirect } from "next/navigation";
+import { resolveRoleAwareNavigation } from "@/modules/navigation/navigation-resolver";
+import { resolveRuntimeContext } from "@/server/auth/runtime-context";
+import {
+  AccessDeniedState,
+  MembershipDisabledState,
+  NoAssignedClientState,
+} from "@/ui/shared/access-states";
 
-const foundationItems = [
-  "بيئة تطوير معزولة",
-  "TypeScript صارم",
-  "اختبارات أساسية",
-  "واجهة عربية RTL",
-];
+export default async function HomePage() {
+  const runtime = await resolveRuntimeContext();
 
-export default function HomePage() {
-  return (
-    <main className="min-h-screen px-5 py-8 sm:px-8">
-      <section className="mx-auto flex max-w-5xl flex-col gap-8">
-        <header className="flex items-center justify-between gap-4 border-b border-border pb-5">
-          <div>
-            <p className="text-sm font-medium text-accent">F-001A</p>
-            <h1 className="mt-2 text-3xl font-semibold text-foreground sm:text-4xl">
-              منصة سماوة
-            </h1>
-          </div>
-          <div
-            aria-hidden="true"
-            className="grid size-12 place-items-center rounded-md bg-accent-soft text-accent"
-          >
-            <ShieldCheck className="size-6" />
-          </div>
-        </header>
+  if (!runtime.ok) {
+    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") {
+      redirect("/sign-in");
+    }
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {foundationItems.map((item) => (
-            <div
-              key={item}
-              className="rounded-md border border-border bg-surface p-4 text-sm font-medium text-foreground"
-            >
-              {item}
-            </div>
-          ))}
-        </div>
-      </section>
-    </main>
-  );
+    if (runtime.reason === "membership_disabled") {
+      return <MembershipDisabledState returnHref="/sign-in" />;
+    }
+
+    return <AccessDeniedState returnHref="/sign-in" />;
+  }
+
+  const navigation = resolveRoleAwareNavigation({
+    actor: runtime.actor,
+    assignedClients: runtime.clients,
+  });
+  const firstDestination = navigation.items[0]?.href;
+
+  if (firstDestination) {
+    redirect(firstDestination);
+  }
+
+  if (navigation.state === "membership_disabled") {
+    return <MembershipDisabledState returnHref="/sign-in" />;
+  }
+
+  return <NoAssignedClientState returnHref="/sign-in" />;
 }

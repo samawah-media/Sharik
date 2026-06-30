@@ -131,7 +131,7 @@
 - [x] T055 [US2] Confirm PR #22 merged before starting the results branch; Req: FR-013; Verification: PR #22 merged on 2026-06-30 with merge commit `20b84984913e8f707fcf5dabad54eea5b03eff64`; Category: PR
 - [x] T056 [US2] Create branch `codex/r004-hosted-uat-results` from `origin/main` after PR #22; Req: FR-002; Verification: branch tracks `origin/main` at `20b8498`; Category: Gate
 - [x] T057 [US2] Record hosted Supabase migration/seed, Vercel deployment, smoke/security evidence, and remaining authenticated UAT limitation; Req: FR-009, FR-010, FR-011, FR-012; Verification: evidence checklist, release doc, and progress doc updated; Category: Evidence
-- [ ] T058 [US3] Commit, push, and open a new PR for hosted UAT results; Req: FR-013; Verification: PR URL exists and is not merged; Dependencies: T057; Category: PR
+- [x] T058 [US3] Commit, push, and open a new PR for hosted UAT results; Req: FR-013; Verification: PR #23 exists at `https://github.com/samawah-media/Sharik/pull/23` and is not merged; Dependencies: T057; Category: PR
 
 ## Dependencies & Execution Order
 

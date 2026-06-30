@@ -131,7 +131,7 @@ Prepare the smallest internal online UAT that can validate accepted MVP surfaces
 - R-004G `npm run test:rls`: passed; simulator 7 files / 21 tests and pgTAP 2 files / 110 tests.
 - R-004G `npm run test:component`: passed, 12 files / 39 tests.
 - R-004G `npm run test:e2e`: passed, 61 passed / 2 expected skips.
-- R-004G `npm run build`: passed after pulling Vercel production env to ignored `.env.local`; values were not printed or committed.
+- R-004G `npm run build`: passed without `.env.local` after marking `/` as dynamic, matching GitHub Actions where Supabase public env vars are not present.
 - `.specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks`: passed after honoring pinned `.specify/feature.json`.
 - `git diff --check`: passed; line-ending warnings only.
 - `npm run typecheck`: passed.

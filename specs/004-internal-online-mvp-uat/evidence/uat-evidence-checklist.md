@@ -100,7 +100,7 @@ Current result:
 | R004G-LOCAL-007 | `npm run test:rls` | PASS | RLS simulator 7 files / 21 tests and pgTAP 2 files / 110 tests passed. |
 | R004G-LOCAL-008 | `npm run test:component` | PASS | 12 files / 39 tests passed after replacing the placeholder component test with root redirect coverage. |
 | R004G-LOCAL-009 | `npm run test:e2e` | PASS | 61 passed / 2 expected skips. |
-| R004G-LOCAL-010 | `npm run build` | PASS | Next.js production build completed after pulling Vercel production env to ignored `.env.local`; env values were not printed or committed. |
+| R004G-LOCAL-010 | `npm run build` | PASS | Next.js production build completed without `.env.local` after marking `/` as dynamic, matching GitHub Actions where Supabase public env vars are not present. |
 | LOCAL-001 | `git diff --check` | PASS | No whitespace errors; Git reported line-ending warnings only. |
 | LOCAL-002 | `npm run typecheck` | PASS | TypeScript completed successfully. |
 | LOCAL-003 | `npm run lint` | PASS | ESLint completed successfully. |

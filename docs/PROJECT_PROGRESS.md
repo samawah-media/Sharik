@@ -50,7 +50,7 @@ Local verification:
 - `npm run test:rls`: passed; simulator 7 files / 21 tests and pgTAP 2 files / 110 tests.
 - `npm run test:component`: passed, 12 files / 39 tests.
 - `npm run test:e2e`: passed, 61 passed / 2 expected skips.
-- `npm run build`: passed after pulling Vercel production env to ignored `.env.local`; values were not printed or committed.
+- `npm run build`: passed without `.env.local` after marking `/` as dynamic, matching GitHub Actions where Supabase public env vars are not present.
 
 ## R-004F Hosted Supabase/Vercel UAT Results - 2026-06-30
 

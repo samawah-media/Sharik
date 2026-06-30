@@ -7,6 +7,8 @@ import {
   NoAssignedClientState,
 } from "@/ui/shared/access-states";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const runtime = await resolveRuntimeContext();
 

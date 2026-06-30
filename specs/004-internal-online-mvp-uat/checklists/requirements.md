@@ -31,5 +31,6 @@
 
 ## Notes
 
-- This Spec intentionally names Vercel Preview and Supabase because AGENTS.md and accepted ADRs already mandate the project stack.
-- Hosted Supabase migration remains blocked until explicit owner approval.
+- This Spec intentionally names Vercel and Supabase because AGENTS.md and accepted ADRs already mandate the project stack.
+- Owner decision on 2026-06-30 allows Vercel Hobby/free and a Vercel Production target for hosting only.
+- Hosted Supabase migration remains blocked until a Supabase UAT project exists and receives explicit owner approval.

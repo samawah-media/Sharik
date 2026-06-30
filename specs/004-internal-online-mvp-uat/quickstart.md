@@ -1,22 +1,23 @@
 # Quickstart Validation Guide: Internal Online MVP UAT
 
-Date: 2026-06-29
+Date: 2026-06-30
 
-This guide describes how to prepare and validate a protected internal online UAT for Sharik after PR #17. It includes no secrets, no Production usage, and no real client data.
+This guide describes how to prepare and validate an internal online UAT for Sharik after PR #17. It includes no secrets, no Production Supabase usage, and no real client data. Owner decision on 2026-06-30 allows Vercel Hobby/free and allows Vercel Production target for hosting only.
 
 ## Preconditions
 
 - PR #17 is merged into `main`.
 - Branch `codex/internal-online-mvp-uat` starts from `origin/main` after PR #17.
 - This Spec Kit package has been reviewed.
-- Hosted Supabase migration has explicit approval before it runs.
-- Vercel account/scope is confirmed as the approved Sharik/Samawah scope before deployment.
-- Preview protection is enabled before sharing any URL.
+- Hosted Supabase migration is deferred until a Supabase UAT project exists and has explicit approval before it runs.
+- Vercel account is confirmed as the owner-approved Hobby/free account before deployment.
+- Vercel Production target may be used for hosting only; it is not Production acceptance.
+- Protection status is recorded before sharing any URL. If protection is unavailable on the free account, record the public exposure limitation.
 - All data is synthetic.
 
 ## Explicit Approval Required For Hosted Supabase
 
-Do not run hosted non-production Supabase migration until the owner provides an explicit approval in this exact shape, with a real Supabase project ref replacing `<PROJECT_REF>`:
+Do not run hosted non-production Supabase migration until the owner creates a Supabase UAT project and provides an explicit approval in this exact shape, with a real Supabase project ref replacing `<PROJECT_REF>`:
 
 ```text
 أوافق على تشغيل hosted non-production Supabase migration لـ Sharik Internal Online MVP UAT ضد project ref <PROJECT_REF>. Synthetic data only. No Production and no real client data.
@@ -59,13 +60,14 @@ Use these checks without printing secrets:
 ```powershell
 vercel --version
 vercel whoami
-vercel teams ls
+vercel project list
 ```
 
 Expected result:
 
-- The account/scope is the approved Sharik/Samawah deployment scope.
+- The account is the owner-approved Vercel Hobby/free account.
 - If the CLI is authenticated to the wrong account, do not deploy.
+- Team scope is not required for this free UAT path.
 
 For Supabase, use approved project metadata only after H1 approval. Do not print service role keys or database passwords.
 
@@ -134,31 +136,38 @@ Rules:
 
 `paused_waiting_internal_decision` is not currently seedable as hosted persisted data because the accepted F-003 MVP has no persisted SLA segment table. It remains covered by domain/unit evidence until a future approved schema change adds persisted SLA segments.
 
-## Protected Preview Deploy
+## Owner-Approved Vercel Deploy
 
 Deploy only after docs and environment checks are complete:
 
 ```powershell
-vercel link --yes --project <approved-project> --scope <approved-scope>
-vercel env ls --scope <approved-scope>
-vercel deploy --target=preview --scope <approved-scope>
-vercel inspect <preview-url-or-deployment-id> --scope <approved-scope>
+vercel link --yes --project <approved-project>
+vercel env ls
+
+# Preview-style deployment, if the owner wants preview first:
+vercel deploy
+
+# Production target is owner-approved for hosting only:
+vercel deploy --prod
+
+vercel inspect <deployment-url-or-deployment-id>
 ```
 
 Expected result:
 
-- Target is Preview, not Production.
-- Protection is enabled.
-- Preview env vars are scoped to Preview/non-production.
-- Production env vars are not touched.
+- Account is the owner-approved Vercel Hobby/free account.
+- Deployment target is recorded as preview or production.
+- If target is production, evidence must label it hosting-only, not Production acceptance.
+- Env vars do not point to Production Supabase or real client data.
+- Protection/public exposure status is recorded.
 
-If the first deployment unexpectedly lands as Production, delete it immediately, record the incident, and do not continue until the target behavior is corrected.
+Do not treat a Vercel Production target as a complete UAT pass while Supabase is deferred. Data-backed smoke/security/UAT checks remain `BLOCKED`.
 
 ## Smoke Checks
 
 | ID | Check | Expected |
 |---|---|---|
-| SM-001 | Open Preview URL unauthenticated | Protected access blocks the page |
+| SM-001 | Open Vercel URL | Deployment responds and target/account are recorded |
 | SM-002 | Sign-in surface | Sign-in page loads without exposing secrets |
 | SM-003 | Hosted fixture actors | Query-selected route fixtures are disabled |
 | SM-004 | Build/runtime health | No critical runtime error on accepted surfaces |
@@ -171,12 +180,12 @@ If the first deployment unexpectedly lands as Production, delete it immediately,
 | SEC-001 | Client Alpha user opens Client Beta route | Denied/not found without Client Beta details |
 | SEC-002 | Client user opens management route | Denied or redirected safely |
 | SEC-003 | Unauthorized deliverable/SLA access | Denied without resource enumeration |
-| SEC-004 | Preview env review | No Production Supabase URL or Production secrets |
+| SEC-004 | Vercel env review | No Production Supabase URL, real data, or secrets exposed |
 | SEC-005 | Secret scan | `npm run secret:scan` passes |
 
 ## UAT Checks
 
-Only run after hosted migration and synthetic seed are explicitly approved and complete.
+Only run data-backed UAT after hosted migration and synthetic seed are explicitly approved and complete. While Supabase is deferred, mark these checks `BLOCKED`.
 
 | ID | Surface | Expected |
 |---|---|---|
@@ -204,14 +213,14 @@ Use one of these statuses:
 - `SKIPPED`
 - `NOT RUN`
 
-Hosted checks must not be marked `PASS` unless they were run against the hosted non-production environment.
+Hosted checks must not be marked `PASS` unless they were actually run against the correct hosted environment. Data-backed checks must remain `BLOCKED` until Supabase UAT exists.
 
 ## Rollback
 
 If deploy or migration must be rolled back:
 
 ```powershell
-vercel remove <deployment-id> --yes --scope <approved-scope>
+vercel remove <deployment-id> --yes
 ```
 
 For Supabase, do not delete the project or mutate hosted data without owner approval. Record whether rollback is a deployment removal, synthetic data reset, migration reversal, or project recreation.

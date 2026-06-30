@@ -4,9 +4,9 @@
 
 **Prerequisites**: `spec.md`, `plan.md`, `quickstart.md`, `AGENTS.md`, `.specify/memory/constitution.md`, PR #17 merged to `main`.
 
-**Status**: UAT gate task list. Hosted migration and hosted UAT execution are blocked until explicit approval.
+**Status**: UAT gate task list. Vercel Hobby/free and Vercel Production hosting target are owner-approved; hosted Supabase migration and data-backed UAT remain blocked until a Supabase UAT project exists and receives explicit approval.
 
-**Scope Guard**: This branch prepares internal online MVP UAT only. It must not add product features, dependencies, database schema changes, Kanban, files, comments, approvals, social scheduling, AI, `RoleKey` changes, a standalone `project_manager` role, Production deployment, Production Supabase usage, or real client data.
+**Scope Guard**: This branch prepares internal online MVP UAT only. It must not add product features, dependencies, database schema changes, Kanban, files, comments, approvals, social scheduling, AI, `RoleKey` changes, a standalone `project_manager` role, Production Supabase usage, real client data, or Production acceptance. Vercel Production target is allowed only as hosting.
 
 **Task Format**: `- [ ] T### [P?] [Story?] Description with file path; Req; Verification; Dependencies; Category`
 
@@ -55,19 +55,19 @@
 - [ ] T024 [US2] Run hosted non-production migration only after T022-T023; Req: FR-006; Verification: migration list/evidence; Dependencies: T023; Category: Hosted Migration
 - [ ] T025 [US2] Seed synthetic data from `supabase/seeds/r004_internal_online_mvp_uat.sql` only after migration approval and target verification; Req: FR-005, SR-003, SR-007; Verification: seed manifest and row counts without secrets; Dependencies: T024; Category: Hosted Data
 
-## Phase 5: Protected Preview Deployment
+## Phase 5: Vercel Hobby/Free Deployment
 
-**Purpose**: Publish a protected internal online preview only after documentation and environment gates.
+**Purpose**: Publish the owner-approved Vercel deployment only after documentation and environment gates.
 
-- [ ] T026 [US2] Confirm Vercel account/scope is approved for Sharik/Samawah, not a personal or wrong project scope; Req: FR-004, SR-001; Verification: BLOCKED - CLI currently shows `omarhussien2` only and not the approved Samawah scope; Dependencies: T021; Category: Deploy Gate
-- [ ] T027 [US2] Configure or confirm Preview-only environment variables and protection; Req: FR-004, SR-002; Verification: env/protection evidence without secret values; Dependencies: T026; Category: Deploy Gate
-- [ ] T028 [US2] Deploy protected Preview target only, never Production; Req: FR-004, SR-001; Verification: deployment URL/id and target evidence; Dependencies: T027 and, for full data UAT, T025; Category: Deploy
+- [ ] T026 [US2] Confirm Vercel account is the owner-approved Hobby/free account; Req: FR-004, SR-001; Verification: `vercel whoami` and project link evidence without secrets; Dependencies: T021; Category: Deploy Gate
+- [ ] T027 [US2] Configure or confirm deployment environment variables and protection/public exposure status; Req: FR-004, SR-002; Verification: env/protection evidence without secret values and without Production Supabase; Dependencies: T026; Category: Deploy Gate
+- [ ] T028 [US2] Deploy Vercel target approved by owner; Production target is hosting-only, not Production acceptance; Req: FR-004, SR-001; Verification: deployment URL/id, target evidence, and rollback path; Dependencies: T027; Category: Deploy
 
 ## Phase 6: Smoke, Security, And UAT Checks
 
 **Purpose**: Record evidence only for checks actually run against the correct environment.
 
-- [ ] T029 [P] [US2] Run protected access smoke against Preview URL; Req: FR-009; Verification: unauthenticated access blocked; Dependencies: T028; Category: Smoke
+- [ ] T029 [P] [US2] Run Vercel URL smoke against the deployed URL; Req: FR-009; Verification: target/account/response recorded and no secrets exposed; Dependencies: T028; Category: Smoke
 - [ ] T030 [P] [US2] Run sign-in surface and hosted fixture-disablement smoke; Req: FR-009; Verification: fixture actors disabled in hosted runtime; Dependencies: T028; Category: Smoke
 - [ ] T031 [P] [US2] Run browser response and secret exposure checks; Req: SR-002; Verification: no service role or secret values exposed; Dependencies: T028; Category: Security
 - [ ] T032 [US2] Run Client A/B tenant and client isolation checks; Req: FR-010, SR-003, SR-005; Verification: unauthorized data is denied/not found; Dependencies: T025, T028; Category: Security
@@ -92,20 +92,28 @@
 - [x] T041 [US2] Update H1 approval docs so placeholder `<PROJECT_REF>` remains blocked; Req: FR-006, SR-001; Verification: `quickstart.md` and `contracts/uat-gates.md`; Dependencies: T022; Category: Hosted Gate
 - [x] T042 [US2] Document that `paused_waiting_internal_decision` is not persisted in the current MVP seed without a future schema change; Req: FR-007, FR-011; Verification: `plan.md`, `quickstart.md`, `data-model.md`; Dependencies: T040; Category: Scope Control
 
+## Phase 9: R-004B Free Vercel And Supabase Deferral Decision
+
+**Purpose**: Capture the owner correction that no new Supabase project exists yet and Vercel Team scope is not required for the free deployment path.
+
+- [x] T043 [US1] Record owner decision that Vercel Hobby/free is acceptable and Vercel Production target may be used for hosting only; Req: FR-004, SR-001; Verification: `spec.md`, `plan.md`, `quickstart.md`, `contracts/uat-gates.md`; Dependencies: T042; Category: Scope Control
+- [x] T044 [US1] Defer hosted Supabase migration/seed until a Supabase UAT project exists; Req: FR-006, SR-004; Verification: `spec.md`, `plan.md`, `data-model.md`, evidence checklist; Dependencies: T043; Category: Hosted Gate
+- [ ] T045 [US2] Run Vercel deployment checks under owner-approved Hobby/free account; Req: FR-004, FR-009; Verification: deployment URL/id/target and rollback path; Dependencies: T026-T028; Category: Deploy
+
 ## Dependencies & Execution Order
 
 1. Phase 1 must complete before documentation edits.
 2. Phase 2 must complete before any hosted operation.
 3. Phase 3 must complete before branch publication readiness.
-4. Phase 4 is blocked until explicit owner approval.
-5. Phase 5 can only publish a useful data-backed UAT after Phase 4; protected shell deployment without migration must be labeled limited.
+4. Phase 4 is blocked until a Supabase UAT project exists and receives explicit owner approval.
+5. Phase 5 may publish Vercel hosting before Supabase, but data-backed UAT remains blocked and must be labeled limited.
 6. Phase 6 evidence must distinguish local, hosted, blocked, skipped, and failed checks.
 7. Phase 7 opens the PR and stops before merge.
 
 ## Explicitly Deferred
 
-- Production deployment.
 - Production Supabase.
+- Production acceptance.
 - Real client data.
 - Product feature implementation.
 - New dependencies.

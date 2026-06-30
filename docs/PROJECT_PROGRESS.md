@@ -1,6 +1,6 @@
 # Project Progress
 
-Last updated: 2026-06-29
+Last updated: 2026-06-30
 
 ## Current Execution Gate
 
@@ -9,12 +9,71 @@ Last updated: 2026-06-29
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
 | Feature | R-004 Internal Online MVP UAT |
-| Worktree | `D:\code - projects\sharik-worktrees\internal-online-mvp-uat` |
-| Branch | `codex/r004-uat-gate-follow-up` from PR #18 merge commit on `origin/main` |
-| Current allowed stage | Spec Kit, non-production UAT planning, local verification, and PR preparation only |
-| Status | PR #18 is merged; follow-up corrections are preparing Spec Kit tooling and a guarded R-004 synthetic seed only; no hosted Supabase migration, protected Preview deployment, Production usage, or real client data has been run in this branch |
-| Next gate | Owner must provide the real non-production Supabase project ref in the exact H1 approval text before any hosted non-production Supabase migration |
-| Owner decision required | Required before hosted non-production Supabase migration, synthetic hosted seed, protected Preview deployment sharing, or marking hosted UAT checks as passed |
+| Worktree | `D:\code - projects\sharik-worktrees\r004-hosted-uat` |
+| Branch | `codex/r004-hosted-uat-evidence` from PR #19 merge commit on `origin/main` |
+| Current allowed stage | Update R-004 gates for owner-approved Vercel Hobby/free and Production hosting target; Supabase remains deferred |
+| Status | PR #18 and PR #19 are merged on `main`; owner clarified no Sharik Supabase project exists yet, approved Vercel Hobby/free, and approved Vercel Production target for hosting only |
+| Next gate | Run/record Vercel account/project/deployment checks when ready; Supabase migration/seed remains blocked until a Supabase UAT project exists |
+| Owner decision required | Required before hosted Supabase migration or synthetic hosted seed; Vercel Hobby/free and Production hosting-only target are already owner-approved |
+
+## R-004B Free Vercel And Supabase Deferral Decision - 2026-06-30
+
+Owner clarification:
+
+- There is no new Sharik Supabase project yet, so no Supabase project ref can be provided now.
+- Vercel Team/paid scope is not required for this stage.
+- Vercel Hobby/free is approved for Sharik UAT.
+- Vercel Production target is approved as a hosting target only.
+
+Scope impact:
+
+- R-004 docs now distinguish Vercel Production hosting from Production acceptance.
+- Vercel Production hosting does not authorize Production Supabase, real client data, production data, or marking Sharik production-accepted.
+- Hosted Supabase migration, R-004 hosted synthetic seed, and data-backed smoke/security/UAT checks remain blocked until a Supabase UAT project exists and receives explicit approval.
+- Vercel checks can proceed without a paid team scope by verifying the owner-approved account with `vercel whoami`, linking a project, recording env/protection/public-exposure status, deployment URL/id/target, and rollback path.
+- If Vercel free protection is unavailable, the public exposure limitation must be recorded before sharing the URL.
+
+## R-004 Hosted UAT Resume Attempt - 2026-06-29
+
+Scope reviewed:
+
+- PR #18, `chore(R-004): prepare internal online MVP UAT gate`, is merged on `main` with merge commit `9dac378d7d97d9ee3edcd5b6d9f551f7bf78300e`.
+- PR #19, `chore(R-004): fix UAT gate follow-up blockers`, is merged on `main` with merge commit `466b9eddbbcd2465fb2106907b4b38fb0880196c`.
+- Local R-004 resume branch `codex/r004-hosted-uat-evidence` starts from `origin/main` at `466b9ed`.
+- GitHub check-runs for `466b9ed` returned zero checks and the combined commit status has no contexts; the latest visible `main` Actions run is older than PR #18/#19.
+
+Hosted Supabase result:
+
+- H1 did not pass: the supplied project ref was `REAL_PROJECT_REF_HERE`, which is not a valid Supabase project ref format.
+- Because the target could not be verified, no hosted Supabase link, migration, SQL execution, hosted seed, or real-data inspection was attempted.
+- The target cannot be recorded as non-production or free of real client data/users until a valid non-production project ref and approved connection path are provided.
+- R-004 hosted UAT remains restricted to `supabase/seeds/r004_internal_online_mvp_uat.sql` only after a future valid target is approved and verified; `supabase/seed.sql` remains prohibited for R-004 hosted UAT.
+
+Earlier Vercel deployment blocker, superseded by R-004B:
+
+- Vercel CLI `whoami` returns `omarhussien2`.
+- The earlier run treated missing paid/team scope as a blocker.
+- No `.vercel/project.json` link exists in the R-004 resume worktree.
+- The 2026-06-30 owner decision now allows Vercel Hobby/free and a Production hosting-only target; deployment still needs fresh account/project/target evidence.
+
+Hosted smoke/security/UAT evidence:
+
+- Smoke checks remain `NOT RUN` because no owner-approved Vercel deployment URL exists.
+- Hosted security and UAT checks remain `BLOCKED` because no valid hosted Supabase target was verified and no synthetic hosted seed was applied.
+- No Production Supabase project, real client data, Production acceptance, new dependency, RoleKey change, standalone `project_manager` role, Kanban/files/comments/approvals/social scheduling/AI scope, or PR merge was introduced.
+
+Resume validation:
+
+- `git diff --check`: passed; line-ending warnings only.
+- `npm run secret:scan`: passed; no high-confidence secrets found.
+- `npm run lint`: passed.
+- `npm run test:unit`: passed, 23 files / 72 tests.
+- `npm run test:integration`: passed, 19 files / 76 tests.
+- `npm run test:component`: passed, 12 files / 39 tests.
+- `npm run test:rls:simulator`: passed, 7 files / 21 tests.
+- `npm audit --audit-level=high`: passed high/critical threshold; existing moderate PostCSS advisory through Next remains.
+- `npm run typecheck`: failed in current baseline/unmodified source and Next type declarations; this resume changed documentation/evidence only.
+- `npm run build`: compiled successfully, then failed TypeScript validation on missing declaration for `next/types.js`; this resume changed documentation/evidence only.
 
 ## R-004A UAT Gate Follow-up Corrections - 2026-06-29
 
@@ -44,7 +103,7 @@ Verification:
 
 Out of scope confirmed:
 
-- Production deployment.
+- Production acceptance.
 - Production Supabase usage.
 - Real client data.
 - New dependencies.
@@ -62,13 +121,13 @@ Scope prepared:
 - Branch `codex/internal-online-mvp-uat` starts from `origin/main` after PR #17.
 - Spec Kit package created at `specs/004-internal-online-mvp-uat/`.
 - Release gate record created at `docs/08-release/R-004-internal-online-mvp-uat.md`.
-- Least internal online MVP UAT defined as protected Preview plus synthetic non-production data for accepted existing surfaces only.
+- Least internal online MVP UAT initially defined as Vercel deployment plus synthetic non-production data for accepted existing surfaces only.
 
 Gates and blockers:
 
 - Hosted non-production Supabase migration is `BLOCKED` until explicit owner approval names or confirms the non-production target and synthetic-only data policy.
 - Data-backed hosted UAT checks are `BLOCKED` until hosted migration and synthetic seed are approved and completed.
-- Protected Preview deployment is `BLOCKED`: Vercel CLI currently reports `omarhussien2`, and `vercel teams ls` shows only `omarhussien2s-projects`; the approved Samawah scope is not available in this session.
+- Earlier Vercel deployment was `BLOCKED` under the then-required paid/team scope assumption; this is superseded by the 2026-06-30 owner decision allowing Vercel Hobby/free.
 - Local evidence remains separate from hosted UAT evidence.
 
 Local verification:
@@ -87,7 +146,7 @@ Local verification:
 
 Out of scope confirmed:
 
-- Production deployment.
+- Production acceptance.
 - Production Supabase usage.
 - Real client data.
 - New dependencies.

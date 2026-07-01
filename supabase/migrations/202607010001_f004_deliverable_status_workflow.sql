@@ -193,7 +193,7 @@ begin
     normalized_reason,
     audit_event_id
   )
-  on conflict (tenant_id, idempotency_key) do nothing
+  on conflict on constraint deliverable_status_transition_requests_unique do nothing
   returning * into idempotency_request;
 
   if idempotency_request.idempotency_key is null then

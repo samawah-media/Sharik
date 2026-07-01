@@ -38,11 +38,27 @@ Merged on 2026-07-01 11:24:35 +03:00
 
 | PR | Title | State | Checks | Decision |
 |---:|---|---|---|---|
-| #29 | `fix(F-005): rescue product shell and kanban UX` | Open, not draft, merge state `CLEAN` | `F-001 Quality` success on `0eb02a5d5f2f0f9c8606a1ded57ded93d53d51fd`; CodeRabbit success | F-005 is reviewed as merge-safe in its evidence, but it is not merged into `main` yet. |
+| #29 | `fix(F-005): rescue product shell and kanban UX` | Open, not draft, merge state `CLEAN` | `F-001 Quality` success on `0eb02a5d5f2f0f9c8606a1ded57ded93d53d51fd`; CodeRabbit status success | Gate 0 decision is `MERGE SAFE`, pending explicit owner authorization to merge. F-005 is not baseline until merged into `main`. |
+| #30 | `chore(project): add recovery plan and reset roadmap` | Open, draft, merge state `CLEAN` | `F-001 Quality` success on `efe35e7f73f83b3588e5978a90a4378613046324`; CodeRabbit skipped because draft PR | Control documentation PR only. |
+
+### Gate 0 F-005 Decision
+
+Decision recorded on 2026-07-01 15:43 +03:00:
+
+- Decision: `MERGE SAFE`.
+- PR #29 live state: open, not draft, `mergeable=MERGEABLE`, `mergeStateStatus=CLEAN`.
+- PR #29 head: `0eb02a5d5f2f0f9c8606a1ded57ded93d53d51fd`.
+- PR #29 base/main at review: `d17c5c732a1bce7cf38f625a35369ca4409b3f97`.
+- CI: `quality` passed in workflow `F-001 Quality`, run `28515648127`.
+- CodeRabbit: status context passed. The review is `COMMENTED`, with actionable/nitpick feedback but no `REQUEST_CHANGES` review and no blocker identified. The latest evidence-only commit also received a CodeRabbit rate-limit warning comment, but the GitHub status context remains successful.
+- Scope: changed files remain limited to F-005 product shell, local UI primitives, current management pages, current Kanban UX, specs, evidence, and tests. No dependency, lockfile, production, real-data, files/comments/approvals, or drag/drop change was found.
+- Merge authority: no merge was performed because this gate did not include explicit owner authorization to merge.
+- Baseline status: F-005 is not the official UI baseline until PR #29 is merged into `main`.
 
 ### Latest CI Status
 
-- Latest visible GitHub Actions run overall: PR #29, workflow `F-001 Quality`, success, run `28515648127`, updated 2026-07-01 12:00:05Z.
+- Latest visible GitHub Actions run overall: PR #30, workflow `F-001 Quality`, success, run `28516959476`, updated 2026-07-01 12:23:15Z.
+- Latest F-005 GitHub Actions run: PR #29, workflow `F-001 Quality`, success, run `28515648127`, updated 2026-07-01 12:00:05Z.
 - Latest visible `main` branch Actions run: workflow `F-001 Quality`, success, run `28246249942`, on commit `27e035cda3d97aae1bda9829428053491b95305c`, created 2026-06-26.
 - No fresh `main`-branch Actions run was visible for the current `origin/main` commit `d17c5c7`.
 
@@ -104,13 +120,13 @@ The current `main` baseline has these accepted surfaces and controls:
 - RLS simulator and pgTAP coverage for tenant/client isolation and key workflow boundaries.
 - Hosted R-004 synthetic UAT was closed, temporary `@r004.example.test` password hashes were cleared, and no production acceptance was granted.
 - R-005 readiness artifacts are on `main`: Spec Kit package, guarded synthetic seed, user guide, secret-scan SQL coverage, and staged-only constraints.
-- PR #29 adds a product shell and Kanban visual rescue, but that work is still outside `main`.
+- PR #29 adds a product shell and Kanban visual rescue and is Gate 0 `MERGE SAFE`, but that work is still outside `main` until the owner authorizes merge.
 
 ## 3. What Does Not Work Yet
 
 The following are not complete or not authorized:
 
-- F-005 is not merged into `main`, so the product shell and rescued Kanban UX are not yet the official baseline.
+- F-005 is not merged into `main`, so the product shell and rescued Kanban UX are not yet the official baseline despite the `MERGE SAFE` gate decision.
 - No actual R-006 online trial has started.
 - No production acceptance exists.
 - No real client data may be used.
@@ -127,7 +143,7 @@ The following are not complete or not authorized:
 
 ## 4. Remaining UI/UX Issues
 
-- F-005 solves major internal shell and Kanban readability problems, but it is still PR #29 and not part of `main`.
+- F-005 solves major internal shell and Kanban readability problems and is merge-safe, but it is still PR #29 and not part of `main`.
 - F-005 visual QA used empty-state fixture views for clients/contracts/packages, so populated states still need review before team trial.
 - F-005 records a minor mobile spacing note in the product shell.
 - Client workspace UX is still minimal compared with the intended client portal: pending approvals, final files, comments, and simple client status are not ready.
@@ -208,6 +224,7 @@ This reset preserves the earlier roadmap decisions:
 **Allowed**: Review, merge, or close/rework PR #29.
 **Not allowed**: Any new feature.
 **Exit**: `main` either contains F-005 with green checks, or F-005 is explicitly deferred.
+**Current decision**: `MERGE SAFE`, pending explicit owner authorization to merge PR #29. Until merge, F-005 is not the official baseline and R-006 must not start.
 
 ### R-006 - Internal Online Trial Readiness
 
@@ -246,14 +263,15 @@ This reset preserves the earlier roadmap decisions:
 
 ## 10. Proposed Decision
 
-Do not start R-006 or any new feature until PR #29 is resolved.
+Do not start R-006 or any new feature until PR #29 is merged by owner authorization or explicitly deferred.
 
 Recommended next action:
 
-1. Owner/reviewer decides PR #29.
-2. If merged, create R-006 from fresh `origin/main` under `D:\code - projects\sharik-worktrees\`.
-3. R-006 produces a readiness decision only.
-4. If R-006 passes, decide whether to run the internal online trial.
-5. Only after the trial readiness decision should F-006 start.
+1. Owner authorizes and merges PR #29, or explicitly defers it.
+2. If PR #29 is merged, record the new `origin/main` commit and mark F-005 as the official UI baseline.
+3. Create R-006 from fresh post-F-005 `origin/main` under `D:\code - projects\sharik-worktrees\`.
+4. R-006 produces a readiness decision only.
+5. If R-006 passes, decide whether to run the internal online trial.
+6. Only after the trial readiness decision should F-006 start.
 
 This keeps scope protected and prevents files/comments/approvals/drag-drop from entering before the platform has a stable, reviewed shell and a safe trial gate.

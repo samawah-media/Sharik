@@ -8,13 +8,39 @@ Last updated: 2026-07-01
 |---|---|
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
-| Feature | R-005 Internal Online Trial Readiness |
-| Worktree | `D:\code - projects\shrek.platform` |
-| Branch | `codex/r-005-internal-online-trial-readiness` from PR #26 merge on `origin/main` |
-| Current allowed stage | R-005 PR preparation only; hosted staging execution remains gated by owner-approved non-production target and out-of-GitHub credentials |
-| Status | PR #27 is open as draft: https://github.com/samawah-media/Sharik/pull/27. R-005 Spec Kit exists under `specs/006-internal-online-trial-readiness/`; hosted staging is named `sharik-internal-trial-staging`; guarded synthetic seed `supabase/seeds/r005_internal_online_trial_readiness.sql` uses `Samawah Demo` and `@r005.example.test` only; no hosted Supabase mutation, Production Supabase, real client data, temporary passwords, public signup, broad permissions, or product feature expansion was introduced |
-| Next gate | Owner/reviewer checks for PR #27; hosted staging execution remains blocked until the owner approves/provides the non-production target and receives temporary credentials outside GitHub |
-| Owner decision required | Before hosted execution: approve/provide the `sharik-internal-trial-staging` non-production target and deliver temporary credentials outside GitHub |
+| Feature | Gate 0 - Resolve F-005 PR #29 |
+| Worktree | `D:\code - projects\sharik-worktrees\project-control-recovery-plan` |
+| Branch | `codex/f005-gate-decision` based on `codex/project-recovery-plan` |
+| Current allowed stage | Project Control Mode only: review and record the F-005 gate decision; no R-006, online trial, product feature, dependency, production, or real-data work |
+| Status | PR #29 is live-reviewed as `MERGE SAFE`: open, not draft, `mergeStateStatus=CLEAN`, `quality` success on `0eb02a5d5f2f0f9c8606a1ded57ded93d53d51fd`, and CodeRabbit status success. No merge was performed because explicit owner authorization to merge was not present. |
+| Next gate | Owner authorization to merge PR #29 or explicit deferral. Only after PR #29 is merged can F-005 become the official UI baseline. |
+| Owner decision required | Authorize PR #29 merge, or hold/defer it with a stated reason. R-006 remains blocked until the post-F-005 `main` baseline exists. |
+
+## Gate 0 F-005 PR #29 Decision - 2026-07-01
+
+Decision: `MERGE SAFE`, pending owner authorization to merge.
+
+Live GitHub review:
+
+- PR #29 `fix(F-005): rescue product shell and kanban UX`: open, not draft, `mergeable=MERGEABLE`, `mergeStateStatus=CLEAN`.
+- PR #29 head commit: `0eb02a5d5f2f0f9c8606a1ded57ded93d53d51fd`.
+- PR #29 base/main at review: `d17c5c732a1bce7cf38f625a35369ca4409b3f97`, `Merge pull request #28 from samawah-media/codex/sign-in-password-visibility`.
+- PR #29 CI: `F-001 Quality / quality` passed, run `28515648127`.
+- PR #29 CodeRabbit: status context passed. Review state is `COMMENTED`, with actionable/nitpick comments only; no `REQUEST_CHANGES` review or blocker was found. The evidence-only follow-up commit also has a CodeRabbit rate-limit warning comment, but the GitHub status context remains successful.
+- PR #30 `chore(project): add recovery plan and reset roadmap`: open draft, `mergeStateStatus=CLEAN`, `quality` passed on `efe35e7f73f83b3588e5978a90a4378613046324`, CodeRabbit skipped because it is draft.
+
+Scope confirmation:
+
+- F-005 changed product shell, local UI primitives, current management pages, current Kanban UX, Spec Kit docs, evidence, screenshots, and tests.
+- No dependencies or lockfiles changed.
+- No files, comments, approvals, drag/drop, R-006, online trial, production, or real client data were added.
+
+Result:
+
+- F-005 is merge-safe but is not the official UI baseline yet because PR #29 remains unmerged.
+- `main` remains at `d17c5c732a1bce7cf38f625a35369ca4409b3f97`; it is stable relative to the latest merged baseline but does not contain F-005.
+- R-006 is not allowed to start until PR #29 is merged and the post-merge `origin/main` commit is recorded.
+- The next safe phase after owner-authorized F-005 merge is R-006 Internal Online Trial Readiness only.
 
 ## R-005 Internal Online Trial Readiness - 2026-07-01
 

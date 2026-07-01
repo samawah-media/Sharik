@@ -53,11 +53,11 @@ Date: 2026-07-01
 
 | ID | Check | Status | Evidence |
 |---|---|---:|---|
-| GATE-001 | Final GitHub Actions CI on PR #26 | PASS | `F-001 Quality` run `28496289857` passed on commit `5be59e43f96c7825b2e756c29ce7985e5e6ae5e4`. |
+| GATE-001 | Final GitHub Actions CI on PR #26 | PASS | `F-001 Quality` run `28496519892` passed on commit `22bb1e37309aa5a422012cb53f85582686d4d1e2`. |
 | GATE-002 | CI command coverage | PASS | CI passed `npm run lint`, `npm run typecheck`, `npm run test:unit`, `npm run test:integration`, `npm run test:rls`, `npm run test:component`, `npm run test:e2e`, `npm run secret:scan`, and `npm run build`. |
 | GATE-003 | DB pgTAP in CI | PASS | CI ran `npx supabase@2.107.0 db start`, `npx supabase@2.107.0 db reset --local`, then `npm run test:rls`; DB pgTAP included `supabase/tests/database/f004_deliverable_status_workflow.test.sql` with status idempotency assertions. |
-| GATE-004 | CodeRabbit review | BLOCKED | CodeRabbit status context is green, but the visible CodeRabbit comment says `Review limit reached` and no review started. Do not request Owner Review until a real CodeRabbit review completes or the owner explicitly waives it. |
-| GATE-005 | PR merge state | HOLD | PR #26 remains open and unmerged. CI is passing, but CodeRabbit review is not complete. |
+| GATE-004 | CodeRabbit review | PASS | After the initial rate limit cleared, `@coderabbitai review` was triggered manually. CodeRabbit replied `Review finished`, the `CodeRabbit` status context is `SUCCESS`, and GitHub API checks showed no pull request reviews, review comments, or review threads requiring changes. |
+| GATE-005 | PR merge state | READY FOR OWNER REVIEW | PR #26 remains open and unmerged. CI is passing, CodeRabbit completed without actionable comments, and Owner Review can be requested before merge. |
 
 ## Security Notes
 

@@ -58,39 +58,57 @@ export default async function ClientDetailPage({
     return <ResourceNotFoundState />;
   }
 
+  const permissionResource = { tenantId: client.tenantId, clientId: client.id };
   const canViewContracts = evaluatePermission({
     actor: runtime.actor,
     permission: PERMISSIONS.CONTRACT_VIEW,
-    resource: { tenantId: client.tenantId, clientId: client.id },
+    resource: permissionResource,
   }).allowed;
   const canViewDeliverables = evaluatePermission({
     actor: runtime.actor,
     permission: PERMISSIONS.CONTRACT_VIEW,
-    resource: { tenantId: client.tenantId, clientId: client.id },
+    resource: permissionResource,
   }).allowed;
+  const canViewCommercial =
+    canViewContracts &&
+    evaluatePermission({
+      actor: runtime.actor,
+      permission: PERMISSIONS.LEDGER_VIEW_SUMMARY,
+      resource: permissionResource,
+    }).allowed;
 
   return (
-    <main className="grid gap-4">
-      <h1 className="text-2xl font-semibold">مساحة العميل</h1>
-      <p className="text-sm text-muted">
-        تظهر هذه الصفحة فقط عند اجتياز تحقق الصلاحية من جهة السيرفر.
-      </p>
-      {canViewContracts ? (
-        <Link
-          className="w-fit rounded-md border border-border px-4 py-2 text-sm font-semibold"
-          href={`/clients/${client.id}/contracts`}
-        >
-          عرض العقود
-        </Link>
-      ) : null}
-      {canViewDeliverables ? (
-        <Link
-          className="w-fit rounded-md border border-border px-4 py-2 text-sm font-semibold"
-          href={`/clients/${client.id}/deliverables`}
-        >
-          عرض المخرجات
-        </Link>
-      ) : null}
+    <main className="grid gap-5">
+      <div>
+        <h1 className="text-2xl font-semibold">مساحة تشغيل العميل</h1>
+        <p className="mt-2 text-sm text-muted">{client.name}</p>
+      </div>
+      <section aria-label="مسارات تجربة العميل" className="grid gap-3 sm:grid-cols-3">
+        {canViewContracts ? (
+          <Link
+            className="rounded-lg border border-border p-4 text-sm font-semibold hover:bg-muted"
+            href={`/clients/${client.id}/contracts`}
+          >
+            العقود والباقات
+          </Link>
+        ) : null}
+        {canViewDeliverables ? (
+          <Link
+            className="rounded-lg border border-border p-4 text-sm font-semibold hover:bg-muted"
+            href={`/clients/${client.id}/deliverables`}
+          >
+            المخرجات
+          </Link>
+        ) : null}
+        {canViewCommercial ? (
+          <Link
+            className="rounded-lg border border-border p-4 text-sm font-semibold hover:bg-muted"
+            href={`/clients/${client.id}/commercial`}
+          >
+            الملخص التجاري
+          </Link>
+        ) : null}
+      </section>
     </main>
   );
 }

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { evaluatePermission } from "@/modules/authorization/evaluator";
+import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import {
   canUseRouteActorFixtures,
   guardManagementRoute,
@@ -78,6 +80,18 @@ export default async function ClientsPage({
                 >
                   المخرجات
                 </Link>
+                {evaluatePermission({
+                  actor,
+                  permission: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
+                  resource: { tenantId: client.tenantId, clientId: client.id },
+                }).allowed ? (
+                  <Link
+                    className="rounded-md border border-border px-3 py-2 text-sm font-semibold"
+                    href={`/clients/${client.id}/deliverables/board`}
+                  >
+                    لوحة Kanban
+                  </Link>
+                ) : null}
                 <Link
                   className="rounded-md border border-border px-3 py-2 text-sm font-semibold"
                   href={`/clients/${client.id}/commercial`}

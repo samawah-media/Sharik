@@ -17,13 +17,14 @@ This guide describes how to prepare and validate an internal online UAT for Shar
 
 ## Current Hosted Result For This Run
 
-As of 2026-06-30:
+As of 2026-07-01:
 
 - Approved Supabase UAT project ref: `jnvuccapgsabrwwkxnbh`.
 - Hosted non-production migration has been applied.
 - Hosted R-004 synthetic seed has been applied using only `supabase/seeds/r004_internal_online_mvp_uat.sql`.
 - Vercel Production target is deployed as hosting-only at `https://sharik-platform.vercel.app`.
-- Full authenticated browser UAT remains blocked until synthetic users receive an approved temporary password/sign-in path.
+- Full authenticated browser UAT passed with synthetic users only.
+- Temporary hosted `@r004.example.test` password hashes were cleared after evidence was recorded; verification found 0 remaining password hashes for that domain.
 - Do not use real client data and do not treat the Vercel Production target as Production acceptance.
 
 ## Explicit Approval Required For Hosted Supabase

@@ -25,6 +25,9 @@ describe("F-002 permissions", () => {
     expect(PERMISSIONS.DELIVERABLE_CANCEL_NOT_STARTED).toBe(
       "PERM.DELIVERABLE.CANCEL_NOT_STARTED",
     );
+    expect(PERMISSIONS.DELIVERABLE_STATUS_UPDATE).toBe(
+      "PERM.DELIVERABLE.STATUS_UPDATE",
+    );
     expect(PERMISSIONS.LEDGER_VIEW_SUMMARY).toBe(
       "PERM.LEDGER.VIEW_SUMMARY",
     );
@@ -50,6 +53,13 @@ describe("F-002 permissions", () => {
       evaluatePermission({
         actor: f002Actors.accountManagerClientA,
         permission: PERMISSIONS.DELIVERABLE_CREATE,
+        resource: { tenantId: tenantA.id, clientId: clientA.id },
+      }),
+    ).toEqual({ allowed: true });
+    expect(
+      evaluatePermission({
+        actor: f002Actors.accountManagerClientA,
+        permission: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
         resource: { tenantId: tenantA.id, clientId: clientA.id },
       }),
     ).toEqual({ allowed: true });

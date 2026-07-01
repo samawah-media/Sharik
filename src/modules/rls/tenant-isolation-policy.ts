@@ -27,7 +27,8 @@ export type TenantSelectPolicy =
   | "invitation_select_tenant_management"
   | "commercial_raw_select_management_or_assigned"
   | "commercial_ledger_select_management_or_account_manager"
-  | "commercial_safe_summary_select_authorized_scope";
+  | "commercial_safe_summary_select_authorized_scope"
+  | "deliverable_board_select_management_or_assigned";
 
 export type TenantInsertPolicy =
   | "audit_insert_own_tenant"
@@ -93,7 +94,10 @@ export const canSelectTenantScopedRow = ({
     return Boolean(hasTenantManagement);
   }
 
-  if (policy === "commercial_raw_select_management_or_assigned") {
+  if (
+    policy === "commercial_raw_select_management_or_assigned" ||
+    policy === "deliverable_board_select_management_or_assigned"
+  ) {
     return Boolean(
       hasTenantManagement ||
         hasActiveClientRole({

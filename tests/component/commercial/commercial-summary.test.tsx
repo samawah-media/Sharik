@@ -83,6 +83,7 @@ const managementSummary: ManagementCommercialSummary = {
       requiresClientApproval: true,
       progressPercentage: 0,
       approvedExtra: false,
+      revision: 1,
       createdAt: "2026-06-28T00:00:00.000Z",
       updatedAt: "2026-06-28T00:00:00.000Z",
       reservation: {

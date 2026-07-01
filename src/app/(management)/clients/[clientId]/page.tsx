@@ -69,6 +69,11 @@ export default async function ClientDetailPage({
     permission: PERMISSIONS.CONTRACT_VIEW,
     resource: permissionResource,
   }).allowed;
+  const canUpdateDeliverableStatus = evaluatePermission({
+    actor: runtime.actor,
+    permission: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
+    resource: permissionResource,
+  }).allowed;
   const canViewCommercial =
     canViewContracts &&
     evaluatePermission({
@@ -98,6 +103,14 @@ export default async function ClientDetailPage({
             href={`/clients/${client.id}/deliverables`}
           >
             المخرجات
+          </Link>
+        ) : null}
+        {canUpdateDeliverableStatus ? (
+          <Link
+            className="rounded-lg border border-border p-4 text-sm font-semibold hover:bg-muted"
+            href={`/clients/${client.id}/deliverables/board`}
+          >
+            لوحة Kanban الداخلية
           </Link>
         ) : null}
         {canViewCommercial ? (

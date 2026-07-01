@@ -1,7 +1,7 @@
-# Specification Quality Checklist: Internal Online MVP UAT
+# Specification Quality Checklist: Internal Kanban Workflow MVP
 
-**Purpose**: Validate specification completeness and quality before hosted planning and execution
-**Created**: 2026-06-29
+**Purpose**: Validate specification completeness and quality before planning and implementation
+**Created**: 2026-07-01
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -25,12 +25,12 @@
 ## Feature Readiness
 
 - [x] All functional requirements have clear acceptance criteria
-- [x] User scenarios cover primary flows
+- [x] User scenarios cover primary board, transition, and access-link flows
 - [x] Feature meets measurable outcomes defined in Success Criteria
-- [x] Hosted operation approval gates are explicit
+- [x] Tenant/client isolation, audit, and SLA gates are explicit
 
 ## Notes
 
-- This Spec intentionally names Vercel and Supabase because AGENTS.md and accepted ADRs already mandate the project stack.
-- Owner decision on 2026-06-30 allows Vercel Hobby/free and a Vercel Production target for hosting only.
-- Hosted Supabase migration was unblocked only after explicit approval for UAT project `jnvuccapgsabrwwkxnbh`; migration, R-004 synthetic seed, authenticated UAT, and temporary synthetic password cleanup are now evidenced complete.
+- The MVP deliberately uses select/action controls because `@dnd-kit` is not installed in the current app.
+- No new dependency is introduced by the Spec.
+- Drag/drop remains deferred until a future approved ADR/dependency update.

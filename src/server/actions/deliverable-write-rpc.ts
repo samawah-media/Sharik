@@ -147,6 +147,7 @@ export const toDeliverableSafeSummaryFromRows = ({
     requiresClientApproval: deliverable.requiresClientApproval,
     progressPercentage: deliverable.progressPercentage,
     approvedExtra: deliverable.approvedExtra,
+    revision: deliverable.revision,
     createdAt: deliverable.createdAt,
     updatedAt: deliverable.updatedAt,
     reservation: reservation
@@ -313,6 +314,47 @@ export const cancelNotStartedDeliverableViaRpc = async ({
       cancellation_reason: input.reason,
       expected_status: input.expectedStatus,
       expected_revision: input.expectedRevision,
+      idempotency_key: input.idempotencyKey,
+    },
+  );
+
+  if (error) {
+    return { ok: false as const, error };
+  }
+
+  const row = selectSingleRow(data);
+
+  if (!row) {
+    return { ok: false as const, error: { code: "PGRST116" } };
+  }
+
+  return { ok: true as const, value: toDeliverableRecordFromWriteRow(row) };
+};
+
+export const updateDeliverableStatusViaRpc = async ({
+  supabase,
+  input,
+}: {
+  supabase: SupabaseClient;
+  input: {
+    deliverableId: string;
+    auditEventId: string;
+    clientId: string;
+    toStatus: DeliverableLifecycleStatus;
+    expectedRevision: number | null;
+    reason: string | null;
+    idempotencyKey: string;
+  };
+}) => {
+  const { data, error } = await supabase.rpc(
+    "f004_update_deliverable_status",
+    {
+      target_deliverable_id: input.deliverableId,
+      audit_event_id: input.auditEventId,
+      target_client_id: input.clientId,
+      target_status: input.toStatus,
+      expected_revision: input.expectedRevision,
+      transition_reason: input.reason,
       idempotency_key: input.idempotencyKey,
     },
   );

@@ -1,4 +1,7 @@
 import { z } from "zod";
+import {
+  activeKanbanStatuses,
+} from "@/modules/deliverables/deliverable-rules";
 import { deliverablePriorities } from "@/modules/deliverables/deliverable-repository";
 
 const optionalText = (max: number) =>
@@ -84,10 +87,22 @@ export const cancelNotStartedDeliverableSchema = z.object({
   idempotencyKey: z.string().trim().min(8).max(120),
 });
 
+export const updateDeliverableStatusSchema = z.object({
+  clientId: z.string().trim().min(1),
+  deliverableId: z.string().trim().min(1),
+  toStatus: z.enum(activeKanbanStatuses),
+  expectedRevision: z.coerce.number().int().positive().optional(),
+  reason: z.string().trim().max(500).optional().or(z.literal("")),
+  idempotencyKey: z.string().trim().min(8).max(120),
+});
+
 export type CreateDeliverableInput = z.infer<typeof createDeliverableSchema>;
 export type CreateApprovedExtraDeliverableInput = z.infer<
   typeof createApprovedExtraDeliverableSchema
 >;
 export type CancelNotStartedDeliverableInput = z.infer<
   typeof cancelNotStartedDeliverableSchema
+>;
+export type UpdateDeliverableStatusInput = z.infer<
+  typeof updateDeliverableStatusSchema
 >;

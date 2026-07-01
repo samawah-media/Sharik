@@ -1,6 +1,6 @@
 # Project Progress
 
-Last updated: 2026-06-30
+Last updated: 2026-07-01
 
 ## Current Execution Gate
 
@@ -8,13 +8,64 @@ Last updated: 2026-06-30
 |---|---|
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
-| Feature | R-004 Internal Online MVP UAT |
-| Worktree | `D:\code - projects\sharik-worktrees\r004g-authenticated-uat` |
-| Branch | `codex/r004-authenticated-synthetic-uat` from PR #23 merge commit on `origin/main` |
-| Current allowed stage | Hosted UAT evidence and review PR only; no merge without explicit review |
-| Status | PR #18 through PR #23 are merged on `main`; hosted non-production Supabase migration and R-004 synthetic seed completed against `sharik-uat`; Vercel project `sharik-platform` is deployed to Production target as hosting-only at `https://sharik-platform.vercel.app`; `/` now redirects through auth; temporary synthetic sign-in was activated safely; authenticated browser UAT passed with synthetic users only |
-| Next gate | Open PR `[codex] R-004 authenticated synthetic UAT` and leave it unmerged for review |
-| Owner decision required | Rotate or clear temporary synthetic `@r004.example.test` passwords and rotate any secrets exposed during the wider R-004 hosted setup process |
+| Feature | F-004 Internal Kanban Workflow MVP |
+| Worktree | `D:\code - projects\shrek.platform` |
+| Branch | `codex/f-004-internal-kanban-workflow` from PR #25 merge commit on `origin/main` |
+| Current allowed stage | F-004 implementation verification before PR; R-004 is closed after PR #25 |
+| Status | F-004 Spec Kit exists; board route `/clients/[clientId]/deliverables/board`, secure status command/RPC, audit events, derived progress, SLA display, management links, and targeted tests are implemented locally. `origin/main` contains PR #25 merge commit `0872780d00799ec42e95d3ea889c686cce8b7bad`; R-004 hosted UAT is closed as Production hosting-only with Supabase UAT synthetic data only; temporary `@r004.example.test` passwords were cleared and verified with 0 remaining password hashes |
+| Next gate | Run full requested verification suite, then open PR `[codex] F-004 internal kanban workflow MVP` without merge |
+| Owner decision required | No R-004 owner action remains for temporary synthetic passwords; F-004 PR must not be merged without explicit owner approval |
+
+## F-004 Internal Kanban Workflow MVP - 2026-07-01
+
+Scope implemented:
+
+- Created Spec Kit package under `specs/005-internal-kanban-workflow/`.
+- Chose `/clients/[clientId]/deliverables/board` to keep the board nested under the existing deliverables management area.
+- Used existing deliverable lifecycle statuses and select/action controls; no `dnd-kit` dependency was added and no ADR was required.
+- Added tenant/client scoped board reads, management links from `/clients`, `/clients/[clientId]`, and `/clients/[clientId]/deliverables`.
+- Added secure status transition command, server action, Supabase RPC migration, progress derivation from status, SLA card evaluation, and audit events for allowed/denied transitions.
+- Preserved constraints: no Production Supabase, no real client data, no RoleKey changes, no standalone `project_manager`, no comments/files/full approvals/social scheduling/AI.
+
+Targeted verification passed before the full suite:
+
+- Unit: deliverable rules and permission catalog.
+- Integration: status workflow command, audit events, rollback, stale revision, client-role denial.
+- RLS simulator: Client A/Client B isolation and client-role internal board denial.
+- Component: board columns/cards/action controls.
+- E2E: board route and client viewer denial across desktop/mobile/RTL.
+
+Full local verification:
+
+- `git diff --check`: passed; CRLF working-copy warnings only.
+- `npm run secret:scan`: passed; no high-confidence secrets found.
+- `npm run lint`: passed.
+- `npm run typecheck`: passed.
+- `npm run test:unit`: passed, 23 files / 77 tests.
+- `npm run test:integration`: passed, 20 files / 83 tests.
+- `npm run test:rls`: simulator passed, 8 files / 24 tests; DB pgTAP portion was blocked because Docker Desktop/local Supabase Postgres was unavailable in this environment (`dockerDesktopLinuxEngine` pipe missing). No hosted or Production Supabase was used.
+- `npm run test:component`: passed, 13 files / 42 tests.
+- `npm run test:e2e`: passed on final rerun, 67 passed / 2 skipped.
+- `npm run build`: passed.
+
+## R-004 Closure After PR #25 - 2026-07-01
+
+Verification:
+
+- PR #24, `[codex] R-004 authenticated synthetic UAT`, merged on 2026-06-30 with merge commit `9d7d69e293000e479790958da4ed82641354f1a6`.
+- PR #25, `[codex] R-004 expose management UAT routes`, merged on 2026-07-01 with merge commit `0872780d00799ec42e95d3ea889c686cce8b7bad`.
+- The active F-004 branch starts from `origin/main` after PR #25.
+- Supabase UAT project ref remains `jnvuccapgsabrwwkxnbh`; no Production Supabase or real client data was used.
+- Temporary password cleanup was run only for hosted users matching `@r004.example.test`.
+- Cleanup result: 5 synthetic users had temporary password hashes cleared; follow-up verification found 0 `@r004.example.test` users with a remaining password hash.
+- No password, database password, service role key, access token, or secret value was printed or committed.
+
+Result:
+
+- R-004 is closed for internal online MVP UAT evidence after PR #25.
+- Vercel `https://sharik-platform.vercel.app` remains Production hosting-only, not Production acceptance.
+- `supabase/seeds/r004_internal_online_mvp_uat.sql` remains the only approved R-004 hosted UAT seed; `supabase/seed.sql` remains prohibited for hosted R-004 UAT.
+- Broader Supabase access token or DB password rotation, if needed from earlier owner-operated setup, remains outside committed repo evidence and must be handled without exposing secrets.
 
 ## R-004G Authenticated Synthetic UAT - 2026-06-30
 
@@ -34,10 +85,10 @@ Verification:
 
 Result:
 
-- R-004G authenticated synthetic UAT is ready for owner review through a new PR.
+- R-004G authenticated synthetic UAT was reviewed through PR #24 and followed by PR #25, both merged by the owner.
 - No Production Supabase, real client data, dependency addition, RoleKey change, standalone `project_manager` role, Kanban/files/comments/approvals/social scheduling/AI expansion, or PR merge was introduced.
-- Owner must rotate or clear temporary synthetic user passwords after review.
-- Owner should rotate any Supabase access token, DB password, or other secret that may have been exposed during the wider R-004 hosted setup process.
+- Temporary synthetic hosted passwords were cleared after review evidence; verification found 0 remaining password hashes for `@r004.example.test`.
+- Broader Supabase access token or DB password rotation, if needed from earlier owner-operated setup, remains outside committed repo evidence and must be handled without exposing secrets.
 
 Local verification:
 

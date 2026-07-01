@@ -4,7 +4,7 @@
 
 **Created**: 2026-06-29
 
-**Status**: Hosted UAT evidence update - Supabase UAT migration/seed and Vercel hosting are complete; full authenticated browser UAT remains gated by synthetic sign-in credentials
+**Status**: Closed after PR #25 - Supabase UAT migration/seed, Vercel hosting-only deployment, authenticated browser UAT, and temporary synthetic password cleanup are complete
 
 **Input**: Prepare the smallest internal online UAT after PR #17, with strict AGENTS.md and Spec Kit compliance, Vercel Hobby/free allowed by owner decision, Vercel Production target allowed for hosting only, synthetic data only, no new feature scope, and hosted Supabase migration only after a real Supabase UAT project exists and is explicitly approved.
 
@@ -24,7 +24,7 @@ The UAT scope is deliberately narrow: deployed access, authentication surface, t
 - Hosted Supabase migration is allowed only after a separate Supabase UAT project exists and an explicit approval names the project ref and confirms synthetic data only; approvals that keep `<PROJECT_REF>` as a placeholder are not valid.
 - Owner later supplied project ref `jnvuccapgsabrwwkxnbh`; hosted no-real-data checks, migration, and R-004 synthetic seed completed on 2026-06-30.
 - Vercel project `sharik-platform` is deployed at `https://sharik-platform.vercel.app` as Production hosting-only, not Production acceptance.
-- Full authenticated browser UAT remains gated because the hosted synthetic users do not yet have an approved temporary password/sign-in path.
+- Full authenticated browser UAT passed with synthetic users only; temporary hosted `@r004.example.test` password hashes were cleared on 2026-07-01 after evidence was recorded.
 - No real client data, real client emails, Production Supabase project, or production data may be used.
 - No dependency changes are allowed.
 - No `RoleKey` changes and no standalone `project_manager` role are allowed.

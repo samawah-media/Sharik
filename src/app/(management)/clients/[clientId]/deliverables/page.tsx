@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import {
@@ -12,6 +11,9 @@ import {
   DeliverableEmptyState,
   DeliverableList,
 } from "@/ui/management/deliverable-form";
+import { Badge } from "@/ui/core/badge";
+import { ButtonLink } from "@/ui/core/button";
+import { PageHeader } from "@/ui/layout/page-header";
 import {
   AccessDeniedState,
   MembershipDisabledState,
@@ -30,7 +32,10 @@ export default async function ClientDeliverablesPage({
   const runtime = await resolveRouteRuntime(query?.as);
 
   if (!runtime.ok) {
-    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") {
+    if (
+      runtime.reason === "auth_required" ||
+      runtime.reason === "session_expired"
+    ) {
       return <SessionExpiredState />;
     }
 
@@ -101,53 +106,54 @@ export default async function ClientDeliverablesPage({
 
   return (
     <main className="grid gap-5" dir="rtl">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">مخرجات {client.name}</h1>
-          {query?.saved === "created" ? (
-            <p className="mt-2 text-sm text-success">تم حفظ المخرج وحجز الكمية.</p>
-          ) : null}
-          {query?.saved === "extra-created" ? (
-            <p className="mt-2 text-sm text-success">تم حفظ المخرج الإضافي.</p>
-          ) : null}
-          {query?.saved === "cancelled" ? (
-            <p className="mt-2 text-sm text-success">
-              تم إلغاء المخرج وإرجاع السعة المحجوزة.
-            </p>
-          ) : null}
-          {query?.saved === "denied" ? (
-            <p className="mt-2 text-sm text-danger">
-              تعذر تنفيذ الطلب بأمان.
-            </p>
-          ) : null}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {canUpdateDeliverableStatus ? (
-            <Link
-              className="w-fit rounded-md border border-border px-4 py-2 text-sm font-semibold"
-              href={`/clients/${client.id}/deliverables/board`}
-            >
-              لوحة Kanban
-            </Link>
-          ) : null}
-          {canCreateDeliverables ? (
-            <Link
-              className="w-fit rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-              href={`/clients/${client.id}/deliverables/new`}
-            >
-              مخرج جديد
-            </Link>
-          ) : null}
-          {canCreateExtras ? (
-            <Link
-              className="w-fit rounded-md border border-border px-4 py-2 text-sm font-semibold"
-              href={`/clients/${client.id}/deliverables/new?mode=extra`}
-            >
-              مخرج إضافي معتمد
-            </Link>
-          ) : null}
-        </div>
-      </div>
+      <PageHeader
+        actions={
+          <>
+            {canUpdateDeliverableStatus ? (
+              <ButtonLink
+                href={`/clients/${client.id}/deliverables/board`}
+                variant="secondary"
+              >
+                لوحة Kanban
+              </ButtonLink>
+            ) : null}
+            {canCreateDeliverables ? (
+              <ButtonLink
+                href={`/clients/${client.id}/deliverables/new`}
+                variant="primary"
+              >
+                مخرج جديد
+              </ButtonLink>
+            ) : null}
+            {canCreateExtras ? (
+              <ButtonLink
+                href={`/clients/${client.id}/deliverables/new?mode=extra`}
+                variant="secondary"
+              >
+                مخرج إضافي معتمد
+              </ButtonLink>
+            ) : null}
+          </>
+        }
+        description={client.name}
+        status={
+          <div className="flex flex-wrap gap-2">
+            {query?.saved === "created" ? (
+              <Badge tone="success">تم حفظ المخرج وحجز الكمية.</Badge>
+            ) : null}
+            {query?.saved === "extra-created" ? (
+              <Badge tone="success">تم حفظ المخرج الإضافي.</Badge>
+            ) : null}
+            {query?.saved === "cancelled" ? (
+              <Badge tone="success">تم إلغاء المخرج وإرجاع السعة.</Badge>
+            ) : null}
+            {query?.saved === "denied" ? (
+              <Badge tone="danger">تعذر تنفيذ الطلب بأمان.</Badge>
+            ) : null}
+          </div>
+        }
+        title={`مخرجات ${client.name}`}
+      />
       {deliverableList.deliverables.length > 0 ? (
         <DeliverableList
           cancellationAction={cancelNotStartedDeliverableAction}

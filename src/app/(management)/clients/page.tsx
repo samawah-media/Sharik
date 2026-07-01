@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import {
@@ -7,6 +6,10 @@ import {
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
 import { ClientEmptyState } from "@/ui/management/client-form";
+import { Badge } from "@/ui/core/badge";
+import { ButtonLink } from "@/ui/core/button";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/ui/core/card";
+import { PageHeader } from "@/ui/layout/page-header";
 import {
   AccessDeniedState,
   MembershipDisabledState,
@@ -22,7 +25,10 @@ export default async function ClientsPage({
   const runtime = await resolveRouteRuntime(params?.as);
 
   if (!runtime.ok) {
-    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") {
+    if (
+      runtime.reason === "auth_required" ||
+      runtime.reason === "session_expired"
+    ) {
       return <SessionExpiredState />;
     }
 
@@ -45,82 +51,99 @@ export default async function ClientsPage({
     return <AccessDeniedState returnHref={access.safeReturnHref} />;
   }
 
-  const visibleClients = clients.filter((client) => client.tenantId === actor.tenantId);
+  const visibleClients = clients.filter(
+    (client) => client.tenantId === actor.tenantId,
+  );
   const showFixtureEmptyState = canUseRouteActorFixtures();
 
   return (
     <main className="grid gap-6">
-      <h1 className="text-2xl font-semibold">العملاء</h1>
+      <PageHeader
+        actions={
+          writeAccess.allowed ? (
+            <ButtonLink href="/clients/new" variant="primary">
+              إضافة عميل
+            </ButtonLink>
+          ) : null
+        }
+        description="مساحات العملاء النشطة داخل نطاق سماوة، مع روابط التشغيل الحالية فقط."
+        title="العملاء"
+      />
       {visibleClients.length > 0 && !showFixtureEmptyState ? (
-        <section aria-label="قائمة العملاء" className="grid gap-3">
+        <section
+          aria-label="قائمة العملاء"
+          className="grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+        >
           {visibleClients.map((client) => (
-            <article className="rounded-lg border border-border p-4" key={client.id}>
+            <Card className="grid content-between gap-4" key={client.id}>
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-base font-semibold">{client.name}</h2>
-                  <p className="mt-1 font-mono text-xs text-muted">{client.slug}</p>
-                </div>
-                <Link
-                  className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground"
-                  href={`/clients/${client.id}`}
-                >
+                <CardHeader>
+                  <CardTitle>{client.name}</CardTitle>
+                  <CardDescription>
+                    <span className="font-mono text-xs">{client.slug}</span>
+                  </CardDescription>
+                </CardHeader>
+                <Badge tone="success">نشط</Badge>
+              </div>
+              <div className="grid gap-3">
+                <ButtonLink href={`/clients/${client.id}`} variant="primary">
                   فتح مساحة العميل
-                </Link>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Link
-                  className="rounded-md border border-border px-3 py-2 text-sm font-semibold"
-                  href={`/clients/${client.id}/contracts`}
-                >
-                  العقود
-                </Link>
-                <Link
-                  className="rounded-md border border-border px-3 py-2 text-sm font-semibold"
-                  href={`/clients/${client.id}/deliverables`}
-                >
-                  المخرجات
-                </Link>
-                {evaluatePermission({
-                  actor,
-                  permission: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
-                  resource: { tenantId: client.tenantId, clientId: client.id },
-                }).allowed ? (
-                  <Link
-                    className="rounded-md border border-border px-3 py-2 text-sm font-semibold"
-                    href={`/clients/${client.id}/deliverables/board`}
+                </ButtonLink>
+                <div className="flex flex-wrap gap-2">
+                  <ButtonLink
+                    href={`/clients/${client.id}/contracts`}
+                    size="sm"
+                    variant="secondary"
                   >
-                    لوحة Kanban
-                  </Link>
-                ) : null}
-                <Link
-                  className="rounded-md border border-border px-3 py-2 text-sm font-semibold"
-                  href={`/clients/${client.id}/commercial`}
-                >
-                  الملخص التجاري
-                </Link>
-                {writeAccess.allowed ? (
-                  <Link
-                    className="rounded-md border border-border px-3 py-2 text-sm font-semibold"
-                    href={`/clients/${client.id}/edit`}
+                    العقود
+                  </ButtonLink>
+                  <ButtonLink
+                    href={`/clients/${client.id}/deliverables`}
+                    size="sm"
+                    variant="secondary"
                   >
-                    تعديل
-                  </Link>
-                ) : null}
+                    المخرجات
+                  </ButtonLink>
+                  {evaluatePermission({
+                    actor,
+                    permission: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
+                    resource: {
+                      tenantId: client.tenantId,
+                      clientId: client.id,
+                    },
+                  }).allowed ? (
+                    <ButtonLink
+                      href={`/clients/${client.id}/deliverables/board`}
+                      size="sm"
+                      variant="secondary"
+                    >
+                      لوحة Kanban
+                    </ButtonLink>
+                  ) : null}
+                  <ButtonLink
+                    href={`/clients/${client.id}/commercial`}
+                    size="sm"
+                    variant="secondary"
+                  >
+                    الملخص التجاري
+                  </ButtonLink>
+                  {writeAccess.allowed ? (
+                    <ButtonLink
+                      href={`/clients/${client.id}/edit`}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      تعديل
+                    </ButtonLink>
+                  ) : null}
+                </div>
               </div>
-            </article>
+            </Card>
           ))}
         </section>
       ) : (
         <ClientEmptyState />
       )}
-      {writeAccess.allowed ? (
-        <Link
-          className="w-fit rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-          href="/clients/new"
-        >
-          إضافة عميل
-        </Link>
-      ) : null}
     </main>
   );
 }

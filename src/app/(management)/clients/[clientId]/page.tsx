@@ -1,10 +1,13 @@
-import Link from "next/link";
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import {
   guardClientDetailRoute,
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
+import { Badge } from "@/ui/core/badge";
+import { ButtonLink } from "@/ui/core/button";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/ui/core/card";
+import { PageHeader } from "@/ui/layout/page-header";
 import {
   AccessDeniedState,
   MembershipDisabledState,
@@ -23,7 +26,10 @@ export default async function ClientDetailPage({
   const runtime = await resolveRouteRuntime(query?.as);
 
   if (!runtime.ok) {
-    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") {
+    if (
+      runtime.reason === "auth_required" ||
+      runtime.reason === "session_expired"
+    ) {
       return <SessionExpiredState />;
     }
 
@@ -84,42 +90,80 @@ export default async function ClientDetailPage({
 
   return (
     <main className="grid gap-5">
-      <div>
-        <h1 className="text-2xl font-semibold">مساحة تشغيل العميل</h1>
-        <p className="mt-2 text-sm text-muted">{client.name}</p>
-      </div>
-      <section aria-label="مسارات تجربة العميل" className="grid gap-3 sm:grid-cols-3">
+      <PageHeader
+        description={client.name}
+        status={<Badge tone="success">عميل نشط داخل النطاق</Badge>}
+        title="مساحة تشغيل العميل"
+      />
+      <section
+        aria-label="مسارات تجربة العميل"
+        className="grid gap-3 md:grid-cols-2 xl:grid-cols-4"
+      >
         {canViewContracts ? (
-          <Link
-            className="rounded-lg border border-border p-4 text-sm font-semibold hover:bg-muted"
-            href={`/clients/${client.id}/contracts`}
-          >
-            العقود والباقات
-          </Link>
+          <Card>
+            <CardHeader>
+              <CardTitle>العقود والباقات</CardTitle>
+              <CardDescription>
+                إدارة الاتفاق والمتبقي بدون فوترة متقدمة.
+              </CardDescription>
+            </CardHeader>
+            <ButtonLink
+              className="mt-4"
+              href={`/clients/${client.id}/contracts`}
+              variant="secondary"
+            >
+              فتح العقود
+            </ButtonLink>
+          </Card>
         ) : null}
         {canViewDeliverables ? (
-          <Link
-            className="rounded-lg border border-border p-4 text-sm font-semibold hover:bg-muted"
-            href={`/clients/${client.id}/deliverables`}
-          >
-            المخرجات
-          </Link>
+          <Card>
+            <CardHeader>
+              <CardTitle>المخرجات</CardTitle>
+              <CardDescription>
+                قائمة المخرجات المتفق عليها وحالة كل مخرج.
+              </CardDescription>
+            </CardHeader>
+            <ButtonLink
+              className="mt-4"
+              href={`/clients/${client.id}/deliverables`}
+              variant="secondary"
+            >
+              فتح المخرجات
+            </ButtonLink>
+          </Card>
         ) : null}
         {canUpdateDeliverableStatus ? (
-          <Link
-            className="rounded-lg border border-border p-4 text-sm font-semibold hover:bg-muted"
-            href={`/clients/${client.id}/deliverables/board`}
-          >
-            لوحة Kanban الداخلية
-          </Link>
+          <Card>
+            <CardHeader>
+              <CardTitle>لوحة Kanban الداخلية</CardTitle>
+              <CardDescription>عرض تشغيلي للفريق والإدارة فقط.</CardDescription>
+            </CardHeader>
+            <ButtonLink
+              className="mt-4"
+              href={`/clients/${client.id}/deliverables/board`}
+              variant="primary"
+            >
+              فتح اللوحة
+            </ButtonLink>
+          </Card>
         ) : null}
         {canViewCommercial ? (
-          <Link
-            className="rounded-lg border border-border p-4 text-sm font-semibold hover:bg-muted"
-            href={`/clients/${client.id}/commercial`}
-          >
-            الملخص التجاري
-          </Link>
+          <Card>
+            <CardHeader>
+              <CardTitle>الملخص التجاري</CardTitle>
+              <CardDescription>
+                متابعة الرصيد والاستهلاك الحالي.
+              </CardDescription>
+            </CardHeader>
+            <ButtonLink
+              className="mt-4"
+              href={`/clients/${client.id}/commercial`}
+              variant="secondary"
+            >
+              فتح الملخص
+            </ButtonLink>
+          </Card>
         ) : null}
       </section>
     </main>

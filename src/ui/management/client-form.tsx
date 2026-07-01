@@ -7,6 +7,8 @@ import {
   initialClientFormState,
   type ClientFormState,
 } from "@/modules/clients/client-form-state";
+import { Button } from "@/ui/core/button";
+import { EmptyState, ErrorState } from "@/ui/core/states";
 
 type ClientFormAction = (
   previousState: ClientFormState,
@@ -17,17 +19,13 @@ function SubmitButton({ mode }: { mode: "create" | "update" }) {
   const { pending } = useFormStatus();
 
   return (
-    <button
-      className="w-fit rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60"
-      disabled={pending}
-      type="submit"
-    >
+    <Button disabled={pending} type="submit" variant="primary">
       {pending
         ? "جار الحفظ..."
         : mode === "create"
           ? "حفظ العميل"
           : "حفظ التعديلات"}
-    </button>
+    </Button>
   );
 }
 
@@ -108,22 +106,18 @@ export function ClientForm({
 
 export function ClientEmptyState() {
   return (
-    <section aria-label="حالة العملاء الفارغة" className="rounded-lg border border-dashed border-border p-6">
-      <h2 className="text-lg font-semibold">لا يوجد عملاء بعد</h2>
-      <p className="mt-2 text-sm text-muted">
-        ابدأ بإضافة أول عميل داخل نطاق سماوة الآمن.
-      </p>
-    </section>
+    <EmptyState
+      description="ابدأ بإضافة أول عميل داخل نطاق سماوة الآمن."
+      title="لا يوجد عملاء بعد"
+    />
   );
 }
 
 export function ClientDeniedState() {
   return (
-    <section aria-label="تعذر الوصول" className="rounded-lg border border-border p-6">
-      <h2 className="text-lg font-semibold">لا يمكنك الوصول إلى هذا المورد.</h2>
-      <p className="mt-2 text-sm text-muted">
-        لم يتم عرض أي بيانات خارج نطاق صلاحياتك.
-      </p>
-    </section>
+    <ErrorState
+      description="لم يتم عرض أي بيانات خارج نطاق صلاحياتك."
+      title="لا يمكنك الوصول إلى هذا المورد."
+    />
   );
 }

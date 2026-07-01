@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -18,6 +17,9 @@ import {
   PackageEmptyState,
   PackageList,
 } from "@/ui/management/package-form";
+import { Badge } from "@/ui/core/badge";
+import { ButtonLink } from "@/ui/core/button";
+import { PageHeader } from "@/ui/layout/page-header";
 import {
   AccessDeniedState,
   MembershipDisabledState,
@@ -115,7 +117,10 @@ export default async function ContractPackagesPage({
   const runtime = await resolveRouteRuntime(query?.as);
 
   if (!runtime.ok) {
-    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") {
+    if (
+      runtime.reason === "auth_required" ||
+      runtime.reason === "session_expired"
+    ) {
       return <SessionExpiredState />;
     }
 
@@ -177,22 +182,25 @@ export default async function ContractPackagesPage({
 
   return (
     <main className="grid gap-5" dir="rtl">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">باقات {client.name}</h1>
-          {query?.saved === "created" ? (
-            <p className="mt-2 text-sm text-success">تم حفظ الباقة بأمان.</p>
-          ) : null}
-        </div>
-        {canCreatePackages ? (
-          <Link
-            className="w-fit rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-            href={`/clients/${client.id}/contracts/${contractId}/packages/new`}
-          >
-            باقة جديدة
-          </Link>
-        ) : null}
-      </div>
+      <PageHeader
+        actions={
+          canCreatePackages ? (
+            <ButtonLink
+              href={`/clients/${client.id}/contracts/${contractId}/packages/new`}
+              variant="primary"
+            >
+              باقة جديدة
+            </ButtonLink>
+          ) : null
+        }
+        description={client.name}
+        status={
+          query?.saved === "created" ? (
+            <Badge tone="success">تم حفظ الباقة بأمان.</Badge>
+          ) : null
+        }
+        title={`باقات ${client.name}`}
+      />
       {packageList.packages.length > 0 ? (
         <PackageList packages={packageList.packages} />
       ) : (

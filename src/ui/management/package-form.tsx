@@ -8,6 +8,10 @@ import {
   initialPackageFormState,
   type PackageFormState,
 } from "@/modules/packages/package-form-state";
+import { Badge, StatCard } from "@/ui/core/badge";
+import { Button } from "@/ui/core/button";
+import { Card, CardHeader, CardTitle, SectionPanel } from "@/ui/core/card";
+import { EmptyState, ErrorState } from "@/ui/core/states";
 
 type PackageFormAction = (
   previousState: PackageFormState,
@@ -26,13 +30,9 @@ function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <button
-      className="w-fit rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60"
-      disabled={pending}
-      type="submit"
-    >
+    <Button disabled={pending} type="submit" variant="primary">
       {pending ? "جار الحفظ..." : "حفظ الباقة"}
-    </button>
+    </Button>
   );
 }
 
@@ -186,14 +186,11 @@ export function PackageBalanceSummary({
   ] as const;
 
   return (
-    <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-5">
+    <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-5">
       {items.map(([label, value]) => (
-        <div className="rounded-md border border-border px-3 py-2" key={label}>
-          <dt className="text-muted">{label}</dt>
-          <dd className="mt-1 font-semibold">{value}</dd>
-        </div>
+        <StatCard key={label} label={label} value={value} />
       ))}
-    </dl>
+    </div>
   );
 }
 
@@ -201,34 +198,29 @@ export function PackageList({ packages }: { packages: PackageSafeSummary[] }) {
   return (
     <section aria-label="قائمة الباقات" className="grid gap-3" dir="rtl">
       {packages.map((packageItem) => (
-        <article
-          className="rounded-lg border border-border bg-card p-4"
-          key={packageItem.id}
-        >
+        <Card key={packageItem.id}>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-            <div className="grid gap-1">
-              <h2 className="text-base font-semibold">{packageItem.name}</h2>
+            <CardHeader>
+              <CardTitle>{packageItem.name}</CardTitle>
               {packageItem.periodStart || packageItem.periodEnd ? (
                 <p className="text-sm text-muted">
                   {packageItem.periodStart ?? "غير محدد"} -{" "}
                   {packageItem.periodEnd ?? "غير محدد"}
                 </p>
               ) : null}
-            </div>
-            <span className="w-fit rounded-md border border-border px-2 py-1 text-xs text-muted">
-              {statusLabels[packageItem.status]}
-            </span>
+            </CardHeader>
+            <Badge tone="muted">{statusLabels[packageItem.status]}</Badge>
           </div>
           <div className="mt-4 grid gap-3">
             {packageItem.lines.map((line) => (
-              <section
+              <SectionPanel
                 aria-label={`رصيد ${line.serviceLabel}`}
-                className="grid gap-3 rounded-md border border-border p-3"
+                className="grid gap-3 shadow-none"
                 key={line.id}
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 className="text-sm font-semibold">{line.serviceLabel}</h3>
-                  <p className="text-xs text-muted">{line.unitLabel}</p>
+                  <Badge tone="muted">{line.unitLabel}</Badge>
                 </div>
                 <div className="flex flex-wrap gap-2 text-sm text-muted">
                   <span>المتفق عليه: {line.balance.committed}</span>
@@ -236,10 +228,10 @@ export function PackageList({ packages }: { packages: PackageSafeSummary[] }) {
                   <span>المتاح: {line.balance.available}</span>
                 </div>
                 <PackageBalanceSummary balance={line.balance} />
-              </section>
+              </SectionPanel>
             ))}
           </div>
-        </article>
+        </Card>
       ))}
     </section>
   );
@@ -247,32 +239,18 @@ export function PackageList({ packages }: { packages: PackageSafeSummary[] }) {
 
 export function PackageEmptyState() {
   return (
-    <section
-      aria-label="حالة الباقات الفارغة"
-      className="rounded-lg border border-dashed border-border p-6"
-      dir="rtl"
-    >
-      <h2 className="text-lg font-semibold">لا توجد باقات لهذا العقد بعد</h2>
-      <p className="mt-2 text-sm text-muted">
-        أضف باقة وخط خدمة واحد على الأقل لتسجيل الالتزامات المتفق عليها.
-      </p>
-    </section>
+    <EmptyState
+      description="أضف باقة وخط خدمة واحد على الأقل لتسجيل الالتزامات المتفق عليها."
+      title="لا توجد باقات لهذا العقد بعد"
+    />
   );
 }
 
 export function PackageDeniedState() {
   return (
-    <section
-      aria-label="تعذر الوصول إلى الباقات"
-      className="rounded-lg border border-border p-6"
-      dir="rtl"
-    >
-      <h2 className="text-lg font-semibold">
-        لا يمكنك الوصول إلى باقات هذا العقد.
-      </h2>
-      <p className="mt-2 text-sm text-muted">
-        لم يتم عرض أي بيانات خارج نطاق صلاحياتك.
-      </p>
-    </section>
+    <ErrorState
+      description="لم يتم عرض أي بيانات خارج نطاق صلاحياتك."
+      title="لا يمكنك الوصول إلى باقات هذا العقد."
+    />
   );
 }

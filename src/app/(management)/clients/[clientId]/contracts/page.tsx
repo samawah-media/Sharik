@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -13,6 +12,9 @@ import {
   ContractEmptyState,
   ContractList,
 } from "@/ui/management/contract-form";
+import { Badge } from "@/ui/core/badge";
+import { ButtonLink } from "@/ui/core/button";
+import { PageHeader } from "@/ui/layout/page-header";
 import {
   AccessDeniedState,
   MembershipDisabledState,
@@ -62,7 +64,10 @@ export default async function ClientContractsPage({
   const runtime = await resolveRouteRuntime(query?.as);
 
   if (!runtime.ok) {
-    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") {
+    if (
+      runtime.reason === "auth_required" ||
+      runtime.reason === "session_expired"
+    ) {
       return <SessionExpiredState />;
     }
 
@@ -123,22 +128,25 @@ export default async function ClientContractsPage({
 
   return (
     <main className="grid gap-5" dir="rtl">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">عقود {client.name}</h1>
-          {query?.saved === "created" ? (
-            <p className="mt-2 text-sm text-success">تم حفظ العقد بأمان.</p>
-          ) : null}
-        </div>
-        {canCreateContracts ? (
-          <Link
-            className="w-fit rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-            href={`/clients/${client.id}/contracts/new`}
-          >
-            عقد جديد
-          </Link>
-        ) : null}
-      </div>
+      <PageHeader
+        actions={
+          canCreateContracts ? (
+            <ButtonLink
+              href={`/clients/${client.id}/contracts/new`}
+              variant="primary"
+            >
+              عقد جديد
+            </ButtonLink>
+          ) : null
+        }
+        description={client.name}
+        status={
+          query?.saved === "created" ? (
+            <Badge tone="success">تم حفظ العقد بأمان.</Badge>
+          ) : null
+        }
+        title={`عقود ${client.name}`}
+      />
       {contractList.contracts.length > 0 ? (
         <ContractList contracts={contractList.contracts} />
       ) : (

@@ -1,4 +1,10 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import {
@@ -63,7 +69,14 @@ describe("internal deliverable Kanban board", () => {
     );
 
     const board = screen.getByRole("region", { name: "لوحة Kanban الداخلية" });
-    expect(within(board).getByRole("region", { name: "لم يبدأ" })).toBeInTheDocument();
+    expect(screen.getByTestId("kanban-board-scroll")).toHaveClass(
+      "overflow-x-auto",
+    );
+    expect(screen.getAllByTestId("kanban-column")).toHaveLength(10);
+    expect(screen.getAllByTestId("kanban-column")[0]).toHaveClass("min-w-80");
+    expect(
+      within(board).getByRole("region", { name: "لم يبدأ" }),
+    ).toBeInTheDocument();
     expect(
       within(board).getByRole("region", { name: "معتمد داخليًا" }),
     ).toBeInTheDocument();
@@ -71,19 +84,25 @@ describe("internal deliverable Kanban board", () => {
     expect(within(board).getByText("تصميم إعلان المنتج")).toBeInTheDocument();
     expect(within(board).getByText("assigned_internal_a")).toBeInTheDocument();
     expect(within(board).getByText(/designer_a/)).toBeInTheDocument();
-    expect(within(board).getByText("2026-07-03")).toBeInTheDocument();
+    expect(within(board).getByText("07-03")).toBeInTheDocument();
     expect(within(board).getByText("0%")).toBeInTheDocument();
     expect(within(board).getByText("70%")).toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByText("تغيير الحالة")[0]);
 
     const firstForm = screen.getByRole("form", {
       name: "تغيير حالة منشور إطلاق الحملة",
     });
-    expect(within(firstForm).getByLabelText("الحالة")).toHaveValue("not_started");
+    expect(within(firstForm).getByLabelText("الحالة")).toHaveValue(
+      "not_started",
+    );
     expect(within(firstForm).getByLabelText("سبب التغيير")).toHaveAttribute(
       "name",
       "reason",
     );
-    expect(document.querySelector('input[name="expectedRevision"]')).toHaveValue("1");
+    expect(
+      document.querySelector('input[name="expectedRevision"]'),
+    ).toHaveValue("1");
     expect(screen.queryByText("client_b")).not.toBeInTheDocument();
     expect(screen.queryByText("approval log")).not.toBeInTheDocument();
   });
@@ -96,10 +115,28 @@ describe("internal deliverable Kanban board", () => {
       />,
     );
 
+    fireEvent.click(screen.getByText("تغيير الحالة"));
+
     const waitingOption = screen.getByRole("option", {
       name: "بانتظار اعتماد العميل",
     });
     expect(waitingOption).toBeDisabled();
+  });
+
+  it("keeps empty columns readable without stretching cards", () => {
+    render(
+      <DeliverableBoard
+        deliverables={[deliverables[0]]}
+        now="2026-07-01T10:00:00.000Z"
+      />,
+    );
+
+    const inProgressColumn = screen.getByRole("region", {
+      name: "قيد التنفيذ",
+    });
+    expect(
+      within(inProgressColumn).getByText("ما فيه مخرجات في هذه المرحلة."),
+    ).toBeInTheDocument();
   });
 
   it("renders a safe empty state", () => {

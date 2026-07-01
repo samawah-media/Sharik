@@ -8,26 +8,27 @@ Last updated: 2026-07-01
 |---|---|
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
-| Feature | Gate 0 - Resolve F-005 PR #29 |
+| Feature | Post-F-005 UI Baseline Control |
 | Worktree | `D:\code - projects\sharik-worktrees\project-control-recovery-plan` |
 | Branch | `codex/f005-gate-decision` based on `codex/project-recovery-plan` |
-| Current allowed stage | Project Control Mode only: review and record the F-005 gate decision; no R-006, online trial, product feature, dependency, production, or real-data work |
-| Status | PR #29 is live-reviewed as `MERGE SAFE`: open, not draft, `mergeStateStatus=CLEAN`, `quality` success on `0eb02a5d5f2f0f9c8606a1ded57ded93d53d51fd`, and CodeRabbit status success. No merge was performed because explicit owner authorization to merge was not present. |
-| Next gate | Owner authorization to merge PR #29 or explicit deferral. Only after PR #29 is merged can F-005 become the official UI baseline. |
-| Owner decision required | Authorize PR #29 merge, or hold/defer it with a stated reason. R-006 remains blocked until the post-F-005 `main` baseline exists. |
+| Current allowed stage | Project Control Mode only: record the owner-authorized F-005 merge and baseline status; no R-006 execution, online trial, product feature, dependency, production, or real-data work |
+| Status | PR #29 was owner-authorized and merged. F-005 is now the official UI baseline on `main` at `1bc9e74af87959a053937e373d1d34ffcc6e2b65`. |
+| Next gate | R-006 Internal Online Trial Readiness only, from the fresh post-F-005 `origin/main` baseline. |
+| Owner decision required | Authorize a separate R-006 readiness task/branch. Online trial execution remains blocked until R-006 produces a go/no-go package and the owner approves it. |
 
 ## Gate 0 F-005 PR #29 Decision - 2026-07-01
 
-Decision: `MERGE SAFE`, pending owner authorization to merge.
+Decision: `MERGE SAFE`, then owner-authorized merge completed.
 
 Live GitHub review:
 
-- PR #29 `fix(F-005): rescue product shell and kanban UX`: open, not draft, `mergeable=MERGEABLE`, `mergeStateStatus=CLEAN`.
+- PR #29 `fix(F-005): rescue product shell and kanban UX`: was open, not draft, `mergeable=MERGEABLE`, `mergeStateStatus=CLEAN` before merge.
 - PR #29 head commit: `0eb02a5d5f2f0f9c8606a1ded57ded93d53d51fd`.
 - PR #29 base/main at review: `d17c5c732a1bce7cf38f625a35369ca4409b3f97`, `Merge pull request #28 from samawah-media/codex/sign-in-password-visibility`.
 - PR #29 CI: `F-001 Quality / quality` passed, run `28515648127`.
 - PR #29 CodeRabbit: status context passed. Review state is `COMMENTED`, with actionable/nitpick comments only; no `REQUEST_CHANGES` review or blocker was found. The evidence-only follow-up commit also has a CodeRabbit rate-limit warning comment, but the GitHub status context remains successful.
-- PR #30 `chore(project): add recovery plan and reset roadmap`: open draft, `mergeStateStatus=CLEAN`, `quality` passed on `efe35e7f73f83b3588e5978a90a4378613046324`, CodeRabbit skipped because it is draft.
+- PR #30 `chore(project): add recovery plan and reset roadmap`: open draft; mergeability recheck is pending after PR #29 changed `main`. `quality` passed on `efe35e7f73f83b3588e5978a90a4378613046324`, and CodeRabbit skipped because it is draft.
+- PR #29 merge commit: `1bc9e74af87959a053937e373d1d34ffcc6e2b65`, merged 2026-07-01 13:04:03Z.
 
 Scope confirmation:
 
@@ -37,10 +38,10 @@ Scope confirmation:
 
 Result:
 
-- F-005 is merge-safe but is not the official UI baseline yet because PR #29 remains unmerged.
-- `main` remains at `d17c5c732a1bce7cf38f625a35369ca4409b3f97`; it is stable relative to the latest merged baseline but does not contain F-005.
-- R-006 is not allowed to start until PR #29 is merged and the post-merge `origin/main` commit is recorded.
-- The next safe phase after owner-authorized F-005 merge is R-006 Internal Online Trial Readiness only.
+- F-005 is the official UI baseline.
+- `main` is now `1bc9e74af87959a053937e373d1d34ffcc6e2b65`, `Merge pull request #29 from samawah-media/codex/f-005-ux-rescue-product-shell`.
+- No fresh `main` branch Actions run was visible after the merge; stability is based on the green PR #29 checks until R-006 records a fresh full baseline quality gate.
+- The next safe phase is R-006 Internal Online Trial Readiness only.
 
 ## R-005 Internal Online Trial Readiness - 2026-07-01
 

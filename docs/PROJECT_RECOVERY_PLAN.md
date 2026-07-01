@@ -16,17 +16,18 @@ This document freezes new feature development until the owner makes the next go/
 Latest checked `origin/main` commit:
 
 ```text
-d17c5c732a1bce7cf38f625a35369ca4409b3f97
-Merge pull request #28 from samawah-media/codex/sign-in-password-visibility
-Merged on 2026-07-01 11:24:35 +03:00
+1bc9e74af87959a053937e373d1d34ffcc6e2b65
+Merge pull request #29 from samawah-media/codex/f-005-ux-rescue-product-shell
+Merged on 2026-07-01 16:04:03 +03:00
 ```
 
-`main` includes R-005 and PR #28. It does not include F-005 at the time of this review.
+`main` includes R-005, PR #28, and F-005. F-005 is now the official UI baseline for Sharik.
 
 ### Latest Merged PRs
 
 | PR | Title | Merged | Merge commit |
 |---:|---|---|---|
+| #29 | `fix(F-005): rescue product shell and kanban UX` | 2026-07-01 13:04:03Z | `1bc9e74af87959a053937e373d1d34ffcc6e2b65` |
 | #28 | `feat(auth): add password visibility toggle` | 2026-07-01 08:24:35Z | `d17c5c732a1bce7cf38f625a35369ca4409b3f97` |
 | #27 | `chore(R-005): prepare internal online trial` | 2026-07-01 07:58:08Z | `4c82cadd26ff30bebca65f45f405f542d35ba817` |
 | #26 | `[codex] F-004 internal kanban workflow MVP` | 2026-07-01 06:33:02Z | `06444e76f7c6d0b2682364843c511310113cf7b1` |
@@ -38,31 +39,32 @@ Merged on 2026-07-01 11:24:35 +03:00
 
 | PR | Title | State | Checks | Decision |
 |---:|---|---|---|---|
-| #29 | `fix(F-005): rescue product shell and kanban UX` | Open, not draft, merge state `CLEAN` | `F-001 Quality` success on `0eb02a5d5f2f0f9c8606a1ded57ded93d53d51fd`; CodeRabbit status success | Gate 0 decision is `MERGE SAFE`, pending explicit owner authorization to merge. F-005 is not baseline until merged into `main`. |
-| #30 | `chore(project): add recovery plan and reset roadmap` | Open, draft, merge state `CLEAN` | `F-001 Quality` success on `efe35e7f73f83b3588e5978a90a4378613046324`; CodeRabbit skipped because draft PR | Control documentation PR only. |
+| #30 | `chore(project): add recovery plan and reset roadmap` | Open draft; mergeability recheck pending after PR #29 merge | `F-001 Quality` success on `efe35e7f73f83b3588e5978a90a4378613046324`; CodeRabbit skipped because draft PR | Control documentation PR only. |
+| #31 | `chore(project): record F-005 gate decision` | Open draft, base `codex/project-recovery-plan`, merge state `CLEAN` | `F-001 Quality` success on `f393a010eddad4a8f6804a0cbfbdc0ecd427e5b4`; CodeRabbit skipped because draft PR | Records Gate 0 decision and post-merge baseline status. |
 
 ### Gate 0 F-005 Decision
 
-Decision recorded on 2026-07-01 15:43 +03:00:
+Initial decision recorded on 2026-07-01 15:43 +03:00:
 
 - Decision: `MERGE SAFE`.
-- PR #29 live state: open, not draft, `mergeable=MERGEABLE`, `mergeStateStatus=CLEAN`.
+- PR #29 pre-merge live state: open, not draft, `mergeable=MERGEABLE`, `mergeStateStatus=CLEAN`.
 - PR #29 head: `0eb02a5d5f2f0f9c8606a1ded57ded93d53d51fd`.
 - PR #29 base/main at review: `d17c5c732a1bce7cf38f625a35369ca4409b3f97`.
 - CI: `quality` passed in workflow `F-001 Quality`, run `28515648127`.
 - CodeRabbit: status context passed. The review is `COMMENTED`, with actionable/nitpick feedback but no `REQUEST_CHANGES` review and no blocker identified. The latest evidence-only commit also received a CodeRabbit rate-limit warning comment, but the GitHub status context remains successful.
 - Scope: changed files remain limited to F-005 product shell, local UI primitives, current management pages, current Kanban UX, specs, evidence, and tests. No dependency, lockfile, production, real-data, files/comments/approvals, or drag/drop change was found.
-- Merge authority: no merge was performed because this gate did not include explicit owner authorization to merge.
-- Baseline status: F-005 is not the official UI baseline until PR #29 is merged into `main`.
+- Owner authorization: received in the follow-up owner-authorized merge gate.
+- Merge result: PR #29 was merged on 2026-07-01 16:04:03 +03:00.
+- Baseline status: F-005 is now the official UI baseline on `main` at `1bc9e74af87959a053937e373d1d34ffcc6e2b65`.
 
 ### Latest CI Status
 
-- Latest visible GitHub Actions run overall: PR #30, workflow `F-001 Quality`, success, run `28516959476`, updated 2026-07-01 12:23:15Z.
+- Latest visible GitHub Actions run overall: PR #31, workflow `F-001 Quality`, success, run `28518496075`, updated 2026-07-01 12:49:50Z.
 - Latest F-005 GitHub Actions run: PR #29, workflow `F-001 Quality`, success, run `28515648127`, updated 2026-07-01 12:00:05Z.
 - Latest visible `main` branch Actions run: workflow `F-001 Quality`, success, run `28246249942`, on commit `27e035cda3d97aae1bda9829428053491b95305c`, created 2026-06-26.
-- No fresh `main`-branch Actions run was visible for the current `origin/main` commit `d17c5c7`.
+- No fresh `main`-branch Actions run was visible for the current `origin/main` commit `1bc9e74`.
 
-Interpretation: recent PR checks are green, but `main` should not be called trial-certified until a fresh post-F-005 baseline check passes or the owner explicitly accepts the latest PR evidence.
+Interpretation: F-005 is the official UI baseline because PR #29 is merged. `main` should not be called trial-certified until R-006 runs and records the fresh full baseline quality gate.
 
 ### Current Worktrees
 
@@ -120,13 +122,12 @@ The current `main` baseline has these accepted surfaces and controls:
 - RLS simulator and pgTAP coverage for tenant/client isolation and key workflow boundaries.
 - Hosted R-004 synthetic UAT was closed, temporary `@r004.example.test` password hashes were cleared, and no production acceptance was granted.
 - R-005 readiness artifacts are on `main`: Spec Kit package, guarded synthetic seed, user guide, secret-scan SQL coverage, and staged-only constraints.
-- PR #29 adds a product shell and Kanban visual rescue and is Gate 0 `MERGE SAFE`, but that work is still outside `main` until the owner authorizes merge.
+- F-005 product shell and Kanban visual rescue are on `main` and are the official UI baseline.
 
 ## 3. What Does Not Work Yet
 
 The following are not complete or not authorized:
 
-- F-005 is not merged into `main`, so the product shell and rescued Kanban UX are not yet the official baseline despite the `MERGE SAFE` gate decision.
 - No actual R-006 online trial has started.
 - No production acceptance exists.
 - No real client data may be used.
@@ -139,11 +140,11 @@ The following are not complete or not authorized:
 - No Tiptap implementation exists for comments yet.
 - No full approval-coupled SLA pause/resume workflow exists.
 - No production backup, monitoring, support, or incident process is ready for real clients.
-- Current `main` has no fresh visible Actions run after PR #28; stability is inferred from PR checks and local evidence, not from a current `main` CI run.
+- Current `main` has no fresh visible Actions run after PR #29; stability is based on the green PR #29 checks until R-006 records a fresh full baseline quality gate.
 
 ## 4. Remaining UI/UX Issues
 
-- F-005 solves major internal shell and Kanban readability problems and is merge-safe, but it is still PR #29 and not part of `main`.
+- F-005 solved major internal shell and Kanban readability problems and is now part of `main`.
 - F-005 visual QA used empty-state fixture views for clients/contracts/packages, so populated states still need review before team trial.
 - F-005 records a minor mobile spacing note in the product shell.
 - Client workspace UX is still minimal compared with the intended client portal: pending approvals, final files, comments, and simple client status are not ready.
@@ -167,16 +168,15 @@ The following are not complete or not authorized:
 
 Before any internal online trial starts:
 
-1. Decide PR #29: merge F-005 if checks remain green, or close/rework it.
-2. Start R-006 from the post-F-005 `origin/main` baseline in `D:\code - projects\sharik-worktrees\`.
-3. Run and record a fresh full quality gate on the baseline: lint, typecheck, unit, integration, RLS, component, E2E, secret scan, and build.
-4. Confirm the exact non-production Supabase target and Vercel deployment boundary.
-5. Verify target has no real users, real clients, or non-approved fixture data.
-6. Confirm public signup is disabled and no browser-visible service role key exists.
-7. Apply only approved synthetic R-006 seed data after owner approval.
-8. Generate temporary synthetic credentials and deliver them outside GitHub.
-9. Recheck F-005 shell, Kanban, mobile, RTL, auth, denied routes, audit logs, and SLA display online.
-10. Record rollback steps and cleanup process before sharing the URL with the team.
+1. Start R-006 from the post-F-005 `origin/main` baseline in `D:\code - projects\sharik-worktrees\`.
+2. Run and record a fresh full quality gate on the baseline: lint, typecheck, unit, integration, RLS, component, E2E, secret scan, and build.
+3. Confirm the exact non-production Supabase target and Vercel deployment boundary.
+4. Verify target has no real users, real clients, or non-approved fixture data.
+5. Confirm public signup is disabled and no browser-visible service role key exists.
+6. Apply only approved synthetic R-006 seed data after owner approval.
+7. Generate temporary synthetic credentials and deliver them outside GitHub.
+8. Recheck F-005 shell, Kanban, mobile, RTL, auth, denied routes, audit logs, and SLA display online.
+9. Record rollback steps and cleanup process before sharing the URL with the team.
 
 Until all items pass, the project is not online-trial ready.
 
@@ -223,8 +223,8 @@ This reset preserves the earlier roadmap decisions:
 **Goal**: Decide whether PR #29 becomes the UI baseline.
 **Allowed**: Review, merge, or close/rework PR #29.
 **Not allowed**: Any new feature.
-**Exit**: `main` either contains F-005 with green checks, or F-005 is explicitly deferred.
-**Current decision**: `MERGE SAFE`, pending explicit owner authorization to merge PR #29. Until merge, F-005 is not the official baseline and R-006 must not start.
+**Exit**: Complete. `main` contains F-005 at `1bc9e74af87959a053937e373d1d34ffcc6e2b65`.
+**Current decision**: PR #29 was owner-authorized and merged. F-005 is the official UI baseline. R-006 may be prepared next as readiness-only work, but no online trial or feature work has started.
 
 ### R-006 - Internal Online Trial Readiness
 
@@ -263,15 +263,13 @@ This reset preserves the earlier roadmap decisions:
 
 ## 10. Proposed Decision
 
-Do not start R-006 or any new feature until PR #29 is merged by owner authorization or explicitly deferred.
+Do not start any online trial or new feature. The only next safe phase is R-006 Internal Online Trial Readiness from the post-F-005 `origin/main` baseline.
 
 Recommended next action:
 
-1. Owner authorizes and merges PR #29, or explicitly defers it.
-2. If PR #29 is merged, record the new `origin/main` commit and mark F-005 as the official UI baseline.
-3. Create R-006 from fresh post-F-005 `origin/main` under `D:\code - projects\sharik-worktrees\`.
-4. R-006 produces a readiness decision only.
-5. If R-006 passes, decide whether to run the internal online trial.
-6. Only after the trial readiness decision should F-006 start.
+1. Create R-006 from fresh post-F-005 `origin/main` under `D:\code - projects\sharik-worktrees\`.
+2. R-006 produces a readiness decision only.
+3. If R-006 passes, decide whether to run the internal online trial.
+4. Only after the trial readiness decision should F-006 start.
 
 This keeps scope protected and prevents files/comments/approvals/drag-drop from entering before the platform has a stable, reviewed shell and a safe trial gate.

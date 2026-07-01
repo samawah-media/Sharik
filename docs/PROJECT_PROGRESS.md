@@ -8,13 +8,58 @@ Last updated: 2026-07-01
 |---|---|
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
-| Feature | R-005 Internal Online Trial Readiness |
-| Worktree | `D:\code - projects\shrek.platform` |
-| Branch | `codex/r-005-internal-online-trial-readiness` from PR #26 merge on `origin/main` |
-| Current allowed stage | R-005 PR preparation only; hosted staging execution remains gated by owner-approved non-production target and out-of-GitHub credentials |
-| Status | PR #27 is open as draft: https://github.com/samawah-media/Sharik/pull/27. R-005 Spec Kit exists under `specs/006-internal-online-trial-readiness/`; hosted staging is named `sharik-internal-trial-staging`; guarded synthetic seed `supabase/seeds/r005_internal_online_trial_readiness.sql` uses `Samawah Demo` and `@r005.example.test` only; no hosted Supabase mutation, Production Supabase, real client data, temporary passwords, public signup, broad permissions, or product feature expansion was introduced |
-| Next gate | Owner/reviewer checks for PR #27; hosted staging execution remains blocked until the owner approves/provides the non-production target and receives temporary credentials outside GitHub |
-| Owner decision required | Before hosted execution: approve/provide the `sharik-internal-trial-staging` non-production target and deliver temporary credentials outside GitHub |
+| Feature | R-006 Internal Online Trial Readiness |
+| Worktree | `D:\code - projects\sharik-worktrees\r006-internal-online-trial-readiness` |
+| Branch | `codex/r006-internal-online-trial-readiness` from post-F-005 `origin/main` |
+| Current allowed stage | Readiness docs, checklist, evidence, full baseline quality gate, non-production boundary definition, and synthetic data plan only |
+| Status | R-006 baseline readiness is locally verified from `1bc9e74af87959a053937e373d1d34ffcc6e2b65`. Spec Kit package exists under `specs/007-r006-internal-online-trial-readiness/`; release doc exists at `docs/08-release/R-006-internal-online-trial-readiness.md`; full baseline quality gate passed. No online trial, hosted mutation, Production Supabase, production deployment, real client data, temporary credentials, public signup change, dependency change, or product feature expansion was introduced. |
+| Next gate | Owner review of R-006 readiness. A separate explicit owner go/no-go is required before any internal online trial execution. |
+| Owner decision required | Approve or reject a later internal online trial execution package, including exact non-production Supabase/Vercel target boundaries and out-of-GitHub credential handling. |
+
+## R-006 Internal Online Trial Readiness - 2026-07-01
+
+Baseline:
+
+- Started from post-F-005 `origin/main` commit `1bc9e74af87959a053937e373d1d34ffcc6e2b65`.
+- F-005 PR #29 is merged and is the official UI baseline.
+- Active worktree: `D:\code - projects\sharik-worktrees\r006-internal-online-trial-readiness`.
+
+Scope prepared:
+
+- Created Spec Kit package under `specs/007-r006-internal-online-trial-readiness/`.
+- Added release readiness doc `docs/08-release/R-006-internal-online-trial-readiness.md`.
+- Defined non-production Supabase boundary and non-production Vercel preview/staging boundary.
+- Added synthetic data plan only; no `r006` seed file was created or applied.
+- Added readiness checklist for current accepted surfaces: sign-in, product shell, clients, contracts, packages, deliverables, Kanban, audit, SLA, tenant/client isolation, denied client viewer board access, RTL, and mobile.
+
+Scope preserved:
+
+- No online trial started.
+- No hosted Supabase project was linked, migrated, seeded, or mutated.
+- No Vercel deployment was created.
+- No Production Supabase, production deployment, production acceptance, or real client data.
+- No temporary credentials, password hashes, database passwords, service role keys, access tokens, or secrets were recorded.
+- No dependencies, schema migrations, seed files, product code, files/comments/approvals, drag/drop, AI, social scheduling, or billing were added.
+
+Verification:
+
+- `npm ci`: passed from existing lockfile only; 2 moderate existing audit findings reported.
+- `npm run lint`: passed.
+- `npm run typecheck`: passed.
+- `npm run test:unit`: passed, 24 files / 81 tests.
+- `npm run test:integration`: passed, 20 files / 83 tests.
+- `npm run test:rls`: passed; simulator 8 files / 24 tests and pgTAP 3 files / 133 tests.
+- `npm run test:component`: passed, 15 files / 47 tests.
+- `npm run test:e2e`: passed, 67 passed / 2 skipped.
+- `npm run secret:scan`: passed; no high-confidence secrets found.
+- `npm run build`: passed.
+- Final `git diff --check`: passed; CRLF working-copy warnings only.
+- Final `npm run secret:scan`: passed after docs were finalized; no high-confidence secrets found.
+
+Result:
+
+- R-006 is ready for owner review as a readiness package only.
+- The internal online trial remains blocked until a separate owner-approved execution package exists.
 
 ## R-005 Internal Online Trial Readiness - 2026-07-01
 

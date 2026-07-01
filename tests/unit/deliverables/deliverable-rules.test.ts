@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
+  activeKanbanStatuses,
+  canChangeDeliverableStatus,
   canCancelDeliverableReservation,
   createInitialDeliverableState,
   getProgressForDeliverableStatus,
+  isActiveKanbanStatus,
   shouldReservePackageCapacity,
   type DeliverableLifecycleStatus,
 } from "@/modules/deliverables/deliverable-rules";
+import { updateDeliverableStatusSchema } from "@/server/commands/deliverables/deliverable-schemas";
 
 describe("deliverable rules", () => {
   it("creates deliverables as not_started with derived 0 percent progress", () => {
@@ -59,6 +63,118 @@ describe("deliverable rules", () => {
       allowed: false,
       reason: "deliverable_already_cancelled",
     });
+  });
+
+  it("defines the active Kanban statuses without adding lifecycle states", () => {
+    expect(activeKanbanStatuses).toEqual([
+      "not_started",
+      "in_progress",
+      "ready_for_internal_review",
+      "internal_changes_requested",
+      "internally_approved",
+      "waiting_client_approval",
+      "client_changes_requested",
+      "client_approved",
+      "ready_for_delivery",
+      "delivered",
+    ]);
+    expect(isActiveKanbanStatus("in_progress")).toBe(true);
+    expect(isActiveKanbanStatus("cancelled")).toBe(false);
+    expect(isActiveKanbanStatus("archived")).toBe(false);
+  });
+
+  it("enforces internal approval before waiting for client approval", () => {
+    expect(
+      canChangeDeliverableStatus({
+        currentStatus: "ready_for_internal_review",
+        targetStatus: "waiting_client_approval",
+        requiresClientApproval: true,
+      }),
+    ).toEqual({
+      allowed: false,
+      reason: "internal_approval_required_before_client_waiting",
+    });
+
+    expect(
+      canChangeDeliverableStatus({
+        currentStatus: "internally_approved",
+        targetStatus: "waiting_client_approval",
+        requiresClientApproval: true,
+      }),
+    ).toEqual({ allowed: true });
+  });
+
+  it("enforces client approval before delivery when client approval is required", () => {
+    expect(
+      canChangeDeliverableStatus({
+        currentStatus: "ready_for_delivery",
+        targetStatus: "delivered",
+        requiresClientApproval: true,
+      }),
+    ).toEqual({
+      allowed: false,
+      reason: "client_approval_required_before_delivery",
+    });
+
+    expect(
+      canChangeDeliverableStatus({
+        currentStatus: "client_approved",
+        targetStatus: "delivered",
+        requiresClientApproval: true,
+      }),
+    ).toEqual({ allowed: true });
+
+    expect(
+      canChangeDeliverableStatus({
+        currentStatus: "ready_for_delivery",
+        targetStatus: "delivered",
+        requiresClientApproval: false,
+      }),
+    ).toEqual({ allowed: true });
+  });
+
+  it("denies status changes from terminal non-board states", () => {
+    expect(
+      canChangeDeliverableStatus({
+        currentStatus: "cancelled",
+        targetStatus: "in_progress",
+        requiresClientApproval: true,
+      }),
+    ).toEqual({ allowed: false, reason: "terminal_status_locked" });
+    expect(
+      canChangeDeliverableStatus({
+        currentStatus: "archived",
+        targetStatus: "in_progress",
+        requiresClientApproval: true,
+      }),
+    ).toEqual({ allowed: false, reason: "terminal_status_locked" });
+  });
+
+  it("validates status update command input against board statuses", () => {
+    expect(
+      updateDeliverableStatusSchema.parse({
+        clientId: "client_a",
+        deliverableId: "deliverable_a",
+        toStatus: "in_progress",
+        expectedRevision: "1",
+        reason: "بدء التنفيذ",
+        idempotencyKey: "status-update-a",
+      }),
+    ).toMatchObject({
+      clientId: "client_a",
+      deliverableId: "deliverable_a",
+      toStatus: "in_progress",
+      expectedRevision: 1,
+    });
+
+    expect(
+      updateDeliverableStatusSchema.safeParse({
+        clientId: "client_a",
+        deliverableId: "deliverable_a",
+        toStatus: "cancelled",
+        idempotencyKey: "status-update-a",
+      }).success,
+    ).toBe(false);
   });
 });
 

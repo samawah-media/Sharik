@@ -1,6 +1,6 @@
 # Evidence Checklist: Internal Online MVP UAT
 
-Date: 2026-06-30
+Date: 2026-07-01
 
 This checklist separates local evidence from hosted evidence. Do not mark hosted checks as passed unless they were run against the approved hosted environment.
 
@@ -29,7 +29,10 @@ Current result:
 - Browser UAT confirmed Client Alpha does not see Beta data, client viewers do not see management deliverables, and scoped internal users see only allowed data.
 - Supabase CLI temp login briefly hit a pooler authentication circuit breaker after parallel RLS checks; this affected one tenant-admin simulation retry only and did not change migration/seed results.
 - `SUPABASE_DB_PASSWORD` and `PGPASSWORD` were confirmed not set in the shell environment after hosted operations.
-- Owner follow-up: rotate or clear the temporary synthetic user passwords and rotate any secrets that may have been exposed during the wider R-004 process.
+- PR #24 merged on 2026-06-30 with merge commit `9d7d69e293000e479790958da4ed82641354f1a6`.
+- PR #25 merged on 2026-07-01 with merge commit `0872780d00799ec42e95d3ea889c686cce8b7bad`.
+- Temporary hosted `@r004.example.test` password hashes were cleared after evidence was recorded: 5 cleared, 0 remaining with password hashes after verification.
+- No password, database password, service role key, access token, or secret value was printed or committed during cleanup.
 
 ## Baseline
 
@@ -47,6 +50,9 @@ Current result:
 | BASE-010 | Owner decision: Vercel Production hosting target | PASS | Owner confirmed on 2026-06-30 that Vercel Production target may be used; evidence labels this as hosting-only, not Production acceptance. |
 | BASE-011 | Supabase UAT availability | PASS | Project ref `jnvuccapgsabrwwkxnbh` is visible to the local Supabase CLI account; project metadata says `sharik-uat`, `eu-west-1`, `ACTIVE_HEALTHY`. |
 | BASE-012 | PR #22 review checks | PASS | PR #22 had `quality` and `CodeRabbit` passing before merge, then merged on 2026-06-30 with merge commit `20b84984913e8f707fcf5dabad54eea5b03eff64`. |
+| BASE-013 | PR #24 merged | PASS | PR #24 merged on 2026-06-30 with merge commit `9d7d69e293000e479790958da4ed82641354f1a6`. |
+| BASE-014 | PR #25 merged | PASS | PR #25 merged on 2026-07-01 with merge commit `0872780d00799ec42e95d3ea889c686cce8b7bad`. |
+| BASE-015 | Temporary synthetic password cleanup | PASS | 5 hosted `@r004.example.test` password hashes were cleared on 2026-07-01; verification found 0 remaining password hashes for that domain. |
 
 ## Supabase Access Attempt - 2026-06-30
 

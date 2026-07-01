@@ -53,6 +53,7 @@ const deliverableSummary: DeliverableSafeSummary = {
   requiresInternalApproval: true,
   requiresClientApproval: true,
   approvedExtra: false,
+  revision: 1,
   createdAt: "2026-06-28T00:00:00.000Z",
   updatedAt: "2026-06-28T00:00:00.000Z",
   reservation: {

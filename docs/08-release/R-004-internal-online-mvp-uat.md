@@ -2,7 +2,7 @@
 
 ## Status
 
-AUTHENTICATED SYNTHETIC UAT READY - PRODUCTION HOSTING ONLY - OWNER REVIEW REQUIRED
+R-004 CLOSED AFTER PR #25 - PRODUCTION HOSTING ONLY - SYNTHETIC PASSWORDS CLEARED
 
 This release gate prepares an internal online UAT after PR #17. It is not Production acceptance and does not authorize real client data or Production Supabase. Owner decision on 2026-06-30 allows Vercel Hobby/free and allows Vercel Production target for hosting only.
 
@@ -18,6 +18,8 @@ This release gate prepares an internal online UAT after PR #17. It is not Produc
 - PR #21 status: merged on 2026-06-30; latest `main` merge commit is `86119ca350811511dfdc81403a5ae6548e0caf7f`
 - PR #22 status: merged on 2026-06-30; merge commit `20b84984913e8f707fcf5dabad54eea5b03eff64`; `quality` and `CodeRabbit` were passing before merge.
 - PR #23 status: merged on 2026-06-30 by the owner; merge commit `4559d14495f76af8596aad79c2afd53617855935`.
+- PR #24 status: merged on 2026-06-30; merge commit `9d7d69e293000e479790958da4ed82641354f1a6`.
+- PR #25 status: merged on 2026-07-01; merge commit `0872780d00799ec42e95d3ea889c686cce8b7bad`.
 - R-004G authenticated UAT branch: `codex/r004-authenticated-synthetic-uat`
 - Hosted UAT results branch: `codex/r004-hosted-uat-results`
 - Hosted UAT resume branch: `codex/r004-hosted-uat-evidence`
@@ -29,6 +31,7 @@ This release gate prepares an internal online UAT after PR #17. It is not Produc
 - R-004E confirmed Vercel CLI was authenticated as `omarhussien2` and recorded the pre-deploy blocker.
 - R-004F completed hosted Supabase no-real-data checks, hosted migration, guarded R-004 seed, Vercel Production hosting-only deploy, smoke checks, and limited hosted security checks.
 - R-004G replaced the `/` placeholder with authenticated routing, safely activated temporary synthetic sign-in, refreshed Vercel public runtime env values, redeployed, and completed authenticated browser UAT with synthetic users only.
+- R-004 closure on 2026-07-01 confirmed PR #25 on `main` and cleared temporary hosted `@r004.example.test` password hashes.
 
 ## Goal
 
@@ -55,6 +58,8 @@ Prepare the smallest internal online UAT that can validate accepted MVP surfaces
 | PR #22 checks | PASS | PR #22 had `quality` and `CodeRabbit` passing before merge. |
 | PR #22 merged | PASS | PR #22 merged into `main` with merge commit `20b84984913e8f707fcf5dabad54eea5b03eff64`. |
 | PR #23 merged | PASS | PR #23 was merged by the owner; `origin/main` contains merge commit `4559d14495f76af8596aad79c2afd53617855935`. |
+| PR #24 merged | PASS | PR #24 merged into `main` with merge commit `9d7d69e293000e479790958da4ed82641354f1a6`. |
+| PR #25 merged | PASS | PR #25 merged into `main` with merge commit `0872780d00799ec42e95d3ea889c686cce8b7bad`. |
 | Vercel Hobby/free owner decision | PASS | Owner confirmed paid Team scope is not required for this stage. |
 | Vercel Production hosting-only target | PASS | Owner approved Vercel Production target as hosting only, not Production acceptance. |
 | Hosted Supabase approval | PASS | Owner supplied project ref `jnvuccapgsabrwwkxnbh` on 2026-06-30. |
@@ -68,6 +73,7 @@ Prepare the smallest internal online UAT that can validate accepted MVP surfaces
 | Hosted smoke/security checks | PASS | Root/sign-in/guarded routes return HTTP 200, fixture routes do not expose fixture data, HTML exposes no service-role/secret markers, and RLS count simulation passed for scoped users. |
 | Hosted authenticated UAT checks | PASS | 22 browser assertions passed against `https://sharik-platform.vercel.app` using only synthetic `@r004.example.test` users. |
 | R-004 synthetic seed preparation | PASS | Guarded seed prepared and applied at `supabase/seeds/r004_internal_online_mvp_uat.sql`; `supabase/seed.sql` was not used. |
+| Temporary synthetic password cleanup | PASS | 5 hosted `@r004.example.test` users had temporary password hashes cleared on 2026-07-01; verification found 0 remaining password hashes for that domain. |
 
 ## Hosted Execution - 2026-06-30
 
@@ -92,7 +98,14 @@ Prepare the smallest internal online UAT that can validate accepted MVP surfaces
 - Latest Vercel deployment: `dpl_9vYzg7XMUAvn1Ftm38pA8SLVdnVB`, Ready, production hosting-only, alias `https://sharik-platform.vercel.app`.
 - Authenticated browser UAT passed 22 assertions covering `/clients`, `/clients/[clientId]`, `/clients/[clientId]/contracts`, `/clients/[clientId]/contracts/[contractId]/packages`, `/clients/[clientId]/deliverables`, `/clients/[clientId]/commercial`, `/client`, and `/client/commercial`.
 - Tenant/client isolation was verified in browser: Client Alpha did not see Beta, client viewers did not see management deliverables, and scoped internal users saw only allowed data.
-- Owner follow-up required: rotate or clear temporary synthetic passwords and rotate any secrets exposed during the wider R-004 process.
+
+## R-004 Closure - 2026-07-01
+
+- `origin/main` contains PR #25 merge commit `0872780d00799ec42e95d3ea889c686cce8b7bad`.
+- Temporary hosted `@r004.example.test` password hashes were cleared after evidence was recorded.
+- Cleanup touched only synthetic R-004 users: 5 cleared; 0 remaining with password hashes after verification.
+- No password, database password, service role key, access token, or secret value was printed or committed.
+- R-004 is closed as internal online MVP UAT evidence. Vercel remains Production hosting-only; this is not Production acceptance.
 
 ## Data Policy
 
@@ -112,13 +125,12 @@ Prepare the smallest internal online UAT that can validate accepted MVP surfaces
 3. Do not delete the non-production Supabase project without owner approval.
 4. Record rollback evidence in `specs/004-internal-online-mvp-uat/evidence/uat-evidence-checklist.md` and `docs/PROJECT_PROGRESS.md`.
 
-## Current Blockers
+## Residual Notes
 
-- Owner must rotate or clear the temporary synthetic user passwords after review.
 - `paused_waiting_internal_decision` cannot be represented as hosted persisted seed data in the current MVP because no SLA segment table exists yet; it remains domain/unit evidence only.
 - Free Vercel deployment is publicly reachable; use it for internal UAT only and avoid real data.
 - Supabase CLI temp login hit a temporary pooler auth circuit breaker after parallel RLS checks; one tenant-admin simulation retry was not completed, but migration/seed/count evidence remains complete.
-- Rotate any Supabase access tokens, DB passwords, or other secrets that may have been exposed during the wider R-004 hosted setup process.
+- Broader Supabase access token or DB password rotation, if needed from earlier owner-operated setup, must be handled outside committed docs without exposing secrets.
 
 ## Local Verification
 

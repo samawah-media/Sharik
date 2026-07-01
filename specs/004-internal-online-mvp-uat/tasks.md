@@ -4,7 +4,7 @@
 
 **Prerequisites**: `spec.md`, `plan.md`, `quickstart.md`, `AGENTS.md`, `.specify/memory/constitution.md`, PR #17 merged to `main`.
 
-**Status**: UAT gate task list. Vercel Hobby/free and Vercel Production hosting target are owner-approved; hosted Supabase migration, R-004 synthetic seed, Vercel Production hosting deployment, temporary synthetic sign-in activation, and authenticated browser UAT were executed on 2026-06-30 against the approved UAT target. Temporary synthetic passwords must be rotated or cleared by the owner after review.
+**Status**: UAT gate task list. Vercel Hobby/free and Vercel Production hosting target are owner-approved; hosted Supabase migration, R-004 synthetic seed, Vercel Production hosting deployment, temporary synthetic sign-in activation, authenticated browser UAT, PR #25 merge verification, and temporary synthetic password cleanup are complete.
 
 **Scope Guard**: This branch prepares internal online MVP UAT only. It must not add product features, dependencies, database schema changes, Kanban, files, comments, approvals, social scheduling, AI, `RoleKey` changes, a standalone `project_manager` role, Production Supabase usage, real client data, or Production acceptance. Vercel Production target is allowed only as hosting.
 
@@ -98,7 +98,7 @@
 
 - [x] T043 [US1] Record owner decision that Vercel Hobby/free is acceptable and Vercel Production target may be used for hosting only; Req: FR-004, SR-001; Verification: `spec.md`, `plan.md`, `quickstart.md`, `contracts/uat-gates.md`; Dependencies: T042; Category: Scope Control
 - [x] T044 [US1] Defer hosted Supabase migration/seed until a Supabase UAT project exists; Req: FR-006, SR-004; Verification: `spec.md`, `plan.md`, `data-model.md`, evidence checklist; Dependencies: T043; Category: Hosted Gate
-- [ ] T045 [US2] Run Vercel deployment checks under owner-approved Hobby/free account; Req: FR-004, FR-009; Verification: deployment URL/id/target and rollback path; Dependencies: T026-T028; Category: Deploy
+- [x] T045 [US2] Run Vercel deployment checks under owner-approved Hobby/free account; Req: FR-004, FR-009; Verification: deployment URL/id/target and rollback path; Dependencies: T026-T028; Category: Deploy
 
 ## Phase 10: R-004C Supabase Access Attempt
 
@@ -146,6 +146,14 @@
 - [x] T065 [US2] Run authenticated hosted browser UAT with synthetic users only; Req: FR-010, FR-011; Verification: 22 browser assertions passed for management, assigned internal, Alpha client viewer, and Beta client viewer routes; Category: UAT
 - [x] T066 [US3] Update R-004G evidence, release, and progress docs; Req: FR-012; Verification: docs record authenticated UAT pass, scope exclusions, and secret rotation follow-up; Category: Evidence
 - [x] T067 [US3] Commit, push, and open PR `[codex] R-004 authenticated synthetic UAT`; Req: FR-013; Verification: PR URL is recorded in the final publication response and remains unmerged; Dependencies: T066; Category: PR
+
+## Phase 15: R-004 Closure After PR #25
+
+**Purpose**: Close the R-004 release/evidence record after owner merges PR #25 and remove temporary synthetic password access.
+
+- [x] T068 [US3] Confirm PR #25 merge commit `0872780d00799ec42e95d3ea889c686cce8b7bad` is present on `main`; Req: FR-012, FR-013; Verification: `git merge-base --is-ancestor` passed on 2026-07-01; Category: Gate
+- [x] T069 [US3] Clear temporary hosted `@r004.example.test` password hashes after evidence capture; Req: SR-002; Verification: 5 cleared and 0 remaining password hashes for that domain; Category: Hosted Data
+- [x] T070 [US3] Update R-004 release, evidence, and project progress docs for closure; Req: FR-012; Verification: `docs/PROJECT_PROGRESS.md`, `docs/08-release/R-004-internal-online-mvp-uat.md`, and `specs/004-internal-online-mvp-uat/evidence/uat-evidence-checklist.md`; Category: Evidence
 
 ## Dependencies & Execution Order
 

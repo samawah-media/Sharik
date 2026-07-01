@@ -69,7 +69,7 @@ export type DeliverableReservationSummary = {
 
 export type DeliverableSafeSummary = Omit<
   DeliverableRecord,
-  "idempotencyKey" | "createdBy" | "extraReason" | "cancelledAt" | "revision"
+  "idempotencyKey" | "createdBy" | "extraReason" | "cancelledAt"
 > & {
   reservation?: DeliverableReservationSummary;
 };
@@ -115,6 +115,14 @@ export type DeliverableCancelInput = {
   deliverableId: string;
 };
 
+export type DeliverableStatusUpdateInput = {
+  tenantId: string;
+  clientId: string;
+  deliverableId: string;
+  status: DeliverableLifecycleStatus;
+  progressPercentage: number;
+};
+
 export type DeliverableAllocationReleaseInput = {
   tenantId: string;
   clientId: string;
@@ -128,6 +136,7 @@ export type DeliverableRepository = TransactionalResource & {
     input: DeliverableAllocationCreateInput,
   ): Promise<DeliverableAllocationRecord>;
   cancelNotStarted(input: DeliverableCancelInput): Promise<DeliverableRecord>;
+  updateStatus(input: DeliverableStatusUpdateInput): Promise<DeliverableRecord>;
   releaseAllocation(
     input: DeliverableAllocationReleaseInput,
   ): Promise<DeliverableAllocationRecord>;
@@ -217,6 +226,29 @@ export class InMemoryDeliverableRepository implements DeliverableRepository {
       progressPercentage: 0,
       cancelledAt: now,
       updatedAt: now,
+      revision: deliverable.revision + 1,
+    };
+
+    this.deliverables.set(updated.id, updated);
+    return updated;
+  }
+
+  async updateStatus(input: DeliverableStatusUpdateInput) {
+    const deliverable = this.deliverables.get(input.deliverableId);
+
+    if (
+      !deliverable ||
+      deliverable.tenantId !== input.tenantId ||
+      deliverable.clientId !== input.clientId
+    ) {
+      throw new Error("DELIVERABLE_NOT_FOUND");
+    }
+
+    const updated: DeliverableRecord = {
+      ...deliverable,
+      status: input.status,
+      progressPercentage: input.progressPercentage,
+      updatedAt: new Date().toISOString(),
       revision: deliverable.revision + 1,
     };
 
@@ -326,6 +358,7 @@ export class InMemoryDeliverableRepository implements DeliverableRepository {
       requiresClientApproval: deliverable.requiresClientApproval,
       progressPercentage: deliverable.progressPercentage,
       approvedExtra: deliverable.approvedExtra,
+      revision: deliverable.revision,
       createdAt: deliverable.createdAt,
       updatedAt: deliverable.updatedAt,
       reservation: reservation

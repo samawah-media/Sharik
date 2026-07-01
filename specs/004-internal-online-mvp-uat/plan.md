@@ -4,7 +4,7 @@
 
 **Input**: Feature specification from `specs/004-internal-online-mvp-uat/spec.md`
 
-**Status**: Documentation, gate preparation, Spec Kit prerequisite repair, dedicated R-004 synthetic seed, hosted Supabase migration/seed, and Vercel Production hosting-only deployment are complete; full authenticated browser UAT remains gated by approved synthetic sign-in credentials.
+**Status**: Documentation, gate preparation, Spec Kit prerequisite repair, dedicated R-004 synthetic seed, hosted Supabase migration/seed, Vercel Production hosting-only deployment, authenticated browser UAT, and temporary synthetic password cleanup are complete after PR #25.
 
 ## Summary
 
@@ -78,7 +78,7 @@ The minimum useful UAT is:
    - deliverables;
    - commercial summaries;
    - SLA MVP summaries and status behavior.
-6. Smoke/security/UAT evidence, with full authenticated browser UAT blocked until synthetic sign-in credentials are approved.
+6. Smoke/security/UAT evidence, including authenticated browser UAT with synthetic users only; temporary synthetic password hashes were cleared after evidence was recorded.
 7. Progress and PR documentation.
 
 Anything outside this list is deferred.
@@ -246,4 +246,4 @@ Hosted after explicit approval:
 | No Production Supabase or real data | PASS | Vercel Production target is hosting-only; Production Supabase and real data are prohibited. |
 | Review before merge | PASS | PR must remain open for review. |
 
-Hosted execution remains gated and cannot be marked complete without explicit approval and evidence.
+Hosted execution was gated by explicit approval and is complete for R-004 internal online MVP UAT evidence after PR #25; this remains Production hosting-only, not Production acceptance.

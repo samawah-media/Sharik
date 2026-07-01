@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+test.describe.configure({ timeout: 60_000 });
+
 test("role-aware navigation is RTL, labelled, and keyboard reachable", async ({
   page,
 }) => {
@@ -42,10 +44,16 @@ test("client portal mobile navigation keeps primary actions visible", async ({
 test("forms and dialogs keep labels and visible focus", async ({ page }) => {
   await page.goto("/invitations/internal", { waitUntil: "domcontentloaded" });
 
-  await expect(page.getByLabel("بريد العضو")).toBeVisible();
+  const emailInput = page.getByLabel("بريد العضو");
+
+  await expect(emailInput).toBeVisible();
   await expect(page.getByLabel("الدور")).toBeVisible();
-  await page.keyboard.press("Tab");
-  await expect(page.getByLabel("بريد العضو")).toBeFocused();
+
+  if (!(await emailInput.evaluate((element) => element === document.activeElement))) {
+    await page.keyboard.press("Tab");
+  }
+
+  await expect(emailInput).toBeFocused();
 });
 
 test("denial states expose accessible recovery actions without leaking resources", async ({

@@ -31,7 +31,7 @@ function walk(dir) {
       continue;
     }
 
-    if (!/\.(ts|tsx|js|mjs|json|md|yml|yaml|env|example|css)$/u.test(entry)) {
+    if (!/\.(ts|tsx|js|mjs|json|md|yml|yaml|env|example|css|sql)$/u.test(entry)) {
       continue;
     }
 

@@ -8,13 +8,49 @@ Last updated: 2026-07-01
 |---|---|
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
-| Feature | F-004 Internal Kanban Workflow MVP |
+| Feature | R-005 Internal Online Trial Readiness |
 | Worktree | `D:\code - projects\shrek.platform` |
-| Branch | `codex/f-004-internal-kanban-workflow` from PR #25 merge commit on `origin/main` |
-| Current allowed stage | F-004 implementation verification before PR; R-004 is closed after PR #25 |
-| Status | F-004 Spec Kit exists; board route `/clients/[clientId]/deliverables/board`, secure status command/RPC, audit events, derived progress, SLA display, management links, and tests are implemented. PR #26 is open and unmerged: https://github.com/samawah-media/Sharik/pull/26. `origin/main` contains PR #25 merge commit `0872780d00799ec42e95d3ea889c686cce8b7bad`; R-004 hosted UAT is closed as Production hosting-only with Supabase UAT synthetic data only; temporary `@r004.example.test` passwords were cleared and verified with 0 remaining password hashes |
-| Next gate | Owner/code review for PR #26; do not merge without explicit owner approval |
-| Owner decision required | No R-004 owner action remains for temporary synthetic passwords; F-004 PR must not be merged without explicit owner approval |
+| Branch | `codex/r-005-internal-online-trial-readiness` from PR #26 merge on `origin/main` |
+| Current allowed stage | R-005 PR preparation only; hosted staging execution remains gated by owner-approved non-production target and out-of-GitHub credentials |
+| Status | PR #27 is open as draft: https://github.com/samawah-media/Sharik/pull/27. R-005 Spec Kit exists under `specs/006-internal-online-trial-readiness/`; hosted staging is named `sharik-internal-trial-staging`; guarded synthetic seed `supabase/seeds/r005_internal_online_trial_readiness.sql` uses `Samawah Demo` and `@r005.example.test` only; no hosted Supabase mutation, Production Supabase, real client data, temporary passwords, public signup, broad permissions, or product feature expansion was introduced |
+| Next gate | Owner/reviewer checks for PR #27; hosted staging execution remains blocked until the owner approves/provides the non-production target and receives temporary credentials outside GitHub |
+| Owner decision required | Before hosted execution: approve/provide the `sharik-internal-trial-staging` non-production target and deliver temporary credentials outside GitHub |
+
+## R-005 Internal Online Trial Readiness - 2026-07-01
+
+Scope prepared:
+
+- Created Spec Kit package under `specs/006-internal-online-trial-readiness/`.
+- Defined hosted staging environment name `sharik-internal-trial-staging`.
+- Added guarded synthetic seed at `supabase/seeds/r005_internal_online_trial_readiness.sql`.
+- Seed fixture uses tenant `Samawah Demo`, two synthetic clients, one contract and one package per client, eight deliverables across current workflow states, and three personas: tenant admin, account manager, and client viewer.
+- All seeded emails use `@r005.example.test`; seeded users have no committed password value or password hash.
+- Documented out-of-GitHub credential delivery for the project owner.
+- Added UAT checklist for login, clients, client detail, contract/package/deliverables, Kanban board, allowed/denied status transition, client viewer board denial, audit log, SLA display, and RTL/mobile basic.
+- Extended `npm run secret:scan` coverage to include SQL files.
+
+Scope preserved:
+
+- No Production Supabase.
+- No real client data.
+- No public signup.
+- No broad/open permissions.
+- No AI, social scheduling, billing, drag/drop, files, comments, or full approval workflow.
+- No database schema migration and no dependency addition.
+
+Verification:
+
+- `npm run lint`: passed.
+- `npm run typecheck`: passed.
+- `npm run test:unit`: passed, 24 files / 81 tests.
+- `npm run test:integration`: passed, 20 files / 83 tests.
+- `npm run test:rls`: passed after local Supabase reset; simulator 8 files / 24 tests and pgTAP 3 files / 133 tests.
+- `npm run test:component`: passed, 13 files / 42 tests.
+- `npm run test:e2e`: passed, 67 passed / 2 skipped.
+- `npm run secret:scan`: passed with SQL files included.
+- `npm run build`: passed.
+- Local R-005 seed validation: passed against local Supabase after reset; no hosted Supabase project was mutated.
+- PR opened: draft PR #27, `chore(R-005): prepare internal online trial`.
 
 ## F-004 Internal Kanban Workflow MVP - 2026-07-01
 

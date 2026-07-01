@@ -17,7 +17,7 @@ test("role-aware navigation is RTL, labelled, and keyboard reachable", async ({
   const isPortfolioLinkFocused = () =>
     portfolioLink.evaluate((element) => element === document.activeElement);
 
-  for (let index = 0; index < 6; index += 1) {
+  for (let index = 0; index < 20; index += 1) {
     if (await isPortfolioLinkFocused()) {
       break;
     }
@@ -49,7 +49,11 @@ test("forms and dialogs keep labels and visible focus", async ({ page }) => {
   await expect(emailInput).toBeVisible();
   await expect(page.getByLabel("الدور")).toBeVisible();
 
-  if (!(await emailInput.evaluate((element) => element === document.activeElement))) {
+  for (let index = 0; index < 24; index += 1) {
+    if (await emailInput.evaluate((element) => element === document.activeElement)) {
+      break;
+    }
+
     await page.keyboard.press("Tab");
   }
 

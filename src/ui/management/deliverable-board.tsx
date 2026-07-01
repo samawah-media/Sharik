@@ -5,6 +5,9 @@ import {
   type ActiveKanbanStatus,
 } from "@/modules/deliverables/deliverable-rules";
 import { deriveSlaStatus, type SlaStatus } from "@/modules/sla/sla-policy";
+import { Badge } from "@/ui/core/badge";
+import { Button } from "@/ui/core/button";
+import { EmptyState } from "@/ui/core/states";
 
 type StatusUpdateAction = (formData: FormData) => void | Promise<void>;
 
@@ -38,7 +41,15 @@ const slaLabels: Record<SlaStatus, string> = {
   cancelled: "ملغي",
 };
 
-const formatDate = (value?: string) => value ?? "غير محدد";
+const formatDate = (value?: string) => {
+  if (!value) {
+    return "غير محدد";
+  }
+
+  const isoDate = /^\d{4}-\d{2}-\d{2}$/.test(value);
+
+  return isoDate ? value.slice(5) : value;
+};
 
 const formatPeople = (deliverable: DeliverableSafeSummary) => {
   const contributors = deliverable.contributorUserIds ?? [];
@@ -63,6 +74,34 @@ const statusOptions = (deliverable: DeliverableSafeSummary) =>
     return { status, allowed };
   });
 
+const priorityTone = (priority: DeliverableSafeSummary["priority"]) => {
+  if (priority === "urgent") {
+    return "danger";
+  }
+
+  if (priority === "high") {
+    return "warning";
+  }
+
+  return "muted";
+};
+
+const slaTone = (status: SlaStatus) => {
+  if (status === "overdue") {
+    return "danger";
+  }
+
+  if (status === "at_risk" || status.startsWith("paused_")) {
+    return "warning";
+  }
+
+  if (status === "completed") {
+    return "success";
+  }
+
+  return "accent";
+};
+
 function DeliverableStatusControl({
   deliverable,
   action,
@@ -71,50 +110,56 @@ function DeliverableStatusControl({
   action?: StatusUpdateAction;
 }) {
   return (
-    <form
-      action={action}
-      aria-label={`تغيير حالة ${deliverable.name}`}
-      className="mt-4 grid gap-2"
-      dir="rtl"
-    >
-      <input name="clientId" type="hidden" value={deliverable.clientId} />
-      <input name="deliverableId" type="hidden" value={deliverable.id} />
-      <input name="expectedRevision" type="hidden" value={deliverable.revision} />
-      <input
-        name="idempotencyKey"
-        type="hidden"
-        value={`f004-status-${deliverable.id}-${deliverable.revision}`}
-      />
-      <label className="grid gap-1 text-xs font-semibold">
-        الحالة
-        <select
-          className="min-h-9 rounded-md border border-border bg-background px-2 py-1 text-sm"
-          defaultValue={deliverable.status}
-          name="toStatus"
-        >
-          {statusOptions(deliverable).map(({ status, allowed }) => (
-            <option disabled={!allowed} key={status} value={status}>
-              {kanbanStatusLabels[status]}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="grid gap-1 text-xs font-semibold">
-        سبب التغيير
-        <input
-          className="min-h-9 rounded-md border border-border bg-background px-2 py-1 text-sm"
-          maxLength={500}
-          name="reason"
-          placeholder="اختياري"
-        />
-      </label>
-      <button
-        className="w-fit rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground"
-        type="submit"
+    <details className="mt-4 rounded-lg border border-border bg-background/70">
+      <summary className="cursor-pointer list-none px-3 py-2 text-sm font-semibold text-accent marker:hidden">
+        تغيير الحالة
+      </summary>
+      <form
+        action={action}
+        aria-label={`تغيير حالة ${deliverable.name}`}
+        className="grid gap-3 border-t border-border p-3"
+        dir="rtl"
       >
-        تحديث الحالة
-      </button>
-    </form>
+        <input name="clientId" type="hidden" value={deliverable.clientId} />
+        <input name="deliverableId" type="hidden" value={deliverable.id} />
+        <input
+          name="expectedRevision"
+          type="hidden"
+          value={deliverable.revision}
+        />
+        <input
+          name="idempotencyKey"
+          type="hidden"
+          value={`f004-status-${deliverable.id}-${deliverable.revision}`}
+        />
+        <label className="grid gap-1 text-xs font-semibold">
+          الحالة
+          <select
+            className="min-h-9 rounded-md border border-border bg-surface px-2 py-1 text-sm"
+            defaultValue={deliverable.status}
+            name="toStatus"
+          >
+            {statusOptions(deliverable).map(({ status, allowed }) => (
+              <option disabled={!allowed} key={status} value={status}>
+                {kanbanStatusLabels[status]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="grid gap-1 text-xs font-semibold">
+          سبب التغيير
+          <input
+            className="min-h-9 rounded-md border border-border bg-surface px-2 py-1 text-sm"
+            maxLength={500}
+            name="reason"
+            placeholder="اختياري"
+          />
+        </label>
+        <Button size="sm" type="submit" variant="primary">
+          تحديث الحالة
+        </Button>
+      </form>
+    </details>
   );
 }
 
@@ -135,39 +180,53 @@ function DeliverableCard({
     clientDueDate: deliverable.clientDueDate,
     finalDueDate: deliverable.finalDueDate,
   });
+  const statusLabel = activeKanbanStatuses.includes(
+    deliverable.status as ActiveKanbanStatus,
+  )
+    ? kanbanStatusLabels[deliverable.status as ActiveKanbanStatus]
+    : deliverable.status;
 
   return (
-    <article className="rounded-lg border border-border bg-card p-3">
-      <div className="grid gap-2">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-semibold leading-6">{deliverable.name}</h3>
-          <span className="rounded-md border border-border px-2 py-1 text-xs text-muted">
-            {deliverable.progressPercentage}%
-          </span>
+    <article className="min-w-0 overflow-hidden rounded-lg border border-border bg-surface p-4 shadow-sm">
+      <div className="grid gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="min-w-0 text-sm font-semibold leading-6">
+            {deliverable.name}
+          </h3>
+          <Badge tone="accent">{deliverable.progressPercentage}%</Badge>
         </div>
-        <div className="flex flex-wrap gap-2 text-xs text-muted">
-          <span>{deliverable.type}</span>
-          <span>{priorityLabels[deliverable.priority]}</span>
-          <span>{slaLabels[sla.status]}</span>
+        <div className="flex flex-wrap gap-2">
+          <Badge tone="neutral">{statusLabel}</Badge>
+          <Badge tone="muted">{deliverable.type}</Badge>
+          <Badge tone={priorityTone(deliverable.priority)}>
+            {priorityLabels[deliverable.priority]}
+          </Badge>
+          <Badge tone={slaTone(sla.status)}>{slaLabels[sla.status]}</Badge>
         </div>
       </div>
-      <dl className="mt-3 grid gap-2 text-xs text-muted">
-        <div>
+      <dl className="mt-4 grid gap-3 text-xs text-muted">
+        <div className="min-w-0">
           <dt className="font-semibold text-foreground">المسؤولون</dt>
-          <dd>{formatPeople(deliverable)}</dd>
+          <dd className="mt-1 truncate">{formatPeople(deliverable)}</dd>
         </div>
         <div className="grid grid-cols-3 gap-2">
-          <div>
+          <div className="min-w-0 rounded-md bg-background px-2 py-2">
             <dt className="font-semibold text-foreground">داخلي</dt>
-            <dd>{formatDate(deliverable.internalDueDate)}</dd>
+            <dd className="mt-1 truncate">
+              {formatDate(deliverable.internalDueDate)}
+            </dd>
           </div>
-          <div>
+          <div className="min-w-0 rounded-md bg-background px-2 py-2">
             <dt className="font-semibold text-foreground">العميل</dt>
-            <dd>{formatDate(deliverable.clientDueDate)}</dd>
+            <dd className="mt-1 truncate">
+              {formatDate(deliverable.clientDueDate)}
+            </dd>
           </div>
-          <div>
+          <div className="min-w-0 rounded-md bg-background px-2 py-2">
             <dt className="font-semibold text-foreground">نهائي</dt>
-            <dd>{formatDate(deliverable.finalDueDate)}</dd>
+            <dd className="mt-1 truncate">
+              {formatDate(deliverable.finalDueDate)}
+            </dd>
           </div>
         </div>
       </dl>
@@ -178,16 +237,10 @@ function DeliverableCard({
 
 export function DeliverableBoardEmptyState() {
   return (
-    <section
-      aria-label="حالة لوحة المخرجات الفارغة"
-      className="rounded-lg border border-dashed border-border p-6"
-      dir="rtl"
-    >
-      <h2 className="text-lg font-semibold">لا توجد مخرجات على اللوحة بعد</h2>
-      <p className="mt-2 text-sm text-muted">
-        أضف مخرجات متفقًا عليها أولًا حتى تظهر ضمن سير العمل الداخلي.
-      </p>
-    </section>
+    <EmptyState
+      description="أضف مخرجات متفقًا عليها أولًا حتى تظهر ضمن سير العمل الداخلي."
+      title="لا توجد مخرجات على اللوحة بعد"
+    />
   );
 }
 
@@ -204,12 +257,15 @@ export function DeliverableBoard({
     return <DeliverableBoardEmptyState />;
   }
 
-  const deliverablesByStatus = new Map<ActiveKanbanStatus, DeliverableSafeSummary[]>(
-    activeKanbanStatuses.map((status) => [status, []]),
-  );
+  const deliverablesByStatus = new Map<
+    ActiveKanbanStatus,
+    DeliverableSafeSummary[]
+  >(activeKanbanStatuses.map((status) => [status, []]));
 
   for (const deliverable of deliverables) {
-    if (activeKanbanStatuses.includes(deliverable.status as ActiveKanbanStatus)) {
+    if (
+      activeKanbanStatuses.includes(deliverable.status as ActiveKanbanStatus)
+    ) {
       deliverablesByStatus
         .get(deliverable.status as ActiveKanbanStatus)
         ?.push(deliverable);
@@ -219,33 +275,46 @@ export function DeliverableBoard({
   return (
     <section
       aria-label="لوحة Kanban الداخلية"
-      className="overflow-x-auto pb-2"
+      className="-mx-4 overflow-x-auto px-4 pb-4"
+      data-testid="kanban-board-scroll"
       dir="rtl"
     >
-      <div className="grid min-w-[1120px] grid-cols-10 gap-3">
+      <div className="flex min-w-max gap-4">
         {activeKanbanStatuses.map((status) => {
           const items = deliverablesByStatus.get(status) ?? [];
 
           return (
             <section
               aria-label={kanbanStatusLabels[status]}
-              className="grid min-h-64 content-start gap-3 rounded-lg border border-border bg-muted/30 p-3"
+              className="flex min-h-[32rem] w-80 min-w-80 flex-col rounded-lg border border-border bg-background"
+              data-testid="kanban-column"
               key={status}
             >
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="text-sm font-semibold">{kanbanStatusLabels[status]}</h2>
-                <span className="rounded-md border border-border bg-background px-2 py-1 text-xs text-muted">
-                  {items.length}
-                </span>
+              <div className="sticky top-0 z-10 flex items-start justify-between gap-2 border-b border-border bg-background/95 p-3">
+                <div className="min-w-0">
+                  <h2 className="truncate text-sm font-semibold">
+                    {kanbanStatusLabels[status]}
+                  </h2>
+                  <p className="mt-1 text-xs text-muted">مرحلة تشغيل داخلية</p>
+                </div>
+                <Badge tone="muted">{items.length}</Badge>
               </div>
-              {items.map((deliverable) => (
-                <DeliverableCard
-                  action={action}
-                  deliverable={deliverable}
-                  key={deliverable.id}
-                  now={now}
-                />
-              ))}
+              <div className="grid content-start gap-3 p-3">
+                {items.length > 0 ? (
+                  items.map((deliverable) => (
+                    <DeliverableCard
+                      action={action}
+                      deliverable={deliverable}
+                      key={deliverable.id}
+                      now={now}
+                    />
+                  ))
+                ) : (
+                  <p className="rounded-lg border border-dashed border-border bg-surface p-4 text-sm leading-6 text-muted">
+                    ما فيه مخرجات في هذه المرحلة.
+                  </p>
+                )}
+              </div>
             </section>
           );
         })}

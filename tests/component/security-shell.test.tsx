@@ -17,7 +17,7 @@ describe("safe auth and management shells", () => {
     expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
   });
 
-  it("renders management entry RTL without unauthorized nav by default", () => {
+  it("renders management entry RTL with the safe product shell navigation", () => {
     render(
       <ManagementLayout>
         <main>management</main>
@@ -27,6 +27,9 @@ describe("safe auth and management shells", () => {
     const shell = screen.getByText("management").closest("section");
     expect(shell).toHaveAttribute("dir", "rtl");
     expect(shell).toHaveAttribute("data-security-scope", "management-entry");
-    expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("navigation", { name: "تنقل الإدارة" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("client_b")).not.toBeInTheDocument();
   });
 });

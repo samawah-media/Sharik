@@ -8,6 +8,10 @@ import {
   type DeliverableFormState,
 } from "@/modules/deliverables/deliverable-form-state";
 import type { PackageLineSafeSummary } from "@/modules/packages/package-repository";
+import { Badge } from "@/ui/core/badge";
+import { Button } from "@/ui/core/button";
+import { Card, CardHeader, CardTitle, SectionPanel } from "@/ui/core/card";
+import { EmptyState, ErrorState } from "@/ui/core/states";
 import { DeliverableCancellationControl } from "./deliverable-actions";
 
 type DeliverableFormAction = (
@@ -41,17 +45,13 @@ function SubmitButton({ approvedExtra }: { approvedExtra?: boolean }) {
   const { pending } = useFormStatus();
 
   return (
-    <button
-      className="w-fit rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60"
-      disabled={pending}
-      type="submit"
-    >
+    <Button disabled={pending} type="submit" variant="primary">
       {pending
         ? "جار الحفظ..."
         : approvedExtra
           ? "حفظ المخرج الإضافي"
           : "حفظ المخرج وحجز الكمية"}
-    </button>
+    </Button>
   );
 }
 
@@ -64,12 +64,12 @@ export function ReservationImpactPreview({
 }) {
   if (!packageLine) {
     return (
-      <section
-        aria-label="أثر الحجز"
-        className="rounded-md border border-border p-4 text-sm text-muted"
+      <SectionPanel
+        label="أثر الحجز"
+        className="text-sm text-muted shadow-none"
       >
         اختر سطر باقة لعرض أثر الحجز.
-      </section>
+      </SectionPanel>
     );
   }
 
@@ -78,11 +78,7 @@ export function ReservationImpactPreview({
   const overCapacity = availableAfter < 0;
 
   return (
-    <section
-      aria-label="أثر الحجز"
-      className="grid gap-3 rounded-md border border-border p-4"
-      dir="rtl"
-    >
+    <SectionPanel label="أثر الحجز" className="grid gap-3 shadow-none">
       <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
         <div>
           <p className="text-muted">سطر الباقة</p>
@@ -105,26 +101,27 @@ export function ReservationImpactPreview({
         <div className="grid gap-2 rounded-md border border-danger/30 bg-danger/10 p-3 text-sm text-danger">
           <p className="font-semibold">لا توجد سعة كافية لهذا السطر.</p>
           <div className="flex flex-wrap gap-2 text-xs">
-            <span>اختر سطر باقة آخر</span>
-            <span>اطلب تعديل الباقة</span>
-            <span>أنشئ مخرجًا إضافيًا معتمدًا</span>
+            <Badge tone="danger">اختر سطر باقة آخر</Badge>
+            <Badge tone="danger">اطلب تعديل الباقة</Badge>
+            <Badge tone="danger">أنشئ مخرجًا إضافيًا معتمدًا</Badge>
           </div>
         </div>
       ) : null}
-    </section>
+    </SectionPanel>
   );
 }
 
 export function ApprovedExtraNotice() {
   return (
-    <section
-      aria-label="تنبيه المخرج الإضافي"
-      className="grid gap-1 rounded-md border border-warning/30 bg-warning/10 p-3 text-sm"
-      dir="rtl"
+    <SectionPanel
+      label="تنبيه المخرج الإضافي"
+      className="grid gap-1 border-warning/30 bg-warning/10 text-sm shadow-none"
     >
-      <p className="font-semibold">المخرج الإضافي لا يحجز من الباقة تلقائيًا.</p>
+      <p className="font-semibold">
+        المخرج الإضافي لا يحجز من الباقة تلقائيًا.
+      </p>
       <p className="text-muted">سبب الاعتماد الإداري مطلوب.</p>
-    </section>
+    </SectionPanel>
   );
 }
 
@@ -151,9 +148,9 @@ export function DeliverableForm({
   );
   const selectedPackageLineId =
     state.values?.packageLineId ?? packageLines?.[0]?.id ?? "";
-  const selectedLine = packageLines?.find(
-    (line) => line.id === selectedPackageLineId,
-  ) ?? packageLines?.[0];
+  const selectedLine =
+    packageLines?.find((line) => line.id === selectedPackageLineId) ??
+    packageLines?.[0];
   const quantity = Number(state.values?.reservedQuantity ?? "1");
 
   return (
@@ -179,7 +176,11 @@ export function DeliverableForm({
           type="hidden"
           value={state.values?.idempotencyKey ?? idempotencyKey}
         />
-        <input name="approvedExtra" type="hidden" value={String(approvedExtra)} />
+        <input
+          name="approvedExtra"
+          type="hidden"
+          value={String(approvedExtra)}
+        />
         <label className="grid gap-2 text-sm font-medium">
           اسم المخرج
           <input
@@ -205,7 +206,9 @@ export function DeliverableForm({
               className="rounded-md border border-border bg-background px-3 py-2"
               name="type"
               required
-              defaultValue={state.values?.type ?? selectedLine?.deliverableTypeHint ?? ""}
+              defaultValue={
+                state.values?.type ?? selectedLine?.deliverableTypeHint ?? ""
+              }
             />
           </label>
           <label className="grid gap-2 text-sm font-medium">
@@ -267,7 +270,10 @@ export function DeliverableForm({
                 />
               </label>
             </div>
-            <ReservationImpactPreview packageLine={selectedLine} quantity={quantity} />
+            <ReservationImpactPreview
+              packageLine={selectedLine}
+              quantity={quantity}
+            />
           </>
         )}
         <div className="grid gap-4 md:grid-cols-2">
@@ -332,7 +338,9 @@ export function DeliverableForm({
               name="requiresInternalApproval"
               type="checkbox"
               value="true"
-              defaultChecked={state.values?.requiresInternalApproval !== "false"}
+              defaultChecked={
+                state.values?.requiresInternalApproval !== "false"
+              }
             />
             يتطلب تعميدًا داخليًا
           </label>
@@ -370,35 +378,36 @@ export function DeliverableList({
   return (
     <section aria-label="قائمة المخرجات" className="grid gap-3" dir="rtl">
       {deliverables.map((deliverable) => (
-        <article
-          className="rounded-lg border border-border bg-card p-4"
-          key={deliverable.id}
-        >
+        <Card key={deliverable.id}>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-            <div className="grid gap-1">
-              <h2 className="text-base font-semibold">{deliverable.name}</h2>
+            <CardHeader>
+              <CardTitle>{deliverable.name}</CardTitle>
               {deliverable.description ? (
                 <p className="text-sm text-muted">{deliverable.description}</p>
               ) : null}
-            </div>
-            <span className="w-fit rounded-md border border-border px-2 py-1 text-xs text-muted">
-              {statusLabels[deliverable.status]}
-            </span>
+            </CardHeader>
+            <Badge tone="muted">{statusLabels[deliverable.status]}</Badge>
           </div>
           <div className="mt-3 flex flex-wrap gap-2 text-sm text-muted">
-            <span>التقدم {deliverable.progressPercentage}%</span>
-            <span>{priorityLabels[deliverable.priority]}</span>
+            <Badge tone="accent">
+              التقدم {deliverable.progressPercentage}%
+            </Badge>
+            <Badge tone="muted">{priorityLabels[deliverable.priority]}</Badge>
             {deliverable.reservation ? (
-              <span>محجوز: {deliverable.reservation.reservedQuantity}</span>
+              <Badge tone="neutral">
+                محجوز: {deliverable.reservation.reservedQuantity}
+              </Badge>
             ) : null}
-            {deliverable.approvedExtra ? <span>إضافي معتمد</span> : null}
+            {deliverable.approvedExtra ? (
+              <Badge tone="warning">إضافي معتمد</Badge>
+            ) : null}
           </div>
           <DeliverableCancellationControl
             action={cancellationAction}
             deliverable={deliverable}
             idempotencyKey={`f002d-cancel-${deliverable.id}`}
           />
-        </article>
+        </Card>
       ))}
     </section>
   );
@@ -406,32 +415,18 @@ export function DeliverableList({
 
 export function DeliverableEmptyState() {
   return (
-    <section
-      aria-label="حالة المخرجات الفارغة"
-      className="rounded-lg border border-dashed border-border p-6"
-      dir="rtl"
-    >
-      <h2 className="text-lg font-semibold">لا توجد مخرجات لهذا العميل بعد</h2>
-      <p className="mt-2 text-sm text-muted">
-        أضف مخرجًا متفقًا عليه من باقة نشطة لبدء الحجز.
-      </p>
-    </section>
+    <EmptyState
+      description="أضف مخرجًا متفقًا عليه من باقة نشطة لبدء الحجز."
+      title="لا توجد مخرجات لهذا العميل بعد"
+    />
   );
 }
 
 export function DeliverableDeniedState() {
   return (
-    <section
-      aria-label="تعذر الوصول إلى المخرجات"
-      className="rounded-lg border border-border p-6"
-      dir="rtl"
-    >
-      <h2 className="text-lg font-semibold">
-        لا يمكنك الوصول إلى مخرجات هذا العميل.
-      </h2>
-      <p className="mt-2 text-sm text-muted">
-        لم يتم عرض أي بيانات خارج نطاق صلاحياتك.
-      </p>
-    </section>
+    <ErrorState
+      description="لم يتم عرض أي بيانات خارج نطاق صلاحياتك."
+      title="لا يمكنك الوصول إلى مخرجات هذا العميل."
+    />
   );
 }

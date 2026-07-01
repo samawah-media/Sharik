@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import type { ContractSafeSummary } from "@/modules/contracts/contract-repository";
@@ -8,6 +7,10 @@ import {
   initialContractFormState,
   type ContractFormState,
 } from "@/modules/contracts/contract-form-state";
+import { Badge } from "@/ui/core/badge";
+import { Button, ButtonLink } from "@/ui/core/button";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/ui/core/card";
+import { EmptyState, ErrorState } from "@/ui/core/states";
 
 type ContractFormAction = (
   previousState: ContractFormState,
@@ -26,13 +29,9 @@ function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <button
-      className="w-fit rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60"
-      disabled={pending}
-      type="submit"
-    >
+    <Button disabled={pending} type="submit" variant="primary">
       {pending ? "جار الحفظ..." : "حفظ العقد"}
-    </button>
+    </Button>
   );
 }
 
@@ -145,36 +144,35 @@ export function ContractList({
   return (
     <section aria-label="قائمة العقود" className="grid gap-3" dir="rtl">
       {contracts.map((contract) => (
-        <article
-          className="rounded-lg border border-border bg-card p-4"
-          key={contract.id}
-        >
+        <Card key={contract.id}>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-            <div className="grid gap-1">
-              <h2 className="text-base font-semibold">{contract.name}</h2>
+            <CardHeader>
+              <CardTitle>{contract.name}</CardTitle>
               {contract.reference ? (
-                <p className="text-sm text-muted">{contract.reference}</p>
+                <CardDescription>{contract.reference}</CardDescription>
               ) : null}
-            </div>
-            <span className="w-fit rounded-md border border-border px-2 py-1 text-xs text-muted">
-              {statusLabels[contract.status]}
-            </span>
+            </CardHeader>
+            <Badge tone="muted">{statusLabels[contract.status]}</Badge>
           </div>
           {contract.summary ? (
-            <p className="mt-3 text-sm leading-6 text-muted">{contract.summary}</p>
+            <p className="mt-3 text-sm leading-6 text-muted">
+              {contract.summary}
+            </p>
           ) : null}
           {contract.periodStart || contract.periodEnd ? (
             <p className="mt-3 text-sm text-muted">
-              {contract.periodStart ?? "غير محدد"} - {contract.periodEnd ?? "غير محدد"}
+              {contract.periodStart ?? "غير محدد"} -{" "}
+              {contract.periodEnd ?? "غير محدد"}
             </p>
           ) : null}
-          <Link
-            className="mt-4 inline-flex w-fit rounded-md border border-border px-3 py-2 text-sm font-semibold"
+          <ButtonLink
+            className="mt-4"
             href={`/clients/${contract.clientId}/contracts/${contract.id}/packages`}
+            variant="secondary"
           >
             الباقات
-          </Link>
-        </article>
+          </ButtonLink>
+        </Card>
       ))}
     </section>
   );
@@ -182,32 +180,18 @@ export function ContractList({
 
 export function ContractEmptyState() {
   return (
-    <section
-      aria-label="حالة العقود الفارغة"
-      className="rounded-lg border border-dashed border-border p-6"
-      dir="rtl"
-    >
-      <h2 className="text-lg font-semibold">لا توجد عقود لهذا العميل بعد</h2>
-      <p className="mt-2 text-sm text-muted">
-        ابدأ بإضافة سياق العقد قبل بناء الباقات أو المخرجات في مراحل لاحقة.
-      </p>
-    </section>
+    <EmptyState
+      description="ابدأ بإضافة سياق العقد قبل بناء الباقات أو المخرجات في مراحل لاحقة."
+      title="لا توجد عقود لهذا العميل بعد"
+    />
   );
 }
 
 export function ContractDeniedState() {
   return (
-    <section
-      aria-label="تعذر الوصول إلى العقود"
-      className="rounded-lg border border-border p-6"
-      dir="rtl"
-    >
-      <h2 className="text-lg font-semibold">
-        لا يمكنك الوصول إلى عقود هذا العميل.
-      </h2>
-      <p className="mt-2 text-sm text-muted">
-        لم يتم عرض أي بيانات خارج نطاق صلاحياتك.
-      </p>
-    </section>
+    <ErrorState
+      description="لم يتم عرض أي بيانات خارج نطاق صلاحياتك."
+      title="لا يمكنك الوصول إلى عقود هذا العميل."
+    />
   );
 }

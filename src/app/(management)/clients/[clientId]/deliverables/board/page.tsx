@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { listScopedDeliverables } from "@/server/actions/deliverable-read";
@@ -12,6 +11,9 @@ import {
   DeliverableBoardEmptyState,
 } from "@/ui/management/deliverable-board";
 import { DeliverableDeniedState } from "@/ui/management/deliverable-form";
+import { Badge } from "@/ui/core/badge";
+import { ButtonLink } from "@/ui/core/button";
+import { PageHeader } from "@/ui/layout/page-header";
 import {
   AccessDeniedState,
   MembershipDisabledState,
@@ -32,7 +34,10 @@ export default async function ClientDeliverablesBoardPage({
   const runtime = await resolveRouteRuntime(query?.as);
 
   if (!runtime.ok) {
-    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") {
+    if (
+      runtime.reason === "auth_required" ||
+      runtime.reason === "session_expired"
+    ) {
       return <SessionExpiredState />;
     }
 
@@ -88,26 +93,28 @@ export default async function ClientDeliverablesBoardPage({
 
   return (
     <main className="grid gap-5" dir="rtl">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">لوحة Kanban الداخلية</h1>
-          <p className="mt-2 text-sm text-muted">{client.name}</p>
-          {query?.saved === "status-updated" ? (
-            <p className="mt-2 text-sm text-success">تم تحديث حالة المخرج.</p>
-          ) : null}
-          {query?.saved === "denied" ? (
-            <p className="mt-2 text-sm text-danger">
-              تعذر تنفيذ تغيير الحالة بأمان.
-            </p>
-          ) : null}
-        </div>
-        <Link
-          className="w-fit rounded-md border border-border px-4 py-2 text-sm font-semibold"
-          href={`/clients/${client.id}/deliverables`}
-        >
-          قائمة المخرجات
-        </Link>
-      </div>
+      <PageHeader
+        actions={
+          <ButtonLink
+            href={`/clients/${client.id}/deliverables`}
+            variant="secondary"
+          >
+            قائمة المخرجات
+          </ButtonLink>
+        }
+        description={client.name}
+        status={
+          <div className="flex flex-wrap gap-2">
+            {query?.saved === "status-updated" ? (
+              <Badge tone="success">تم تحديث حالة المخرج.</Badge>
+            ) : null}
+            {query?.saved === "denied" ? (
+              <Badge tone="danger">تعذر تنفيذ تغيير الحالة بأمان.</Badge>
+            ) : null}
+          </div>
+        }
+        title="لوحة Kanban الداخلية"
+      />
       {deliverableList.deliverables.length > 0 ? (
         <DeliverableBoard
           action={updateDeliverableStatusAction}

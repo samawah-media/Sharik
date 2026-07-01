@@ -19,8 +19,11 @@
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-surface: var(--surface);
+  --color-card: var(--surface);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-primary: var(--accent);
+  --color-primary-foreground: #ffffff;
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
@@ -42,6 +45,7 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
+  text-align: right;
 }
 
 a {

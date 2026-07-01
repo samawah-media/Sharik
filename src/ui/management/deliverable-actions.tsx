@@ -1,4 +1,6 @@
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
+import { Button } from "@/ui/core/button";
+import { ErrorState } from "@/ui/core/states";
 
 type CancellationAction = (formData: FormData) => void | Promise<void>;
 
@@ -45,29 +47,18 @@ export function DeliverableCancellationControl({
           required
         />
       </label>
-      <button
-        className="w-fit rounded-md border border-warning/40 px-3 py-2 text-sm font-semibold"
-        type="submit"
-      >
+      <Button type="submit" variant="secondary">
         إلغاء وإرجاع السعة
-      </button>
+      </Button>
     </form>
   );
 }
 
 export function DeliverableCancellationDeniedState() {
   return (
-    <section
-      aria-label="تعذر إلغاء المخرج"
-      className="rounded-lg border border-border p-5"
-      dir="rtl"
-    >
-      <h2 className="text-lg font-semibold">
-        لا يمكن إلغاء هذا المخرج من هذه المرحلة.
-      </h2>
-      <p className="mt-2 text-sm text-muted">
-        استخدم مسار تغيير لاحق عند بدء التنفيذ.
-      </p>
-    </section>
+    <ErrorState
+      description="استخدم مسار تغيير لاحق عند بدء التنفيذ."
+      title="لا يمكن إلغاء هذا المخرج من هذه المرحلة."
+    />
   );
 }

@@ -13,9 +13,7 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
     "href",
     "/clients/client_a/deliverables/board",
   );
-  await page.goto("/clients/client_a/deliverables/board?as=tenant_admin_a", {
-    waitUntil: "domcontentloaded",
-  });
+  await page.getByRole("link", { name: "لوحة Kanban" }).click();
 
   await expect(
     page.getByRole("heading", { name: "لوحة Kanban الداخلية" }),
@@ -23,15 +21,29 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
   await expect(
     page.getByRole("region", { name: "لوحة Kanban الداخلية" }),
   ).toBeVisible();
+  const firstColumn = page.getByTestId("kanban-column").first();
+  await expect(firstColumn).toBeVisible();
+  await expect
+    .poll(async () => {
+      const box = await firstColumn.boundingBox();
+      return Math.round(box?.width ?? 0);
+    })
+    .toBeGreaterThanOrEqual(320);
   await expect(page.getByText("منشور إطلاق الحملة")).toBeVisible();
+
+  await page.getByText("تغيير الحالة").first().click();
   await expect(
     page.getByRole("form", { name: "تغيير حالة منشور إطلاق الحملة" }),
   ).toBeVisible();
+  await page.getByLabel("الحالة").first().selectOption("in_progress");
+  await expect(page.getByLabel("الحالة").first()).toHaveValue("in_progress");
   await expect(page.getByText("client_b")).toHaveCount(0);
   await expect(page.getByText("approval log")).toHaveCount(0);
 });
 
-test("client viewer cannot access the internal Kanban board", async ({ page }) => {
+test("client viewer cannot access the internal Kanban board", async ({
+  page,
+}) => {
   await page.goto("/clients/client_a/deliverables/board?as=client_viewer_a", {
     waitUntil: "domcontentloaded",
   });

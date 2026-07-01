@@ -92,10 +92,10 @@
 
 **Purpose**: Publish for review and stop before merge.
 
-- [ ] T040 Commit F-004 changes on `codex/f-004-internal-kanban-workflow`
-- [ ] T041 Push branch `codex/f-004-internal-kanban-workflow`
-- [ ] T042 Open PR titled `[codex] F-004 internal kanban workflow MVP`
-- [ ] T043 Confirm PR remains unmerged
+- [x] T040 Commit F-004 changes on `codex/f-004-internal-kanban-workflow`
+- [x] T041 Push branch `codex/f-004-internal-kanban-workflow`
+- [x] T042 Open PR titled `[codex] F-004 internal kanban workflow MVP`
+- [x] T043 Confirm PR remains unmerged
 
 ## Dependencies & Execution Order
 

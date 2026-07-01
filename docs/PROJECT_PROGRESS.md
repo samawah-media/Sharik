@@ -12,8 +12,8 @@ Last updated: 2026-07-01
 | Worktree | `D:\code - projects\shrek.platform` |
 | Branch | `codex/f-004-internal-kanban-workflow` from PR #25 merge commit on `origin/main` |
 | Current allowed stage | F-004 implementation verification before PR; R-004 is closed after PR #25 |
-| Status | F-004 Spec Kit exists; board route `/clients/[clientId]/deliverables/board`, secure status command/RPC, audit events, derived progress, SLA display, management links, and targeted tests are implemented locally. `origin/main` contains PR #25 merge commit `0872780d00799ec42e95d3ea889c686cce8b7bad`; R-004 hosted UAT is closed as Production hosting-only with Supabase UAT synthetic data only; temporary `@r004.example.test` passwords were cleared and verified with 0 remaining password hashes |
-| Next gate | Run full requested verification suite, then open PR `[codex] F-004 internal kanban workflow MVP` without merge |
+| Status | F-004 Spec Kit exists; board route `/clients/[clientId]/deliverables/board`, secure status command/RPC, audit events, derived progress, SLA display, management links, and tests are implemented. PR #26 is open and unmerged: https://github.com/samawah-media/Sharik/pull/26. `origin/main` contains PR #25 merge commit `0872780d00799ec42e95d3ea889c686cce8b7bad`; R-004 hosted UAT is closed as Production hosting-only with Supabase UAT synthetic data only; temporary `@r004.example.test` passwords were cleared and verified with 0 remaining password hashes |
+| Next gate | Owner/code review for PR #26; do not merge without explicit owner approval |
 | Owner decision required | No R-004 owner action remains for temporary synthetic passwords; F-004 PR must not be merged without explicit owner approval |
 
 ## F-004 Internal Kanban Workflow MVP - 2026-07-01

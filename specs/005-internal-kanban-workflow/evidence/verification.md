@@ -57,3 +57,10 @@ Date: 2026-07-01
 - All board reads and writes must include tenant/client scope.
 - Status transitions must append audit events for allowed and denied attempts.
 - F-004 uses select/action controls instead of drag/drop because `@dnd-kit/*` is not installed and no dependency change/ADR was required.
+
+## PR Evidence
+
+- Branch: `codex/f-004-internal-kanban-workflow`
+- Initial implementation commit: `138d175d19e3441424551c5f222cb3a35d23fc9e`
+- PR: https://github.com/samawah-media/Sharik/pull/26
+- PR status at creation: open, ready for review, unmerged.

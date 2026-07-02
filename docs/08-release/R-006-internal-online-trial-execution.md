@@ -15,6 +15,7 @@ The owner decision is GO for a non-production internal online trial only. This p
 | GitHub live status | Mergeable, not merged |
 | Branch | `codex/r006-internal-online-trial-execution` |
 | Draft PR creation HEAD | `2e3fe7e830336e24b56ce078da4af23d8bf98734` |
+| Current live HEAD | `ea3512f4be0164bb13c5e711936251c8d4f1deb7` |
 | Trial URL | None issued |
 | Credentials | None generated or recorded |
 
@@ -46,14 +47,17 @@ The owner decision is GO for a non-production internal online trial only. This p
 
 | Area | Result |
 |---|---|
-| PR #33 | Open / Draft / Mergeable |
+| PR #33 | Open / Draft / Mergeable at HEAD `ea3512f4be0164bb13c5e711936251c8d4f1deb7` |
 | CI | `quality` passed |
-| CodeRabbit | Status passed; review was skipped because PR #33 is Draft. No GitHub review or inline comments were present, and the single issue comment had no detected blocker marker. |
+| CodeRabbit | Status passed; review was skipped because PR #33 is Draft. No GitHub reviews or inline comments were present; one CodeRabbit issue comment exists as metadata only. |
+| PR changed files | 13 files, limited to Spec Kit/release/governance artifacts; this refresh updates only release/progress/evidence docs. No product code, dependency, env, migration, seed, or app config change appeared in the current working tree. |
 | Supabase read-only count preflight | BLOCKED: aggregate counts found 5 auth users outside `@r006.example.test` plus existing public operational data. |
 | Supabase public signup status | BLOCKED: no safe read-only status surface was available; no signup attempt was made. |
+| Supabase target update | BLOCKED: no fresh clean non-production Supabase target was provided in this mission; `sharik-uat` was not reused or cleaned. |
 | Supabase local linked ref | `jnvuccapgsabrwwkxnbh` |
 | Vercel env scope | BLOCKED: preview envs are empty, branch preview envs are empty, custom `staging` is not found, and listed envs are Production-only. |
 | Vercel deployments | BLOCKED: preview deployments are empty; listed deployments are Production-only. |
+| Vercel target update | BLOCKED: no confirmed Preview/Staging target was provided in this mission. |
 | Gate decision | HOLD: keep PR #33 Draft and do not start trial. |
 
 ## Owner Decision Gate - 2026-07-02

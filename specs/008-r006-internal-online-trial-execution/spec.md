@@ -4,7 +4,11 @@
 
 **Created**: 2026-07-02
 
-**Status**: Blocked at target preflight
+**Status**: Blocked at target preflight; Draft PR #33 is Open / Draft / Preflight Blocked.
+
+**Draft PR**: [#33 R-006 Internal Online Trial Execution - Preflight Blocked](https://github.com/samawah-media/Sharik/pull/33)
+
+**Draft PR creation HEAD**: `2e3fe7e830336e24b56ce078da4af23d8bf98734`
 
 **Input**: User description: "Start R-006 Internal Online Trial Execution as a separate non-production-only package. Owner decision is GO for non-production internal online trial only. Confirm exact non-production Supabase and Vercel targets, run preflight, prepare synthetic internal trial accounts only, deploy or use preview/staging only if target is confirmed non-production, run smoke checks, record evidence without secrets, and stop without production promotion."
 
@@ -109,3 +113,4 @@ As the owner, I need trial smoke checks to run only on a confirmed non-productio
 - `sharik-uat` is a candidate Supabase target, not an automatically approved target until data/auth preflight passes.
 - Existing Vercel project `sharik-platform` is a candidate project, not an approved target while it has only Production environment variables/deployments.
 - Credential delivery, if later unblocked, will happen through an owner-approved channel outside GitHub/docs/logs.
+- Resuming execution requires secure Supabase DB preflight access and confirmation of a Vercel Preview/Staging target; no trial URL or credentials exist while PR #33 remains preflight-blocked.

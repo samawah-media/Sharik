@@ -11,8 +11,12 @@ Last updated: 2026-07-02
 | Feature | R-006 Internal Online Trial Execution |
 | Worktree | `codex/r006-internal-online-trial-execution` |
 | Branch | `codex/r006-internal-online-trial-execution` from PR #32 `origin/main` |
+| Draft PR | [#33 R-006 Internal Online Trial Execution - Preflight Blocked](https://github.com/samawah-media/Sharik/pull/33) |
+| PR status | Draft / Open / Preflight Blocked; GitHub live check reports mergeable. |
+| Draft PR creation HEAD | `2e3fe7e830336e24b56ce078da4af23d8bf98734` |
 | Current allowed stage | Non-production target preflight and execution evidence only; no hosted mutation/deployment until exact targets pass preflight and owner confirmation. |
 | Status | R-006 execution started from `10fc4a3b4c8f717d284d177906d1f32f5f61976c` and is BLOCKED at target preflight. Supabase candidate `sharik-uat` exists but hosted data/auth preflight requires secure DB password access. Vercel project `sharik-platform` has Production env/deployments only and no confirmed Preview/Staging target. No trial URL, credentials, hosted seed, hosted migration, deployment, production promotion, public signup, real client data, dependency change, or product feature expansion was introduced. |
+| Latest preflight refresh | 2026-07-02: PR #33 live remains Draft/Open/MERGEABLE with `quality` and `CodeRabbit` passing. No review or inline comments were present; one CodeRabbit issue comment was present with no detected blocker marker. Secure Supabase DB preflight access was not present in the Codex process, so count/auth/signup checks remained blocked. Vercel env/deployments remained Production-only. |
 | Next gate | Secure Supabase count-only preflight access and Vercel Preview/Staging env confirmation, followed by explicit owner confirmation of exact targets. |
 | Owner decision required | Confirm exact Supabase/Vercel non-production targets after preflight, or provide secure access needed to complete preflight outside GitHub/docs/logs. |
 
@@ -22,17 +26,22 @@ Baseline:
 
 - Started from PR #32 `origin/main` commit `10fc4a3b4c8f717d284d177906d1f32f5f61976c`.
 - Active branch: `codex/r006-internal-online-trial-execution`.
+- Draft PR #33: `https://github.com/samawah-media/Sharik/pull/33`.
+- PR #33 status: Draft / Open / Preflight Blocked; GitHub live check reports mergeable.
+- Draft PR creation HEAD: `2e3fe7e830336e24b56ce078da4af23d8bf98734`.
 - Readiness package reviewed before operational action: `specs/007-r006-internal-online-trial-readiness/`.
 - Execution package created under `specs/008-r006-internal-online-trial-execution/`.
 
 Preflight result:
 
 - Supabase candidate metadata: `sharik-uat`, ref `jnvuccapgsabrwwkxnbh`, region `eu-west-1`, `ACTIVE_HEALTHY`.
+- Supabase local linked ref remains `jnvuccapgsabrwwkxnbh`.
 - Supabase table-name read-only query passed without row values.
 - Supabase data/auth preflight is blocked because hosted count query requires secure `SUPABASE_DB_PASSWORD`; no password was available or printed.
 - Vercel linked project is `sharik-platform`.
 - Vercel env names are scoped to Production only.
 - Vercel listed deployments are Production environment only.
+- Follow-up PR #33 live check on 2026-07-02 confirmed Draft/Open/MERGEABLE with `quality` and `CodeRabbit` passing; no CodeRabbit blocker marker was detected.
 
 Stop decision:
 

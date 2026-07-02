@@ -11,6 +11,9 @@ Date: 2026-07-02
 | Required baseline | `10fc4a3b4c8f717d284d177906d1f32f5f61976c` |
 | Baseline commit message | `Merge pull request #32 from samawah-media/codex/r006-internal-online-trial-readiness` |
 | Execution branch | `codex/r006-internal-online-trial-execution` |
+| Draft PR | [#33 R-006 Internal Online Trial Execution - Preflight Blocked](https://github.com/samawah-media/Sharik/pull/33) |
+| PR status | Draft / Open / Preflight Blocked; GitHub live check reports mergeable and not merged. |
+| Draft PR creation HEAD | `2e3fe7e830336e24b56ce078da4af23d8bf98734` |
 
 ## Readiness Documents Reviewed
 
@@ -44,6 +47,25 @@ Date: 2026-07-02
 | EXEC-011 | `vercel --help` / env/list commands | PASS | CLI capabilities reviewed before use. |
 | EXEC-012 | `npm run secret:scan` | PASS | No high-confidence secrets found. |
 | EXEC-013 | `git diff --check` | PASS | No whitespace errors; CRLF working-copy warnings only. |
+| EXEC-014 | GitHub PR #33 live check | PASS | PR #33 was Open, Draft, mergeable, and pointed to draft-creation HEAD `2e3fe7e830336e24b56ce078da4af23d8bf98734` before this handoff update. |
+| EXEC-015 | GitHub PR #33 follow-up live check | PASS | PR #33 remained Open, Draft, and mergeable; `quality` and `CodeRabbit` were passing; no review or inline comments were present. |
+| EXEC-016 | CodeRabbit comment marker check | PASS | One CodeRabbit issue comment was present; no blocker/actionable marker was detected without printing the comment body. |
+| EXEC-017 | Secure Supabase access presence check | BLOCKED | Secure DB preflight access was not present in the Codex process; no secret values were printed. |
+| EXEC-018 | Supabase local link check | PASS | Local linked ref is `jnvuccapgsabrwwkxnbh`. |
+| EXEC-019 | `vercel env ls` follow-up | BLOCKED | Vercel env names remain Production-only. |
+| EXEC-020 | `vercel ls` follow-up | BLOCKED | Listed deployments remain Production-only; no Preview/Staging target is confirmed. |
+
+## Draft PR Handoff
+
+| Item | Status |
+|---|---:|
+| PR #33 URL recorded | PASS |
+| PR #33 Draft/Open status recorded | PASS |
+| Preflight Blocked status recorded | PASS |
+| Draft PR creation HEAD recorded | PASS |
+| No trial URL | PASS |
+| No credentials | PASS |
+| Required owner action recorded | PASS |
 
 ## Supabase Preflight
 
@@ -55,6 +77,7 @@ Date: 2026-07-02
 | Real clients count | 0 | BLOCKED | Hosted count query requires secure DB password access. |
 | Non-approved fixture data | 0 | BLOCKED | Hosted count query requires secure DB password access. |
 | Public signup | Disabled | BLOCKED | Not verified. |
+| Service role exposure | Not visible in browser/docs/logs | BLOCKED | Browser exposure check requires a confirmed non-production deployment URL; no trial URL exists. Docs/logs were kept free of secret values. |
 | Hosted migration | Not run | PASS | No migration command was run. |
 | Hosted seed | Not run | PASS | No seed command was run. |
 | Account creation | Not run | PASS | No users were created. |
@@ -69,6 +92,15 @@ Date: 2026-07-02
 | Production deploy | Not run | PASS | No `vercel --prod` or deploy command was run. |
 | Production alias | Not created/used | PASS | No alias command was run. |
 | Trial URL | Preview/staging URL | BLOCKED | No trial URL issued. |
+
+## Follow-up Gate Decision
+
+PR #33 remains HOLD / Draft because at least one preflight remains blocked:
+
+- Supabase count/auth/signup checks cannot run without secure DB preflight access delivered outside GitHub/docs/comments/screenshots/logs/chat.
+- Vercel has no confirmed Preview/Staging target; environment variables and deployments remain Production-only.
+
+The online trial did not start.
 
 ## Synthetic Account Preparation
 
@@ -107,8 +139,8 @@ Execution stopped before hosted mutation, deployment, credential generation, and
 
 Unblock requirements:
 
-1. Owner confirms the exact Supabase target after count-only preflight proves no real/non-approved data and public signup is disabled.
-2. Secure DB preflight access is provided outside GitHub/docs/logs.
+1. Secure DB preflight access is provided outside GitHub/docs/logs/chat/screenshots.
+2. Owner confirms the exact Supabase target after count-only preflight proves no real/non-approved data and public signup is disabled.
 3. Vercel Preview/Staging environment variables are configured for the confirmed non-production Supabase target.
 4. Owner confirms the exact Vercel preview/staging target.
 

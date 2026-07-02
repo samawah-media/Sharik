@@ -14,11 +14,11 @@ Last updated: 2026-07-02
 | Draft PR | [#33 R-006 Internal Online Trial Execution - Preflight Blocked](https://github.com/samawah-media/Sharik/pull/33) |
 | PR status | Draft / Open / Preflight Blocked; GitHub live check reports mergeable. |
 | Draft PR creation HEAD | `2e3fe7e830336e24b56ce078da4af23d8bf98734` |
-| Current allowed stage | Non-production target preflight and execution evidence only; no hosted mutation/deployment until exact targets pass preflight and owner confirmation. |
-| Status | R-006 execution started from `10fc4a3b4c8f717d284d177906d1f32f5f61976c` and remains BLOCKED at target preflight. Supabase candidate `sharik-uat` exists, but read-only aggregate counts found existing non-R-006 auth users and public operational data. Vercel project `sharik-platform` is linked, but Preview envs are empty, custom `staging` is not found, and listed env/deployments remain Production-only. No trial URL, credentials, hosted seed, hosted migration, deployment, production promotion, public signup, real client data, dependency change, or product feature expansion was introduced. |
-| Latest preflight refresh | 2026-07-02: Project-control refresh confirmed PR #33 remains Draft/Open/MERGEABLE from HEAD `ea3512f4be0164bb13c5e711936251c8d4f1deb7`. `quality` passed. CodeRabbit status passed, with review skipped because the PR is Draft. No GitHub reviews or inline comments were present; one CodeRabbit issue comment exists as metadata only. Local working tree was clean. No new clean Supabase target or confirmed Vercel Preview/Staging target was provided in this mission, so Supabase remains BLOCKED, Vercel remains BLOCKED, PR #33 remains Draft/HOLD, and the online trial has not started. |
-| Next gate | Provide or select a clean Supabase target that passes count-only preflight and public-signup verification, configure/confirm Vercel Preview/Staging env/deployment target, then obtain explicit owner confirmation of exact targets. |
-| Owner decision required | Choose one safe blocker-resolution path: A) provide a fresh clean Supabase non-production target; B) explicitly authorize cleanup/isolation of `sharik-uat` only after confirming existing data is not real client data; C) keep PR #33 Draft/HOLD until both Supabase and Vercel targets are safe; or D) prepare Vercel Preview/Staging target only, without deploy, trial, URL, or credentials. |
+| Current allowed stage | Internal UAT mapping and execution evidence only; no hosted mutation/deployment until mapping and a minimum-scope insertion/deploy plan are reviewed. |
+| Status | R-006 execution started from `10fc4a3b4c8f717d284d177906d1f32f5f61976c`. Owner update on 2026-07-02 authorizes using Supabase UAT `sharik-uat` / `jnvuccapgsabrwwkxnbh` despite previous users/data, authorizes the local workbook `خطة محتوى هدنة - العدد الثاني (1)` as internal source input, and authorizes Vercel deployment for internal testing only, not Production acceptance. Workbook structure was inspected without printing sensitive row content. No trial URL, credentials, hosted seed, hosted migration, hosted insertion, deployment, production promotion, public signup, dependency change, or product feature expansion was introduced. |
+| Latest preflight refresh | 2026-07-02: Project-control refresh confirmed PR #33 remains Draft/Open/MERGEABLE from HEAD `ea3512f4be0164bb13c5e711936251c8d4f1deb7`. The earlier clean-target blocker is superseded by owner authorization for internal UAT only. Local workbook review found 15 sheets and three main convertible blocks with 20, 40, and 52 candidate rows. The run still stopped before hosted mutation/deploy because mapping and exact insertion/deploy plans must be reviewed first. |
+| Next gate | Review the workbook-to-Sharik mapping, choose the exact row subset, decide whether to create an isolated internal-trial client/contract/package or attach to existing UAT records, then prepare a minimum hosted insertion plan using existing scoped/audited paths. |
+| Owner decision required | Approve the exact mapping/execution path and row subset. Do not convert PR #33 to Ready and do not merge. |
 
 ## R-006 Internal Online Trial Execution - 2026-07-02
 
@@ -39,6 +39,7 @@ Preflight result:
 - Supabase table-name read-only query passed without row values.
 - Supabase auth count preflight BLOCKED: 5 auth users exist and all are outside `@r006.example.test`.
 - Supabase public data preflight BLOCKED: aggregate counts found 1 tenant, 2 clients, 2 contracts, 2 packages, 2 package lines, 7 deliverables, and 3 audit events.
+- Owner update: `sharik-uat` is authorized for internal R-006 despite those existing users/data; this does not authorize broad mutation or cleanup.
 - Supabase public signup status remains BLOCKED because no safe read-only status surface was available; no signup attempt was made.
 - Vercel linked project is `sharik-platform`.
 - Vercel Preview env names are empty, branch-scoped Preview env names are empty, and custom `staging` is not found.
@@ -50,11 +51,19 @@ Stop decision:
 
 - No hosted migration.
 - No hosted seed.
+- No hosted insertion from the workbook.
 - No hosted account creation.
 - No temporary credentials generated.
 - No Vercel deployment.
 - No preview/staging trial URL issued.
-- All requested smoke checks are blocked until exact non-production targets are confirmed.
+- All requested smoke checks are blocked until mapping, insertion/deploy path, URL, and credentials are approved.
+
+Workbook mapping evidence:
+
+- Local workbook source was authorized by owner for internal trial only.
+- The workbook has 15 sheets; three main convertible blocks were structurally inspected without printing row content.
+- Candidate blocks contain 20, 40, and 52 convertible rows with date ranges 2026-02-12 to 2026-03-08, 2026-03-16 to 2026-07-24, and 2026-07-25 to 2026-09-29.
+- Proposed mapping targets existing Sharik client/contract/package/package-line/deliverable fields; no migration is currently required for the basic import plan.
 
 Synthetic roster prepared without credentials:
 

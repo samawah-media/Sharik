@@ -2,9 +2,11 @@
 
 ## Status
 
-BLOCKED AT TARGET PREFLIGHT - NO TRIAL URL ISSUED - NO HOSTED MUTATION - NO CREDENTIALS GENERATED
+OWNER-AUTHORIZED INTERNAL UAT TARGET - MAPPING PREPARED - NO TRIAL URL ISSUED - NO HOSTED MUTATION - NO CREDENTIALS GENERATED
 
-The owner decision is GO for a non-production internal online trial only. This package started the execution branch and preflight, then stopped because the candidate Supabase target is not clean for R-006 and the Vercel project still has no confirmed Preview/Staging env or deployment target.
+The owner updated the R-006 decision on 2026-07-02: `sharik-uat` / `jnvuccapgsabrwwkxnbh` is authorized as the internal trial Supabase target despite previous users/data, the local workbook `خطة محتوى هدنة - العدد الثاني (1)` is authorized as internal source input, and Vercel deployment is authorized for internal testing only. This is not Production acceptance.
+
+Execution is still paused before hosted mutation because the workbook-to-Sharik mapping must be reviewed first and any hosted insertion must use a minimum-scope plan without printing sensitive workbook content.
 
 ## Draft PR Handoff
 
@@ -41,7 +43,7 @@ The owner decision is GO for a non-production internal online trial only. This p
 | No production deploy/promotion/alias run | PASS |
 | No hosted migration or seed run | PASS |
 | No credentials generated | PASS |
-| No real client data added | PASS |
+| No hosted source workbook data added | PASS |
 
 ## Follow-up Gate Refresh - 2026-07-02
 
@@ -53,25 +55,24 @@ The owner decision is GO for a non-production internal online trial only. This p
 | PR changed files | 13 files, limited to Spec Kit/release/governance artifacts; this refresh updates only release/progress/evidence docs. No product code, dependency, env, migration, seed, or app config change appeared in the current working tree. |
 | Supabase read-only count preflight | BLOCKED: aggregate counts found 5 auth users outside `@r006.example.test` plus existing public operational data. |
 | Supabase public signup status | BLOCKED: no safe read-only status surface was available; no signup attempt was made. |
-| Supabase target update | BLOCKED: no fresh clean non-production Supabase target was provided in this mission; `sharik-uat` was not reused or cleaned. |
+| Supabase target update | OWNER-AUTHORIZED: `sharik-uat` may be used for internal R-006 despite existing users/data. Hosted mutation remains NOT_RUN pending mapping review and exact insertion plan approval. |
 | Supabase local linked ref | `jnvuccapgsabrwwkxnbh` |
 | Vercel env scope | BLOCKED: preview envs are empty, branch preview envs are empty, custom `staging` is not found, and listed envs are Production-only. |
 | Vercel deployments | BLOCKED: preview deployments are empty; listed deployments are Production-only. |
-| Vercel target update | BLOCKED: no confirmed Preview/Staging target was provided in this mission. |
-| Gate decision | HOLD: keep PR #33 Draft and do not start trial. |
+| Vercel target update | OWNER-AUTHORIZED for internal testing only; no deploy was run and no Production acceptance is implied. |
+| Gate decision | HOLD: keep PR #33 Draft, review mapping, and do not start hosted insertion/deploy until the exact execution plan is approved. |
 
-## Owner Decision Gate - 2026-07-02
+## Owner Decision Update - 2026-07-02
 
-PR #33 remains Draft/HOLD. The only safe next owner choices are:
+Supersedes the earlier clean-target-only blocker:
 
-| Option | Safe path | Still prohibited until separately approved |
+| Area | Updated decision | Still prohibited until separately approved |
 |---|---|---|
-| A | Provide a fresh, clean Supabase non-production target for R-006, then rerun count-only/public-signup preflight. | Hosted migration, seed, account creation, credential generation, trial start. |
-| B | Explicitly authorize cleanup/isolation of `sharik-uat` after confirming the existing hosted data is not real client data. | Cleanup or isolation without exact target-specific authorization and a no-real-client-data confirmation. |
-| C | Keep PR #33 Draft/HOLD until both Supabase and Vercel targets are confirmed safe. | Ready-for-review conversion, merge, trial URL, credentials. |
-| D | Prepare Vercel Preview/Staging target metadata/env boundary only. | Deploy, alias, production promotion, trial start, trial URL. |
+| Supabase | Use `sharik-uat` as internal R-006 target despite existing users/data. | Cleanup/deletion, broad mutation, public signup, credentials in docs/logs/chat. |
+| Source workbook | Use the named local workbook as internal trial input. | Printing row content, captions, links, or sensitive values in GitHub/docs/comments/screenshots/logs/chat. |
+| Vercel | Deploy for internal testing only. | Production acceptance, Ready conversion, merge, or promotion. |
 
-Generic approval does not waive the exact-target gate. Any hosted cleanup, mutation, deployment, credential generation, or trial execution still requires a separate exact-target owner instruction.
+Any hosted insertion, deployment, credential generation, or trial execution still requires the exact mapping/execution plan to be reviewed first.
 
 ## Supabase Target Status
 
@@ -84,7 +85,7 @@ region: eu-west-1
 status: ACTIVE_HEALTHY
 ```
 
-This is a candidate only. It is not approved for R-006 mutation because hosted data/auth preflight found existing non-R-006 data.
+This target is owner-authorized for internal R-006 use despite existing users/data. It is not approved for broad mutation; hosted insertion remains blocked until mapping review and exact execution-plan approval.
 
 The follow-up gate refresh ran read-only aggregate hosted queries. No row values, emails, hosted migration, seed, account creation, signup attempt, credential generation, or secret values were printed or recorded.
 
@@ -96,13 +97,33 @@ Blocked checks:
 - non-approved fixture data: 1 tenant, 2 contracts, 2 packages, 2 package lines, 7 deliverables, and 3 audit events
 - public signup disabled: not verified through a safe read-only surface
 
-Reason:
+Decision note:
 
 ```text
-The candidate contains existing non-R-006 hosted users and public operational data.
-R-006 requires 0 real users, 0 real clients, and 0 non-approved fixture data before any mutation or trial.
+The target contains existing non-R-006 hosted users and public operational data.
+The owner accepted this risk for internal R-006 only.
 Public signup status still needs safe read-only confirmation.
 ```
+
+## Source Workbook Mapping Status
+
+The workbook was inspected locally without printing row content. Structural findings:
+
+| Workbook area | Convertible rows | Date evidence | Suggested use |
+|---|---:|---|---|
+| Sheet index 3 | 20 | 2026-02-12 to 2026-03-08, plus one undated row | Historical/reference block. |
+| Sheet index 8 | 40 | 2026-03-16 to 2026-07-24, plus undated rows | Mixed current/status-spread block. |
+| Sheet index 9 | 52 | 2026-07-25 to 2026-09-29, plus undated rows | Best forward-plan candidate for import. |
+
+Proposed mapping is source headers to Sharik entities only:
+
+- `المرحلة`, `المنصة/القناة`, `الهدف الرئيسي`: internal deliverable context.
+- `اليوم`: deliverable due dates and derived SLA dates.
+- `قالب المحتوى`: deliverable type and package-line type hint.
+- `وصف المحتوى`: deliverable name source, with values kept out of docs/logs.
+- `كاتب المحتوى`: owner lookup only if a matching internal user exists.
+- `تعميد المحتوى`, `تعميد التصميم`, `تم الجدولة`, `تم النشر`: initial status hints only; no approval decision is created without audited hosted action.
+- Reference/link/result columns: excluded from first insertion unless a separate file/link visibility plan is approved.
 
 ## Vercel Target Status
 
@@ -173,14 +194,14 @@ Reason: there is no confirmed preview/staging deployment URL and no generated cr
 - No dependency change.
 - No credentials in GitHub/docs/logs/screenshots.
 
-## Required Unblock
+## Required Next Step
 
-Before resuming R-006 execution:
+Before hosted insertion or deployment:
 
-1. Provide or select a Supabase target whose count-only preflight proves 0 real users, 0 real clients, 0 non-approved fixture data, and disabled public signup.
-2. Owner confirms the exact Supabase target after preflight passes.
-3. Configure Vercel Preview/Staging env vars only for the confirmed non-production target.
-4. Owner confirms the exact Vercel preview/staging target after env/deployment preflight passes.
+1. Review and approve the mapping and exact row subset.
+2. Confirm whether to create a new isolated internal-trial client/contract/package or attach to existing UAT records.
+3. Prepare a minimum hosted insertion/seed plan using existing scoped/audited write paths.
+4. Confirm Vercel internal-test deployment path and env boundary.
 5. Generate credentials only after the above, and deliver them outside GitHub/docs/logs/chat/screenshots.
 
 Evidence is recorded in:

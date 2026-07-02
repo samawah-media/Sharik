@@ -15,6 +15,18 @@ Date: 2026-07-02
 | PR status | Draft / Open / Preflight Blocked; GitHub live check reports mergeable and not merged. |
 | Draft PR creation HEAD | `2e3fe7e830336e24b56ce078da4af23d8bf98734` |
 
+## Owner Decision Update - 2026-07-02
+
+Project Control Mode owner update supersedes the earlier clean-target-only blocker:
+
+| Decision Area | Updated Decision | Guardrail |
+|---|---|---|
+| Supabase UAT target | `sharik-uat` / `jnvuccapgsabrwwkxnbh` is authorized as the internal R-006 target despite previous users/data. | Internal trial only; not Production. |
+| Source workbook | Local workbook `خطة محتوى هدنة - العدد الثاني (1)` is authorized as internal trial input. | Do not print sensitive row content in GitHub, docs, comments, screenshots, logs, or chat. |
+| Vercel | Deployment is authorized for internal testing only. | Not Production acceptance; no merge/promotion implied. |
+| Hosted mutation | Still NOT_RUN. | Show mapping and risks before any hosted insertion/seed. |
+| Credentials/secrets | Still NOT_GENERATED. | No credentials in docs/chat/logs/screenshots/comments. |
+
 ## Readiness Documents Reviewed
 
 | Artifact | Status |
@@ -67,6 +79,9 @@ Date: 2026-07-02
 | EXEC-031 | GitHub PR #33 project-control live check | PASS | PR #33 remains Open, Draft, and MERGEABLE at HEAD `ea3512f4be0164bb13c5e711936251c8d4f1deb7`. `quality` passed. CodeRabbit passed with `Review skipped: draft pull request`. No GitHub reviews or inline comments were present; one CodeRabbit issue comment exists as metadata only. |
 | EXEC-032 | Scope guard | PASS | Local working tree and staged diff were clean before this evidence update. No product code, dependency, env file, migration, seed, or app config change appeared. |
 | EXEC-033 | Target owner-input check | BLOCKED | No fresh clean Supabase non-production target and no confirmed Vercel Preview/Staging target were provided in this mission. `sharik-uat` was not reused or cleaned. No deploy, alias, promotion, hosted migration, hosted seed, account creation, credential generation, or trial URL issuance was run. |
+| EXEC-034 | Owner decision update | PASS | Owner authorized `sharik-uat` for internal R-006 despite existing users/data, authorized the named workbook as internal source input, and authorized Vercel deployment for internal testing only. |
+| EXEC-035 | Workbook structural analysis | PASS | Local analysis read workbook structure only: 15 sheets; main convertible blocks contain 20, 40, and 52 candidate rows with date ranges recorded below. No row content, captions, links, or sensitive values were printed. |
+| EXEC-036 | Mapping gate | PASS | Hosted mutation remains NOT_RUN until this mapping and a minimum-scope insertion plan are reviewed. |
 
 ## Draft PR Handoff
 
@@ -95,6 +110,33 @@ Date: 2026-07-02
 | Hosted seed | Not run | PASS | No seed command was run. |
 | Account creation | Not run | PASS | No users were created. |
 
+Owner update: the existing users/data counts above remain factual evidence, but the owner has accepted using this UAT target for internal R-006 only. This does not authorize broad cleanup, broad seed, public signup, credential disclosure, or Production acceptance.
+
+## Source Workbook Structural Review
+
+No sensitive row content was recorded. Only structural counts, headers, and date ranges were reviewed.
+
+| Workbook area | Convertible rows | Date evidence | Initial status signal, by rule |
+|---|---:|---|---|
+| Sheet index 3 | 20 | 19 dated rows, 2026-02-12 to 2026-03-08 | Historical/mixed review states; avoid bulk importing unless needed for status-spread smoke data. |
+| Sheet index 8 | 40 | 30 dated rows, 2026-03-16 to 2026-07-24 | Mixed current/past/future states; useful for a small status-spread sample. |
+| Sheet index 9 | 52 | 50 dated rows, 2026-07-25 to 2026-09-29 | Forward plan; best candidate for clean package/deliverable import. |
+
+Structural source columns observed:
+
+| Source header | Proposed Sharik use |
+|---|---|
+| `المرحلة` | Optional deliverable context, not client-visible evidence. |
+| `اليوم` | `client_due_date` / `final_due_date`; derive `internal_due_date`. |
+| `المنصة/القناة` | Deliverable context or optional package-line grouping. |
+| `قالب المحتوى` | Deliverable `type` and package-line `deliverable_type_hint`. |
+| `وصف المحتوى` | Deliverable `name` source; do not print values in docs/logs. |
+| `الهدف الرئيسي` | Internal description context after privacy review. |
+| `كاتب المحتوى` | Owner lookup only if a matching internal user exists; otherwise leave owner empty. |
+| `المحتوى النصي للتصميم` / `الكابشن` | Exclude from evidence; optional internal-only description after privacy review. |
+| `تعميد المحتوى` / `تعميد التصميم` / `تم الجدولة` / `تم النشر` | Initial status hints only; no approval decision without audited hosted action. |
+| Reference/link/result columns | Exclude from initial R-006 insertion unless a separate file/link visibility plan is approved. |
+
 ## Vercel Preflight
 
 | Check | Expected | Status | Evidence |
@@ -108,26 +150,26 @@ Date: 2026-07-02
 
 ## Follow-up Gate Decision
 
-PR #33 remains HOLD / Draft because target preflight remains blocked:
+PR #33 remains Draft. The earlier clean-target blocker is superseded by the owner decision, but execution remains paused before hosted mutation:
 
-- Supabase read-only counts ran, but the target contains non-R-006 auth users and existing public operational data.
+- Supabase read-only counts ran and found existing users/data; owner accepted this target for internal R-006 only.
 - Supabase public-signup status was not verified through a safe read-only surface.
-- Vercel has no confirmed Preview/Staging env or deployment target; environment variables and deployments remain Production-only.
+- Vercel deployment is owner-authorized for internal testing only, but no deployment was run in this step.
+- Workbook mapping has been prepared only as a proposal; no hosted insertion/seed ran.
 - The current project-control refresh confirmed PR #33 is still Draft/Open/MERGEABLE at HEAD `ea3512f4be0164bb13c5e711936251c8d4f1deb7`; no reviews or inline comments were present.
-- No new clean Supabase target or confirmed Vercel Preview/Staging target was provided in this mission.
 
 The online trial did not start.
 
 ## Owner Decision Gate
 
-PR #33 remains Draft/HOLD until the owner selects one safe blocker-resolution path and any required preflight passes:
+PR #33 remains Draft/HOLD. The current safe path is:
 
-| Option | Decision | Next safe action | Not authorized by this evidence |
-|---|---|---|---|
-| A | Fresh Supabase target | Provide a new clean non-production Supabase project/ref, then rerun read-only count/public-signup preflight. | Hosted migration, seed, account creation, credentials, trial start. |
-| B | Authorized cleanup/isolation | Confirm the current `sharik-uat` data is not real client data and provide exact authorization for cleanup or isolation. | Any cleanup/isolation without exact target-specific approval. |
-| C | Hold | Keep PR #33 Draft/HOLD until Supabase and Vercel targets are both safe. | Ready-for-review conversion, merge, trial URL, credentials. |
-| D | Vercel target only | Configure or identify Preview/Staging target metadata/env boundary only. | Deploy, alias, production promotion, trial start, trial URL. |
+| Step | Next safe action | Not authorized by this evidence |
+|---|---|---|
+| 1 | Review the workbook-to-Sharik mapping and choose the row subset. | Bulk import of all rows without selection. |
+| 2 | Prepare a minimum-scope hosted insertion/seed plan using existing audited commands/tables. | Direct unsafe table writes, public signup, credentials in docs/logs/chat. |
+| 3 | Confirm whether to use existing client/contract/package rows or create a new isolated internal-trial client/package under `sharik-uat`. | Cleanup/deletion of existing UAT data. |
+| 4 | Configure/run Vercel deployment only as internal testing evidence. | Production acceptance, merge, promotion, or Ready conversion. |
 
 No trial URL, credentials, hosted seed, hosted migration, hosted cleanup, account creation, Vercel deploy, alias, promotion, Ready-for-review conversion, or merge request was performed.
 
@@ -146,32 +188,33 @@ No credentials were generated. No passwords, hashes, tokens, service-role keys, 
 
 | Area | Status | Reason |
 |---|---:|---|
-| Sign-in | BLOCKED | No confirmed target, no preview/staging URL, no credentials. |
-| Product shell | BLOCKED | No preview/staging URL. |
-| Clients | BLOCKED | No preview/staging URL. |
-| Client detail | BLOCKED | No preview/staging URL. |
-| Contracts | BLOCKED | No preview/staging URL. |
-| Packages | BLOCKED | No preview/staging URL. |
-| Deliverables list | BLOCKED | No preview/staging URL. |
-| Kanban board | BLOCKED | No preview/staging URL. |
-| Status transition behavior | BLOCKED | No preview/staging URL or credentials. |
+| Sign-in | BLOCKED | No deployment URL and no credentials. |
+| Product shell | BLOCKED | No deployment URL. |
+| Clients | BLOCKED | No deployment URL or insertion plan approval. |
+| Client detail | BLOCKED | No deployment URL or insertion plan approval. |
+| Contracts | BLOCKED | No deployment URL or insertion plan approval. |
+| Packages | BLOCKED | No deployment URL or insertion plan approval. |
+| Deliverables list | BLOCKED | No deployment URL or insertion plan approval. |
+| Kanban board | BLOCKED | No deployment URL or insertion plan approval. |
+| Status transition behavior | BLOCKED | No deployment URL, insertion plan approval, or credentials. |
 | Audit evidence | BLOCKED | No status transition was executed. |
-| SLA display | BLOCKED | No preview/staging URL. |
-| Tenant/client isolation | BLOCKED | No preview/staging URL or credentials. |
-| Denied client viewer access | BLOCKED | No preview/staging URL or credentials. |
-| RTL | BLOCKED | No preview/staging URL. |
-| Mobile | BLOCKED | No preview/staging URL. |
+| SLA display | BLOCKED | No deployment URL or insertion plan approval. |
+| Tenant/client isolation | BLOCKED | No deployment URL, insertion plan approval, or credentials. |
+| Denied client viewer access | BLOCKED | No deployment URL or credentials. |
+| RTL | BLOCKED | No deployment URL. |
+| Mobile | BLOCKED | No deployment URL. |
 
 ## Stop Decision
 
 Execution stopped before hosted mutation, deployment, credential generation, and smoke checks.
 
-Unblock requirements:
+Next execution requirements:
 
-1. Owner provides or selects a Supabase target whose count-only preflight proves 0 real users, 0 real clients, 0 non-approved fixture data, and disabled public signup.
-2. Owner confirms the exact Supabase target after those checks pass.
-3. Vercel Preview/Staging environment variables are configured for the confirmed non-production Supabase target.
-4. Owner confirms the exact Vercel preview/staging target after read-only env/deployment preflight passes.
+1. Review and approve the workbook-to-Sharik mapping and the exact row subset.
+2. Confirm whether insertion should create a new internal-trial client/contract/package or attach to existing UAT records.
+3. Prepare the minimum hosted insertion/seed plan using existing scoped/audited write paths.
+4. Confirm Vercel internal-test deployment path and env boundary.
+5. Generate credentials only after the above and deliver them outside GitHub/docs/logs/chat/screenshots.
 
 ## Result
 

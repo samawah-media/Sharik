@@ -4,7 +4,7 @@
 
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/
 
-**Tests**: Operational smoke checks are required only after confirmed preview/staging target and credentials exist. Current execution stops before smoke checks.
+**Tests**: Operational smoke checks are required only after mapping approval, minimum hosted insertion/deploy approval, deployment URL, and credentials exist. Current execution stops before hosted mutation and smoke checks.
 
 **Organization**: Tasks are grouped by user story to enable independent review.
 
@@ -34,11 +34,11 @@
 
 - [x] T009 [US1] Inspect Supabase linked project metadata without secret output
 - [x] T010 [US1] Inspect Supabase hosted schema table names without row values
-- [ ] T011 [US1] Verify Supabase hosted counts for auth users, clients, and non-approved data
+- [x] T011 [US1] Verify Supabase hosted counts for auth users, clients, and non-approved data; owner later accepted this UAT target for internal R-006 only
 - [ ] T012 [US1] Verify Supabase public signup is disabled
 - [x] T013 [US1] Inspect Vercel linked project and env scope without values
 - [x] T014 [US1] Inspect Vercel deployment list and confirm no preview/staging target is available
-- [x] T015 [US1] Stop before mutation because target preflight is blocked
+- [x] T015 [US1] Stop before mutation because mapping and exact hosted insertion/deploy plan require review
 
 ---
 
@@ -78,6 +78,15 @@
 - [x] T029 Run `npm run secret:scan`
 - [x] T030 Run `git diff --check`
 
+## Phase 7: Owner Decision Update & Workbook Mapping
+
+- [x] T031 Record owner authorization for `sharik-uat` internal UAT despite previous users/data
+- [x] T032 Record owner authorization for local workbook source use without printing sensitive row content
+- [x] T033 Inspect workbook structure locally and record only row counts, headers, date ranges, and mapping rules
+- [x] T034 Prepare proposed mapping to client, contract/package, package lines, deliverables, due dates/SLA, owner, and status fields
+- [x] T035 Re-run `npm run secret:scan` after the decision/mapping docs update
+- [x] T036 Re-run `git diff --check` after the decision/mapping docs update
+
 ## Dependencies & Execution Order
 
 - Phase 1 must complete before target preflight.
@@ -90,5 +99,5 @@
 
 1. Establish execution package and baseline.
 2. Run non-secret target preflight.
-3. Stop on any target ambiguity.
-4. Resume only after secure Supabase DB preflight access and Vercel preview/staging env confirmation.
+3. Stop before hosted mutation until mapping and row subset are reviewed.
+4. Resume only after minimum-scope hosted insertion/deploy approval and credential delivery outside GitHub/docs/logs/chat/screenshots.

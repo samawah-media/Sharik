@@ -7,12 +7,14 @@ Date: 2026-07-02
 | Field | Value |
 |---|---|
 | Decision | GO for non-production internal online trial only |
+| Supabase UAT update | `sharik-uat` / `jnvuccapgsabrwwkxnbh` is owner-authorized as the internal R-006 trial target despite existing users/data. |
 | Production Supabase | Forbidden |
-| Vercel production deployment/alias | Forbidden |
-| Real client data | Forbidden |
+| Vercel deployment update | Owner-authorized for internal testing only; it is not Production acceptance. |
+| Real client data | Unauthorized real client data remains forbidden; the named source workbook is owner-authorized internal trial input only. |
 | Public signup | Forbidden |
 | Synthetic emails | `@r006.example.test` only |
 | Credential storage | Outside GitHub/docs/logs/screenshots only |
+| Source workbook content | Do not print sensitive row content in GitHub, docs, comments, screenshots, logs, or chat. |
 
 ## Baseline Contract
 
@@ -27,38 +29,39 @@ Date: 2026-07-02
 
 | Check | Required | Current Status |
 |---|---|---:|
-| Target class | Confirmed non-production | BLOCKED |
-| Candidate target | `sharik-uat` / `jnvuccapgsabrwwkxnbh` | PASS as metadata only |
+| Target class | Owner-authorized internal UAT | PASS |
+| Candidate target | `sharik-uat` / `jnvuccapgsabrwwkxnbh` | PASS by owner decision |
 | Production Supabase | Not used | PASS |
-| Real users | 0 or approved synthetic R-006 only | BLOCKED |
-| Real clients | 0 | BLOCKED |
-| Non-approved fixture data | 0 | BLOCKED |
+| Existing users/data | Accepted for internal trial only | OWNER_AUTHORIZED |
 | Public signup | Disabled | BLOCKED |
-| Hosted migration/seed | Not run until preflight + owner confirmation | PASS |
-| Temporary credentials | Not generated until preflight passes | PASS |
+| Hosted migration/seed | Not run until mapping plan is reviewed and exact insertion path is confirmed | PASS |
+| Temporary credentials | Not generated until the exact hosted execution step is confirmed | PASS |
 
 Mutation rule:
 
 ```text
-Supabase mutation_allowed = false until all Supabase checks pass and owner confirms the exact target.
+Supabase mutation_allowed = false until the workbook-to-Sharik mapping is reviewed and a
+minimum-scope hosted insertion/seed plan is explicitly approved.
 ```
 
 ## Vercel Boundary
 
 | Check | Required | Current Status |
 |---|---|---:|
-| Target class | Preview/staging only | BLOCKED |
+| Target class | Internal testing deployment only; not Production acceptance | OWNER_AUTHORIZED |
 | Linked project | `sharik-platform` | PASS as metadata only |
 | Preview/staging env vars | Present and scoped to Preview/Staging | BLOCKED |
-| Production env/deployments | Not used for R-006 | PASS |
+| Production acceptance | Not allowed | PASS |
 | `vercel --prod` | Not run | PASS |
-| Production alias | Not created or used | PASS |
+| Production alias | Not created or promoted for acceptance | PASS |
 | Trial URL | Preview/staging URL only | BLOCKED |
 
 Deployment rule:
 
 ```text
-No Vercel deployment may run for R-006 until preview/staging env vars are configured and Supabase target preflight passes.
+No Vercel deployment may run in this step. A later deploy must be internal-test only,
+must not be treated as Production acceptance, and must avoid secret/client-content
+exposure in logs, screenshots, comments, or docs.
 ```
 
 ## Credential Boundary
@@ -105,9 +108,10 @@ credential in PR/comment/docs/logs
 ## Out Of Scope
 
 - Production Supabase.
-- Vercel production deployment, alias, or promotion.
-- Real client data.
+- Vercel Production acceptance, merge, or promotion.
+- Unauthorized real client data.
 - Public signup.
-- Hosted seed or migration before preflight and owner confirmation.
+- Printing sensitive workbook row content in GitHub/docs/comments/screenshots/logs/chat.
+- Hosted seed or insertion before mapping review and exact owner approval.
 - Product feature expansion.
 - Files, comments, approvals, drag/drop, AI, social scheduling, billing.

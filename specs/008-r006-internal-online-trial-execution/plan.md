@@ -6,7 +6,7 @@
 
 ## Summary
 
-Start the owner-approved R-006 internal online trial execution package under strict non-production boundaries. The execution verifies the PR #32 `main` baseline, reads R-006 readiness artifacts, checks candidate Supabase and Vercel targets, prepares a synthetic roster, and stops before any mutation/deployment because the current targets are not fully confirmed as safe for R-006 execution.
+Start the owner-approved R-006 internal online trial execution package under strict internal-trial boundaries. The execution verifies the PR #32 `main` baseline, reads R-006 readiness artifacts, checks candidate Supabase and Vercel targets, prepares a synthetic roster, records the owner update authorizing `sharik-uat` despite existing users/data, inspects the authorized local workbook structurally, prepares a workbook-to-Sharik mapping, and stops before hosted mutation/deployment until that mapping and a minimum-scope insertion/deploy plan are reviewed.
 
 ## Technical Context
 
@@ -14,11 +14,11 @@ Start the owner-approved R-006 internal online trial execution package under str
 
 **Primary Dependencies**: Existing dependencies only. No dependency addition is allowed.
 
-**Storage**: Existing hosted Supabase candidate only for read-only preflight. No hosted migration, hosted seed, or account mutation was run.
+**Storage**: Existing hosted Supabase UAT target is owner-authorized for internal R-006 despite existing users/data. No hosted migration, hosted seed, hosted insertion, or account mutation was run.
 
 **Testing**: Operational preflight plus existing local checks as needed: `npm run secret:scan`, `git diff --check`, and future smoke checks only after preview/staging target confirmation.
 
-**Target Platform**: Candidate Supabase project `sharik-uat` and candidate Vercel project `sharik-platform`, both requiring additional confirmation before execution.
+**Target Platform**: Supabase project `sharik-uat` / `jnvuccapgsabrwwkxnbh` for internal UAT by owner decision, and Vercel project `sharik-platform` for internal testing only. Neither implies Production acceptance.
 
 **Project Type**: Full-stack modular monolith plus release execution documentation.
 
@@ -28,12 +28,13 @@ Start the owner-approved R-006 internal online trial execution package under str
 
 - Owner GO is only for non-production internal online trial.
 - No Production Supabase.
-- No Vercel production deployment or production alias.
-- No real client data.
+- No Production acceptance, merge, promotion, or Ready conversion.
+- No unauthorized real client data; the named workbook is allowed only as internal trial source input.
 - No public signup.
-- No seed/migration on hosted target without explicit preflight and owner confirmation.
+- No seed/insertion on hosted target without reviewed mapping and explicit minimum-scope owner confirmation.
 - Synthetic accounts only using `@r006.example.test`.
-- Credentials generated only after target preflight passes and delivered outside GitHub/docs/logs.
+- Credentials generated only after execution-plan approval and delivered outside GitHub/docs/logs/chat/screenshots.
+- No sensitive workbook row content in GitHub/docs/comments/screenshots/logs/chat.
 - No product feature expansion, dependency addition, schema migration, or seed file.
 
 ## Constitution Check
@@ -100,10 +101,11 @@ No credentials.
 | Decision | Rationale | Alternatives |
 |---|---|---|
 | Use `specs/008-r006-internal-online-trial-execution/` | Separates execution from the readiness-only `007` package and reflects the new owner GO decision. | Mutate the readiness package; rejected because the owner requested a separate package. |
-| Treat `sharik-uat` as candidate, not approved | The project name and metadata imply UAT, but data/auth preflight is incomplete without DB password access. | Assume name is sufficient; rejected because R-006 requires explicit preflight. |
-| Treat current Vercel project as blocked | Vercel currently has Production environment variables and Production deployments only. | Use production hosting as in earlier UAT; rejected because R-006 forbids production. |
+| Accept `sharik-uat` for internal UAT by owner update | The owner explicitly authorized this UAT target despite existing users/data. | Require a fresh clean target; superseded by owner decision for internal trial only. |
+| Treat Vercel deploy as internal-test only | The owner authorized Vercel deployment for internal testing, not Production acceptance. | Treat a deploy as release acceptance; rejected. |
 | Prepare account roster only | Credentials must not be generated until target preflight passes. | Generate passwords now; rejected as credential leakage risk and target safety violation. |
-| Do not deploy | Preview/staging target is not confirmed and preview env vars are not configured. | Deploy without env or use production URL; rejected. |
+| Do not deploy in this step | Mapping and hosted insertion/deploy plan must be reviewed first. | Deploy before mapping; rejected. |
+| Do not create a migration for the workbook | Current client, contract, package line, deliverable, due-date, owner, status, progress, and audit tables cover the basic mapping. | Add source-specific tables; rejected as unnecessary V1 scope expansion. |
 
 ## Post-Execution Constitution Check
 

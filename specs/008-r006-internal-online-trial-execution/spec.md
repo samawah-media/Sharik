@@ -4,13 +4,15 @@
 
 **Created**: 2026-07-02
 
-**Status**: Blocked at target preflight; Draft PR #33 is Open / Draft / Preflight Blocked.
+**Status**: Draft PR #33 is Open / Draft. Owner-authorized internal UAT target and workbook mapping are recorded; hosted mutation/deployment remain NOT_RUN pending mapping review and exact execution-plan approval.
 
 **Draft PR**: [#33 R-006 Internal Online Trial Execution - Preflight Blocked](https://github.com/samawah-media/Sharik/pull/33)
 
 **Draft PR creation HEAD**: `2e3fe7e830336e24b56ce078da4af23d8bf98734`
 
 **Input**: User description: "Start R-006 Internal Online Trial Execution as a separate non-production-only package. Owner decision is GO for non-production internal online trial only. Confirm exact non-production Supabase and Vercel targets, run preflight, prepare synthetic internal trial accounts only, deploy or use preview/staging only if target is confirmed non-production, run smoke checks, record evidence without secrets, and stop without production promotion."
+
+**Owner Update - 2026-07-02**: The owner authorizes `sharik-uat` / `jnvuccapgsabrwwkxnbh` as the internal R-006 Supabase target despite existing users/data, authorizes the local workbook `خطة محتوى هدنة - العدد الثاني (1)` as internal source input, and authorizes Vercel deployment for internal testing only, not Production acceptance. Hosted mutation still requires a mapping review and minimum-scope execution plan.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -63,12 +65,13 @@ As the owner, I need trial smoke checks to run only on a confirmed non-productio
 
 ### Edge Cases
 
-- The only available Supabase target is named like UAT but cannot complete data/auth preflight.
+- The only available Supabase target contains previous UAT users/data, but the owner authorizes it for internal R-006 only.
 - The linked local env file is labeled production even though the Supabase project name is UAT.
 - Vercel has only Production environment variables and Production deployments.
 - Supabase hosted count queries require `SUPABASE_DB_PASSWORD` that is not available in the agent environment.
 - A public publishable key is available but the target is not fully confirmed as non-production.
 - A temporary credential would be useful, but generating it before target confirmation would violate the release boundary.
+- The source workbook includes sensitive content rows, links, captions, and approval notes that must not be printed in GitHub, docs, comments, screenshots, logs, or chat.
 
 ## Requirements *(mandatory)*
 
@@ -77,23 +80,26 @@ As the owner, I need trial smoke checks to run only on a confirmed non-productio
 - **FR-001**: Execution MUST run on branch `codex/r006-internal-online-trial-execution`.
 - **FR-002**: Execution MUST verify `origin/main` baseline commit `10fc4a3b4c8f717d284d177906d1f32f5f61976c` before any operational step.
 - **FR-003**: Execution MUST read the R-006 readiness release doc and Spec Kit package before operational action.
-- **FR-004**: Execution MUST use non-production Supabase only.
-- **FR-005**: Execution MUST use Vercel preview/staging only and MUST NOT run `vercel --prod`, create a production alias, or treat production hosting as acceptance.
-- **FR-006**: Execution MUST use synthetic data only and only `@r006.example.test` account emails.
+- **FR-004**: Execution MUST use the owner-authorized internal Supabase UAT target only, not Production Supabase.
+- **FR-005**: Execution MUST treat any Vercel deployment as internal testing only and MUST NOT convert it into Production acceptance, promotion, merge, or Ready-for-review status.
+- **FR-006**: Execution MUST use synthetic trial accounts only with `@r006.example.test` emails and MAY use the owner-authorized workbook as internal source data only.
 - **FR-007**: Execution MUST keep public signup disabled before account creation or trial use can proceed.
-- **FR-008**: Execution MUST NOT run a hosted migration or hosted seed without explicit preflight and owner confirmation for the exact target.
-- **FR-009**: Execution MUST NOT create temporary credentials unless target preflight passes.
+- **FR-008**: Execution MUST NOT run a hosted migration, seed, or source-data insertion without reviewed mapping and explicit minimum-scope owner confirmation.
+- **FR-009**: Execution MUST NOT create temporary credentials unless the mapping/execution path is approved.
 - **FR-010**: Execution MUST NOT record credentials, passwords, hashes, database passwords, access tokens, service-role keys, or secret values in GitHub, docs, comments, screenshots, logs, or final output.
 - **FR-011**: Execution MUST prepare a smoke-check plan for sign-in, product shell, clients, client detail, contracts, packages, deliverables list, Kanban board, status transition behavior, audit evidence, SLA display, tenant/client isolation, denied client viewer access, RTL, and mobile.
-- **FR-012**: Execution MUST stop and report if exact non-production targets cannot be confirmed.
+- **FR-012**: Execution MUST stop and report before hosted mutation if the workbook mapping, row subset, insertion path, or Vercel internal-test boundary is not confirmed.
 - **FR-013**: Execution MUST introduce no product feature expansion, dependency addition, schema migration, or seed file.
 - **FR-014**: Execution MUST record evidence without secrets.
+- **FR-015**: Execution MUST NOT print workbook row content, captions, links, approval notes, or sensitive client/source values in GitHub, docs, comments, screenshots, logs, or chat.
 
 ### Key Entities *(include if feature involves data)*
 
 - **Execution Target**: A candidate hosted service target with name/ref, environment class, and preflight status.
 - **Preflight Check**: A read-only or metadata check proving target safety before mutation.
 - **Synthetic Trial Account Roster**: Planned internal trial personas with fake emails and no credential values.
+- **Authorized Source Workbook**: Local internal source file used only for structural mapping and later minimum-scope insertion if approved.
+- **Workbook-to-Sharik Mapping**: Proposed transformation from workbook headers/rows to client, contract/package, package lines, deliverables, dates/SLA, owners, and statuses.
 - **Smoke Check Result**: A planned or executed status for each required trial surface.
 - **Execution Blocker**: A reason that prevents mutation, deployment, credential generation, or smoke checks.
 
@@ -109,8 +115,8 @@ As the owner, I need trial smoke checks to run only on a confirmed non-productio
 
 ## Assumptions
 
-- The owner GO decision authorizes only non-production internal trial execution and does not waive target preflight.
-- `sharik-uat` is a candidate Supabase target, not an automatically approved target until data/auth preflight passes.
-- Existing Vercel project `sharik-platform` is a candidate project, not an approved target while it has only Production environment variables/deployments.
+- The owner GO decision authorizes only internal trial execution and does not authorize Production acceptance.
+- `sharik-uat` is approved for internal R-006 target selection despite previous users/data, but not for broad mutation without reviewed mapping.
+- Existing Vercel project `sharik-platform` is approved only as an internal-test deployment target after the exact deployment path is confirmed.
 - Credential delivery, if later unblocked, will happen through an owner-approved channel outside GitHub/docs/logs.
-- Resuming execution requires secure Supabase DB preflight access and confirmation of a Vercel Preview/Staging target; no trial URL or credentials exist while PR #33 remains preflight-blocked.
+- Resuming execution requires mapping approval, exact row subset selection, a minimum-scope hosted insertion plan, and a Vercel internal-test boundary; no trial URL or credentials exist while PR #33 remains Draft/HOLD.

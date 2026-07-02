@@ -1,6 +1,6 @@
 # Project Progress
 
-Last updated: 2026-07-01
+Last updated: 2026-07-02
 
 ## Current Execution Gate
 
@@ -8,13 +8,53 @@ Last updated: 2026-07-01
 |---|---|
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
-| Feature | R-006 Internal Online Trial Readiness |
-| Worktree | `codex/r006-internal-online-trial-readiness` |
-| Branch | `codex/r006-internal-online-trial-readiness` from post-F-005 `origin/main` |
-| Current allowed stage | Readiness docs, checklist, evidence, full baseline quality gate, non-production boundary definition, and synthetic data plan only |
-| Status | R-006 baseline readiness is locally verified from `1bc9e74af87959a053937e373d1d34ffcc6e2b65`. Spec Kit package exists under `specs/007-r006-internal-online-trial-readiness/`; release doc exists at `docs/08-release/R-006-internal-online-trial-readiness.md`; full baseline quality gate passed. No online trial, hosted mutation, Production Supabase, production deployment, real client data, temporary credentials, public signup change, dependency change, or product feature expansion was introduced. |
-| Next gate | Owner review of R-006 readiness. A separate explicit owner go/no-go is required before any internal online trial execution. |
-| Owner decision required | Approve or reject a later internal online trial execution package, including exact non-production Supabase/Vercel target boundaries and out-of-GitHub credential handling. |
+| Feature | R-006 Internal Online Trial Execution |
+| Worktree | `codex/r006-internal-online-trial-execution` |
+| Branch | `codex/r006-internal-online-trial-execution` from PR #32 `origin/main` |
+| Current allowed stage | Non-production target preflight and execution evidence only; no hosted mutation/deployment until exact targets pass preflight and owner confirmation. |
+| Status | R-006 execution started from `10fc4a3b4c8f717d284d177906d1f32f5f61976c` and is BLOCKED at target preflight. Supabase candidate `sharik-uat` exists but hosted data/auth preflight requires secure DB password access. Vercel project `sharik-platform` has Production env/deployments only and no confirmed Preview/Staging target. No trial URL, credentials, hosted seed, hosted migration, deployment, production promotion, public signup, real client data, dependency change, or product feature expansion was introduced. |
+| Next gate | Secure Supabase count-only preflight access and Vercel Preview/Staging env confirmation, followed by explicit owner confirmation of exact targets. |
+| Owner decision required | Confirm exact Supabase/Vercel non-production targets after preflight, or provide secure access needed to complete preflight outside GitHub/docs/logs. |
+
+## R-006 Internal Online Trial Execution - 2026-07-02
+
+Baseline:
+
+- Started from PR #32 `origin/main` commit `10fc4a3b4c8f717d284d177906d1f32f5f61976c`.
+- Active branch: `codex/r006-internal-online-trial-execution`.
+- Readiness package reviewed before operational action: `specs/007-r006-internal-online-trial-readiness/`.
+- Execution package created under `specs/008-r006-internal-online-trial-execution/`.
+
+Preflight result:
+
+- Supabase candidate metadata: `sharik-uat`, ref `jnvuccapgsabrwwkxnbh`, region `eu-west-1`, `ACTIVE_HEALTHY`.
+- Supabase table-name read-only query passed without row values.
+- Supabase data/auth preflight is blocked because hosted count query requires secure `SUPABASE_DB_PASSWORD`; no password was available or printed.
+- Vercel linked project is `sharik-platform`.
+- Vercel env names are scoped to Production only.
+- Vercel listed deployments are Production environment only.
+
+Stop decision:
+
+- No hosted migration.
+- No hosted seed.
+- No hosted account creation.
+- No temporary credentials generated.
+- No Vercel deployment.
+- No preview/staging trial URL issued.
+- All requested smoke checks are blocked until exact non-production targets are confirmed.
+
+Synthetic roster prepared without credentials:
+
+- `tenant-admin@r006.example.test`
+- `account-manager@r006.example.test`
+- `client-viewer-a@r006.example.test`
+- `client-viewer-b@r006.example.test`
+
+Evidence:
+
+- Execution release doc: `docs/08-release/R-006-internal-online-trial-execution.md`.
+- Evidence file: `specs/008-r006-internal-online-trial-execution/evidence/verification.md`.
 
 ## R-006 Internal Online Trial Readiness - 2026-07-01
 

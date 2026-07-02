@@ -48,13 +48,26 @@ The owner decision is GO for a non-production internal online trial only. This p
 |---|---|
 | PR #33 | Open / Draft / Mergeable |
 | CI | `quality` passed |
-| CodeRabbit | Status passed; no review or inline comments were present, and the single issue comment had no detected blocker marker. |
+| CodeRabbit | Status passed; review was skipped because PR #33 is Draft. No GitHub review or inline comments were present, and the single issue comment had no detected blocker marker. |
 | Supabase read-only count preflight | BLOCKED: aggregate counts found 5 auth users outside `@r006.example.test` plus existing public operational data. |
 | Supabase public signup status | BLOCKED: no safe read-only status surface was available; no signup attempt was made. |
 | Supabase local linked ref | `jnvuccapgsabrwwkxnbh` |
 | Vercel env scope | BLOCKED: preview envs are empty, branch preview envs are empty, custom `staging` is not found, and listed envs are Production-only. |
 | Vercel deployments | BLOCKED: preview deployments are empty; listed deployments are Production-only. |
 | Gate decision | HOLD: keep PR #33 Draft and do not start trial. |
+
+## Owner Decision Gate - 2026-07-02
+
+PR #33 remains Draft/HOLD. The only safe next owner choices are:
+
+| Option | Safe path | Still prohibited until separately approved |
+|---|---|---|
+| A | Provide a fresh, clean Supabase non-production target for R-006, then rerun count-only/public-signup preflight. | Hosted migration, seed, account creation, credential generation, trial start. |
+| B | Explicitly authorize cleanup/isolation of `sharik-uat` after confirming the existing hosted data is not real client data. | Cleanup or isolation without exact target-specific authorization and a no-real-client-data confirmation. |
+| C | Keep PR #33 Draft/HOLD until both Supabase and Vercel targets are confirmed safe. | Ready-for-review conversion, merge, trial URL, credentials. |
+| D | Prepare Vercel Preview/Staging target metadata/env boundary only. | Deploy, alias, production promotion, trial start, trial URL. |
+
+Generic approval does not waive the exact-target gate. Any hosted cleanup, mutation, deployment, credential generation, or trial execution still requires a separate exact-target owner instruction.
 
 ## Supabase Target Status
 

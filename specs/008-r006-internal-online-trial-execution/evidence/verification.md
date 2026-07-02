@@ -48,7 +48,7 @@ Date: 2026-07-02
 | EXEC-012 | `npm run secret:scan` | PASS | No high-confidence secrets found. |
 | EXEC-013 | `git diff --check` | PASS | No whitespace errors; CRLF working-copy warnings only. |
 | EXEC-014 | GitHub PR #33 live check | PASS | PR #33 was Open, Draft, mergeable, and pointed to draft-creation HEAD `2e3fe7e830336e24b56ce078da4af23d8bf98734` before this handoff update. |
-| EXEC-015 | GitHub PR #33 follow-up live check | PASS | PR #33 remained Open, Draft, and mergeable; `quality` and `CodeRabbit` were passing; no review or inline comments were present. |
+| EXEC-015 | GitHub PR #33 follow-up live check | PASS | PR #33 remained Open, Draft, and mergeable at HEAD `8a85bb7fbb67355b0edbd38dd221e3393a4ffd30` before this decision-gate documentation refresh. `quality` passed. CodeRabbit status passed, but `gh pr checks` reports `Review skipped: draft pull request`; no GitHub review or inline comments were present. |
 | EXEC-016 | CodeRabbit comment marker check | PASS | One CodeRabbit issue comment was present; no blocker/actionable marker was detected without printing the comment body. |
 | EXEC-017 | Secure Supabase access presence check | BLOCKED | Secure DB preflight access was not present in the Codex process; no secret values were printed. |
 | EXEC-018 | Supabase local link check | PASS | Local linked ref is `jnvuccapgsabrwwkxnbh`. |
@@ -112,6 +112,19 @@ PR #33 remains HOLD / Draft because target preflight remains blocked:
 - Vercel has no confirmed Preview/Staging env or deployment target; environment variables and deployments remain Production-only.
 
 The online trial did not start.
+
+## Owner Decision Gate
+
+PR #33 remains Draft/HOLD until the owner selects one safe blocker-resolution path and any required preflight passes:
+
+| Option | Decision | Next safe action | Not authorized by this evidence |
+|---|---|---|---|
+| A | Fresh Supabase target | Provide a new clean non-production Supabase project/ref, then rerun read-only count/public-signup preflight. | Hosted migration, seed, account creation, credentials, trial start. |
+| B | Authorized cleanup/isolation | Confirm the current `sharik-uat` data is not real client data and provide exact authorization for cleanup or isolation. | Any cleanup/isolation without exact target-specific approval. |
+| C | Hold | Keep PR #33 Draft/HOLD until Supabase and Vercel targets are both safe. | Ready-for-review conversion, merge, trial URL, credentials. |
+| D | Vercel target only | Configure or identify Preview/Staging target metadata/env boundary only. | Deploy, alias, production promotion, trial start, trial URL. |
+
+No trial URL, credentials, hosted seed, hosted migration, hosted cleanup, account creation, Vercel deploy, alias, promotion, Ready-for-review conversion, or merge request was performed.
 
 ## Synthetic Account Preparation
 

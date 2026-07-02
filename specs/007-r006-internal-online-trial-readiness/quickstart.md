@@ -19,15 +19,16 @@ Merge pull request #29 from samawah-media/codex/f-005-ux-rescue-product-shell
 
 ## Full Baseline Quality Gate
 
-Run from:
+Run from the repository root. To confirm the current root:
 
-```text
-D:\code - projects\sharik-worktrees\r006-internal-online-trial-readiness
+```powershell
+git rev-parse --show-toplevel
 ```
 
 Commands:
 
 ```powershell
+npm ci
 npm run lint
 npm run typecheck
 npm run test:unit
@@ -37,6 +38,7 @@ npm run test:component
 npm run test:e2e
 npm run secret:scan
 npm run build
+git diff --check
 ```
 
 Record results in:

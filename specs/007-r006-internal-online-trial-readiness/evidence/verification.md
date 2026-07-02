@@ -9,7 +9,7 @@ Date: 2026-07-01
 | Source branch | `origin/main` |
 | Required baseline | `1bc9e74af87959a053937e373d1d34ffcc6e2b65` |
 | Baseline commit message | `Merge pull request #29 from samawah-media/codex/f-005-ux-rescue-product-shell` |
-| Worktree | `D:\code - projects\sharik-worktrees\r006-internal-online-trial-readiness` |
+| Worktree | `codex/r006-internal-online-trial-readiness` |
 | Branch | `codex/r006-internal-online-trial-readiness` |
 
 ## Scope Guard

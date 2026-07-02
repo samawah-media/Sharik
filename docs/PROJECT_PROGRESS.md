@@ -9,7 +9,7 @@ Last updated: 2026-07-01
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
 | Feature | R-006 Internal Online Trial Readiness |
-| Worktree | `D:\code - projects\sharik-worktrees\r006-internal-online-trial-readiness` |
+| Worktree | `codex/r006-internal-online-trial-readiness` |
 | Branch | `codex/r006-internal-online-trial-readiness` from post-F-005 `origin/main` |
 | Current allowed stage | Readiness docs, checklist, evidence, full baseline quality gate, non-production boundary definition, and synthetic data plan only |
 | Status | R-006 baseline readiness is locally verified from `1bc9e74af87959a053937e373d1d34ffcc6e2b65`. Spec Kit package exists under `specs/007-r006-internal-online-trial-readiness/`; release doc exists at `docs/08-release/R-006-internal-online-trial-readiness.md`; full baseline quality gate passed. No online trial, hosted mutation, Production Supabase, production deployment, real client data, temporary credentials, public signup change, dependency change, or product feature expansion was introduced. |
@@ -22,7 +22,7 @@ Baseline:
 
 - Started from post-F-005 `origin/main` commit `1bc9e74af87959a053937e373d1d34ffcc6e2b65`.
 - F-005 PR #29 is merged and is the official UI baseline.
-- Active worktree: `D:\code - projects\sharik-worktrees\r006-internal-online-trial-readiness`.
+- Active worktree identifier: `codex/r006-internal-online-trial-readiness`.
 
 Scope prepared:
 

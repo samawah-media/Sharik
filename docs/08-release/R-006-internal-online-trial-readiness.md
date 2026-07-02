@@ -97,7 +97,7 @@ R-006 defines this plan only. It does not add a seed file and does not apply dat
 | R006-007 | Vercel target | Future target is preview/staging only |
 | R006-008 | Secret handling | No secrets, passwords, tokens, hashes, or database passwords in GitHub/logs/screenshots |
 | R006-009 | Synthetic plan | Uses fake names and `@r006.example.test` only |
-| R006-010 | Current UAT scope | Sign-in, product shell, clients, contracts, packages, deliverables, Kanban, audit, SLA, RTL/mobile only |
+| R006-010 | Current UAT scope | Sign-in, product shell, clients, client detail, contracts, packages, deliverables list, Kanban board, status transition behavior, audit evidence, SLA display, tenant/client isolation, denied client viewer access, RTL, and mobile |
 | R006-011 | Client denial | Client viewer cannot access internal Kanban |
 | R006-012 | Rollback | Future trial includes credential revocation and fixture cleanup |
 

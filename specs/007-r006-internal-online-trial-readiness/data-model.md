@@ -15,7 +15,8 @@ R-006 introduces no persisted application data model, no migration, and no seed.
 Validation rules:
 
 - Every required command must have a recorded result before PR handoff.
-- A failed or blocked security, RLS, build, or secret-scan command blocks online trial readiness.
+- Required baseline commands include `npm ci`, `npm run lint`, `npm run typecheck`, `npm run test:unit`, `npm run test:integration`, `npm run test:rls`, `npm run test:component`, `npm run test:e2e`, `npm run secret:scan`, `npm run build`, and `git diff --check`.
+- Any failed or blocked required baseline command blocks readiness/go and prevents online trial execution.
 
 ## Non-Production Supabase Boundary
 

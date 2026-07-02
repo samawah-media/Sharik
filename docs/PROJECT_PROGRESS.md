@@ -2,6 +2,22 @@
 
 Last updated: 2026-07-02
 
+## Latest R-006 Execution Update - 2026-07-02
+
+This section supersedes the older R-006 blocked/preflight notes below for the current PR #33 state.
+
+- Owner-authorized internal UAT executed using the Hadna workbook, Supabase UAT `sharik-uat` / `jnvuccapgsabrwwkxnbh`, and temporary Vercel UAT hosting.
+- Imported the 52-row forward Hadna block into scoped UAT records: 1 client, 1 contract, 1 package, 5 package lines, 52 deliverables, 4 synthetic users, and 56 audit events.
+- Added F006 client-portal commercial read RLS policies requiring active client membership and active client-scoped role assignment.
+- Hosted RLS database test passed for the new commercial read policies.
+- Vercel deployment URL: `https://sharik-platform-75fkv7kjc-omarhussien2s-projects.vercel.app`.
+- Temporary smoke URL: `https://sharik-platform.vercel.app`, promoted to the same deployment for internal UAT.
+- Web smoke passed for tenant admin login, client viewer login, management/client visibility, basic isolation, RTL, and mobile.
+- Supabase data smoke passed: admin and viewer A see 1 client, 1 package, and 52 deliverables; viewer B sees 0 clients.
+- No existing UAT data was deleted.
+- No workbook row content, links, captions, screenshots, credentials, tokens, or sensitive values were recorded.
+- PR #33 remains Draft/Open and must not be merged without separate owner authorization.
+
 ## Current Execution Gate
 
 | Item | Value |

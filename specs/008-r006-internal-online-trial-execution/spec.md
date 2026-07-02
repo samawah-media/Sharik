@@ -1,5 +1,7 @@
 # Feature Specification: R-006 Internal Online Trial Execution
 
+> 2026-07-02 execution update: This spec package now has executed UAT evidence for the owner-authorized Hadna-only run. Older scenarios that describe deployment/smoke as blocked are historical pre-authorization notes unless repeated in `evidence/verification.md` as open risks.
+
 **Feature Branch**: `codex/r006-internal-online-trial-execution`
 
 **Created**: 2026-07-02

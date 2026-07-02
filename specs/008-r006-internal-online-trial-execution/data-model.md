@@ -1,5 +1,7 @@
 # Data Model: R-006 Internal Online Trial Execution
 
+> 2026-07-02 execution update: The owner-authorized Hadna-only import has been executed on UAT. Current created-data counts and smoke evidence live in `evidence/verification.md`; earlier `NOT_RUN` notes are historical pre-authorization context.
+
 R-006 execution introduces no application data model, no migration, and no seed in this step. The entities below describe execution records, planned synthetic accounts, and the owner-authorized internal source workbook mapping boundary.
 
 ## Execution Target

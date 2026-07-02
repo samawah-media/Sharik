@@ -1,5 +1,7 @@
 # Quickstart: R-006 Internal Online Trial Execution
 
+> 2026-07-02 execution update: R-006 Hadna UAT has already been inserted, deployed, and smoke-tested. Use this file only as historical resume context; use `evidence/verification.md` for the current state and remaining risks.
+
 This quickstart is the safe resume guide for R-006 execution. The current run is blocked before hosted mutation, deployment, credentials, and smoke checks.
 
 ## 1. Verify Baseline

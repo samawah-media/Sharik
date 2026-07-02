@@ -1,5 +1,7 @@
 # Implementation Plan: R-006 Internal Online Trial Execution
 
+> 2026-07-02 execution update: Owner authorization superseded the earlier hosted-mutation hold for the Hadna-only internal UAT run. Hosted insertion, F006 RLS policy remediation, Vercel deployment/promotion, and smoke checks have completed. See `evidence/verification.md` for current results.
+
 **Branch**: `codex/r006-internal-online-trial-execution` | **Date**: 2026-07-02 | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `specs/008-r006-internal-online-trial-execution/spec.md`

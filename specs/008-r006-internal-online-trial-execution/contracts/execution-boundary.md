@@ -1,5 +1,7 @@
 # R-006 Execution Boundary Contract
 
+> 2026-07-02 execution update: The owner-authorized Hadna-only UAT run is complete. Earlier BLOCKED smoke rows are historical pre-authorization contract targets; current pass/open status is recorded in `../evidence/verification.md`.
+
 Date: 2026-07-02
 
 ## Owner Decision

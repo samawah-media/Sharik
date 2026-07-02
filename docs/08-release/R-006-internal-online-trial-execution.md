@@ -15,7 +15,7 @@ The owner decision is GO for a non-production internal online trial only. This p
 | GitHub live status | Mergeable, not merged |
 | Branch | `codex/r006-internal-online-trial-execution` |
 | Draft PR creation HEAD | `2e3fe7e830336e24b56ce078da4af23d8bf98734` |
-| Current live HEAD | `ea3512f4be0164bb13c5e711936251c8d4f1deb7` |
+| Live HEAD checked before this refresh | `ea3512f4be0164bb13c5e711936251c8d4f1deb7` |
 | Trial URL | None issued |
 | Credentials | None generated or recorded |
 

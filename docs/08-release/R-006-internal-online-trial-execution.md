@@ -4,7 +4,7 @@
 
 BLOCKED AT TARGET PREFLIGHT - NO TRIAL URL ISSUED - NO HOSTED MUTATION - NO CREDENTIALS GENERATED
 
-The owner decision is GO for a non-production internal online trial only. This package started the execution branch and preflight, then stopped because the exact non-production Supabase and Vercel targets are not fully confirmed.
+The owner decision is GO for a non-production internal online trial only. This package started the execution branch and preflight, then stopped because the candidate Supabase target is not clean for R-006 and the Vercel project still has no confirmed Preview/Staging env or deployment target.
 
 ## Draft PR Handoff
 
@@ -49,10 +49,11 @@ The owner decision is GO for a non-production internal online trial only. This p
 | PR #33 | Open / Draft / Mergeable |
 | CI | `quality` passed |
 | CodeRabbit | Status passed; no review or inline comments were present, and the single issue comment had no detected blocker marker. |
-| Supabase secure DB preflight access | Not present in the Codex process; count/auth/signup checks remain blocked. |
+| Supabase read-only count preflight | BLOCKED: aggregate counts found 5 auth users outside `@r006.example.test` plus existing public operational data. |
+| Supabase public signup status | BLOCKED: no safe read-only status surface was available; no signup attempt was made. |
 | Supabase local linked ref | `jnvuccapgsabrwwkxnbh` |
-| Vercel env scope | Production only |
-| Vercel deployments | Production only |
+| Vercel env scope | BLOCKED: preview envs are empty, branch preview envs are empty, custom `staging` is not found, and listed envs are Production-only. |
+| Vercel deployments | BLOCKED: preview deployments are empty; listed deployments are Production-only. |
 | Gate decision | HOLD: keep PR #33 Draft and do not start trial. |
 
 ## Supabase Target Status
@@ -66,23 +67,24 @@ region: eu-west-1
 status: ACTIVE_HEALTHY
 ```
 
-This is a candidate only. It is not approved for R-006 mutation because hosted data/auth preflight did not complete.
+This is a candidate only. It is not approved for R-006 mutation because hosted data/auth preflight found existing non-R-006 data.
 
-The follow-up gate refresh found no secure DB preflight access in the Codex process. No hosted count query, auth inspection, signup inspection, migration, seed, account creation, or credential generation was attempted.
+The follow-up gate refresh ran read-only aggregate hosted queries. No row values, emails, hosted migration, seed, account creation, signup attempt, credential generation, or secret values were printed or recorded.
 
 Blocked checks:
 
-- auth users count
-- non-R006 auth users count
-- clients count
-- non-R006 clients count
-- public signup disabled
+- auth users count: 5 users
+- non-R006 auth users count: 5 users outside `@r006.example.test`
+- clients count: 2 clients
+- non-approved fixture data: 1 tenant, 2 contracts, 2 packages, 2 package lines, 7 deliverables, and 3 audit events
+- public signup disabled: not verified through a safe read-only surface
 
 Reason:
 
 ```text
-Supabase hosted count query requested SUPABASE_DB_PASSWORD.
-No database password was available or printed.
+The candidate contains existing non-R-006 hosted users and public operational data.
+R-006 requires 0 real users, 0 real clients, and 0 non-approved fixture data before any mutation or trial.
+Public signup status still needs safe read-only confirmation.
 ```
 
 ## Vercel Target Status
@@ -95,14 +97,17 @@ project: sharik-platform
 
 Blocked checks:
 
-- Preview/Staging env vars are not configured.
+- Preview env vars are not configured.
+- Branch-scoped preview env vars for `codex/r006-internal-online-trial-execution` are not configured.
+- Custom `staging` environment is not found.
 - Current env names are scoped to Production only.
+- Preview deployments are empty.
 - Listed deployments are Production environment only.
 - No preview/staging trial URL exists.
 
 No Vercel deployment command was run.
 
-The follow-up gate refresh rechecked Vercel read-only metadata. Environment variables and listed deployments remain Production-only, so no Preview/Staging target is confirmed for R-006.
+The follow-up gate refresh rechecked Vercel read-only metadata. The project is linked, but no Preview/Staging target is confirmed for R-006.
 
 ## Synthetic Account Preparation
 
@@ -155,12 +160,11 @@ Reason: there is no confirmed preview/staging deployment URL and no generated cr
 
 Before resuming R-006 execution:
 
-1. Provide secure Supabase DB preflight access outside GitHub/docs/logs/chat/screenshots.
-2. Verify count-only preflight and public signup disabled.
-3. Owner confirms the exact Supabase target after preflight passes.
-4. Configure Vercel Preview/Staging env vars only for the confirmed non-production target.
-5. Owner confirms the exact Vercel preview/staging target.
-6. Generate credentials only after the above, and deliver them outside GitHub/docs/logs/chat/screenshots.
+1. Provide or select a Supabase target whose count-only preflight proves 0 real users, 0 real clients, 0 non-approved fixture data, and disabled public signup.
+2. Owner confirms the exact Supabase target after preflight passes.
+3. Configure Vercel Preview/Staging env vars only for the confirmed non-production target.
+4. Owner confirms the exact Vercel preview/staging target after env/deployment preflight passes.
+5. Generate credentials only after the above, and deliver them outside GitHub/docs/logs/chat/screenshots.
 
 Evidence is recorded in:
 

@@ -15,10 +15,10 @@ Last updated: 2026-07-02
 | PR status | Draft / Open / Preflight Blocked; GitHub live check reports mergeable. |
 | Draft PR creation HEAD | `2e3fe7e830336e24b56ce078da4af23d8bf98734` |
 | Current allowed stage | Non-production target preflight and execution evidence only; no hosted mutation/deployment until exact targets pass preflight and owner confirmation. |
-| Status | R-006 execution started from `10fc4a3b4c8f717d284d177906d1f32f5f61976c` and is BLOCKED at target preflight. Supabase candidate `sharik-uat` exists but hosted data/auth preflight requires secure DB password access. Vercel project `sharik-platform` has Production env/deployments only and no confirmed Preview/Staging target. No trial URL, credentials, hosted seed, hosted migration, deployment, production promotion, public signup, real client data, dependency change, or product feature expansion was introduced. |
-| Latest preflight refresh | 2026-07-02: PR #33 live remains Draft/Open/MERGEABLE with `quality` and `CodeRabbit` passing. No review or inline comments were present; one CodeRabbit issue comment was present with no detected blocker marker. Secure Supabase DB preflight access was not present in the Codex process, so count/auth/signup checks remained blocked. Vercel env/deployments remained Production-only. |
-| Next gate | Secure Supabase count-only preflight access and Vercel Preview/Staging env confirmation, followed by explicit owner confirmation of exact targets. |
-| Owner decision required | Confirm exact Supabase/Vercel non-production targets after preflight, or provide secure access needed to complete preflight outside GitHub/docs/logs. |
+| Status | R-006 execution started from `10fc4a3b4c8f717d284d177906d1f32f5f61976c` and remains BLOCKED at target preflight. Supabase candidate `sharik-uat` exists, but read-only aggregate counts found existing non-R-006 auth users and public operational data. Vercel project `sharik-platform` is linked, but Preview envs are empty, custom `staging` is not found, and listed env/deployments remain Production-only. No trial URL, credentials, hosted seed, hosted migration, deployment, production promotion, public signup, real client data, dependency change, or product feature expansion was introduced. |
+| Latest preflight refresh | 2026-07-02: PR #33 live remains Draft/Open/MERGEABLE with `quality` and `CodeRabbit` passing. No review or inline comments were present; one CodeRabbit issue comment was present with no detected blocker marker. Supabase count preflight BLOCKED because the candidate has 5 auth users outside `@r006.example.test`, 2 clients, and existing tenant/contract/package/deliverable/audit rows. Public signup status remains BLOCKED because no safe read-only status surface was available. Vercel Preview/Staging preflight BLOCKED because preview envs/deployments are empty and env/deployment listings remain Production-only. |
+| Next gate | Provide or select a clean Supabase target that passes count-only preflight and public-signup verification, configure/confirm Vercel Preview/Staging env/deployment target, then obtain explicit owner confirmation of exact targets. |
+| Owner decision required | Confirm a clean Supabase non-production target after preflight passes and confirm a Vercel Preview/Staging target after read-only env/deployment preflight passes. |
 
 ## R-006 Internal Online Trial Execution - 2026-07-02
 
@@ -37,10 +37,13 @@ Preflight result:
 - Supabase candidate metadata: `sharik-uat`, ref `jnvuccapgsabrwwkxnbh`, region `eu-west-1`, `ACTIVE_HEALTHY`.
 - Supabase local linked ref remains `jnvuccapgsabrwwkxnbh`.
 - Supabase table-name read-only query passed without row values.
-- Supabase data/auth preflight is blocked because hosted count query requires secure `SUPABASE_DB_PASSWORD`; no password was available or printed.
+- Supabase auth count preflight BLOCKED: 5 auth users exist and all are outside `@r006.example.test`.
+- Supabase public data preflight BLOCKED: aggregate counts found 1 tenant, 2 clients, 2 contracts, 2 packages, 2 package lines, 7 deliverables, and 3 audit events.
+- Supabase public signup status remains BLOCKED because no safe read-only status surface was available; no signup attempt was made.
 - Vercel linked project is `sharik-platform`.
-- Vercel env names are scoped to Production only.
-- Vercel listed deployments are Production environment only.
+- Vercel Preview env names are empty, branch-scoped Preview env names are empty, and custom `staging` is not found.
+- Vercel env names are otherwise scoped to Production only.
+- Vercel Preview deployments are empty; listed deployments are Production environment only.
 - Follow-up PR #33 live check on 2026-07-02 confirmed Draft/Open/MERGEABLE with `quality` and `CodeRabbit` passing; no CodeRabbit blocker marker was detected.
 
 Stop decision:

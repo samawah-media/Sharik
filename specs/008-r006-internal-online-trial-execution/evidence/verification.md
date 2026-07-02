@@ -54,6 +54,16 @@ Date: 2026-07-02
 | EXEC-018 | Supabase local link check | PASS | Local linked ref is `jnvuccapgsabrwwkxnbh`. |
 | EXEC-019 | `vercel env ls` follow-up | BLOCKED | Vercel env names remain Production-only. |
 | EXEC-020 | `vercel ls` follow-up | BLOCKED | Listed deployments remain Production-only; no Preview/Staging target is confirmed. |
+| EXEC-021 | `npx supabase@2.107.0 projects list --output-format json` refresh | PASS | Candidate project remains `sharik-uat`, ref `jnvuccapgsabrwwkxnbh`, region `eu-west-1`, status `ACTIVE_HEALTHY`, and linked. |
+| EXEC-022 | `npx supabase@2.107.0 db query --linked` auth count preflight | BLOCKED | Read-only aggregate query returned 5 auth users and 5 auth users outside `@r006.example.test`; no row values or emails were printed. |
+| EXEC-023 | `npx supabase@2.107.0 db query --linked` public aggregate counts | BLOCKED | Read-only aggregate query returned existing public data: 1 tenant, 2 clients, 2 contracts, 2 packages, 2 package lines, 7 deliverables, and 3 audit events. |
+| EXEC-024 | Supabase auth config read-only surface check | BLOCKED | Current CLI/help and database metadata did not expose a safe public-signup status read; signup was not tested by attempting signup because that could create an account. |
+| EXEC-025 | `vercel env ls preview --format json` | BLOCKED | Preview env list is empty. |
+| EXEC-026 | `vercel env ls preview codex/r006-internal-online-trial-execution --format json` | BLOCKED | Branch-scoped preview env list is empty. |
+| EXEC-027 | `vercel env ls staging --format json` | BLOCKED | Custom `staging` environment was not found. |
+| EXEC-028 | `vercel env ls --format json` | BLOCKED | All listed env names are scoped to Production only. |
+| EXEC-029 | `vercel ls sharik-platform --environment preview --format json` | BLOCKED | Preview deployment list is empty. |
+| EXEC-030 | `vercel ls sharik-platform --environment production --format json` | PASS | Production deployments exist, but no production deploy, alias, promotion, or trial use was run. |
 
 ## Draft PR Handoff
 
@@ -73,10 +83,10 @@ Date: 2026-07-02
 |---|---|---:|---|
 | Candidate target exists | Non-production candidate | PASS | `sharik-uat` metadata is visible. |
 | Production Supabase not used | No production target | PASS | No production-labeled Supabase target was selected. |
-| Real users count | 0 or approved R-006 synthetic only | BLOCKED | Hosted count query requires secure DB password access. |
-| Real clients count | 0 | BLOCKED | Hosted count query requires secure DB password access. |
-| Non-approved fixture data | 0 | BLOCKED | Hosted count query requires secure DB password access. |
-| Public signup | Disabled | BLOCKED | Not verified. |
+| Real users count | 0 or approved R-006 synthetic only | BLOCKED | Aggregate auth count returned 5 users, all outside `@r006.example.test`. |
+| Real clients count | 0 | BLOCKED | Aggregate public count returned 2 clients. |
+| Non-approved fixture data | 0 | BLOCKED | Aggregate public counts returned existing tenant/client/contract/package/deliverable/audit data, so the target is not clean for R-006. |
+| Public signup | Disabled | BLOCKED | Not verified through a safe read-only surface; no signup attempt was made because it could create an account. |
 | Service role exposure | Not visible in browser/docs/logs | BLOCKED | Browser exposure check requires a confirmed non-production deployment URL; no trial URL exists. Docs/logs were kept free of secret values. |
 | Hosted migration | Not run | PASS | No migration command was run. |
 | Hosted seed | Not run | PASS | No seed command was run. |
@@ -87,18 +97,19 @@ Date: 2026-07-02
 | Check | Expected | Status | Evidence |
 |---|---|---:|---|
 | Candidate project exists | `sharik-platform` | PASS | `.vercel/project.json` and CLI metadata available. |
-| Preview/staging env vars | Present | BLOCKED | `vercel env ls` shows env names in Production only. |
-| Preview/staging deployment | Available or deployable after safe env | BLOCKED | `vercel ls` shows Production deployments only. |
+| Preview/staging env vars | Present | BLOCKED | Preview envs are empty, branch-scoped preview envs are empty, custom `staging` does not exist, and all listed env names are Production-only. |
+| Preview/staging deployment | Available or deployable after safe env | BLOCKED | Preview deployments are empty; listed deployments remain Production target only. |
 | Production deploy | Not run | PASS | No `vercel --prod` or deploy command was run. |
 | Production alias | Not created/used | PASS | No alias command was run. |
 | Trial URL | Preview/staging URL | BLOCKED | No trial URL issued. |
 
 ## Follow-up Gate Decision
 
-PR #33 remains HOLD / Draft because at least one preflight remains blocked:
+PR #33 remains HOLD / Draft because target preflight remains blocked:
 
-- Supabase count/auth/signup checks cannot run without secure DB preflight access delivered outside GitHub/docs/comments/screenshots/logs/chat.
-- Vercel has no confirmed Preview/Staging target; environment variables and deployments remain Production-only.
+- Supabase read-only counts ran, but the target contains non-R-006 auth users and existing public operational data.
+- Supabase public-signup status was not verified through a safe read-only surface.
+- Vercel has no confirmed Preview/Staging env or deployment target; environment variables and deployments remain Production-only.
 
 The online trial did not start.
 
@@ -139,10 +150,10 @@ Execution stopped before hosted mutation, deployment, credential generation, and
 
 Unblock requirements:
 
-1. Secure DB preflight access is provided outside GitHub/docs/logs/chat/screenshots.
-2. Owner confirms the exact Supabase target after count-only preflight proves no real/non-approved data and public signup is disabled.
+1. Owner provides or selects a Supabase target whose count-only preflight proves 0 real users, 0 real clients, 0 non-approved fixture data, and disabled public signup.
+2. Owner confirms the exact Supabase target after those checks pass.
 3. Vercel Preview/Staging environment variables are configured for the confirmed non-production Supabase target.
-4. Owner confirms the exact Vercel preview/staging target.
+4. Owner confirms the exact Vercel preview/staging target after read-only env/deployment preflight passes.
 
 ## Result
 

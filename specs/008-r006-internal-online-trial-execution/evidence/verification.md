@@ -28,7 +28,7 @@ This is not Production acceptance, Ready conversion, PR merge approval, or appro
 | Supabase project | `sharik-uat` |
 | Supabase ref | `jnvuccapgsabrwwkxnbh` |
 | Vercel project | `sharik-platform` |
-| Vercel deployment URL | `https://sharik-platform-3cjhh722s-omarhussien2s-projects.vercel.app` |
+| Vercel deployment URL | `https://sharik-platform-gq8tjtxyj-omarhussien2s-projects.vercel.app` |
 | Smoke URL | `https://sharik-platform.vercel.app` |
 
 Note: the direct deployment URL initially redirected through Vercel SSO. The public project alias was promoted to the same deployment and used for smoke testing.
@@ -151,6 +151,29 @@ After deploying and promoting `https://sharik-platform-3cjhh722s-omarhussien2s-p
 
 No screenshots, credentials, workbook row content, links, captions, tokens, or secret values were recorded.
 
+### Hadna Visibility First Fix Smoke
+
+After the owner reported seeing the Hadna client UUID and an unclear unavailable-resource state, a focused visibility pass was deployed and promoted to the public UAT smoke URL.
+
+Root cause for the visible UUID in the product surface: the management product shell rendered unknown URL path segments as breadcrumb labels. UUID-like `clientId` and `contractId` segments now render as safe Arabic labels such as `العميل` and `العقد` instead of exposing raw IDs in the page chrome.
+
+No hosted DB mutation was applied in this pass. Read-only hosted inspection still shows the Hadna linkage intact. The current hosted client display name remains `Hadna`; changing it to Arabic `هدنة` was not applied because this pass was constrained to visibility/linkage correction and the owner asked not to change hosted data unless needed for linkage.
+
+| Check | Status | Non-sensitive result |
+|---|---:|---|
+| Vercel deploy | PASS | Built deployment `https://sharik-platform-gq8tjtxyj-omarhussien2s-projects.vercel.app`. |
+| Vercel promote | PASS | `https://sharik-platform.vercel.app` points to the new deployment. |
+| Account manager `/clients` | PASS | 1 client card; card title from DB is `Hadna`; no UUID visible in page text; no denial/session state. |
+| Account manager Hadna detail | PASS | 4 operation cards; no UUID visible in page text; no denial/session state. |
+| Account manager Hadna deliverables | PASS | 52 deliverable cards; no UUID visible in page text; no denial/session state. |
+| Client viewer A `/client` | PASS | Client portal loaded for Hadna scope; no denial state. |
+| Client viewer A `/client/commercial` | PASS | 58 safe summary article cards; no denial state. |
+| Viewer B `/client` | PASS | Safe no-assigned-client state; 0 articles; no Hadna name or slug rendered. |
+| Confusing copy removal | PASS | Removed `تجربة داخلية آمنة بدون بيانات عملاء حقيقية` from the management shell. |
+| Client unavailable copy | PASS | Client-scoped management routes now show `لا يمكنك الوصول لهذا العميل`, `تأكد من اختيار عميل مسند لك.`, and `العودة للعملاء`. |
+
+No screenshots were taken to avoid recording workbook-derived deliverable text. No credentials, tokens, workbook row content, links, captions, or secret values were recorded.
+
 ### Supabase Data Smoke
 
 | Check | Status | Non-sensitive result |
@@ -172,6 +195,8 @@ No screenshots, credentials, workbook row content, links, captions, tokens, or s
 | Public alias check | PASS | `https://sharik-platform.vercel.app` returned the current deployment and was used for smoke. |
 | Access fix deploy | PASS | Build completed and produced deployment `https://sharik-platform-3cjhh722s-omarhussien2s-projects.vercel.app`. |
 | Access fix promote | PASS | Public smoke URL was promoted to the access-fix deployment. |
+| Hadna visibility deploy | PASS | Build completed and produced deployment `https://sharik-platform-gq8tjtxyj-omarhussien2s-projects.vercel.app`. |
+| Hadna visibility promote | PASS | Public smoke URL was promoted to the visibility-fix deployment. |
 
 ## Remaining Risks
 
@@ -181,6 +206,7 @@ No screenshots, credentials, workbook row content, links, captions, tokens, or s
 | UAT target had previous non-R-006 data before insertion. | Accepted by owner; no cleanup/deletion performed. |
 | Public signup disabled status was not safely confirmed through a read-only Supabase surface. | Open. No signup attempt was made. |
 | Credentials require out-of-band handoff. | Open. Credentials were created only for internal smoke and not printed. |
+| Hosted client display name is currently `Hadna`, not Arabic `هدنة`. | Open. Not changed in this pass because hosted data changes were limited to linkage-only needs. |
 | PR #33 remains Draft and must not be merged without separate authorization. | Open. |
 
 ## AGENTS Compliance

@@ -44,7 +44,7 @@ test("client URL tampering to another commercial summary is denied without enume
   });
 
   await expect(
-    page.getByRole("heading", { name: "المورد غير متاح" }),
+    page.getByRole("heading", { name: "لا يمكنك الوصول لهذا العميل" }),
   ).toBeVisible();
   await expect(page.getByText("Client B")).toHaveCount(0);
   await expect(page.getByText("client_b")).toHaveCount(0);

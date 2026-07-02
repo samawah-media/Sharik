@@ -22,7 +22,7 @@ test("denies cross-tenant and Client B URL tampering without enumeration leakage
   });
 
   await expect(
-    page.getByRole("heading", { name: "المورد غير متاح" }),
+    page.getByRole("heading", { name: "لا يمكنك الوصول لهذا العميل" }),
   ).toBeVisible();
   await expect(page.getByText("Client B")).toHaveCount(0);
   await expect(page.getByText("tenant_b")).toHaveCount(0);

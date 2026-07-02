@@ -14,7 +14,7 @@ This run used the owner-authorized Hadna workbook, `sharik-uat` Supabase UAT, an
 | PR | `#33` |
 | Supabase project | `sharik-uat` |
 | Supabase ref | `jnvuccapgsabrwwkxnbh` |
-| Vercel deployment URL | `https://sharik-platform-3cjhh722s-omarhussien2s-projects.vercel.app` |
+| Vercel deployment URL | `https://sharik-platform-gq8tjtxyj-omarhussien2s-projects.vercel.app` |
 | Smoke URL | `https://sharik-platform.vercel.app` |
 
 The direct deployment URL was protected by Vercel SSO. The public project alias was promoted to the same deployment for temporary UAT smoke testing.
@@ -58,6 +58,16 @@ Fix applied: `/clients` now allows non-client internal users with at least one a
 
 No hosted DB correction was needed or applied in this pass. No unrelated client data was changed and no rows were deleted.
 
+## Hadna Visibility First Fix - 2026-07-02
+
+Focused fix after owner UAT feedback:
+
+- Hid UUID-like client/contract route segments from management breadcrumbs.
+- Replaced client-unavailable states on client-scoped management routes with: `لا يمكنك الوصول لهذا العميل`, `تأكد من اختيار عميل مسند لك.`, and `العودة للعملاء`.
+- Removed the no-longer-true shell phrase `تجربة داخلية آمنة بدون بيانات عملاء حقيقية`.
+- Deployed `https://sharik-platform-gq8tjtxyj-omarhussien2s-projects.vercel.app` and promoted `https://sharik-platform.vercel.app`.
+- No hosted DB mutation was applied. Current hosted client display name remains `Hadna`; Arabic rename to `هدنة` remains open because this pass avoided hosted data changes unless needed for linkage.
+
 ## Smoke Results
 
 | Check | Status | Result |
@@ -66,6 +76,7 @@ No hosted DB correction was needed or applied in this pass. No unrelated client 
 | Management client/package/deliverables visible | PASS | Groups `[3, 1, 5, 52]`. |
 | Account manager `/clients` access | PASS | Loaded 1 Hadna client card on the public UAT URL. |
 | Account manager Hadna deliverables | PASS | Loaded 52 deliverable cards. |
+| Account manager UUID visibility | PASS | `/clients`, Hadna detail, and Hadna deliverables did not render the Hadna UUID in page text. |
 | Client viewer A login | PASS | Client commercial route loaded. |
 | Client viewer A package/deliverables visible | PASS | Groups `[1, 5, 52]`. |
 | Client viewer B login | PASS | Client portal route loaded. |
@@ -82,6 +93,10 @@ No screenshots were taken.
 |---|---:|
 | `npm run secret:scan` | PASS |
 | `git diff --check` | PASS with CRLF working-copy warnings only |
+| `npm run lint` | PASS |
+| `npm run typecheck` | PASS |
+| `npm run test:unit` | PASS, 24 files / 83 tests |
+| Targeted component tests | PASS, product shell and denial states |
 
 ## Remaining Risks
 
@@ -89,6 +104,7 @@ No screenshots were taken.
 - `sharik-uat` had previous non-R-006 data; owner accepted this for internal UAT and no cleanup was performed.
 - Supabase public signup disabled status still lacks a safe read-only confirmation.
 - Credential handoff remains out-of-band.
+- Hosted client display name remains `Hadna`, not Arabic `هدنة`; no data rename was applied in this linkage-first pass.
 - PR #33 must remain unmerged until separately authorized.
 
 ## Evidence

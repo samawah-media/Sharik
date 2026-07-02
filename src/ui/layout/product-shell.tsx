@@ -35,6 +35,9 @@ const segmentLabels: Record<string, string> = {
   portfolio: "المحفظة",
 };
 
+const uuidLikePattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 function isActive(pathname: string, href: string) {
   if (href === "/clients") {
     return pathname === href || pathname.startsWith("/clients/");
@@ -43,9 +46,21 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function breadcrumbLabel(segment: string) {
+function breadcrumbLabel(segment: string, previousSegment?: string) {
   if (segmentLabels[segment]) {
     return segmentLabels[segment];
+  }
+
+  if (uuidLikePattern.test(segment)) {
+    if (previousSegment === "clients") {
+      return "العميل";
+    }
+
+    if (previousSegment === "contracts") {
+      return "العقد";
+    }
+
+    return "التفاصيل";
   }
 
   if (segment.startsWith("client_")) {
@@ -68,7 +83,7 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
 
   const crumbs = segments.map((segment, index) => ({
     href: `/${segments.slice(0, index + 1).join("/")}`,
-    label: breadcrumbLabel(segment),
+    label: breadcrumbLabel(segment, segments[index - 1]),
   }));
 
   return (
@@ -164,7 +179,7 @@ export function ProductShell({ children }: { children: ReactNode }) {
               <Breadcrumbs pathname={pathname} />
               <div className="flex items-center gap-2 text-xs text-muted">
                 <FileText aria-hidden="true" size={15} />
-                <span>تجربة داخلية آمنة بدون بيانات عملاء حقيقية</span>
+                <span>تجربة UAT داخلية على بيانات هدنة المصرح بها</span>
               </div>
             </div>
           </header>

@@ -6,7 +6,8 @@ import { PageHeader } from "@/ui/layout/page-header";
 import { ProductShell } from "@/ui/layout/product-shell";
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/clients/client_a/deliverables/board",
+  usePathname: () =>
+    "/clients/b0060000-0000-4000-8000-000000000301/deliverables/board",
 }));
 
 afterEach(() => cleanup());
@@ -37,12 +38,16 @@ describe("management product shell", () => {
     expect(
       screen.getByRole("navigation", { name: "مسار الصفحة" }),
     ).toBeVisible();
+    expect(screen.getByText("العميل")).toBeInTheDocument();
+    expect(
+      screen.queryByText("b0060000-0000-4000-8000-000000000301"),
+    ).not.toBeInTheDocument();
     expect(screen.getByText("لوحة Kanban")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "لوحة Kanban الداخلية" }),
     ).toBeVisible();
     expect(
-      screen.getByText("تجربة داخلية آمنة بدون بيانات عملاء حقيقية"),
+      screen.getByText("تجربة UAT داخلية على بيانات هدنة المصرح بها"),
     ).toBeVisible();
   });
 

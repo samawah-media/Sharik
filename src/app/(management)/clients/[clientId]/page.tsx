@@ -10,8 +10,8 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/ui/core/card";
 import { PageHeader } from "@/ui/layout/page-header";
 import {
   AccessDeniedState,
+  ClientUnavailableState,
   MembershipDisabledState,
-  ResourceNotFoundState,
   SessionExpiredState,
 } from "@/ui/shared/access-states";
 
@@ -47,7 +47,7 @@ export default async function ClientDetailPage({
   });
 
   if (!access.allowed && access.reason === "not_found") {
-    return <ResourceNotFoundState />;
+    return <ClientUnavailableState />;
   }
 
   if (!access.allowed) {
@@ -55,13 +55,13 @@ export default async function ClientDetailPage({
       return <MembershipDisabledState returnHref={access.safeReturnHref} />;
     }
 
-    return <AccessDeniedState returnHref={access.safeReturnHref} />;
+    return <ClientUnavailableState />;
   }
 
   const client = runtime.clients.find((item) => item.id === clientId);
 
   if (!client) {
-    return <ResourceNotFoundState />;
+    return <ClientUnavailableState />;
   }
 
   const permissionResource = { tenantId: client.tenantId, clientId: client.id };

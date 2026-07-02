@@ -13,8 +13,8 @@ import {
 import { ManagementCommercialSummaryCards } from "@/ui/management/commercial-summary";
 import {
   AccessDeniedState,
+  ClientUnavailableState,
   MembershipDisabledState,
-  ResourceNotFoundState,
   SessionExpiredState,
 } from "@/ui/shared/access-states";
 
@@ -47,7 +47,7 @@ export default async function ManagementCommercialSummaryPage({
   });
 
   if (!access.allowed && access.reason === "not_found") {
-    return <ResourceNotFoundState />;
+    return <ClientUnavailableState />;
   }
 
   if (!access.allowed) {
@@ -55,13 +55,13 @@ export default async function ManagementCommercialSummaryPage({
       return <MembershipDisabledState returnHref={access.safeReturnHref} />;
     }
 
-    return <AccessDeniedState returnHref={access.safeReturnHref} />;
+    return <ClientUnavailableState />;
   }
 
   const client = runtime.clients.find((item) => item.id === clientId);
 
   if (!client) {
-    return <ResourceNotFoundState />;
+    return <ClientUnavailableState />;
   }
 
   const canViewSummary =

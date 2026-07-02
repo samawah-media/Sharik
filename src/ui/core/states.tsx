@@ -77,7 +77,7 @@ export function ErrorState({
   title,
   description,
   returnHref = "/",
-  actionLabel = "العودة للمساحة الآمنة",
+  actionLabel = "العودة للرئيسية",
 }: {
   title: string;
   description?: string;

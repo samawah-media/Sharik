@@ -14,7 +14,7 @@ This run used the owner-authorized Hadna workbook, `sharik-uat` Supabase UAT, an
 | PR | `#33` |
 | Supabase project | `sharik-uat` |
 | Supabase ref | `jnvuccapgsabrwwkxnbh` |
-| Vercel deployment URL | `https://sharik-platform-75fkv7kjc-omarhussien2s-projects.vercel.app` |
+| Vercel deployment URL | `https://sharik-platform-3cjhh722s-omarhussien2s-projects.vercel.app` |
 | Smoke URL | `https://sharik-platform.vercel.app` |
 
 The direct deployment URL was protected by Vercel SSO. The public project alias was promoted to the same deployment for temporary UAT smoke testing.
@@ -43,16 +43,33 @@ No existing UAT data was deleted.
 - Applied hosted migrations to UAT, including the new F006 commercial read policy migration.
 - Generated credentials only for internal smoke use; credentials are not stored in GitHub/docs/logs/chat/screenshots.
 
+## Access Fix Pass - 2026-07-02
+
+Owner-reported account-manager safe-denial behavior was traced to the `/clients` route guard, not missing Hadna data scope:
+
+| Check | Status | Result |
+|---|---:|---|
+| Account manager linked to Hadna | PASS | Active `account_manager` role scoped to Hadna client `b0060000-0000-4000-8000-000000000301`. |
+| Client viewer A linked to Hadna | PASS | Active client membership plus active `client_viewer` role scoped to Hadna. |
+| Viewer B isolation | PASS | No active Hadna client membership; safe no-assigned-client state and no Hadna data rendered. |
+| Hadna linkage | PASS | 1 contract, 1 package, 5 package lines, and 52 deliverables linked in the Hadna tenant/client scope. |
+
+Fix applied: `/clients` now allows non-client internal users with at least one assigned client-scoped `CLIENT_VIEW`, while client-portal-only users remain out of the management clients index.
+
+No hosted DB correction was needed or applied in this pass. No unrelated client data was changed and no rows were deleted.
+
 ## Smoke Results
 
 | Check | Status | Result |
 |---|---:|---|
 | Tenant admin login | PASS | Management route loaded. |
 | Management client/package/deliverables visible | PASS | Groups `[3, 1, 5, 52]`. |
+| Account manager `/clients` access | PASS | Loaded 1 Hadna client card on the public UAT URL. |
+| Account manager Hadna deliverables | PASS | Loaded 52 deliverable cards. |
 | Client viewer A login | PASS | Client commercial route loaded. |
 | Client viewer A package/deliverables visible | PASS | Groups `[1, 5, 52]`. |
 | Client viewer B login | PASS | Client portal route loaded. |
-| Basic client isolation | PASS | Viewer B saw safe state and zero data articles. |
+| Basic client isolation | PASS | Viewer B saw safe no-assigned-client state, zero data articles, and no Hadna name/slug. |
 | RTL | PASS | `dir=rtl`, `lang=ar-SA`. |
 | Mobile quick check | PASS | 390px viewport, no horizontal overflow, visible groups retained. |
 | Supabase API/RLS smoke | PASS | Admin and viewer A saw scoped Hadna rows; viewer B saw zero clients. |

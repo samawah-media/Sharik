@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  guardClientsIndexRoute,
   guardManagementRoute,
+  routeClients,
   resolveRouteActor,
 } from "@/server/navigation/route-guards";
 
@@ -35,6 +37,31 @@ describe("route guard actor fixtures", () => {
     expect(access).toMatchObject({
       allowed: false,
       reason: "permission_denied",
+    });
+  });
+
+  it("allows assigned internal users to open the clients index for scoped clients", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("APP_ENV", "test");
+
+    const actor = resolveRouteActor("assigned_internal_a");
+    const access = guardClientsIndexRoute({ actor, clients: routeClients });
+
+    expect(actor.userId).toBe("assigned_internal_a");
+    expect(access).toMatchObject({ allowed: true });
+  });
+
+  it("keeps client portal users out of the management clients index", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("APP_ENV", "test");
+
+    const actor = resolveRouteActor("client_viewer_a");
+    const access = guardClientsIndexRoute({ actor, clients: routeClients });
+
+    expect(access).toMatchObject({
+      allowed: false,
+      reason: "permission_denied",
+      safeReturnHref: "/client",
     });
   });
 

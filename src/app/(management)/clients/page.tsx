@@ -1,6 +1,7 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import {
+  guardClientsIndexRoute,
   canUseRouteActorFixtures,
   guardManagementRoute,
   resolveRouteRuntime,
@@ -13,6 +14,7 @@ import { PageHeader } from "@/ui/layout/page-header";
 import {
   AccessDeniedState,
   MembershipDisabledState,
+  NoAssignedClientState,
   SessionExpiredState,
 } from "@/ui/shared/access-states";
 
@@ -40,7 +42,7 @@ export default async function ClientsPage({
   }
 
   const { actor, clients } = runtime;
-  const access = guardManagementRoute({ actor, route: "clients" });
+  const access = guardClientsIndexRoute({ actor, clients });
   const writeAccess = guardManagementRoute({ actor, route: "clientWrite" });
 
   if (!access.allowed) {
@@ -48,11 +50,19 @@ export default async function ClientsPage({
       return <MembershipDisabledState returnHref={access.safeReturnHref} />;
     }
 
+    if (access.reason === "no_assigned_clients") {
+      return <NoAssignedClientState returnHref={access.safeReturnHref} />;
+    }
+
     return <AccessDeniedState returnHref={access.safeReturnHref} />;
   }
 
-  const visibleClients = clients.filter(
-    (client) => client.tenantId === actor.tenantId,
+  const visibleClients = clients.filter((client) =>
+    evaluatePermission({
+      actor,
+      permission: PERMISSIONS.CLIENT_VIEW,
+      resource: { tenantId: client.tenantId, clientId: client.id },
+    }).allowed,
   );
   const showFixtureEmptyState = canUseRouteActorFixtures();
 

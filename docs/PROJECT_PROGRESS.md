@@ -10,10 +10,14 @@ This section supersedes the older R-006 blocked/preflight notes below for the cu
 - Imported the 52-row forward Hadna block into scoped UAT records: 1 client, 1 contract, 1 package, 5 package lines, 52 deliverables, 4 synthetic users, and 56 audit events.
 - Added F006 client-portal commercial read RLS policies requiring active client membership and active client-scoped role assignment.
 - Hosted RLS database test passed for the new commercial read policies.
-- Vercel deployment URL: `https://sharik-platform-75fkv7kjc-omarhussien2s-projects.vercel.app`.
+- Vercel deployment URL: `https://sharik-platform-3cjhh722s-omarhussien2s-projects.vercel.app`.
 - Temporary smoke URL: `https://sharik-platform.vercel.app`, promoted to the same deployment for internal UAT.
 - Web smoke passed for tenant admin login, client viewer login, management/client visibility, basic isolation, RTL, and mobile.
 - Supabase data smoke passed: admin and viewer A see 1 client, 1 package, and 52 deliverables; viewer B sees 0 clients.
+- Access fix pass completed after owner reported account-manager safe-denial behavior: hosted DB audit showed the account manager already had an active client-scoped Hadna role, viewer A had active Hadna client membership plus role, and viewer B had no active Hadna client membership.
+- Root cause was the `/clients` route guard requiring tenant-wide client list permission; the fix allows non-client internal users with assigned client-scoped `CLIENT_VIEW` while keeping client-portal-only users out of the management clients index.
+- Access fix smoke passed on `https://sharik-platform.vercel.app`: account manager sees 1 Hadna card on `/clients`, opens Hadna detail, and sees 52 deliverables; client viewer A sees Hadna client portal/commercial summary; viewer B sees safe no-assigned-client state and no Hadna data.
+- No hosted DB correction was needed in the access fix pass.
 - No existing UAT data was deleted.
 - No workbook row content, links, captions, screenshots, credentials, tokens, or sensitive values were recorded.
 - PR #33 remains Draft/Open and must not be merged without separate owner authorization.

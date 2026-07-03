@@ -1,5 +1,5 @@
 export const f001CopyArSA = {
-  "f001.loading": "جاري تحميل المساحة الآمنة.",
+  "f001.loading": "جاري تحميل الصفحة.",
   "f001.empty": "لا توجد عناصر متاحة بعد.",
   "f001.invitation.pending": "الدعوة بانتظار القبول.",
   "f001.invitation.accepted": "تم قبول الدعوة.",
@@ -8,7 +8,7 @@ export const f001CopyArSA = {
   "f001.invitation.superseded": "يوجد رابط أحدث لهذه الدعوة.",
   "f001.invitation.mismatch": "البريد غير مطابق للدعوة.",
   "f001.access.permissionDenied": "لا يمكن الوصول إلى هذه الصفحة",
-  "f001.access.notFound": "المورد غير متاح",
+  "f001.access.notFound": "لا يمكنك الوصول لهذا المورد",
   "f001.access.sessionExpired": "انتهت الجلسة",
   "f001.access.saveFailure": "تعذر حفظ التغييرات بأمان.",
   "f001.access.networkFailure": "تعذر الاتصال. حاول مرة أخرى.",

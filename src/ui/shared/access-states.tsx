@@ -8,7 +8,7 @@ function SafeState({
   heading,
   body,
   returnHref = "/",
-  actionLabel = "العودة للمساحة الآمنة",
+  actionLabel = "العودة للرئيسية",
 }: AccessStateProps & {
   heading: string;
   body: string;
@@ -51,6 +51,19 @@ export function ResourceNotFoundState({ returnHref = "/" }: AccessStateProps) {
     <SafeState
       heading={f001CopyArSA["f001.access.notFound"]}
       body="الرابط غير متاح أو لا يقع ضمن نطاق صلاحياتك الحالية."
+      returnHref={returnHref}
+    />
+  );
+}
+
+export function ClientUnavailableState({
+  returnHref = "/clients",
+}: AccessStateProps) {
+  return (
+    <SafeState
+      actionLabel="العودة للعملاء"
+      body="تأكد من اختيار عميل مسند لك."
+      heading="لا يمكنك الوصول لهذا العميل"
       returnHref={returnHref}
     />
   );

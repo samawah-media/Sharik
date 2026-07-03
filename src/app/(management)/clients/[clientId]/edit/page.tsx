@@ -7,8 +7,8 @@ import { updateClientAction } from "@/server/actions/clients";
 import { ClientForm } from "@/ui/management/client-form";
 import {
   AccessDeniedState,
+  ClientUnavailableState,
   MembershipDisabledState,
-  ResourceNotFoundState,
   SessionExpiredState,
 } from "@/ui/shared/access-states";
 
@@ -45,17 +45,21 @@ export default async function EditClientPage({
   });
 
   if (!detailAccess.allowed && detailAccess.reason === "not_found") {
-    return <ResourceNotFoundState />;
+    return <ClientUnavailableState />;
   }
 
-  if (!detailAccess.allowed || !writeAccess.allowed) {
+  if (!detailAccess.allowed) {
+    return <ClientUnavailableState />;
+  }
+
+  if (!writeAccess.allowed) {
     return <AccessDeniedState />;
   }
 
   const client = runtime.clients.find((item) => item.id === clientId);
 
   if (!client) {
-    return <ResourceNotFoundState />;
+    return <ClientUnavailableState />;
   }
 
   return (

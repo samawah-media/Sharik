@@ -7,7 +7,7 @@ test("management commercial summary shows scoped cards without later workflow fe
     waitUntil: "domcontentloaded",
   });
 
-  await expect(page.getByRole("heading", { name: "الملخص التجاري" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "ملخص المتابعة" })).toBeVisible();
   const summaryRegion = page.getByRole("region", { name: "ملخص الإدارة التجاري" });
   await expect(summaryRegion).toBeVisible();
   await expect(summaryRegion.getByText("محجوز: 1").first()).toBeVisible();
@@ -44,7 +44,7 @@ test("client URL tampering to another commercial summary is denied without enume
   });
 
   await expect(
-    page.getByRole("heading", { name: "المورد غير متاح" }),
+    page.getByRole("heading", { name: "لا يمكنك الوصول لهذا العميل" }),
   ).toBeVisible();
   await expect(page.getByText("Client B")).toHaveCount(0);
   await expect(page.getByText("client_b")).toHaveCount(0);

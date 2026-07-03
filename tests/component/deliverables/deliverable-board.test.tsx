@@ -68,7 +68,7 @@ describe("internal deliverable Kanban board", () => {
       />,
     );
 
-    const board = screen.getByRole("region", { name: "لوحة Kanban الداخلية" });
+    const board = screen.getByRole("region", { name: "لوحة المتابعة" });
     expect(screen.getByTestId("kanban-board-scroll")).toHaveClass(
       "overflow-x-auto",
     );

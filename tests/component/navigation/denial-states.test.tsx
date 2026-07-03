@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import {
   AccessDeniedState,
+  ClientUnavailableState,
   MembershipDisabledState,
   NoAssignedClientState,
   ResourceNotFoundState,
@@ -15,7 +16,7 @@ describe("shared access and denial states", () => {
     expect(
       screen.getByRole("heading", { name: "لا يمكن الوصول إلى هذه الصفحة" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "العودة للمساحة الآمنة" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "العودة للرئيسية" })).toHaveAttribute(
       "href",
       "/portfolio",
     );
@@ -33,13 +34,28 @@ describe("shared access and denial states", () => {
     );
 
     expect(
-      screen.getByRole("heading", { name: "المورد غير متاح" }),
+      screen.getByRole("heading", { name: "لا يمكنك الوصول لهذا المورد" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "لا يوجد عملاء مسندون" }),
     ).toBeInTheDocument();
     expect(screen.queryByText("Client C")).not.toBeInTheDocument();
     expect(screen.queryByText("tenant_a")).not.toBeInTheDocument();
+  });
+
+  it("renders client unavailable state with a client-list recovery path", () => {
+    render(<ClientUnavailableState />);
+
+    expect(
+      screen.getByRole("heading", { name: "لا يمكنك الوصول لهذا العميل" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("تأكد من اختيار عميل مسند لك."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "العودة للعملاء" })).toHaveAttribute(
+      "href",
+      "/clients",
+    );
   });
 
   it("renders session and disabled membership states with clear recovery paths", () => {

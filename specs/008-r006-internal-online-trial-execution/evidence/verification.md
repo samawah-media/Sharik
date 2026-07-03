@@ -1,0 +1,263 @@
+# Verification Evidence: R-006 Internal Online Trial Execution
+
+Date: 2026-07-02
+
+## Result
+
+R-006 was executed against the owner-authorized UAT target.
+
+| Area | Status | Evidence |
+|---|---:|---|
+| Owner authorization | PASS | Owner explicitly authorized the Hadna workbook as internal source data, `sharik-uat` as UAT target, and Vercel deployment for internal UAT. |
+| Source workbook inspection | PASS | Local workbook inspected without recording row content, captions, links, or sensitive fields. |
+| Hosted Supabase insertion | PASS | Inserted scoped Hadna UAT records into `sharik-uat` / `jnvuccapgsabrwwkxnbh`. |
+| RLS gap remediation | PASS | Added scoped client-portal commercial read policies and a database test for membership plus role checks. |
+| Vercel deployment | PASS | Deployed and promoted the current build for temporary internal UAT. |
+| Web smoke | PASS | Login, visibility, isolation, RTL, and mobile checks passed on the promoted Vercel alias. |
+| Secret handling | PASS | No passwords, tokens, service keys, workbook links, row content, or sensitive values were recorded in docs, GitHub text, screenshots, or chat. |
+| Final checks | PASS | `npm run secret:scan` passed; `git diff --check` passed with CRLF working-copy warnings only. |
+
+This is not Production acceptance, Ready conversion, PR merge approval, or approval to reuse non-Hadna customer data.
+
+## Targets
+
+| Target | Value |
+|---|---|
+| Execution branch | `codex/r006-internal-online-trial-execution` |
+| PR | `#33` |
+| Supabase project | `sharik-uat` |
+| Supabase ref | `jnvuccapgsabrwwkxnbh` |
+| Vercel project | `sharik-platform` |
+| Vercel deployment URL | `https://sharik-platform-785s4i5xd-omarhussien2s-projects.vercel.app` |
+| Smoke URL | `https://sharik-platform.vercel.app` |
+
+Note: the direct deployment URL initially redirected through Vercel SSO. The public project alias was promoted to the same deployment and used for smoke testing.
+
+## Hadna Source Mapping
+
+The authorized local Hadna workbook was inspected locally. The import used the 52-row forward-looking block as the start point.
+
+| Source area | Imported rows | Date evidence | Notes |
+|---|---:|---|---|
+| Forward block, zero-based sheet index 8 | 52 | 50 dated rows from 2026-07-25 through 2026-09-29, plus 2 undated rows | Row content was not printed or committed. |
+
+Mapping used:
+
+| Sharik entity | Source mapping |
+|---|---|
+| `client` | One Hadna client under the R-006 UAT tenant scope. |
+| `contract` | One Hadna UAT contract. |
+| `package` | One Hadna UAT package. |
+| `package_lines` | Grouped from content/service type signals into 5 package lines. |
+| `deliverables` | One deliverable per imported forward-row item, 52 total. |
+
+Excluded from docs/evidence: workbook row content, captions, links, reference URLs, credentials, and sensitive approval notes.
+
+## Created Data
+
+Hosted aggregate verification returned the following scoped R-006 counts:
+
+| Entity | Count |
+|---|---:|
+| tenants | 1 |
+| synthetic auth users | 4 |
+| clients | 1 |
+| contracts | 1 |
+| packages | 1 |
+| package_lines | 5 |
+| deliverables | 52 |
+| audit_events | 57 |
+
+The audit count includes the original R-006 import audit events plus one later `ClientUpdated` audit event for the Hadna Arabic display-name correction.
+
+No existing UAT rows were deleted.
+
+## Hosted Changes
+
+| Change | Status | Notes |
+|---|---:|---|
+| Hadna UAT insertion | PASS | Inserted only the owner-authorized Hadna trial scope. |
+| Synthetic users | PASS | Created for R-006 smoke only; credentials remain outside GitHub/docs/logs/chat/screenshots. |
+| Migration push | PASS | Applied pending hosted migrations, including the new F006 commercial read policy migration. |
+| Database RLS test | PASS | Hosted pgtap execution exited successfully for `f006_client_portal_commercial_read_policies.test.sql`. |
+
+The new policy requires both active client membership and an active client-scoped role before client users can read commercial rows.
+
+## Access Fix Pass - 2026-07-02
+
+Owner-reported symptom: account manager saw the safe denial/session-safe state when opening the management clients route.
+
+### Hosted DB Read-Only Audit
+
+Read-only hosted inspection found the R-006 Hadna scope intact:
+
+| Check | Status | Non-sensitive result |
+|---|---:|---|
+| R-006 synthetic users | PASS | 4 users with `@r006.example.test`. |
+| Hadna client id | PASS | `b0060000-0000-4000-8000-000000000301`. |
+| Hadna linkage | PASS | 1 contract, 1 package, 5 package lines, 52 deliverables; all 52 deliverables have contract/package linkage in the Hadna tenant/client scope. |
+| Account manager scope | PASS | Active tenant membership and active `account_manager` role scoped to the Hadna client. |
+| Client viewer A scope | PASS | Active tenant membership, active client membership for Hadna, and active `client_viewer` role scoped to Hadna. |
+| Viewer B isolation | PASS | No active client membership for Hadna; hosted RLS/client portal smoke returns no Hadna data. |
+
+No hosted DB correction was applied in this pass because the required account manager and viewer A scopes already existed. No unrelated client data was changed and no rows were deleted.
+
+### Root Cause
+
+The hosted data was correctly scoped. The failing surface was the management `/clients` route guard: it required tenant-wide `CLIENT_VIEW_ALL_IN_TENANT`, while the account manager correctly has client-scoped `CLIENT_VIEW` for Hadna. Direct account-manager access to `/clients/b0060000-0000-4000-8000-000000000301` and its deliverables already worked before the code fix.
+
+### Fix
+
+The management clients index now permits non-client internal users who have at least one visible client-scoped `CLIENT_VIEW`, while client-portal-only users remain denied from the management clients index and continue to use `/client`.
+
+Targeted unit coverage was added for:
+
+| Check | Status |
+|---|---:|
+| Assigned internal user can open clients index for scoped clients | PASS |
+| Client viewer cannot open management clients index | PASS |
+
+## Smoke Results
+
+### Web Smoke
+
+The web smoke ran on `https://sharik-platform.vercel.app`, which was promoted to the current deployment.
+
+| Check | Status | Non-sensitive result |
+|---|---:|---|
+| Tenant admin login | PASS | Landed on management commercial summary. |
+| Management client/package/deliverables visible | PASS | Article groups were `[3, 1, 5, 52]`: summary cards, contract, package lines, deliverables. |
+| Client viewer A login | PASS | Landed on client commercial summary. |
+| Client viewer A package/deliverables visible | PASS | Article groups were `[1, 5, 52]`: contract, package lines, deliverables. |
+| Client viewer B login | PASS | Landed on client portal path. |
+| Basic client isolation | PASS | Viewer B received safe state and zero data articles. |
+| RTL | PASS | `dir=rtl`, `lang=ar-SA`. |
+| Mobile quick check | PASS | 390px viewport had no horizontal overflow and retained `[1, 5, 52]` groups. |
+
+No screenshots were taken.
+
+### Access Fix Web Smoke
+
+After deploying and promoting `https://sharik-platform-3cjhh722s-omarhussien2s-projects.vercel.app`, the public smoke URL `https://sharik-platform.vercel.app` returned:
+
+| Check | Status | Non-sensitive result |
+|---|---:|---|
+| Account manager root | PASS | Redirected to `/portfolio`; 1 assigned Hadna client card. |
+| Account manager `/clients` | PASS | Loaded `العملاء`; 1 Hadna client card; no access denied/session expired state. |
+| Account manager Hadna page | PASS | Loaded `/clients/b0060000-0000-4000-8000-000000000301`; 4 operation cards. |
+| Account manager Hadna deliverables | PASS | Loaded 52 deliverable cards. |
+| Client viewer A `/client` | PASS | Loaded Hadna client portal. |
+| Client viewer A `/client/commercial` | PASS | Loaded package summary with 58 article cards. |
+| Viewer B root and client portal paths | PASS | Safe no-assigned-client state; 0 articles; no Hadna name or slug rendered. |
+| RTL/lang | PASS | `dir=rtl`, `lang=ar-SA` across smoke pages. |
+
+No screenshots, credentials, workbook row content, links, captions, tokens, or secret values were recorded.
+
+### Hadna Visibility First Fix Smoke
+
+After the owner reported seeing the Hadna client UUID and an unclear unavailable-resource state, a focused visibility pass was deployed and promoted to the public UAT smoke URL.
+
+Root cause for the visible UUID in the product surface: the management product shell rendered unknown URL path segments as breadcrumb labels. UUID-like `clientId` and `contractId` segments now render as safe Arabic labels such as `العميل` and `العقد` instead of exposing raw IDs in the page chrome.
+
+No hosted DB mutation was applied in this pass. Read-only hosted inspection still shows the Hadna linkage intact. The current hosted client display name remains `Hadna`; changing it to Arabic `هدنة` was not applied because this pass was constrained to visibility/linkage correction and the owner asked not to change hosted data unless needed for linkage.
+
+| Check | Status | Non-sensitive result |
+|---|---:|---|
+| Vercel deploy | PASS | Built deployment `https://sharik-platform-gq8tjtxyj-omarhussien2s-projects.vercel.app`. |
+| Vercel promote | PASS | `https://sharik-platform.vercel.app` points to the new deployment. |
+| Account manager `/clients` | PASS | 1 client card; card title from DB is `Hadna`; no UUID visible in page text; no denial/session state. |
+| Account manager Hadna detail | PASS | 4 operation cards; no UUID visible in page text; no denial/session state. |
+| Account manager Hadna deliverables | PASS | 52 deliverable cards; no UUID visible in page text; no denial/session state. |
+| Client viewer A `/client` | PASS | Client portal loaded for Hadna scope; no denial state. |
+| Client viewer A `/client/commercial` | PASS | 58 safe summary article cards; no denial state. |
+| Viewer B `/client` | PASS | Safe no-assigned-client state; 0 articles; no Hadna name or slug rendered. |
+| Confusing copy removal | PASS | Removed `تجربة داخلية آمنة بدون بيانات عملاء حقيقية` from the management shell. |
+| Client unavailable copy | PASS | Client-scoped management routes now show `لا يمكنك الوصول لهذا العميل`, `تأكد من اختيار عميل مسند لك.`, and `العودة للعملاء`. |
+
+No screenshots were taken to avoid recording workbook-derived deliverable text. No credentials, tokens, workbook row content, links, captions, or secret values were recorded.
+
+### Arabic UX UAT Fix Pass - 2026-07-03
+
+After the visibility-first fix passed, the owner asked to continue the UAT polish. This pass stayed limited to the first Hadna UAT path and did not change workbook-derived deliverable content.
+
+Hosted DB correction applied only to the R-006 Hadna client row:
+
+| Check | Status | Non-sensitive result |
+|---|---:|---|
+| Hadna display name | PASS | `clients.name` changed from `Hadna` to `هدنة` for client `b0060000-0000-4000-8000-000000000301`. |
+| Audit event | PASS | Added one `ClientUpdated` audit event for the Hadna display-name correction; scoped R-006 audit count is now 57. |
+| Linkage preservation | PASS | Existing Hadna slug, client id, contract/package linkage, and 52 deliverables remained unchanged. |
+
+UX changes applied:
+
+| Surface | Status | Non-sensitive result |
+|---|---:|---|
+| `/clients` Hadna card | PASS | Card title renders `هدنة`; no slug or UUID is shown; buttons are `عرض العميل`, `المخرجات`, `العقد والباقة`, and `ملخص المتابعة`. |
+| Hadna detail page | PASS | Page title renders `هدنة`; operation cards use `المخرجات`, `العقد والباقة`, `ملخص المتابعة`, and `لوحة المتابعة`. |
+| Management navigation/breadcrumbs | PASS | Replaced technical labels such as `الملخص التجاري`, `لوحة Kanban`, and `المحفظة` on the touched path with `ملخص المتابعة` and `لوحة المتابعة`. |
+| Hadna deliverables page | PASS | Link to the board renders as `لوحة المتابعة`; page still renders 52 deliverables. |
+
+Deployment and smoke:
+
+| Check | Status | Non-sensitive result |
+|---|---:|---|
+| Vercel deploy | PASS | Built deployment `https://sharik-platform-785s4i5xd-omarhussien2s-projects.vercel.app`. |
+| Vercel promote | PASS | `https://sharik-platform.vercel.app` fetches the promoted deployment and reports `Ready`. |
+| Account manager `/clients` | PASS | 1 card; Hadna renders as `هدنة`; no UUID, Latin `Hadna`, or denial text; card buttons match the requested four labels. |
+| Account manager Hadna detail | PASS | 4 operation cards; `هدنة` visible; no UUID; required Arabic labels visible. |
+| Account manager Hadna deliverables | PASS | 52 deliverable cards; `هدنة` visible; no UUID rendered. |
+| Client viewer A `/client` | PASS | Hadna client portal loads and shows `هدنة`; no denial state. |
+| Client viewer A `/client/commercial` | PASS | Client package summary loads with 58 safe summary article cards. |
+| Viewer B `/client` | PASS | 0 article cards; no `هدنة` or `Hadna` rendered. |
+
+No screenshots were taken to avoid recording workbook-derived deliverable text. No credentials, tokens, workbook row content, links, captions, or secret values were recorded.
+
+### Supabase Data Smoke
+
+| Check | Status | Non-sensitive result |
+|---|---:|---|
+| Tenant admin auth | PASS | Login succeeded. |
+| Tenant admin scoped rows | PASS | 1 client, 1 package, 52 deliverables. |
+| Client viewer A auth | PASS | Login succeeded. |
+| Client viewer A scoped rows | PASS | 1 client, 1 package, 52 deliverables. |
+| Client viewer B auth | PASS | Login succeeded. |
+| Client viewer B isolation | PASS | 0 visible clients. |
+
+## Vercel Evidence
+
+| Command/action | Status | Notes |
+|---|---:|---|
+| `vercel deploy --target=production --skip-domain --yes` | PASS | Build completed and produced deployment `https://sharik-platform-75fkv7kjc-omarhussien2s-projects.vercel.app`. |
+| Direct deployment access check | BLOCKED BY SSO | The deployment URL redirected to Vercel SSO before promotion. |
+| `vercel promote ... --scope omarhussien2s-projects` | PASS | Promoted the deployment for temporary UAT smoke. |
+| Public alias check | PASS | `https://sharik-platform.vercel.app` returned the current deployment and was used for smoke. |
+| Access fix deploy | PASS | Build completed and produced deployment `https://sharik-platform-3cjhh722s-omarhussien2s-projects.vercel.app`. |
+| Access fix promote | PASS | Public smoke URL was promoted to the access-fix deployment. |
+| Hadna visibility deploy | PASS | Build completed and produced deployment `https://sharik-platform-gq8tjtxyj-omarhussien2s-projects.vercel.app`. |
+| Hadna visibility promote | PASS | Public smoke URL was promoted to the visibility-fix deployment. |
+| Arabic UX UAT deploy | PASS | Build completed and produced deployment `https://sharik-platform-785s4i5xd-omarhussien2s-projects.vercel.app`. |
+| Arabic UX UAT promote | PASS | Public smoke URL was promoted to the Arabic UX UAT deployment. |
+
+## Remaining Risks
+
+| Risk | Status |
+|---|---|
+| Vercel target uses Production environment/alias for temporary UAT. | Accepted by owner for UAT only; not Production acceptance. |
+| UAT target had previous non-R-006 data before insertion. | Accepted by owner; no cleanup/deletion performed. |
+| Public signup disabled status was not safely confirmed through a read-only Supabase surface. | Open. No signup attempt was made. |
+| Credentials require out-of-band handoff. | Open. Credentials were created only for internal smoke and not printed. |
+| Hosted client display name is currently `Hadna`, not Arabic `هدنة`. | Resolved. Corrected to `هدنة` for the scoped Hadna UAT client only, with a `ClientUpdated` audit event. |
+| PR #33 remains Draft and must not be merged without separate authorization. | Open. |
+
+## AGENTS Compliance
+
+| Gate | Status |
+|---|---:|
+| Spec/plan/tasks existed before hosted execution | PASS |
+| V1 scope respected | PASS |
+| Tenant/client scoped queries and policies used | PASS |
+| Client isolation verified | PASS |
+| Internal-sensitive workbook content kept out of docs/logs/chat | PASS |
+| Audit events inserted for hosted import and Hadna display correction | PASS |
+| No unrelated UAT deletion | PASS |
+| No PR merge | PASS |

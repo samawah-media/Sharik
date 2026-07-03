@@ -17,8 +17,8 @@ import { ButtonLink } from "@/ui/core/button";
 import { PageHeader } from "@/ui/layout/page-header";
 import {
   AccessDeniedState,
+  ClientUnavailableState,
   MembershipDisabledState,
-  ResourceNotFoundState,
   SessionExpiredState,
 } from "@/ui/shared/access-states";
 
@@ -85,7 +85,7 @@ export default async function ClientContractsPage({
   });
 
   if (!access.allowed && access.reason === "not_found") {
-    return <ResourceNotFoundState />;
+    return <ClientUnavailableState />;
   }
 
   if (!access.allowed) {
@@ -93,13 +93,13 @@ export default async function ClientContractsPage({
       return <MembershipDisabledState returnHref={access.safeReturnHref} />;
     }
 
-    return <AccessDeniedState returnHref={access.safeReturnHref} />;
+    return <ClientUnavailableState />;
   }
 
   const client = runtime.clients.find((item) => item.id === clientId);
 
   if (!client) {
-    return <ResourceNotFoundState />;
+    return <ClientUnavailableState />;
   }
 
   const canViewContracts = evaluatePermission({
@@ -145,7 +145,7 @@ export default async function ClientContractsPage({
             <Badge tone="success">تم حفظ العقد بأمان.</Badge>
           ) : null
         }
-        title={`عقود ${client.name}`}
+        title={`العقد والباقة - ${client.name}`}
       />
       {contractList.contracts.length > 0 ? (
         <ContractList contracts={contractList.contracts} />

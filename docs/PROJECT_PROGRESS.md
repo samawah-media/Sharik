@@ -1,6 +1,30 @@
 # Project Progress
 
-Last updated: 2026-07-01
+Last updated: 2026-07-03
+
+## Latest R-006 Execution Update - 2026-07-03
+
+This section supersedes the older R-006 blocked/preflight notes below for the current PR #33 state.
+
+- Owner-authorized internal UAT executed using the Hadna workbook, Supabase UAT `sharik-uat` / `jnvuccapgsabrwwkxnbh`, and temporary Vercel UAT hosting.
+- Imported the 52-row forward Hadna block into scoped UAT records: 1 client, 1 contract, 1 package, 5 package lines, 52 deliverables, 4 synthetic users, and 57 audit events after the Arabic display-name correction audit.
+- Added F006 client-portal commercial read RLS policies requiring active client membership and active client-scoped role assignment.
+- Hosted RLS database test passed for the new commercial read policies.
+- Vercel deployment URL: `https://sharik-platform-785s4i5xd-omarhussien2s-projects.vercel.app`.
+- Temporary smoke URL: `https://sharik-platform.vercel.app`, promoted to the same deployment for internal UAT.
+- Web smoke passed for tenant admin login, client viewer login, management/client visibility, basic isolation, RTL, and mobile.
+- Supabase data smoke passed: admin and viewer A see 1 client, 1 package, and 52 deliverables; viewer B sees 0 clients.
+- Access fix pass completed after owner reported account-manager safe-denial behavior: hosted DB audit showed the account manager already had an active client-scoped Hadna role, viewer A had active Hadna client membership plus role, and viewer B had no active Hadna client membership.
+- Root cause was the `/clients` route guard requiring tenant-wide client list permission; the fix allows non-client internal users with assigned client-scoped `CLIENT_VIEW` while keeping client-portal-only users out of the management clients index.
+- Access fix smoke passed on `https://sharik-platform.vercel.app`: account manager sees 1 Hadna card on `/clients`, opens Hadna detail, and sees 52 deliverables; client viewer A sees Hadna client portal/commercial summary; viewer B sees safe no-assigned-client state and no Hadna data.
+- Hadna visibility-first pass deployed and promoted `https://sharik-platform-gq8tjtxyj-omarhussien2s-projects.vercel.app`: UUID-like route segments are hidden from breadcrumbs, client-unavailable copy now says `لا يمكنك الوصول لهذا العميل` / `تأكد من اختيار عميل مسند لك.` / `العودة للعملاء`, and the false no-real-client-data shell phrase was removed.
+- Visibility smoke passed on `https://sharik-platform.vercel.app`: account manager sees 1 client card, opens Hadna detail, sees 52 deliverables, and no Hadna UUID is rendered in page text; viewer A sees Hadna portal/commercial summary; viewer B sees safe no-assigned-client state with zero articles and no Hadna name/slug.
+- Arabic UX UAT pass corrected the scoped Hadna display name to `هدنة` with a `ClientUpdated` audit event, kept the client id/slug/linkage unchanged, and simplified the first `/clients` card buttons to `عرض العميل`, `المخرجات`, `العقد والباقة`, and `ملخص المتابعة`.
+- Arabic UX smoke passed on `https://sharik-platform.vercel.app`: account manager sees `هدنة`, no UUID or Latin `Hadna`, four requested card buttons, 4 detail operation cards, and 52 deliverables; viewer A sees `هدنة`; viewer B sees zero articles and no `هدنة`/`Hadna`.
+- No hosted DB correction was needed in the access fix pass.
+- No existing UAT data was deleted.
+- No workbook row content, links, captions, screenshots, credentials, tokens, or sensitive values were recorded.
+- PR #33 remains Draft/Open and must not be merged without separate owner authorization.
 
 ## Current Execution Gate
 
@@ -8,13 +32,74 @@ Last updated: 2026-07-01
 |---|---|
 | Product name | `Sharik` |
 | Package slug | `sharik-platform` |
-| Feature | R-006 Internal Online Trial Readiness |
-| Worktree | `codex/r006-internal-online-trial-readiness` |
-| Branch | `codex/r006-internal-online-trial-readiness` from post-F-005 `origin/main` |
-| Current allowed stage | Readiness docs, checklist, evidence, full baseline quality gate, non-production boundary definition, and synthetic data plan only |
-| Status | R-006 baseline readiness is locally verified from `1bc9e74af87959a053937e373d1d34ffcc6e2b65`. Spec Kit package exists under `specs/007-r006-internal-online-trial-readiness/`; release doc exists at `docs/08-release/R-006-internal-online-trial-readiness.md`; full baseline quality gate passed. No online trial, hosted mutation, Production Supabase, production deployment, real client data, temporary credentials, public signup change, dependency change, or product feature expansion was introduced. |
-| Next gate | Owner review of R-006 readiness. A separate explicit owner go/no-go is required before any internal online trial execution. |
-| Owner decision required | Approve or reject a later internal online trial execution package, including exact non-production Supabase/Vercel target boundaries and out-of-GitHub credential handling. |
+| Feature | R-006 Internal Online Trial Execution |
+| Worktree | `codex/r006-internal-online-trial-execution` |
+| Branch | `codex/r006-internal-online-trial-execution` from PR #32 `origin/main` |
+| Draft PR | [#33 R-006 Internal Online Trial Execution - Preflight Blocked](https://github.com/samawah-media/Sharik/pull/33) |
+| PR status | Draft / Open / Preflight Blocked; GitHub live check reports mergeable. |
+| Draft PR creation HEAD | `2e3fe7e830336e24b56ce078da4af23d8bf98734` |
+| Current allowed stage | Internal UAT mapping and execution evidence only; no hosted mutation/deployment until mapping and a minimum-scope insertion/deploy plan are reviewed. |
+| Status | R-006 execution started from `10fc4a3b4c8f717d284d177906d1f32f5f61976c`. Owner update on 2026-07-02 authorizes using Supabase UAT `sharik-uat` / `jnvuccapgsabrwwkxnbh` despite previous users/data, authorizes the local workbook `خطة محتوى هدنة - العدد الثاني (1)` as internal source input, and authorizes Vercel deployment for internal testing only, not Production acceptance. Workbook structure was inspected without printing sensitive row content. No trial URL, credentials, hosted seed, hosted migration, hosted insertion, deployment, production promotion, public signup, dependency change, or product feature expansion was introduced. |
+| Latest preflight refresh | 2026-07-02: Project-control refresh confirmed PR #33 remains Draft/Open/MERGEABLE from HEAD `ea3512f4be0164bb13c5e711936251c8d4f1deb7`. The earlier clean-target blocker is superseded by owner authorization for internal UAT only. Local workbook review found 15 sheets and three main convertible blocks with 20, 40, and 52 candidate rows. The run still stopped before hosted mutation/deploy because mapping and exact insertion/deploy plans must be reviewed first. |
+| Next gate | Review the workbook-to-Sharik mapping, choose the exact row subset, decide whether to create an isolated internal-trial client/contract/package or attach to existing UAT records, then prepare a minimum hosted insertion plan using existing scoped/audited paths. |
+| Owner decision required | Approve the exact mapping/execution path and row subset. Do not convert PR #33 to Ready and do not merge. |
+
+## R-006 Internal Online Trial Execution - 2026-07-02
+
+Baseline:
+
+- Started from PR #32 `origin/main` commit `10fc4a3b4c8f717d284d177906d1f32f5f61976c`.
+- Active branch: `codex/r006-internal-online-trial-execution`.
+- Draft PR #33: `https://github.com/samawah-media/Sharik/pull/33`.
+- PR #33 status: Draft / Open / Preflight Blocked; GitHub live check reports mergeable.
+- Draft PR creation HEAD: `2e3fe7e830336e24b56ce078da4af23d8bf98734`.
+- Readiness package reviewed before operational action: `specs/007-r006-internal-online-trial-readiness/`.
+- Execution package created under `specs/008-r006-internal-online-trial-execution/`.
+
+Preflight result:
+
+- Supabase candidate metadata: `sharik-uat`, ref `jnvuccapgsabrwwkxnbh`, region `eu-west-1`, `ACTIVE_HEALTHY`.
+- Supabase local linked ref remains `jnvuccapgsabrwwkxnbh`.
+- Supabase table-name read-only query passed without row values.
+- Supabase auth count preflight BLOCKED: 5 auth users exist and all are outside `@r006.example.test`.
+- Supabase public data preflight BLOCKED: aggregate counts found 1 tenant, 2 clients, 2 contracts, 2 packages, 2 package lines, 7 deliverables, and 3 audit events.
+- Owner update: `sharik-uat` is authorized for internal R-006 despite those existing users/data; this does not authorize broad mutation or cleanup.
+- Supabase public signup status remains BLOCKED because no safe read-only status surface was available; no signup attempt was made.
+- Vercel linked project is `sharik-platform`.
+- Vercel Preview env names are empty, branch-scoped Preview env names are empty, and custom `staging` is not found.
+- Vercel env names are otherwise scoped to Production only.
+- Vercel Preview deployments are empty; listed deployments are Production environment only.
+- Follow-up PR #33 live check on 2026-07-02 confirmed Draft/Open/MERGEABLE with `quality` and `CodeRabbit` passing; no CodeRabbit blocker marker was detected.
+
+Stop decision:
+
+- No hosted migration.
+- No hosted seed.
+- No hosted insertion from the workbook.
+- No hosted account creation.
+- No temporary credentials generated.
+- No Vercel deployment.
+- No preview/staging trial URL issued.
+- All requested smoke checks are blocked until mapping, insertion/deploy path, URL, and credentials are approved.
+
+Workbook mapping evidence:
+
+- Local workbook source was authorized by owner for internal trial only.
+- The workbook has 15 sheets; three main convertible blocks were structurally inspected without printing row content.
+- Candidate blocks contain 20, 40, and 52 convertible rows with date ranges 2026-02-12 to 2026-03-08, 2026-03-16 to 2026-07-24, and 2026-07-25 to 2026-09-29.
+- Proposed mapping targets existing Sharik client/contract/package/package-line/deliverable fields; no migration is currently required for the basic import plan.
+
+Synthetic roster prepared without credentials:
+
+- `tenant-admin@r006.example.test`
+- `account-manager@r006.example.test`
+- `client-viewer-a@r006.example.test`
+- `client-viewer-b@r006.example.test`
+
+Evidence:
+
+- Execution release doc: `docs/08-release/R-006-internal-online-trial-execution.md`.
+- Evidence file: `specs/008-r006-internal-online-trial-execution/evidence/verification.md`.
 
 ## R-006 Internal Online Trial Readiness - 2026-07-01
 

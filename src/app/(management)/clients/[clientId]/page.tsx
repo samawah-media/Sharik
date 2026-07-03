@@ -10,8 +10,8 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/ui/core/card";
 import { PageHeader } from "@/ui/layout/page-header";
 import {
   AccessDeniedState,
+  ClientUnavailableState,
   MembershipDisabledState,
-  ResourceNotFoundState,
   SessionExpiredState,
 } from "@/ui/shared/access-states";
 
@@ -47,7 +47,7 @@ export default async function ClientDetailPage({
   });
 
   if (!access.allowed && access.reason === "not_found") {
-    return <ResourceNotFoundState />;
+    return <ClientUnavailableState />;
   }
 
   if (!access.allowed) {
@@ -55,13 +55,13 @@ export default async function ClientDetailPage({
       return <MembershipDisabledState returnHref={access.safeReturnHref} />;
     }
 
-    return <AccessDeniedState returnHref={access.safeReturnHref} />;
+    return <ClientUnavailableState />;
   }
 
   const client = runtime.clients.find((item) => item.id === clientId);
 
   if (!client) {
-    return <ResourceNotFoundState />;
+    return <ClientUnavailableState />;
   }
 
   const permissionResource = { tenantId: client.tenantId, clientId: client.id };
@@ -91,9 +91,9 @@ export default async function ClientDetailPage({
   return (
     <main className="grid gap-5">
       <PageHeader
-        description={client.name}
-        status={<Badge tone="success">عميل نشط داخل النطاق</Badge>}
-        title="مساحة تشغيل العميل"
+        description="مسارات التشغيل الأساسية للعميل المسند لك."
+        status={<Badge tone="success">نشط</Badge>}
+        title={client.name}
       />
       <section
         aria-label="مسارات تجربة العميل"
@@ -102,9 +102,9 @@ export default async function ClientDetailPage({
         {canViewContracts ? (
           <Card>
             <CardHeader>
-              <CardTitle>العقود والباقات</CardTitle>
+              <CardTitle>العقد والباقة</CardTitle>
               <CardDescription>
-                إدارة الاتفاق والمتبقي بدون فوترة متقدمة.
+                الاتفاق والمتبقي من الباقة بشكل مبسط.
               </CardDescription>
             </CardHeader>
             <ButtonLink
@@ -112,7 +112,7 @@ export default async function ClientDetailPage({
               href={`/clients/${client.id}/contracts`}
               variant="secondary"
             >
-              فتح العقود
+              العقد والباقة
             </ButtonLink>
           </Card>
         ) : null}
@@ -129,31 +129,31 @@ export default async function ClientDetailPage({
               href={`/clients/${client.id}/deliverables`}
               variant="secondary"
             >
-              فتح المخرجات
+              المخرجات
             </ButtonLink>
           </Card>
         ) : null}
         {canUpdateDeliverableStatus ? (
           <Card>
             <CardHeader>
-              <CardTitle>لوحة Kanban الداخلية</CardTitle>
-              <CardDescription>عرض تشغيلي للفريق والإدارة فقط.</CardDescription>
+              <CardTitle>لوحة المتابعة</CardTitle>
+              <CardDescription>متابعة العمل الداخلي للعميل.</CardDescription>
             </CardHeader>
             <ButtonLink
               className="mt-4"
               href={`/clients/${client.id}/deliverables/board`}
               variant="primary"
             >
-              فتح اللوحة
+              لوحة المتابعة
             </ButtonLink>
           </Card>
         ) : null}
         {canViewCommercial ? (
           <Card>
             <CardHeader>
-              <CardTitle>الملخص التجاري</CardTitle>
+              <CardTitle>ملخص المتابعة</CardTitle>
               <CardDescription>
-                متابعة الرصيد والاستهلاك الحالي.
+                ملخص الرصيد والاستهلاك وحالة الباقة.
               </CardDescription>
             </CardHeader>
             <ButtonLink
@@ -161,7 +161,7 @@ export default async function ClientDetailPage({
               href={`/clients/${client.id}/commercial`}
               variant="secondary"
             >
-              فتح الملخص
+              ملخص المتابعة
             </ButtonLink>
           </Card>
         ) : null}

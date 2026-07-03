@@ -212,6 +212,28 @@ Deployment and smoke:
 
 No screenshots were taken to avoid recording workbook-derived deliverable text. No credentials, tokens, workbook row content, links, captions, or secret values were recorded.
 
+### Three-Role UAT Navigation Polish - 2026-07-03
+
+After the Arabic UX pass, the owner confirmed the next test should cover the three visible UAT views: client, account manager, and Samawah management/project administration. This polish pass kept the existing role and data model intact and only made the first navigation step clearer.
+
+| Surface | Status | Non-sensitive result |
+|---|---:|---|
+| Account-manager/team portfolio | PASS | Assigned-client cards now link to `عرض العميل`, `المخرجات`, and `ملخص المتابعة` so the user can reach the Hadna scope without guessing from `/portfolio`. |
+| Client portal home | PASS | Client home now includes a primary `عرض ملخص المتابعة` action and a `المخرجات والمتابعة` section. |
+| Permission scope | PASS | No permission broadening, hosted DB mutation, credential generation, or workbook-content disclosure was performed. |
+| Component coverage | PASS | Targeted client-home and assigned-client component tests passed, and full component suite passed. |
+
+Deployment and public-route check:
+
+| Check | Status | Non-sensitive result |
+|---|---:|---|
+| Vercel deploy | PASS | Built deployment `https://sharik-platform-16z047sh3-omarhussien2s-projects.vercel.app`. |
+| Vercel promote | PASS | Promoted the deployment for temporary UAT smoke. |
+| Public alias unauthenticated check | PASS | `https://sharik-platform.vercel.app` redirects unauthenticated visitors to `/sign-in`. |
+| Direct deployment access check | BLOCKED BY SSO | The direct deployment URL redirects to Vercel SSO before authentication. |
+
+Authenticated three-role smoke was not repeated in-chat because UAT credentials remain out-of-band and must not be recorded in GitHub/docs/logs/chat/screenshots.
+
 ### Supabase Data Smoke
 
 | Check | Status | Non-sensitive result |
@@ -237,6 +259,8 @@ No screenshots were taken to avoid recording workbook-derived deliverable text. 
 | Hadna visibility promote | PASS | Public smoke URL was promoted to the visibility-fix deployment. |
 | Arabic UX UAT deploy | PASS | Build completed and produced deployment `https://sharik-platform-785s4i5xd-omarhussien2s-projects.vercel.app`. |
 | Arabic UX UAT promote | PASS | Public smoke URL was promoted to the Arabic UX UAT deployment. |
+| Three-role navigation polish deploy | PASS | Build completed and produced deployment `https://sharik-platform-16z047sh3-omarhussien2s-projects.vercel.app`. |
+| Three-role navigation polish promote | PASS | Public smoke URL was promoted to the navigation-polish deployment. |
 
 ## Remaining Risks
 

@@ -23,6 +23,10 @@ describe("client onboarding UI", () => {
 
     expect(screen.getByRole("heading", { name: "مساحة Client A" })).toBeInTheDocument();
     expect(screen.getByText("بانتظار موافقتي")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "عرض ملخص المتابعة" }),
+    ).toHaveAttribute("href", "/client/commercial");
+    expect(screen.getByText("المخرجات والمتابعة")).toBeInTheDocument();
     expect(screen.queryByText("Client B")).not.toBeInTheDocument();
     expect(screen.queryByText("لوحة الإدارة")).not.toBeInTheDocument();
   });

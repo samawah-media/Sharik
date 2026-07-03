@@ -1,3 +1,5 @@
+import { ButtonLink } from "@/ui/core/button";
+
 type ClientHomeProps = {
   clientName?: string;
 };
@@ -9,14 +11,25 @@ export function ClientHome({ clientName = "Client A" }: ClientHomeProps) {
         <p className="text-sm font-medium text-muted">بوابة العميل</p>
         <h1 className="text-2xl font-semibold">مساحة {clientName}</h1>
         <p className="max-w-2xl text-sm leading-6 text-muted">
-          تظهر هنا المساحات المصرح بها لهذا العميل فقط. لا توجد قوائم إدارة
-          داخلية أو عملاء آخرون في هذا المسار.
+          هذه واجهة العميل المبسطة. تظهر هنا بيانات هذا العميل فقط، بدون لوحات
+          الإدارة الداخلية أو عملاء آخرين.
         </p>
+        <div className="flex flex-wrap gap-2">
+          <ButtonLink href="/client/commercial" variant="primary">
+            عرض ملخص المتابعة
+          </ButtonLink>
+        </div>
       </section>
       <section className="grid gap-3 rounded-lg border border-border p-5">
         <h2 className="text-lg font-semibold">بانتظار موافقتي</h2>
         <p className="text-sm text-muted">
           لا توجد عناصر بانتظار موافقتك ضمن نطاق هذا العميل.
+        </p>
+      </section>
+      <section className="grid gap-3 rounded-lg border border-border p-5">
+        <h2 className="text-lg font-semibold">المخرجات والمتابعة</h2>
+        <p className="text-sm text-muted">
+          افتح ملخص المتابعة لمراجعة الباقة والمخرجات الظاهرة لك كعميل.
         </p>
       </section>
     </main>

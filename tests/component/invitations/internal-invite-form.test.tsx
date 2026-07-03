@@ -45,6 +45,19 @@ describe("assigned clients UI", () => {
     render(<AssignedClients clients={[{ id: "client_a", name: "Client A" }]} />);
 
     expect(screen.getByText("Client A")).toBeInTheDocument();
+    expect(screen.getByText(/عميل داخل نطاق صلاحياتك/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "عرض العميل" })).toHaveAttribute(
+      "href",
+      "/clients/client_a",
+    );
+    expect(screen.getByRole("link", { name: "المخرجات" })).toHaveAttribute(
+      "href",
+      "/clients/client_a/deliverables",
+    );
+    expect(screen.getByRole("link", { name: "ملخص المتابعة" })).toHaveAttribute(
+      "href",
+      "/clients/client_a/commercial",
+    );
     expect(screen.queryByText("Client B")).not.toBeInTheDocument();
   });
 

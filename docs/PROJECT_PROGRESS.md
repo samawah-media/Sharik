@@ -21,6 +21,8 @@ This section supersedes the older R-006 blocked/preflight notes below for the cu
 - Visibility smoke passed on `https://sharik-platform.vercel.app`: account manager sees 1 client card, opens Hadna detail, sees 52 deliverables, and no Hadna UUID is rendered in page text; viewer A sees Hadna portal/commercial summary; viewer B sees safe no-assigned-client state with zero articles and no Hadna name/slug.
 - Arabic UX UAT pass corrected the scoped Hadna display name to `هدنة` with a `ClientUpdated` audit event, kept the client id/slug/linkage unchanged, and simplified the first `/clients` card buttons to `عرض العميل`, `المخرجات`, `العقد والباقة`, and `ملخص المتابعة`.
 - Arabic UX smoke passed on `https://sharik-platform.vercel.app`: account manager sees `هدنة`, no UUID or Latin `Hadna`, four requested card buttons, 4 detail operation cards, and 52 deliverables; viewer A sees `هدنة`; viewer B sees zero articles and no `هدنة`/`Hadna`.
+- Three-role UAT navigation polish added clearer next-step links without DB mutation: the account-manager/team portfolio cards now link directly to `عرض العميل`, `المخرجات`, and `ملخص المتابعة`; the client portal home now has a primary `عرض ملخص المتابعة` action and a simple `المخرجات والمتابعة` explanation.
+- Three-role UAT navigation polish deployed `https://sharik-platform-16z047sh3-omarhussien2s-projects.vercel.app` and promoted `https://sharik-platform.vercel.app`. Public alias unauthenticated check redirects to `/sign-in`; authenticated UAT credentials remain out-of-band.
 - No hosted DB correction was needed in the access fix pass.
 - No existing UAT data was deleted.
 - No workbook row content, links, captions, screenshots, credentials, tokens, or sensitive values were recorded.

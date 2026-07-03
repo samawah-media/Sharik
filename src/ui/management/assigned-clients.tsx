@@ -1,4 +1,5 @@
 import type { ClientRecord } from "@/modules/clients/client-repository";
+import { ButtonLink } from "@/ui/core/button";
 
 export function AssignedClients({
   clients,
@@ -23,11 +24,35 @@ export function AssignedClients({
     <section aria-label="عملائي المسندون" className="grid gap-3">
       {clients.map((client) => (
         <article
-          className="rounded-lg border border-border p-4"
+          className="grid gap-4 rounded-lg border border-border p-4"
           key={client.id}
         >
-          <h2 className="text-base font-semibold">{client.name}</h2>
-          <p className="mt-1 text-sm text-muted">داخل نطاق صلاحياتك</p>
+          <div>
+            <h2 className="text-base font-semibold">{client.name}</h2>
+            <p className="mt-1 text-sm text-muted">
+              عميل داخل نطاق صلاحياتك. ابدأ من صفحة العميل أو افتح المخرجات
+              مباشرة.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <ButtonLink href={`/clients/${client.id}`} size="sm" variant="primary">
+              عرض العميل
+            </ButtonLink>
+            <ButtonLink
+              href={`/clients/${client.id}/deliverables`}
+              size="sm"
+              variant="secondary"
+            >
+              المخرجات
+            </ButtonLink>
+            <ButtonLink
+              href={`/clients/${client.id}/commercial`}
+              size="sm"
+              variant="secondary"
+            >
+              ملخص المتابعة
+            </ButtonLink>
+          </div>
         </article>
       ))}
     </section>

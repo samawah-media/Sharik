@@ -81,6 +81,16 @@ Follow-up pass after the owner asked to continue the UAT polish:
 - Hadna detail and touched breadcrumbs now use `العقد والباقة`, `ملخص المتابعة`, and `لوحة المتابعة` instead of technical wording.
 - Deployed `https://sharik-platform-785s4i5xd-omarhussien2s-projects.vercel.app` and promoted `https://sharik-platform.vercel.app`.
 
+## Three-Role UAT Navigation Polish - 2026-07-03
+
+Follow-up pass to make the first UAT step clearer for the three tested views:
+
+- Account manager / team portfolio cards now include direct actions: `عرض العميل`, `المخرجات`, and `ملخص المتابعة`.
+- Client portal home now includes a primary `عرض ملخص المتابعة` action and a simple `المخرجات والمتابعة` card, so the client can move from the home page to the package/deliverables summary without guessing.
+- No hosted DB mutation, credential generation, workbook row disclosure, or permission broadening was performed.
+- Deployed `https://sharik-platform-16z047sh3-omarhussien2s-projects.vercel.app` and promoted `https://sharik-platform.vercel.app`.
+- Public alias unauthenticated check redirects to `/sign-in`; authenticated account checks still require the out-of-band UAT credentials.
+
 ## Smoke Results
 
 | Check | Status | Result |
@@ -111,7 +121,9 @@ No screenshots were taken.
 | `npm run lint` | PASS |
 | `npm run typecheck` | PASS |
 | `npm run test:unit` | PASS, 24 files / 83 tests |
-| Targeted component tests | PASS, product shell and deliverable board labels |
+| `npm run test:component` | PASS, 15 files / 48 tests |
+| Targeted component tests | PASS, client home and assigned-client action links |
+| `npm run build` | PASS |
 
 ## Remaining Risks
 

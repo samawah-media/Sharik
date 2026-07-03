@@ -145,7 +145,7 @@ export default async function ClientContractsPage({
             <Badge tone="success">تم حفظ العقد بأمان.</Badge>
           ) : null
         }
-        title={`عقود ${client.name}`}
+        title={`العقد والباقة - ${client.name}`}
       />
       {contractList.contracts.length > 0 ? (
         <ContractList contracts={contractList.contracts} />

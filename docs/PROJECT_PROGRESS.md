@@ -1,16 +1,16 @@
 # Project Progress
 
-Last updated: 2026-07-02
+Last updated: 2026-07-03
 
-## Latest R-006 Execution Update - 2026-07-02
+## Latest R-006 Execution Update - 2026-07-03
 
 This section supersedes the older R-006 blocked/preflight notes below for the current PR #33 state.
 
 - Owner-authorized internal UAT executed using the Hadna workbook, Supabase UAT `sharik-uat` / `jnvuccapgsabrwwkxnbh`, and temporary Vercel UAT hosting.
-- Imported the 52-row forward Hadna block into scoped UAT records: 1 client, 1 contract, 1 package, 5 package lines, 52 deliverables, 4 synthetic users, and 56 audit events.
+- Imported the 52-row forward Hadna block into scoped UAT records: 1 client, 1 contract, 1 package, 5 package lines, 52 deliverables, 4 synthetic users, and 57 audit events after the Arabic display-name correction audit.
 - Added F006 client-portal commercial read RLS policies requiring active client membership and active client-scoped role assignment.
 - Hosted RLS database test passed for the new commercial read policies.
-- Vercel deployment URL: `https://sharik-platform-gq8tjtxyj-omarhussien2s-projects.vercel.app`.
+- Vercel deployment URL: `https://sharik-platform-785s4i5xd-omarhussien2s-projects.vercel.app`.
 - Temporary smoke URL: `https://sharik-platform.vercel.app`, promoted to the same deployment for internal UAT.
 - Web smoke passed for tenant admin login, client viewer login, management/client visibility, basic isolation, RTL, and mobile.
 - Supabase data smoke passed: admin and viewer A see 1 client, 1 package, and 52 deliverables; viewer B sees 0 clients.
@@ -19,7 +19,8 @@ This section supersedes the older R-006 blocked/preflight notes below for the cu
 - Access fix smoke passed on `https://sharik-platform.vercel.app`: account manager sees 1 Hadna card on `/clients`, opens Hadna detail, and sees 52 deliverables; client viewer A sees Hadna client portal/commercial summary; viewer B sees safe no-assigned-client state and no Hadna data.
 - Hadna visibility-first pass deployed and promoted `https://sharik-platform-gq8tjtxyj-omarhussien2s-projects.vercel.app`: UUID-like route segments are hidden from breadcrumbs, client-unavailable copy now says `لا يمكنك الوصول لهذا العميل` / `تأكد من اختيار عميل مسند لك.` / `العودة للعملاء`, and the false no-real-client-data shell phrase was removed.
 - Visibility smoke passed on `https://sharik-platform.vercel.app`: account manager sees 1 client card, opens Hadna detail, sees 52 deliverables, and no Hadna UUID is rendered in page text; viewer A sees Hadna portal/commercial summary; viewer B sees safe no-assigned-client state with zero articles and no Hadna name/slug.
-- Hosted client display name remains `Hadna`, not Arabic `هدنة`; no DB rename was applied because this pass kept hosted data changes limited to linkage-only needs.
+- Arabic UX UAT pass corrected the scoped Hadna display name to `هدنة` with a `ClientUpdated` audit event, kept the client id/slug/linkage unchanged, and simplified the first `/clients` card buttons to `عرض العميل`, `المخرجات`, `العقد والباقة`, and `ملخص المتابعة`.
+- Arabic UX smoke passed on `https://sharik-platform.vercel.app`: account manager sees `هدنة`, no UUID or Latin `Hadna`, four requested card buttons, 4 detail operation cards, and 52 deliverables; viewer A sees `هدنة`; viewer B sees zero articles and no `هدنة`/`Hadna`.
 - No hosted DB correction was needed in the access fix pass.
 - No existing UAT data was deleted.
 - No workbook row content, links, captions, screenshots, credentials, tokens, or sensitive values were recorded.

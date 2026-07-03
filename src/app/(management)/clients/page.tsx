@@ -76,7 +76,7 @@ export default async function ClientsPage({
             </ButtonLink>
           ) : null
         }
-        description="مساحات العملاء النشطة داخل نطاق سماوة، مع روابط التشغيل الحالية فقط."
+        description="العملاء المسندون لك مع روابط التشغيل الأساسية."
         title="العملاء"
       />
       {visibleClients.length > 0 && !showFixtureEmptyState ? (
@@ -89,24 +89,15 @@ export default async function ClientsPage({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <CardHeader>
                   <CardTitle>{client.name}</CardTitle>
-                  <CardDescription>
-                    <span className="font-mono text-xs">{client.slug}</span>
-                  </CardDescription>
+                  <CardDescription>عميل مسند لك</CardDescription>
                 </CardHeader>
                 <Badge tone="success">نشط</Badge>
               </div>
               <div className="grid gap-3">
                 <ButtonLink href={`/clients/${client.id}`} variant="primary">
-                  فتح مساحة العميل
+                  عرض العميل
                 </ButtonLink>
                 <div className="flex flex-wrap gap-2">
-                  <ButtonLink
-                    href={`/clients/${client.id}/contracts`}
-                    size="sm"
-                    variant="secondary"
-                  >
-                    العقود
-                  </ButtonLink>
                   <ButtonLink
                     href={`/clients/${client.id}/deliverables`}
                     size="sm"
@@ -114,28 +105,19 @@ export default async function ClientsPage({
                   >
                     المخرجات
                   </ButtonLink>
-                  {evaluatePermission({
-                    actor,
-                    permission: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
-                    resource: {
-                      tenantId: client.tenantId,
-                      clientId: client.id,
-                    },
-                  }).allowed ? (
-                    <ButtonLink
-                      href={`/clients/${client.id}/deliverables/board`}
-                      size="sm"
-                      variant="secondary"
-                    >
-                      لوحة Kanban
-                    </ButtonLink>
-                  ) : null}
+                  <ButtonLink
+                    href={`/clients/${client.id}/contracts`}
+                    size="sm"
+                    variant="secondary"
+                  >
+                    العقد والباقة
+                  </ButtonLink>
                   <ButtonLink
                     href={`/clients/${client.id}/commercial`}
                     size="sm"
                     variant="secondary"
                   >
-                    الملخص التجاري
+                    ملخص المتابعة
                   </ButtonLink>
                   {writeAccess.allowed ? (
                     <ButtonLink

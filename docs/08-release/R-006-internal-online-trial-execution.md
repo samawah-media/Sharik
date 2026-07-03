@@ -14,7 +14,7 @@ This run used the owner-authorized Hadna workbook, `sharik-uat` Supabase UAT, an
 | PR | `#33` |
 | Supabase project | `sharik-uat` |
 | Supabase ref | `jnvuccapgsabrwwkxnbh` |
-| Vercel deployment URL | `https://sharik-platform-gq8tjtxyj-omarhussien2s-projects.vercel.app` |
+| Vercel deployment URL | `https://sharik-platform-785s4i5xd-omarhussien2s-projects.vercel.app` |
 | Smoke URL | `https://sharik-platform.vercel.app` |
 
 The direct deployment URL was protected by Vercel SSO. The public project alias was promoted to the same deployment for temporary UAT smoke testing.
@@ -32,7 +32,9 @@ The 52-row forward Hadna block was imported without recording workbook row conte
 | packages | 1 |
 | package_lines | 5 |
 | deliverables | 52 |
-| audit_events | 56 |
+| audit_events | 57 |
+
+The audit count includes one later `ClientUpdated` event for the Hadna Arabic display-name correction.
 
 No existing UAT data was deleted.
 
@@ -68,6 +70,17 @@ Focused fix after owner UAT feedback:
 - Deployed `https://sharik-platform-gq8tjtxyj-omarhussien2s-projects.vercel.app` and promoted `https://sharik-platform.vercel.app`.
 - No hosted DB mutation was applied. Current hosted client display name remains `Hadna`; Arabic rename to `هدنة` remains open because this pass avoided hosted data changes unless needed for linkage.
 
+## Arabic UX UAT Fix Pass - 2026-07-03
+
+Follow-up pass after the owner asked to continue the UAT polish:
+
+- Corrected the scoped Hadna hosted client display name from `Hadna` to `هدنة`.
+- Added one `ClientUpdated` audit event for the display-name correction; R-006 audit count is now 57.
+- Kept the Hadna client id, slug, contract/package linkage, and 52 deliverables unchanged.
+- `/clients` now shows a simple Hadna card without slug/UUID, with buttons: `عرض العميل`, `المخرجات`, `العقد والباقة`, `ملخص المتابعة`.
+- Hadna detail and touched breadcrumbs now use `العقد والباقة`, `ملخص المتابعة`, and `لوحة المتابعة` instead of technical wording.
+- Deployed `https://sharik-platform-785s4i5xd-omarhussien2s-projects.vercel.app` and promoted `https://sharik-platform.vercel.app`.
+
 ## Smoke Results
 
 | Check | Status | Result |
@@ -77,6 +90,8 @@ Focused fix after owner UAT feedback:
 | Account manager `/clients` access | PASS | Loaded 1 Hadna client card on the public UAT URL. |
 | Account manager Hadna deliverables | PASS | Loaded 52 deliverable cards. |
 | Account manager UUID visibility | PASS | `/clients`, Hadna detail, and Hadna deliverables did not render the Hadna UUID in page text. |
+| Arabic Hadna card | PASS | `/clients` renders `هدنة`, not `Hadna`, and shows the requested four buttons. |
+| Arabic Hadna detail | PASS | Hadna detail renders `هدنة` with `المخرجات`, `العقد والباقة`, `ملخص المتابعة`, and `لوحة المتابعة`. |
 | Client viewer A login | PASS | Client commercial route loaded. |
 | Client viewer A package/deliverables visible | PASS | Groups `[1, 5, 52]`. |
 | Client viewer B login | PASS | Client portal route loaded. |
@@ -96,7 +111,7 @@ No screenshots were taken.
 | `npm run lint` | PASS |
 | `npm run typecheck` | PASS |
 | `npm run test:unit` | PASS, 24 files / 83 tests |
-| Targeted component tests | PASS, product shell and denial states |
+| Targeted component tests | PASS, product shell and deliverable board labels |
 
 ## Remaining Risks
 
@@ -104,7 +119,6 @@ No screenshots were taken.
 - `sharik-uat` had previous non-R-006 data; owner accepted this for internal UAT and no cleanup was performed.
 - Supabase public signup disabled status still lacks a safe read-only confirmation.
 - Credential handoff remains out-of-band.
-- Hosted client display name remains `Hadna`, not Arabic `هدنة`; no data rename was applied in this linkage-first pass.
 - PR #33 must remain unmerged until separately authorized.
 
 ## Evidence

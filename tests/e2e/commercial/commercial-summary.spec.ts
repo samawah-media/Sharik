@@ -7,7 +7,7 @@ test("management commercial summary shows scoped cards without later workflow fe
     waitUntil: "domcontentloaded",
   });
 
-  await expect(page.getByRole("heading", { name: "الملخص التجاري" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "ملخص المتابعة" })).toBeVisible();
   const summaryRegion = page.getByRole("region", { name: "ملخص الإدارة التجاري" });
   await expect(summaryRegion).toBeVisible();
   await expect(summaryRegion.getByText("محجوز: 1").first()).toBeVisible();

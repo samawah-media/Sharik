@@ -28,7 +28,7 @@ This is not Production acceptance, Ready conversion, PR merge approval, or appro
 | Supabase project | `sharik-uat` |
 | Supabase ref | `jnvuccapgsabrwwkxnbh` |
 | Vercel project | `sharik-platform` |
-| Vercel deployment URL | `https://sharik-platform-gq8tjtxyj-omarhussien2s-projects.vercel.app` |
+| Vercel deployment URL | `https://sharik-platform-785s4i5xd-omarhussien2s-projects.vercel.app` |
 | Smoke URL | `https://sharik-platform.vercel.app` |
 
 Note: the direct deployment URL initially redirected through Vercel SSO. The public project alias was promoted to the same deployment and used for smoke testing.
@@ -66,7 +66,9 @@ Hosted aggregate verification returned the following scoped R-006 counts:
 | packages | 1 |
 | package_lines | 5 |
 | deliverables | 52 |
-| audit_events | 56 |
+| audit_events | 57 |
+
+The audit count includes the original R-006 import audit events plus one later `ClientUpdated` audit event for the Hadna Arabic display-name correction.
 
 No existing UAT rows were deleted.
 
@@ -174,6 +176,42 @@ No hosted DB mutation was applied in this pass. Read-only hosted inspection stil
 
 No screenshots were taken to avoid recording workbook-derived deliverable text. No credentials, tokens, workbook row content, links, captions, or secret values were recorded.
 
+### Arabic UX UAT Fix Pass - 2026-07-03
+
+After the visibility-first fix passed, the owner asked to continue the UAT polish. This pass stayed limited to the first Hadna UAT path and did not change workbook-derived deliverable content.
+
+Hosted DB correction applied only to the R-006 Hadna client row:
+
+| Check | Status | Non-sensitive result |
+|---|---:|---|
+| Hadna display name | PASS | `clients.name` changed from `Hadna` to `هدنة` for client `b0060000-0000-4000-8000-000000000301`. |
+| Audit event | PASS | Added one `ClientUpdated` audit event for the Hadna display-name correction; scoped R-006 audit count is now 57. |
+| Linkage preservation | PASS | Existing Hadna slug, client id, contract/package linkage, and 52 deliverables remained unchanged. |
+
+UX changes applied:
+
+| Surface | Status | Non-sensitive result |
+|---|---:|---|
+| `/clients` Hadna card | PASS | Card title renders `هدنة`; no slug or UUID is shown; buttons are `عرض العميل`, `المخرجات`, `العقد والباقة`, and `ملخص المتابعة`. |
+| Hadna detail page | PASS | Page title renders `هدنة`; operation cards use `المخرجات`, `العقد والباقة`, `ملخص المتابعة`, and `لوحة المتابعة`. |
+| Management navigation/breadcrumbs | PASS | Replaced technical labels such as `الملخص التجاري`, `لوحة Kanban`, and `المحفظة` on the touched path with `ملخص المتابعة` and `لوحة المتابعة`. |
+| Hadna deliverables page | PASS | Link to the board renders as `لوحة المتابعة`; page still renders 52 deliverables. |
+
+Deployment and smoke:
+
+| Check | Status | Non-sensitive result |
+|---|---:|---|
+| Vercel deploy | PASS | Built deployment `https://sharik-platform-785s4i5xd-omarhussien2s-projects.vercel.app`. |
+| Vercel promote | PASS | `https://sharik-platform.vercel.app` fetches the promoted deployment and reports `Ready`. |
+| Account manager `/clients` | PASS | 1 card; Hadna renders as `هدنة`; no UUID, Latin `Hadna`, or denial text; card buttons match the requested four labels. |
+| Account manager Hadna detail | PASS | 4 operation cards; `هدنة` visible; no UUID; required Arabic labels visible. |
+| Account manager Hadna deliverables | PASS | 52 deliverable cards; `هدنة` visible; no UUID rendered. |
+| Client viewer A `/client` | PASS | Hadna client portal loads and shows `هدنة`; no denial state. |
+| Client viewer A `/client/commercial` | PASS | Client package summary loads with 58 safe summary article cards. |
+| Viewer B `/client` | PASS | 0 article cards; no `هدنة` or `Hadna` rendered. |
+
+No screenshots were taken to avoid recording workbook-derived deliverable text. No credentials, tokens, workbook row content, links, captions, or secret values were recorded.
+
 ### Supabase Data Smoke
 
 | Check | Status | Non-sensitive result |
@@ -197,6 +235,8 @@ No screenshots were taken to avoid recording workbook-derived deliverable text. 
 | Access fix promote | PASS | Public smoke URL was promoted to the access-fix deployment. |
 | Hadna visibility deploy | PASS | Build completed and produced deployment `https://sharik-platform-gq8tjtxyj-omarhussien2s-projects.vercel.app`. |
 | Hadna visibility promote | PASS | Public smoke URL was promoted to the visibility-fix deployment. |
+| Arabic UX UAT deploy | PASS | Build completed and produced deployment `https://sharik-platform-785s4i5xd-omarhussien2s-projects.vercel.app`. |
+| Arabic UX UAT promote | PASS | Public smoke URL was promoted to the Arabic UX UAT deployment. |
 
 ## Remaining Risks
 
@@ -206,7 +246,7 @@ No screenshots were taken to avoid recording workbook-derived deliverable text. 
 | UAT target had previous non-R-006 data before insertion. | Accepted by owner; no cleanup/deletion performed. |
 | Public signup disabled status was not safely confirmed through a read-only Supabase surface. | Open. No signup attempt was made. |
 | Credentials require out-of-band handoff. | Open. Credentials were created only for internal smoke and not printed. |
-| Hosted client display name is currently `Hadna`, not Arabic `هدنة`. | Open. Not changed in this pass because hosted data changes were limited to linkage-only needs. |
+| Hosted client display name is currently `Hadna`, not Arabic `هدنة`. | Resolved. Corrected to `هدنة` for the scoped Hadna UAT client only, with a `ClientUpdated` audit event. |
 | PR #33 remains Draft and must not be merged without separate authorization. | Open. |
 
 ## AGENTS Compliance
@@ -218,6 +258,6 @@ No screenshots were taken to avoid recording workbook-derived deliverable text. 
 | Tenant/client scoped queries and policies used | PASS |
 | Client isolation verified | PASS |
 | Internal-sensitive workbook content kept out of docs/logs/chat | PASS |
-| Audit events inserted for hosted import | PASS |
+| Audit events inserted for hosted import and Hadna display correction | PASS |
 | No unrelated UAT deletion | PASS |
 | No PR merge | PASS |

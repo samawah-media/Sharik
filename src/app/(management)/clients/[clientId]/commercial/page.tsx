@@ -96,7 +96,7 @@ export default async function ManagementCommercialSummaryPage({
   return (
     <main className="grid gap-5" dir="rtl">
       <div>
-        <h1 className="text-2xl font-semibold">الملخص التجاري</h1>
+        <h1 className="text-2xl font-semibold">ملخص المتابعة</h1>
         <p className="mt-2 text-sm text-muted">{client.name}</p>
       </div>
       <ManagementCommercialSummaryCards summary={summary.value} />

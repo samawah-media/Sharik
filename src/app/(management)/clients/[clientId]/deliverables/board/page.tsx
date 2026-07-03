@@ -113,7 +113,7 @@ export default async function ClientDeliverablesBoardPage({
             ) : null}
           </div>
         }
-        title="لوحة Kanban الداخلية"
+        title="لوحة المتابعة"
       />
       {deliverableList.deliverables.length > 0 ? (
         <DeliverableBoard

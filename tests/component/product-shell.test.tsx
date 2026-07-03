@@ -20,7 +20,7 @@ describe("management product shell", () => {
           <PageHeader
             actions={<ButtonLink href="/clients">رجوع</ButtonLink>}
             description="Client A"
-            title="لوحة Kanban الداخلية"
+            title="لوحة المتابعة"
           />
         </main>
       </ProductShell>,
@@ -42,9 +42,9 @@ describe("management product shell", () => {
     expect(
       screen.queryByText("b0060000-0000-4000-8000-000000000301"),
     ).not.toBeInTheDocument();
-    expect(screen.getByText("لوحة Kanban")).toBeInTheDocument();
+    expect(screen.getAllByText("لوحة المتابعة").length).toBeGreaterThan(0);
     expect(
-      screen.getByRole("heading", { name: "لوحة Kanban الداخلية" }),
+      screen.getByRole("heading", { name: "لوحة المتابعة" }),
     ).toBeVisible();
     expect(
       screen.getByText("تجربة UAT داخلية على بيانات هدنة المصرح بها"),

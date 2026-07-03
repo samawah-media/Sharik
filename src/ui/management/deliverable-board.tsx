@@ -274,7 +274,7 @@ export function DeliverableBoard({
 
   return (
     <section
-      aria-label="لوحة Kanban الداخلية"
+      aria-label="لوحة المتابعة"
       className="-mx-4 overflow-x-auto px-4 pb-4"
       data-testid="kanban-board-scroll"
       dir="rtl"

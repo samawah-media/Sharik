@@ -114,7 +114,7 @@ export default async function ClientDeliverablesPage({
                 href={`/clients/${client.id}/deliverables/board`}
                 variant="secondary"
               >
-                لوحة Kanban
+                لوحة المتابعة
               </ButtonLink>
             ) : null}
             {canCreateDeliverables ? (

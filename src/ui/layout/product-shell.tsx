@@ -15,24 +15,24 @@ import { cn } from "@/ui/core/utils";
 
 const navigationItems = [
   { href: "/clients", label: "العملاء", icon: BriefcaseBusiness },
-  { href: "/portfolio", label: "المحفظة", icon: LayoutDashboard },
+  { href: "/portfolio", label: "لوحة المتابعة", icon: LayoutDashboard },
   { href: "/members", label: "الفريق", icon: Users },
   { href: "/invitations/internal", label: "الدعوات", icon: UserRoundPlus },
 ] as const;
 
 const segmentLabels: Record<string, string> = {
   clients: "العملاء",
-  contracts: "العقود",
-  packages: "الباقات",
+  contracts: "العقد والباقة",
+  packages: "الباقة",
   deliverables: "المخرجات",
-  board: "لوحة Kanban",
-  commercial: "الملخص التجاري",
+  board: "لوحة المتابعة",
+  commercial: "ملخص المتابعة",
   new: "إضافة",
   edit: "تعديل",
   members: "الفريق",
   invitations: "الدعوات",
   internal: "دعوة داخلية",
-  portfolio: "المحفظة",
+  portfolio: "لوحة المتابعة",
 };
 
 const uuidLikePattern =
@@ -64,7 +64,7 @@ function breadcrumbLabel(segment: string, previousSegment?: string) {
   }
 
   if (segment.startsWith("client_")) {
-    return "مساحة العميل";
+    return "العميل";
   }
 
   if (segment.startsWith("contract_")) {

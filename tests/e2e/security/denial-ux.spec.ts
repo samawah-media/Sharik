@@ -8,7 +8,7 @@ test("denies assigned internal direct URL access to unassigned same-tenant clien
   });
 
   await expect(
-    page.getByRole("heading", { name: "لا يمكن الوصول إلى هذه الصفحة" }),
+    page.getByRole("heading", { name: "لا يمكنك الوصول لهذا العميل" }),
   ).toBeVisible();
   await expect(page.getByText("Client C")).toHaveCount(0);
   await expect(page.getByText("client_c")).toHaveCount(0);

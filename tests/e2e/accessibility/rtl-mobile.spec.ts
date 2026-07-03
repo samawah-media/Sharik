@@ -68,7 +68,10 @@ test("denial states expose accessible recovery actions without leaking resources
   });
 
   await expect(page.getByRole("main")).toHaveAttribute("dir", "rtl");
-  await expect(page.getByRole("link", { name: "العودة للمساحة الآمنة" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "لا يمكنك الوصول لهذا العميل" }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "العودة للعملاء" })).toBeVisible();
   await expect(page.getByText("Client B")).toHaveCount(0);
   await expect(page.getByText("tenant_b")).toHaveCount(0);
 });

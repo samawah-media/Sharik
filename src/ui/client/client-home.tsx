@@ -1,35 +1,49 @@
 import { ButtonLink } from "@/ui/core/button";
+import {
+  formatMvpClientName,
+  MvpSnapshotCards,
+  type MvpSnapshotStats,
+} from "@/ui/mvp/hadna-mvp-summary";
 
 type ClientHomeProps = {
   clientName?: string;
+  stats?: MvpSnapshotStats;
 };
 
-export function ClientHome({ clientName = "Client A" }: ClientHomeProps) {
+export function ClientHome({ clientName = "هدنة", stats }: ClientHomeProps) {
+  const displayClientName = formatMvpClientName(clientName);
+
   return (
     <main className="mx-auto grid w-full max-w-4xl gap-6 px-4 py-8">
       <section className="grid gap-3">
         <p className="text-sm font-medium text-muted">بوابة العميل</p>
-        <h1 className="text-2xl font-semibold">مساحة {clientName}</h1>
+        <h1 className="text-2xl font-semibold">مساحة {displayClientName}</h1>
         <p className="max-w-2xl text-sm leading-6 text-muted">
-          هذه واجهة العميل المبسطة. تظهر هنا بيانات هذا العميل فقط، بدون لوحات
-          الإدارة الداخلية أو عملاء آخرين.
+          هذه واجهة هدنة المبسطة. تظهر هنا الباقة والمخرجات المسموحة لك فقط،
+          بدون لوحات الإدارة الداخلية أو عملاء آخرين.
         </p>
         <div className="flex flex-wrap gap-2">
-          <ButtonLink href="/client/commercial" variant="primary">
-            عرض ملخص المتابعة
+          <ButtonLink href="/client/commercial#deliverables" variant="primary">
+            عرض مخرجاتي
+          </ButtonLink>
+          <ButtonLink href="/client/commercial#package" variant="secondary">
+            عرض الباقة
           </ButtonLink>
         </div>
       </section>
+      {stats ? <MvpSnapshotCards stats={stats} /> : null}
       <section className="grid gap-3 rounded-lg border border-border p-5">
         <h2 className="text-lg font-semibold">بانتظار موافقتي</h2>
         <p className="text-sm text-muted">
-          لا توجد عناصر بانتظار موافقتك ضمن نطاق هذا العميل.
+          لا توجد عناصر بانتظار موافقتك الآن. سيتم تفعيل هذه المساحة لاحقًا
+          لمسار الاعتماد.
         </p>
       </section>
       <section className="grid gap-3 rounded-lg border border-border p-5">
-        <h2 className="text-lg font-semibold">المخرجات والمتابعة</h2>
+        <h2 className="text-lg font-semibold">المخرجات والباقة</h2>
         <p className="text-sm text-muted">
-          افتح ملخص المتابعة لمراجعة الباقة والمخرجات الظاهرة لك كعميل.
+          افتح مخرجاتي لمراجعة الاسم والنوع والتاريخ والحالة والتقدم، وافتح
+          الباقة لمعرفة المتفق عليه والمتبقي.
         </p>
       </section>
     </main>
@@ -96,7 +110,7 @@ export function ClientInviteForm() {
           name="clientId"
           required
         >
-          <option value="client_a">Client A</option>
+          <option value="client_a">هدنة</option>
         </select>
       </label>
       <button

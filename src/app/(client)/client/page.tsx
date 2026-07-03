@@ -1,10 +1,19 @@
 import { ClientHome } from "@/ui/client/client-home";
 import { resolveRoleAwareNavigation } from "@/modules/navigation/navigation-resolver";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  fixtureClientCommercialSummary,
+  readCommercialSummary,
+} from "@/server/actions/commercial-summary-read";
 import {
   canUseRouteActorFixtures,
   guardClientDetailRoute,
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
+import {
+  buildClientMvpStats,
+  buildEmptyMvpStats,
+} from "@/ui/mvp/hadna-mvp-summary";
 import { RoleAwareNavigation } from "@/ui/navigation/role-aware-nav";
 import {
   AccessDeniedState,
@@ -63,11 +72,23 @@ export default async function ClientPage({
     actor,
     assignedClients: clients.filter((client) => client.id === primaryClient.id),
   });
+  const summary = canUseRouteActorFixtures()
+    ? { ok: true as const, value: fixtureClientCommercialSummary }
+    : await readCommercialSummary({
+        supabase: await createSupabaseServerClient(),
+        tenantId: primaryClient.tenantId,
+        clientId: primaryClient.id,
+        audience: "client",
+      });
+  const stats =
+    summary.ok && summary.value.audience === "client"
+      ? buildClientMvpStats(summary.value)
+      : buildEmptyMvpStats();
 
   return (
     <>
       <RoleAwareNavigation items={navigation.items} label="تنقل بوابة العميل" />
-      <ClientHome clientName={primaryClient.name} />
+      <ClientHome clientName={primaryClient.name} stats={stats} />
     </>
   );
 }

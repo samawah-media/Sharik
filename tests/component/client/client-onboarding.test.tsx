@@ -19,14 +19,31 @@ describe("client onboarding UI", () => {
   });
 
   it("renders client portal first-entry surface without admin data", () => {
-    render(<ClientHome clientName="Client A" />);
+    render(
+      <ClientHome
+        clientName="هدنة"
+        stats={{
+          deliverablesCount: 52,
+          packageLineCount: 5,
+          waitingWorkCount: 35,
+          waitingClientCount: 5,
+          completedCount: 12,
+        }}
+      />,
+    );
 
-    expect(screen.getByRole("heading", { name: "مساحة Client A" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "مساحة هدنة" })).toBeInTheDocument();
     expect(screen.getByText("بانتظار موافقتي")).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "عرض ملخص المتابعة" }),
-    ).toHaveAttribute("href", "/client/commercial");
-    expect(screen.getByText("المخرجات والمتابعة")).toBeInTheDocument();
+      screen.getByRole("link", { name: "عرض مخرجاتي" }),
+    ).toHaveAttribute("href", "/client/commercial#deliverables");
+    expect(screen.getByRole("link", { name: "عرض الباقة" })).toHaveAttribute(
+      "href",
+      "/client/commercial#package",
+    );
+    expect(screen.getByText("المخرجات والباقة")).toBeInTheDocument();
+    expect(screen.getByText("عدد المخرجات")).toBeInTheDocument();
+    expect(screen.getByText("52")).toBeInTheDocument();
     expect(screen.queryByText("Client B")).not.toBeInTheDocument();
     expect(screen.queryByText("لوحة الإدارة")).not.toBeInTheDocument();
   });

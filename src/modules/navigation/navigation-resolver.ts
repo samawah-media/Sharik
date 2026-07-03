@@ -36,6 +36,9 @@ const item = (
   advisoryOnly: true,
 });
 
+const displayClientName = (name: string) =>
+  name.trim().toLowerCase() === "hadna" ? "هدنة" : name;
+
 const can = (
   actor: AuthorizationActor,
   permission: (typeof PERMISSIONS)[keyof typeof PERMISSIONS],
@@ -63,12 +66,35 @@ export const resolveRoleAwareNavigation = ({
   }
 
   if (can(actor, PERMISSIONS.CLIENT_VIEW_ALL_IN_TENANT)) {
+    const primaryClient = assignedClients.find(
+      (client) => client.tenantId === actor.tenantId,
+    );
+
     return {
       state: "ready",
       items: [
+        item("management.dashboard", "لوحة الإدارة", "/portfolio"),
         item("management.clients", "العملاء", "/clients"),
-        item("management.members", "الأعضاء", "/members"),
-        item("management.audit", "سجل التدقيق", "/audit"),
+        ...(primaryClient
+          ? [
+              item(
+                `management.client.${primaryClient.id}`,
+                displayClientName(primaryClient.name),
+                `/clients/${primaryClient.id}`,
+              ),
+              item(
+                `management.client.${primaryClient.id}.deliverables`,
+                "المخرجات",
+                `/clients/${primaryClient.id}/deliverables`,
+              ),
+              item(
+                `management.client.${primaryClient.id}.sla`,
+                "المتابعة / SLA",
+                `/clients/${primaryClient.id}/commercial`,
+              ),
+            ]
+          : []),
+        item("management.members", "الفريق", "/members"),
       ],
     };
   }
@@ -98,6 +124,8 @@ export const resolveRoleAwareNavigation = ({
       state: "ready",
       items: [
         item("client.home", "الرئيسية", "/client"),
+        item("client.deliverables", "مخرجاتي", "/client/commercial#deliverables"),
+        item("client.package", "الباقة والمتبقي", "/client/commercial#package"),
         ...(hasApproverRole
           ? [item("client.pendingApprovals", "بانتظار موافقتي", "/client/pending")]
           : []),
@@ -110,9 +138,23 @@ export const resolveRoleAwareNavigation = ({
       state: "ready",
       items: [
         item("team.portfolio", "عملائي", "/portfolio"),
-        ...visibleClients.map((client) =>
-          item(`client.${client.id}`, client.name, `/clients/${client.id}`),
-        ),
+        ...visibleClients.flatMap((client) => [
+          item(
+            `client.${client.id}`,
+            displayClientName(client.name),
+            `/clients/${client.id}`,
+          ),
+          item(
+            `client.${client.id}.deliverables`,
+            `مخرجات ${displayClientName(client.name)}`,
+            `/clients/${client.id}/deliverables`,
+          ),
+          item(
+            `client.${client.id}.summary`,
+            "ملخص المتابعة",
+            `/clients/${client.id}/commercial`,
+          ),
+        ]),
       ],
     };
   }

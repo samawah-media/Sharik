@@ -1,5 +1,16 @@
 import type { ManagementCommercialSummary } from "@/modules/commercial/commercial-summary";
 
+const typeLabels: Record<string, string> = {
+  post: "منشور",
+  reel: "ريلز",
+  story: "ستوري",
+  design: "تصميم",
+  report: "تقرير",
+  video: "فيديو",
+  campaign: "حملة",
+  article: "مقال",
+};
+
 const statusLabels = {
   draft: "مسودة",
   active: "نشط",
@@ -18,13 +29,21 @@ const statusLabels = {
   delivered: "تم التسليم",
 } as const;
 
+const formatDate = (value?: string) => {
+  if (!value) {
+    return "غير محدد";
+  }
+
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : value.slice(0, 10);
+};
+
 export function ManagementCommercialSummaryCards({
   summary,
 }: {
   summary: ManagementCommercialSummary;
 }) {
   return (
-    <section aria-label="ملخص الإدارة التجاري" className="grid gap-4" dir="rtl">
+    <section aria-label="ملخص المتابعة للإدارة" className="grid gap-5" dir="rtl">
       <div className="grid gap-3 md:grid-cols-3">
         <article className="rounded-lg border border-border bg-card p-4">
           <p className="text-sm text-muted">العقود</p>
@@ -39,7 +58,8 @@ export function ManagementCommercialSummaryCards({
           <p className="mt-1 text-2xl font-semibold">{summary.deliverables.length}</p>
         </article>
       </div>
-      <div className="grid gap-3">
+      <div className="grid gap-3" id="contracts">
+        <h2 className="text-lg font-semibold">العقد</h2>
         {summary.contracts.map((contract) => (
           <article className="rounded-lg border border-border p-4" key={contract.id}>
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -54,7 +74,8 @@ export function ManagementCommercialSummaryCards({
           </article>
         ))}
       </div>
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid gap-3 md:grid-cols-2" id="package">
+        <h2 className="md:col-span-2 text-lg font-semibold">الباقة والمتبقي</h2>
         {summary.packages.flatMap((packageSummary) =>
           packageSummary.lines.map((line) => (
             <article
@@ -64,15 +85,16 @@ export function ManagementCommercialSummaryCards({
               <p className="text-sm text-muted">{packageSummary.name}</p>
               <h2 className="mt-1 text-base font-semibold">{line.serviceLabel}</h2>
               <div className="mt-3 flex flex-wrap gap-2 text-sm text-muted">
-                <span>ملتزم: {line.balance.committed}</span>
-                <span>محجوز: {line.balance.reserved}</span>
-                <span>متاح: {line.balance.available}</span>
+                <span>المتفق عليه: {line.balance.committed}</span>
+                <span>قيد العمل: {line.balance.reserved}</span>
+                <span>المتبقي: {line.balance.available}</span>
               </div>
             </article>
           )),
         )}
       </div>
-      <div className="grid gap-3">
+      <div className="grid gap-3" id="deliverables">
+        <h2 className="text-lg font-semibold">المخرجات</h2>
         {summary.deliverables.map((deliverable) => (
           <article className="rounded-lg border border-border p-4" key={deliverable.id}>
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -82,9 +104,16 @@ export function ManagementCommercialSummaryCards({
               </span>
             </div>
             <div className="mt-3 flex flex-wrap gap-2 text-sm text-muted">
+              <span>
+                النوع: {typeLabels[deliverable.type] ?? deliverable.type}
+              </span>
+              <span>
+                التاريخ:{" "}
+                {formatDate(deliverable.clientDueDate ?? deliverable.finalDueDate)}
+              </span>
               <span>التقدم {deliverable.progressPercentage}%</span>
               {deliverable.reservation ? (
-                <span>محجوز: {deliverable.reservation.reservedQuantity}</span>
+                <span>قيد العمل: {deliverable.reservation.reservedQuantity}</span>
               ) : null}
             </div>
           </article>

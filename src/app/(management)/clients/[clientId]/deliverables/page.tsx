@@ -1,6 +1,12 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
+  fixtureManagementCommercialSummary,
+  readCommercialSummary,
+} from "@/server/actions/commercial-summary-read";
+import {
+  canUseRouteActorFixtures,
   guardClientDetailRoute,
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
@@ -14,6 +20,12 @@ import {
 import { Badge } from "@/ui/core/badge";
 import { ButtonLink } from "@/ui/core/button";
 import { PageHeader } from "@/ui/layout/page-header";
+import {
+  buildManagementMvpStats,
+  buildMvpStatsFromDeliverables,
+  formatMvpClientName,
+  MvpSnapshotCards,
+} from "@/ui/mvp/hadna-mvp-summary";
 import {
   AccessDeniedState,
   ClientUnavailableState,
@@ -104,6 +116,21 @@ export default async function ClientDeliverablesPage({
     return <DeliverableDeniedState />;
   }
 
+  const summary =
+    canUseRouteActorFixtures()
+      ? { ok: true as const, value: fixtureManagementCommercialSummary }
+      : await readCommercialSummary({
+          supabase: await createSupabaseServerClient(),
+          tenantId: client.tenantId,
+          clientId: client.id,
+          audience: "management",
+        });
+  const stats =
+    summary.ok && summary.value.audience === "management"
+      ? buildManagementMvpStats(summary.value)
+      : buildMvpStatsFromDeliverables(deliverableList.deliverables);
+  const displayClientName = formatMvpClientName(client.name);
+
   return (
     <main className="grid gap-5" dir="rtl">
       <PageHeader
@@ -114,7 +141,7 @@ export default async function ClientDeliverablesPage({
                 href={`/clients/${client.id}/deliverables/board`}
                 variant="secondary"
               >
-                لوحة المتابعة
+                لوحة العمل
               </ButtonLink>
             ) : null}
             {canCreateDeliverables ? (
@@ -135,7 +162,7 @@ export default async function ClientDeliverablesPage({
             ) : null}
           </>
         }
-        description={client.name}
+        description={displayClientName}
         status={
           <div className="flex flex-wrap gap-2">
             {query?.saved === "created" ? (
@@ -152,8 +179,9 @@ export default async function ClientDeliverablesPage({
             ) : null}
           </div>
         }
-        title={`مخرجات ${client.name}`}
+        title={`مخرجات ${displayClientName}`}
       />
+      <MvpSnapshotCards stats={stats} />
       {deliverableList.deliverables.length > 0 ? (
         <DeliverableList
           cancellationAction={cancelNotStartedDeliverableAction}

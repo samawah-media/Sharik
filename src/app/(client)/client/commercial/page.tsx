@@ -11,6 +11,11 @@ import {
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
 import { ClientCommercialSummaryCards } from "@/ui/client/commercial-summary";
+import { ButtonLink } from "@/ui/core/button";
+import {
+  buildClientMvpStats,
+  HadnaMvpHero,
+} from "@/ui/mvp/hadna-mvp-summary";
 import { RoleAwareNavigation } from "@/ui/navigation/role-aware-nav";
 import { resolveRoleAwareNavigation } from "@/modules/navigation/navigation-resolver";
 import {
@@ -103,10 +108,18 @@ export default async function ClientCommercialSummaryPage({
     <>
       <RoleAwareNavigation items={navigation.items} label="تنقل بوابة العميل" />
       <main className="mx-auto grid w-full max-w-4xl gap-5 px-4 py-8" dir="rtl">
-        <div>
-          <h1 className="text-2xl font-semibold">ملخص الباقة</h1>
-          <p className="mt-2 text-sm text-muted">{primaryClient.name}</p>
-        </div>
+        <HadnaMvpHero
+          clientName={primaryClient.name}
+          roleLabel="بوابة العميل"
+          stats={buildClientMvpStats(summary.value)}
+        >
+          <ButtonLink href="#deliverables" variant="primary">
+            عرض مخرجاتي
+          </ButtonLink>
+          <ButtonLink href="#package" variant="secondary">
+            الباقة والمتبقي
+          </ButtonLink>
+        </HadnaMvpHero>
         <ClientCommercialSummaryCards summary={summary.value} />
       </main>
     </>

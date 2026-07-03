@@ -50,6 +50,7 @@ const deliverableSummary: DeliverableSafeSummary = {
   contributorUserIds: [],
   status: "not_started",
   progressPercentage: 0,
+  clientDueDate: "2026-07-05",
   requiresInternalApproval: true,
   requiresClientApproval: true,
   approvedExtra: false,
@@ -130,8 +131,11 @@ describe("deliverable creation form and reservation preview", () => {
 
     const list = screen.getByRole("region", { name: "قائمة المخرجات" });
     expect(within(list).getByText("منشور إطلاق الحملة")).toBeInTheDocument();
-    expect(within(list).getByText("لم يبدأ")).toBeInTheDocument();
-    expect(within(list).getByText("التقدم 0%")).toBeInTheDocument();
+    expect(within(list).getAllByText("منشور").length).toBeGreaterThan(0);
+    expect(within(list).getByText("2026-07-05")).toBeInTheDocument();
+    expect(within(list).getAllByText("لم يبدأ").length).toBeGreaterThan(0);
+    expect(within(list).getByText("0%")).toBeInTheDocument();
+    expect(within(list).queryByText("مخرج متفق عليه ضمن الباقة.")).not.toBeInTheDocument();
     expect(within(list).getByText("محجوز: 1")).toBeInTheDocument();
     expect(within(list).queryByText("approval log")).not.toBeInTheDocument();
     expect(within(list).queryByText("internal comment")).not.toBeInTheDocument();

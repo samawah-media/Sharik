@@ -65,6 +65,20 @@ describe("route guard actor fixtures", () => {
     });
   });
 
+  it("keeps viewer B without Hadna scope in a no-assigned-client state", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("APP_ENV", "test");
+
+    const actor = resolveRouteActor("client_viewer_b");
+    const access = guardClientsIndexRoute({ actor, clients: routeClients });
+
+    expect(actor.userId).toBe("client_viewer_b");
+    expect(access).toMatchObject({
+      allowed: false,
+      reason: "no_assigned_clients",
+    });
+  });
+
   it("does not promote unknown non-production fixture keys to tenant admin", () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("APP_ENV", "test");

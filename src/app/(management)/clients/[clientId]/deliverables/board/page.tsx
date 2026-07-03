@@ -14,6 +14,7 @@ import { DeliverableDeniedState } from "@/ui/management/deliverable-form";
 import { Badge } from "@/ui/core/badge";
 import { ButtonLink } from "@/ui/core/button";
 import { PageHeader } from "@/ui/layout/page-header";
+import { formatMvpClientName } from "@/ui/mvp/hadna-mvp-summary";
 import {
   AccessDeniedState,
   ClientUnavailableState,
@@ -90,6 +91,7 @@ export default async function ClientDeliverablesBoardPage({
   if (!deliverableList.ok) {
     return <DeliverableDeniedState />;
   }
+  const displayClientName = formatMvpClientName(client.name);
 
   return (
     <main className="grid gap-5" dir="rtl">
@@ -102,7 +104,7 @@ export default async function ClientDeliverablesBoardPage({
             قائمة المخرجات
           </ButtonLink>
         }
-        description={client.name}
+        description={displayClientName}
         status={
           <div className="flex flex-wrap gap-2">
             {query?.saved === "status-updated" ? (
@@ -113,7 +115,7 @@ export default async function ClientDeliverablesBoardPage({
             ) : null}
           </div>
         }
-        title="لوحة المتابعة"
+        title="لوحة العمل"
       />
       {deliverableList.deliverables.length > 0 ? (
         <DeliverableBoard

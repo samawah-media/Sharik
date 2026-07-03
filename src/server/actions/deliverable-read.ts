@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { fixtureManagementCommercialSummary } from "@/server/actions/commercial-summary-read";
 import { canUseRouteActorFixtures } from "@/server/navigation/route-guards";
 import {
   toDeliverableSafeSummaryFromRows,
@@ -8,59 +8,8 @@ import {
   type DeliverableWriteRow,
 } from "./deliverable-write-rpc";
 
-export const fixtureManagementDeliverables: DeliverableSafeSummary[] = [
-  {
-    id: "deliverable_a",
-    tenantId: "tenant_a",
-    clientId: "client_a",
-    contractId: "contract_a",
-    packageId: "package_a",
-    packageLineId: "package_line_posts_a",
-    name: "منشور إطلاق الحملة",
-    description: "وصف آمن للعميل.",
-    type: "post",
-    status: "not_started",
-    priority: "normal",
-    ownerUserId: "assigned_internal_a",
-    contributorUserIds: [],
-    startDate: "2026-07-01",
-    internalDueDate: "2026-07-03",
-    clientDueDate: "2026-07-05",
-    finalDueDate: "2026-07-07",
-    requiresInternalApproval: true,
-    requiresClientApproval: true,
-    progressPercentage: 0,
-    approvedExtra: false,
-    revision: 1,
-    createdAt: "2026-06-28T00:00:00.000Z",
-    updatedAt: "2026-06-28T00:00:00.000Z",
-    reservation: {
-      packageLineId: "package_line_posts_a",
-      reservedQuantity: 1,
-    },
-  },
-  {
-    id: "deliverable_internal_ready_a",
-    tenantId: "tenant_a",
-    clientId: "client_a",
-    name: "تصميم إعلان المنتج",
-    type: "design",
-    status: "internally_approved",
-    priority: "high",
-    ownerUserId: "assigned_internal_a",
-    contributorUserIds: ["designer_a"],
-    internalDueDate: "2026-07-02",
-    clientDueDate: "2026-07-04",
-    finalDueDate: "2026-07-06",
-    requiresInternalApproval: true,
-    requiresClientApproval: true,
-    progressPercentage: 70,
-    approvedExtra: true,
-    revision: 2,
-    createdAt: "2026-06-29T00:00:00.000Z",
-    updatedAt: "2026-06-30T00:00:00.000Z",
-  },
-];
+export const fixtureManagementDeliverables =
+  fixtureManagementCommercialSummary.deliverables;
 
 const selectDeliverableRows = async (
   supabase: SupabaseClient,

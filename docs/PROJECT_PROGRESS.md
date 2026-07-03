@@ -39,6 +39,7 @@ This section supersedes the narrower three-role navigation polish notes for the 
   - `npm run build`: PASS, including static page generation.
 - Vercel UAT deployment completed with direct deployment `https://sharik-platform-ao0fjvrwn-omarhussien2s-projects.vercel.app` and alias `https://sharik-platform.vercel.app`.
 - Post-deploy unauthenticated smoke passed: `/` redirects to `/sign-in`, `/sign-in` returns 200, and protected management/client routes render safe sign-in/session states without Hadna data exposure. Authenticated three-role smoke was covered locally by E2E because hosted fixture actors are disabled by design and UAT credentials remain out-of-band.
+- PR opened for review: [#35 R-006 MVP Productization Sprint](https://github.com/samawah-media/Sharik/pull/35). This is not merge authorization.
 
 ## Latest R-006 Execution Update - 2026-07-03
 

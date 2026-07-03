@@ -87,6 +87,7 @@ No hosted DB mutation, credential generation, workbook row disclosure, screensho
 
 | Deployment item | Value |
 |---|---|
+| Pull request | [#35 R-006 MVP Productization Sprint](https://github.com/samawah-media/Sharik/pull/35) |
 | Direct deployment | `https://sharik-platform-ao0fjvrwn-omarhussien2s-projects.vercel.app` |
 | UAT alias | `https://sharik-platform.vercel.app` |
 | Scope | Internal UAT only; not Production acceptance. |

@@ -98,6 +98,7 @@ Follow-up pass after PR #34 was merged. This pass turns R-006 from a technically
 | Item | Value |
 |---|---|
 | Branch | `codex/r006-mvp-productization` |
+| PR | [#35 R-006 MVP Productization Sprint](https://github.com/samawah-media/Sharik/pull/35) |
 | Base | `main` after PR #34 merge |
 | Scope | Product/UX/copy/tests/docs for Hadna-only MVP UAT |
 | Hosted DB mutation | None |

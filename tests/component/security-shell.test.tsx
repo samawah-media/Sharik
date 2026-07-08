@@ -17,19 +17,28 @@ describe("safe auth and management shells", () => {
     expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
   });
 
-  it("renders management entry RTL with the safe product shell navigation", () => {
+  it("renders management entry RTL without static admin navigation in fixture-safe states", async () => {
     render(
-      <ManagementLayout>
-        <main>management</main>
-      </ManagementLayout>,
+      await ManagementLayout({
+        children: <main>management</main>,
+      }),
     );
 
     const shell = screen.getByText("management").closest("section");
     expect(shell).toHaveAttribute("dir", "rtl");
     expect(shell).toHaveAttribute("data-security-scope", "management-entry");
     expect(
-      screen.getByRole("navigation", { name: "تنقل الإدارة" }),
-    ).toBeInTheDocument();
+      screen.queryByRole("navigation", { name: "تنقل الإدارة" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "لوحة الإدارة" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "الفريق" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "الدعوات" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("client_b")).not.toBeInTheDocument();
   });
 });

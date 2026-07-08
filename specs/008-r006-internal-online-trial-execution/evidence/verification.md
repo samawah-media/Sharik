@@ -42,6 +42,35 @@ Post-merge smoke on `https://sharik-platform.vercel.app`:
 
 No hosted DB mutation, credential output, non-Hadna data use, screenshots, or Production acceptance was introduced by this merge gate.
 
+## Owner UAT On Merged MVP Productization Main - 2026-07-08
+
+Scope: hosted owner UAT on `https://sharik-platform.vercel.app` using only Hadna R-006 UAT accounts and out-of-band credentials. The run used separate browser contexts per persona and did not record passwords, tokens, screenshots, workbook row content, captions, links, or deliverable titles.
+
+No application data mutation was performed. Authenticated browser sign-in was necessary to verify the requested views; no hosted clients, deliverables, packages, files, comments, approvals, policies, or audit rows were changed.
+
+Hosted UAT result:
+
+| View | Status | Classification | Non-sensitive evidence |
+|---|---:|---|---|
+| Management / project admin | PASS | Product / UX | Hadna-first landing, Arabic RTL, Hadna clients path, 52 management deliverable cards, safe MVP deliverable labels, no console errors. |
+| Account manager | FOLLOW-UP NEEDED | UX | Hadna data was safe and scoped, with 52 deliverable cards and no forbidden identifiers; however the page chrome showed 3 admin-only labels on the account-manager landing. |
+| Client viewer A | PASS | Product / UX / Security | Client home and package summary loaded, 52 client deliverable cards rendered, no management labels, no forbidden identifiers, no console errors. |
+| Client viewer B | PASS | Security | Safe no-assigned-client state, 0 data cards, Hadna hidden, no forbidden identifiers, no console errors. |
+| Client viewer A mobile portal | PASS | UX | 390px portal check showed Hadna package summary and 52 deliverable cards with no horizontal overflow. |
+
+Feedback classification:
+
+| ID | Classification | Finding | Follow-up |
+|---|---|---|---|
+| UX-001 | UX | Account manager saw admin-oriented shell/page-chrome labels (`لوحة الإدارة`, `الفريق`, `الدعوات`) while the role-specific body navigation was correctly scoped to `عملائي`, Hadna, deliverables, and summary. | Prepared a focused display-only fix on `codex/r006-owner-uat-shell-nav-fix`; no permission, RLS, Supabase data, or workflow mutation was required. |
+
+Focused follow-up fix prepared:
+
+- `ProductShell` can now receive role-aware shell navigation and role-specific breadcrumb/home labels instead of always rendering static admin navigation.
+- The management layout supplies authenticated runtime navigation on hosted builds and uses a neutral shell fallback for fixture/unauthenticated states.
+- The account-manager MVP E2E path now asserts the admin-only shell labels are absent.
+- Local targeted verification passed: component shell tests and the three-role MVP Playwright matrix across desktop, mobile, and RTL.
+
 ### Product/UX Audit
 
 Scoring: 1 = confusing or unsafe, 5 = clear enough for MVP evaluation.

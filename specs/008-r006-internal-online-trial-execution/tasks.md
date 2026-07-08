@@ -105,6 +105,15 @@
 - [x] T050 Deploy to Vercel UAT alias and run post-deploy smoke
 - [x] T051 Commit, push, and open the MVP Productization PR
 
+## Phase 9: Owner UAT On Merged MVP Productization Main
+
+- [x] T052 Run hosted owner UAT on merged `main` build with Hadna UAT accounts only
+- [x] T053 Verify management/project admin, account manager, client viewer A, and Viewer B isolation views
+- [x] T054 Classify hosted UAT feedback as Product / UX / Security / Data
+- [x] T055 Prepare focused display-only fix for the account-manager shell UX finding without hosted DB mutation
+- [x] T056 Add targeted component and E2E coverage for role-aware shell navigation and Viewer B isolation continuity
+- [ ] T057 Push and open focused follow-up PR for owner review
+
 ## Dependencies & Execution Order
 
 - Phase 1 must complete before target preflight.

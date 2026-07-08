@@ -16,26 +16,40 @@ test("account manager lands on a clear Hadna workspace", async ({ page }) => {
     page
       .getByRole("navigation", { name: "تنقل مساحة الفريق" })
       .getByRole("link", { name: "مخرجات هدنة" }),
-  ).toHaveAttribute(
-    "href",
-    "/clients/client_a/deliverables",
-  );
+  ).toHaveAttribute("href", "/clients/client_a/deliverables");
+  await expect(page.getByText("لوحة الإدارة")).toHaveCount(0);
+  await expect(page.getByText("الفريق")).toHaveCount(0);
+  await expect(page.getByText("الدعوات")).toHaveCount(0);
   await expect(page.getByText("Client B")).toHaveCount(0);
   await expect(page.getByText("client_b")).toHaveCount(0);
 });
 
-test("admin or project manager sees the MVP control model", async ({ page }) => {
+test("admin or project manager sees the MVP control model", async ({
+  page,
+}) => {
   await page.goto("/portfolio?as=tenant_admin_a", {
     waitUntil: "domcontentloaded",
   });
 
-  const teamNavigation = page.getByRole("navigation", { name: "تنقل مساحة الفريق" });
+  const teamNavigation = page.getByRole("navigation", {
+    name: "تنقل مساحة الفريق",
+  });
   await expect(teamNavigation).toBeVisible();
-  await expect(teamNavigation.getByRole("link", { name: "لوحة الإدارة" })).toBeVisible();
-  await expect(teamNavigation.getByRole("link", { name: "العملاء" })).toBeVisible();
-  await expect(teamNavigation.getByRole("link", { name: "هدنة" })).toBeVisible();
-  await expect(teamNavigation.getByRole("link", { name: "المخرجات" })).toBeVisible();
-  await expect(teamNavigation.getByRole("link", { name: "المتابعة / SLA" })).toBeVisible();
+  await expect(
+    teamNavigation.getByRole("link", { name: "لوحة الإدارة" }),
+  ).toBeVisible();
+  await expect(
+    teamNavigation.getByRole("link", { name: "العملاء" }),
+  ).toBeVisible();
+  await expect(
+    teamNavigation.getByRole("link", { name: "هدنة" }),
+  ).toBeVisible();
+  await expect(
+    teamNavigation.getByRole("link", { name: "المخرجات" }),
+  ).toBeVisible();
+  await expect(
+    teamNavigation.getByRole("link", { name: "المتابعة / SLA" }),
+  ).toBeVisible();
   await expect(page.getByRole("heading", { name: "تجربة هدنة" })).toBeVisible();
 });
 

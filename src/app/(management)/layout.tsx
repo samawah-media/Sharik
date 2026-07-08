@@ -16,8 +16,18 @@ const iconForNavigationItem = (
   return "briefcase";
 };
 
+const hasSupabasePublicRuntimeEnv = () =>
+  Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  );
+
 const resolveShellNavigation = async () => {
-  if (process.env.NODE_ENV === "test" || canUseRouteActorFixtures()) {
+  if (
+    process.env.NODE_ENV === "test" ||
+    canUseRouteActorFixtures() ||
+    !hasSupabasePublicRuntimeEnv()
+  ) {
     return [];
   }
 

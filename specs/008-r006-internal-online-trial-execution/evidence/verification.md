@@ -68,6 +68,7 @@ Focused follow-up fix prepared:
 
 - `ProductShell` can now receive role-aware shell navigation and role-specific breadcrumb/home labels instead of always rendering static admin navigation.
 - The management layout supplies authenticated runtime navigation on hosted builds and uses a neutral shell fallback for fixture/unauthenticated states.
+- The management layout also skips runtime Supabase context resolution when public Supabase env vars are unavailable, matching the GitHub build environment while preserving hosted runtime navigation.
 - The account-manager MVP E2E path now asserts the admin-only shell labels are absent.
 - Local targeted verification passed: component shell tests and the three-role MVP Playwright matrix across desktop, mobile, and RTL.
 

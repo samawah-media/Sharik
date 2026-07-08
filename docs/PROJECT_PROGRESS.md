@@ -2,6 +2,17 @@
 
 Last updated: 2026-07-08
 
+## R-006 PR #36 Merge And Post-Merge Smoke - 2026-07-08
+
+- Owner explicitly approved merging PR #36 (`fix(R-006): scope account manager shell navigation`).
+- PR #36 was marked ready for review and merged into `main` with merge commit `ce57bd103d585d8d18cbb5273e5120dc6cab7b7e`.
+- Pre-merge review conclusion: UX-only follow-up for UX-001; no Supabase migration, RLS policy, permission model, server action, hosted data script, package dependency, or workflow-state mutation changed.
+- `quality` passed and CodeRabbit had no actionable review findings before the normal merge; no admin override was used.
+- The merged `main` build was deployed and promoted for UAT smoke as `https://sharik-platform-qhhotsd0e-omarhussien2s-projects.vercel.app` behind `https://sharik-platform.vercel.app`.
+- Post-merge authenticated smoke passed on the alias for management/project admin, account manager, and client viewer A using only Hadna R-006 UAT accounts and out-of-band credentials.
+- UX-001 is resolved on the promoted alias: the account manager sees role shell labels and no admin-only shell labels.
+- No hosted DB mutation, credential output, screenshots, workbook row content, captions, links, tokens, deliverable titles, or Production acceptance was introduced by this pass.
+
 ## R-006 Owner UAT Follow-up - 2026-07-08
 
 - Ran hosted owner UAT on merged MVP Productization `main` at `https://sharik-platform.vercel.app` using only Hadna R-006 UAT accounts and out-of-band credentials.

@@ -72,6 +72,32 @@ Focused follow-up fix prepared:
 - The account-manager MVP E2E path now asserts the admin-only shell labels are absent.
 - Local targeted verification passed: component shell tests and the three-role MVP Playwright matrix across desktop, mobile, and RTL.
 
+## PR #36 Owner Merge And Post-Merge Smoke - 2026-07-08
+
+Owner explicitly approved merging PR #36 (`fix(R-006): scope account manager shell navigation`). PR #36 was marked ready for review and merged into `main` with merge commit `ce57bd103d585d8d18cbb5273e5120dc6cab7b7e`.
+
+Review conclusion before merge: approved as a UX-only follow-up for UX-001. The changed files were limited to product shell/navigation rendering, targeted component/E2E coverage, and R-006 evidence/tasks/progress documentation. No Supabase migration, RLS policy, server action, permission model, hosted data script, package dependency, or workflow-state mutation was changed.
+
+Because the Vercel alias did not auto-update immediately after the merge, the merged `main` build was deployed and promoted for UAT smoke:
+
+| Deployment item | Value |
+|---|---|
+| Merged deployment | `https://sharik-platform-qhhotsd0e-omarhussien2s-projects.vercel.app` |
+| UAT alias | `https://sharik-platform.vercel.app` |
+| Scope | Internal UAT smoke only; not Production acceptance. |
+| Hosted DB mutation | None. |
+
+Post-merge authenticated smoke on `https://sharik-platform.vercel.app` used only the Hadna R-006 UAT accounts and out-of-band credentials. The run used separate browser contexts and did not record emails, passwords, tokens, screenshots, workbook row content, captions, links, deliverable titles, or secret values.
+
+| Account view | Status | Non-sensitive result |
+|---|---:|---|
+| Management / project admin | PASS | `/portfolio` loaded Hadna context, admin shell was present for the admin role, no Viewer B identifier was rendered, and 5 safe article cards were present. |
+| Account manager | PASS | `/portfolio` loaded Hadna context with role shell labels, admin-only labels were absent, no Viewer B identifier was rendered, and 5 safe article cards were present. |
+| Client viewer A | PASS | `/client/commercial` loaded Hadna package/deliverables context, management chrome was absent, no Viewer B identifier was rendered, and 62 safe article cards were present. |
+| Console errors | PASS | 0 browser console errors were observed during the three-account smoke. |
+
+UX-001 is resolved on the promoted alias for the tested account-manager path. No hosted application data was mutated by this merge/deploy/smoke pass.
+
 ### Product/UX Audit
 
 Scoring: 1 = confusing or unsafe, 5 = clear enough for MVP evaluation.

@@ -114,6 +114,14 @@
 - [x] T056 Add targeted component and E2E coverage for role-aware shell navigation and Viewer B isolation continuity
 - [x] T057 Push and open focused follow-up PR for owner review
 
+## Phase 10: PR #36 Owner Merge And Post-Merge Smoke
+
+- [x] T058 Review PR #36 as UX-only follow-up and confirm no RLS, permission, hosted data, dependency, or workflow-state mutation
+- [x] T059 Mark PR #36 ready for review and merge it after explicit owner approval
+- [x] T060 Deploy and promote the merged `main` build to the UAT alias
+- [x] T061 Run post-merge authenticated smoke for the three Hadna UAT account views
+- [x] T062 Record post-merge smoke evidence without credentials, screenshots, workbook content, or deliverable titles
+
 ## Dependencies & Execution Order
 
 - Phase 1 must complete before target preflight.

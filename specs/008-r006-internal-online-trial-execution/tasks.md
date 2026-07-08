@@ -112,7 +112,7 @@
 - [x] T054 Classify hosted UAT feedback as Product / UX / Security / Data
 - [x] T055 Prepare focused display-only fix for the account-manager shell UX finding without hosted DB mutation
 - [x] T056 Add targeted component and E2E coverage for role-aware shell navigation and Viewer B isolation continuity
-- [ ] T057 Push and open focused follow-up PR for owner review
+- [x] T057 Push and open focused follow-up PR for owner review
 
 ## Dependencies & Execution Order
 

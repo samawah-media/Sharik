@@ -43,12 +43,57 @@ describe("management product shell", () => {
       screen.queryByText("b0060000-0000-4000-8000-000000000301"),
     ).not.toBeInTheDocument();
     expect(screen.getAllByText("لوحة العمل").length).toBeGreaterThan(0);
-    expect(
-      screen.getByRole("heading", { name: "لوحة العمل" }),
-    ).toBeVisible();
+    expect(screen.getByRole("heading", { name: "لوحة العمل" })).toBeVisible();
     expect(
       screen.getByText("تجربة UAT داخلية ضمن النطاق المصرح"),
     ).toBeVisible();
+  });
+
+  it("can render account-manager shell navigation without admin-only links", () => {
+    render(
+      <ProductShell
+        breadcrumbRootHref="/portfolio"
+        breadcrumbRootLabel="عملائي"
+        homeHref="/portfolio"
+        navigationItems={[
+          { href: "/portfolio", icon: "dashboard", label: "عملائي" },
+          {
+            href: "/clients/b0060000-0000-4000-8000-000000000301",
+            icon: "briefcase",
+            label: "هدنة",
+          },
+          {
+            href: "/clients/b0060000-0000-4000-8000-000000000301/deliverables",
+            icon: "file",
+            label: "مخرجات هدنة",
+          },
+          {
+            href: "/clients/b0060000-0000-4000-8000-000000000301/commercial",
+            icon: "briefcase",
+            label: "ملخص المتابعة",
+          },
+        ]}
+        navigationLabel="تنقل مساحة الفريق"
+      >
+        <main>account manager shell</main>
+      </ProductShell>,
+    );
+
+    const navigation = screen.getByRole("navigation", {
+      name: "تنقل مساحة الفريق",
+    });
+    expect(
+      within(navigation).getByRole("link", { name: "عملائي" }),
+    ).toHaveAttribute("href", "/portfolio");
+    expect(
+      screen.queryByRole("link", { name: "لوحة الإدارة" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "الفريق" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "الدعوات" }),
+    ).not.toBeInTheDocument();
   });
 
   it("renders shared safe states without leaking technical details", () => {

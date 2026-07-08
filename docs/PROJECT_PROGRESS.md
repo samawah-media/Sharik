@@ -2,6 +2,20 @@
 
 Last updated: 2026-07-08
 
+## R-006 Owner UAT Follow-up - 2026-07-08
+
+- Ran hosted owner UAT on merged MVP Productization `main` at `https://sharik-platform.vercel.app` using only Hadna R-006 UAT accounts and out-of-band credentials.
+- No hosted application data mutation was performed; no credentials, screenshots, workbook row content, captions, links, tokens, or deliverable titles were recorded.
+- Management/project admin passed: Hadna-first landing, Arabic RTL, Hadna client scope, and 52 safe management deliverable cards.
+- Client viewer A passed: Hadna client portal and package summary loaded with 52 client deliverable cards, no management labels, and no forbidden identifiers.
+- Viewer B isolation passed: safe no-assigned-client state, 0 data cards, and no Hadna visibility.
+- Account manager produced one UX follow-up: data remained safe and scoped, but static page chrome exposed admin-oriented labels (`لوحة الإدارة`, `الفريق`, `الدعوات`) above the correct account-manager body navigation.
+- Focused follow-up branch created: `codex/r006-owner-uat-shell-nav-fix`.
+- Fix prepared: management shell now accepts role-aware navigation/breadcrumb labels from authenticated runtime, with a neutral fallback for fixture/unauthenticated states.
+- Targeted local verification passed after the fix:
+  - `npm run test:component -- tests/component/product-shell.test.tsx tests/component/security-shell.test.tsx`
+  - `npm run test:e2e -- tests/e2e/mvp/three-role-mvp.spec.ts`
+
 ## R-006 Owner Merge Gate - 2026-07-08
 
 - Owner explicitly approved merging PR #35 (`R-006 MVP Productization Sprint`).

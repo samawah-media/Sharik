@@ -23,6 +23,25 @@ This is not Production acceptance, Ready conversion, PR merge approval, or appro
 
 PR #34 was merged before this pass. Current branch: `codex/r006-mvp-productization`.
 
+## Owner Merge Gate Evidence - 2026-07-08
+
+Owner explicitly approved merging PR #35 (`R-006 MVP Productization Sprint`). PR #35 was merged into `main` with merge commit `4a7b2d1dd6aa2e5230bbf2863abfd62307e8f748`, and local `main` was fast-forwarded to `origin/main`.
+
+Pre-merge live status for PR #35 was `OPEN`, not draft, `MERGEABLE`, `CLEAN`, with `quality` success and CodeRabbit status success. The CodeRabbit PR comment noted a review-limit condition, but the status context was successful and no actionable review findings were present.
+
+Post-merge smoke on `https://sharik-platform.vercel.app`:
+
+| Route | Status | Non-sensitive result |
+|---|---:|---|
+| `/` | PASS | 307 redirect to `/sign-in`; final page returned 200. |
+| `/sign-in` | PASS | 200 and Arabic sign-in shell. |
+| `/portfolio` | PASS | Safe sign-in/session state; no Hadna UUID rendered. |
+| `/clients` | PASS | Safe sign-in/session state; no Hadna UUID rendered. |
+| `/client` | PASS | Safe sign-in/session state; no Hadna UUID rendered. |
+| `/client/commercial` | PASS | Safe sign-in/session state; no Hadna UUID rendered. |
+
+No hosted DB mutation, credential output, non-Hadna data use, screenshots, or Production acceptance was introduced by this merge gate.
+
 ### Product/UX Audit
 
 Scoring: 1 = confusing or unsafe, 5 = clear enough for MVP evaluation.
@@ -359,7 +378,7 @@ Authenticated three-role smoke was not repeated in-chat because UAT credentials 
 | Public signup disabled status was not safely confirmed through a read-only Supabase surface. | Open. No signup attempt was made. |
 | Credentials require out-of-band handoff. | Open. Credentials were created only for internal smoke and not printed. |
 | Hosted client display name is currently `Hadna`, not Arabic `هدنة`. | Resolved. Corrected to `هدنة` for the scoped Hadna UAT client only, with a `ClientUpdated` audit event. |
-| PR #33 remains Draft and must not be merged without separate authorization. | Open. |
+| R-006 PR merge control | PR #33, PR #34, and PR #35 were merged only after their respective owner gates. No further merge or Production acceptance is implied. |
 
 ## AGENTS Compliance
 

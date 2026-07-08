@@ -4,7 +4,9 @@
 
 EXECUTED FOR OWNER-AUTHORIZED INTERNAL UAT.
 
-This run used the owner-authorized Hadna workbook, `sharik-uat` Supabase UAT, and Vercel as temporary internal UAT hosting. This is not Production acceptance, not PR merge approval, and not approval to use non-Hadna customer data.
+This run used the owner-authorized Hadna workbook, `sharik-uat` Supabase UAT, and Vercel as temporary internal UAT hosting. This is not Production acceptance and not approval to use non-Hadna customer data.
+
+Owner merge-gate update: on 2026-07-08, the owner explicitly approved merging PR #35 (`R-006 MVP Productization Sprint`). PR #35 was merged into `main` with merge commit `4a7b2d1dd6aa2e5230bbf2863abfd62307e8f748`; this remains internal UAT/MVP productization, not Production acceptance.
 
 ## Targets
 
@@ -100,6 +102,7 @@ Follow-up pass after PR #34 was merged. This pass turns R-006 from a technically
 | Branch | `codex/r006-mvp-productization` |
 | PR | [#35 R-006 MVP Productization Sprint](https://github.com/samawah-media/Sharik/pull/35) |
 | Base | `main` after PR #34 merge |
+| Merge status | Merged into `main` on 2026-07-08 after explicit owner approval |
 | Scope | Product/UX/copy/tests/docs for Hadna-only MVP UAT |
 | Hosted DB mutation | None |
 | Production acceptance | Not granted |
@@ -163,6 +166,17 @@ Post-deploy smoke:
 | `/portfolio`, `/clients`, `/client`, `/client/commercial` unauthenticated | PASS | Safe sign-in/session state; no Hadna scoped data rendered without an authenticated session. |
 | Hosted role fixtures | PASS | Disabled in hosted/runtime by design; authenticated role smoke remains dependent on out-of-band UAT credentials. |
 
+Post-merge smoke on 2026-07-08:
+
+| Route | Status | Result |
+|---|---:|---|
+| `/` | PASS | 307 redirect to `/sign-in`; final page returned 200. |
+| `/sign-in` | PASS | 200 and Arabic sign-in shell. |
+| `/portfolio` | PASS | Safe sign-in/session state; no Hadna UUID rendered. |
+| `/clients` | PASS | Safe sign-in/session state; no Hadna UUID rendered. |
+| `/client` | PASS | Safe sign-in/session state; no Hadna UUID rendered. |
+| `/client/commercial` | PASS | Safe sign-in/session state; no Hadna UUID rendered. |
+
 ## Smoke Results
 
 | Check | Status | Result |
@@ -203,7 +217,7 @@ No screenshots were taken.
 - `sharik-uat` had previous non-R-006 data; owner accepted this for internal UAT and no cleanup was performed.
 - Supabase public signup disabled status still lacks a safe read-only confirmation.
 - Credential handoff remains out-of-band.
-- PR #33 must remain unmerged until separately authorized.
+- PR #33, PR #34, and PR #35 were merged only after their respective owner gates. No further merge or Production acceptance is implied by this note.
 
 ## Evidence
 

@@ -59,7 +59,7 @@ const deliverables: DeliverableSafeSummary[] = [
   },
 ];
 
-describe("internal deliverable Kanban board", () => {
+describe("internal deliverable work board", () => {
   it("renders active columns, scoped cards, SLA, due dates, and status update forms", () => {
     render(
       <DeliverableBoard
@@ -68,7 +68,7 @@ describe("internal deliverable Kanban board", () => {
       />,
     );
 
-    const board = screen.getByRole("region", { name: "لوحة المتابعة" });
+    const board = screen.getByRole("region", { name: "لوحة العمل" });
     expect(screen.getByTestId("kanban-board-scroll")).toHaveClass(
       "overflow-x-auto",
     );

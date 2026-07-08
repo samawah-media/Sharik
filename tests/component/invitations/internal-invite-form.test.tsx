@@ -42,19 +42,19 @@ describe("internal invitation UI", () => {
 describe("assigned clients UI", () => {
   it("shows assigned client portfolio only", () => {
     cleanup();
-    render(<AssignedClients clients={[{ id: "client_a", name: "Client A" }]} />);
+    render(<AssignedClients clients={[{ id: "client_a", name: "هدنة" }]} />);
 
-    expect(screen.getByText("Client A")).toBeInTheDocument();
+    expect(screen.getByText("هدنة")).toBeInTheDocument();
     expect(screen.getByText(/عميل داخل نطاق صلاحياتك/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "عرض العميل" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "عرض هدنة" })).toHaveAttribute(
       "href",
       "/clients/client_a",
     );
-    expect(screen.getByRole("link", { name: "المخرجات" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "مخرجات هدنة" })).toHaveAttribute(
       "href",
       "/clients/client_a/deliverables",
     );
-    expect(screen.getByRole("link", { name: "ملخص المتابعة" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "المتابعة / SLA" })).toHaveAttribute(
       "href",
       "/clients/client_a/commercial",
     );

@@ -41,6 +41,25 @@ const priorityLabels = {
   urgent: "عاجلة",
 } as const;
 
+const typeLabels: Record<string, string> = {
+  post: "منشور",
+  reel: "ريلز",
+  story: "ستوري",
+  design: "تصميم",
+  report: "تقرير",
+  video: "فيديو",
+  campaign: "حملة",
+  article: "مقال",
+};
+
+const formatDate = (value?: string) => {
+  if (!value) {
+    return "غير محدد";
+  }
+
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : value.slice(0, 10);
+};
+
 function SubmitButton({ approvedExtra }: { approvedExtra?: boolean }) {
   const { pending } = useFormStatus();
 
@@ -379,19 +398,40 @@ export function DeliverableList({
     <section aria-label="قائمة المخرجات" className="grid gap-3" dir="rtl">
       {deliverables.map((deliverable) => (
         <Card key={deliverable.id}>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <CardHeader>
               <CardTitle>{deliverable.name}</CardTitle>
-              {deliverable.description ? (
-                <p className="text-sm text-muted">{deliverable.description}</p>
-              ) : null}
+              <p className="text-sm text-muted">
+                {typeLabels[deliverable.type] ?? deliverable.type}
+              </p>
             </CardHeader>
             <Badge tone="muted">{statusLabels[deliverable.status]}</Badge>
           </div>
+          <dl className="mt-4 grid gap-3 text-sm text-muted sm:grid-cols-4">
+            <div className="rounded-md bg-background px-3 py-2">
+              <dt className="font-semibold text-foreground">القناة / النوع</dt>
+              <dd className="mt-1">
+                {typeLabels[deliverable.type] ?? deliverable.type}
+              </dd>
+            </div>
+            <div className="rounded-md bg-background px-3 py-2">
+              <dt className="font-semibold text-foreground">التاريخ</dt>
+              <dd className="mt-1">
+                {formatDate(
+                  deliverable.clientDueDate ?? deliverable.finalDueDate,
+                )}
+              </dd>
+            </div>
+            <div className="rounded-md bg-background px-3 py-2">
+              <dt className="font-semibold text-foreground">الحالة</dt>
+              <dd className="mt-1">{statusLabels[deliverable.status]}</dd>
+            </div>
+            <div className="rounded-md bg-background px-3 py-2">
+              <dt className="font-semibold text-foreground">التقدم</dt>
+              <dd className="mt-1">{deliverable.progressPercentage}%</dd>
+            </div>
+          </dl>
           <div className="mt-3 flex flex-wrap gap-2 text-sm text-muted">
-            <Badge tone="accent">
-              التقدم {deliverable.progressPercentage}%
-            </Badge>
             <Badge tone="muted">{priorityLabels[deliverable.priority]}</Badge>
             {deliverable.reservation ? (
               <Badge tone="neutral">

@@ -8,6 +8,6 @@ test("redirects unauthenticated root visits to the Arabic sign-in shell", async 
   await expect(page).toHaveURL(/\/sign-in$/);
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await expect(
-    page.getByRole("heading", { name: "تسجيل الدخول الإداري" }),
+    page.getByRole("heading", { name: "تسجيل الدخول إلى شريك" }),
   ).toBeVisible();
 });

@@ -79,6 +79,7 @@ const managementSummary: ManagementCommercialSummary = {
       status: "not_started",
       priority: "normal",
       contributorUserIds: [],
+      clientDueDate: "2026-07-05",
       requiresInternalApproval: true,
       requiresClientApproval: true,
       progressPercentage: 0,
@@ -126,10 +127,10 @@ const clientSummary: ClientCommercialSummary = {
   deliverables: [
     {
       name: "منشور إطلاق الحملة",
-      description: "وصف آمن للعميل.",
       type: "post",
       status: "not_started",
       progressPercentage: 0,
+      clientDueDate: "2026-07-05",
       reservation: {
         reservedQuantity: 1,
       },
@@ -141,12 +142,13 @@ describe("commercial summary cards", () => {
   it("renders Arabic RTL management commercial summary cards", () => {
     render(<ManagementCommercialSummaryCards summary={managementSummary} />);
 
-    const region = screen.getByRole("region", { name: "ملخص الإدارة التجاري" });
+    const region = screen.getByRole("region", { name: "ملخص المتابعة للإدارة" });
     expect(region).toHaveAttribute("dir", "rtl");
     expect(within(region).getByText("عقد إدارة المحتوى")).toBeInTheDocument();
-    expect(within(region).getAllByText("محجوز: 1")).toHaveLength(2);
-    expect(within(region).getByText("متاح: 3")).toBeInTheDocument();
+    expect(within(region).getAllByText("قيد العمل: 1")).toHaveLength(2);
+    expect(within(region).getByText("المتبقي: 3")).toBeInTheDocument();
     expect(within(region).getByText("منشور إطلاق الحملة")).toBeInTheDocument();
+    expect(within(region).getByText("التاريخ: 2026-07-05")).toBeInTheDocument();
     expect(within(region).queryByText("internal")).not.toBeInTheDocument();
     expect(within(region).queryByText("audit")).not.toBeInTheDocument();
   });
@@ -154,11 +156,12 @@ describe("commercial summary cards", () => {
   it("renders client commercial summary cards without internal terminology or identifiers", () => {
     render(<ClientCommercialSummaryCards summary={clientSummary} />);
 
-    const region = screen.getByRole("region", { name: "ملخص العميل التجاري" });
+    const region = screen.getByRole("region", { name: "ملخص بوابة العميل" });
     expect(region).toHaveAttribute("dir", "rtl");
-    expect(within(region).getByText("ملخص الباقة")).toBeInTheDocument();
+    expect(within(region).getByText("الباقة والمتبقي")).toBeInTheDocument();
     expect(within(region).getByText("المتبقي: 3")).toBeInTheDocument();
     expect(within(region).getByText("منشور إطلاق الحملة")).toBeInTheDocument();
+    expect(within(region).getByText("2026-07-05")).toBeInTheDocument();
     expect(within(region).queryByText("tenant_a")).not.toBeInTheDocument();
     expect(within(region).queryByText("client_b")).not.toBeInTheDocument();
     expect(within(region).queryByText("ملاحظات داخلية")).not.toBeInTheDocument();

@@ -1,5 +1,16 @@
 import type { ClientCommercialSummary } from "@/modules/commercial/commercial-summary";
 
+const typeLabels: Record<string, string> = {
+  post: "منشور",
+  reel: "ريلز",
+  story: "ستوري",
+  design: "تصميم",
+  report: "تقرير",
+  video: "فيديو",
+  campaign: "حملة",
+  article: "مقال",
+};
+
 const statusLabels = {
   draft: "مسودة",
   active: "نشط",
@@ -18,14 +29,23 @@ const statusLabels = {
   delivered: "تم التسليم",
 } as const;
 
+const formatDate = (value?: string) => {
+  if (!value) {
+    return "غير محدد";
+  }
+
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : value.slice(0, 10);
+};
+
 export function ClientCommercialSummaryCards({
   summary,
 }: {
   summary: ClientCommercialSummary;
 }) {
   return (
-    <section aria-label="ملخص العميل التجاري" className="grid gap-4" dir="rtl">
-      <div className="grid gap-3">
+    <section aria-label="ملخص بوابة العميل" className="grid gap-5" dir="rtl">
+      <div className="grid gap-3" id="contracts">
+        <h2 className="text-lg font-semibold">العقد</h2>
         {summary.contracts.map((contract) => (
           <article className="rounded-lg border border-border bg-card p-4" key={contract.name}>
             <p className="text-sm text-muted">العقد والمتابعة</p>
@@ -36,7 +56,8 @@ export function ClientCommercialSummaryCards({
           </article>
         ))}
       </div>
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid gap-3 md:grid-cols-2" id="package">
+        <h2 className="md:col-span-2 text-lg font-semibold">الباقة والمتبقي</h2>
         {summary.packages.flatMap((packageSummary) =>
           packageSummary.lines.map((line) => (
             <article
@@ -54,7 +75,8 @@ export function ClientCommercialSummaryCards({
           )),
         )}
       </div>
-      <div className="grid gap-3">
+      <div className="grid gap-3" id="deliverables">
+        <h2 className="text-lg font-semibold">مخرجاتي</h2>
         {summary.deliverables.map((deliverable) => (
           <article className="rounded-lg border border-border bg-card p-4" key={deliverable.name}>
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -63,12 +85,30 @@ export function ClientCommercialSummaryCards({
                 {statusLabels[deliverable.status]}
               </span>
             </div>
-            {deliverable.description ? (
-              <p className="mt-2 text-sm text-muted">{deliverable.description}</p>
-            ) : null}
-            <p className="mt-3 text-sm text-muted">
-              التقدم {deliverable.progressPercentage}%
-            </p>
+            <dl className="mt-3 grid gap-3 text-sm text-muted sm:grid-cols-4">
+              <div className="rounded-md bg-background px-3 py-2">
+                <dt className="font-semibold text-foreground">النوع</dt>
+                <dd className="mt-1">
+                  {typeLabels[deliverable.type] ?? deliverable.type}
+                </dd>
+              </div>
+              <div className="rounded-md bg-background px-3 py-2">
+                <dt className="font-semibold text-foreground">التاريخ</dt>
+                <dd className="mt-1">
+                  {formatDate(
+                    deliverable.clientDueDate ?? deliverable.finalDueDate,
+                  )}
+                </dd>
+              </div>
+              <div className="rounded-md bg-background px-3 py-2">
+                <dt className="font-semibold text-foreground">الحالة</dt>
+                <dd className="mt-1">{statusLabels[deliverable.status]}</dd>
+              </div>
+              <div className="rounded-md bg-background px-3 py-2">
+                <dt className="font-semibold text-foreground">التقدم</dt>
+                <dd className="mt-1">{deliverable.progressPercentage}%</dd>
+              </div>
+            </dl>
           </article>
         ))}
       </div>

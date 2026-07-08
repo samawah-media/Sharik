@@ -2,6 +2,45 @@
 
 Last updated: 2026-07-03
 
+## R-006 MVP Productization Sprint - 2026-07-03
+
+This section supersedes the narrower three-role navigation polish notes for the current MVP evaluation branch.
+
+- PR #34 (`R-006 Three-role UAT navigation polish`) was merged into `main`; new work continues on `codex/r006-mvp-productization`.
+- Productization goal: make the Hadna UAT journey understandable as: `هذه هدنة، هذه الباقة، هذه المخرجات، هذا ما تم، هذا ما ينتظر، وهذا ما يراه كل دور`.
+- No hosted DB mutation was performed in this pass; the Hadna data scope remains the existing owner-authorized UAT data only.
+- Added a Hadna MVP snapshot surface across management, account-manager, deliverables, and client portal pages: 52 deliverables, 5 package lines, internal UAT status, work waiting count, and client waiting count.
+- Updated the role navigation model:
+  - Management/project admin: `لوحة الإدارة`, `العملاء`, `هدنة`, `المخرجات`, `المتابعة / SLA`.
+  - Account manager: `عملائي`, `هدنة`, `مخرجات هدنة`, `ملخص المتابعة`.
+  - Client: `الرئيسية`, `مخرجاتي`, `الباقة والمتبقي`, `بانتظار موافقتي` when applicable later.
+- Client portal now shows only the Hadna client portal story: package summary, allowed deliverables, and no management/customer-list surface.
+- Deliverable lists now show a safe scannable set only: name, channel/type, date, status, and progress. Full descriptions/captions/links are not rendered in the MVP list.
+- Route fixtures used by local E2E now model Hadna-only UAT with 1 client, 1 contract, 1 package, 5 package lines, and 52 deliverables; `client_viewer_b` remains unassigned for isolation coverage.
+- Replaced user-facing old wording on touched surfaces:
+  - `تسجيل الدخول الإداري` -> `تسجيل الدخول إلى شريك`
+  - `لوحة المتابعة` where it meant internal board -> `لوحة العمل`
+  - `ملخص المتابعة` where it meant package/SLA surface -> `المتابعة / SLA` or `الباقة والمتبقي`
+  - generic unavailable-resource wording -> clearer Arabic safe-denial copy.
+- Local targeted verification passed before full release checks:
+  - `npm run typecheck`
+  - `npm run test:unit`
+  - `npm run test:component`
+  - `npm run lint`
+  - targeted Playwright set for commercial summary, MVP three-role smoke, create-client, internal invite, and denial UX across desktop/mobile/RTL.
+- Full requested verification passed after the MVP code pass:
+  - `npm run lint`: PASS.
+  - `npm run typecheck`: PASS.
+  - `npm run test:unit`: PASS, 24 files / 84 tests.
+  - `npm run test:component`: PASS, 16 files / 51 tests.
+  - `npm run test:e2e`: PASS, 79 passed / 2 skipped across desktop, mobile, and RTL projects.
+  - `npm run secret:scan`: PASS, no high-confidence secrets found.
+  - `git diff --check`: PASS with Windows CRLF working-copy warnings only.
+  - `npm run build`: PASS, including static page generation.
+- Vercel UAT deployment completed with direct deployment `https://sharik-platform-ao0fjvrwn-omarhussien2s-projects.vercel.app` and alias `https://sharik-platform.vercel.app`.
+- Post-deploy unauthenticated smoke passed: `/` redirects to `/sign-in`, `/sign-in` returns 200, and protected management/client routes render safe sign-in/session states without Hadna data exposure. Authenticated three-role smoke was covered locally by E2E because hosted fixture actors are disabled by design and UAT credentials remain out-of-band.
+- PR opened for review: [#35 R-006 MVP Productization Sprint](https://github.com/samawah-media/Sharik/pull/35). This is not merge authorization.
+
 ## Latest R-006 Execution Update - 2026-07-03
 
 This section supersedes the older R-006 blocked/preflight notes below for the current PR #33 state.

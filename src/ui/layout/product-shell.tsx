@@ -14,8 +14,8 @@ import type { ReactNode } from "react";
 import { cn } from "@/ui/core/utils";
 
 const navigationItems = [
+  { href: "/portfolio", label: "لوحة الإدارة", icon: LayoutDashboard },
   { href: "/clients", label: "العملاء", icon: BriefcaseBusiness },
-  { href: "/portfolio", label: "لوحة المتابعة", icon: LayoutDashboard },
   { href: "/members", label: "الفريق", icon: Users },
   { href: "/invitations/internal", label: "الدعوات", icon: UserRoundPlus },
 ] as const;
@@ -25,14 +25,14 @@ const segmentLabels: Record<string, string> = {
   contracts: "العقد والباقة",
   packages: "الباقة",
   deliverables: "المخرجات",
-  board: "لوحة المتابعة",
-  commercial: "ملخص المتابعة",
+  board: "لوحة العمل",
+  commercial: "المتابعة / SLA",
   new: "إضافة",
   edit: "تعديل",
   members: "الفريق",
   invitations: "الدعوات",
   internal: "دعوة داخلية",
-  portfolio: "لوحة المتابعة",
+  portfolio: "لوحة الإدارة",
 };
 
 const uuidLikePattern =
@@ -179,7 +179,7 @@ export function ProductShell({ children }: { children: ReactNode }) {
               <Breadcrumbs pathname={pathname} />
               <div className="flex items-center gap-2 text-xs text-muted">
                 <FileText aria-hidden="true" size={15} />
-                <span>تجربة UAT داخلية على بيانات هدنة المصرح بها</span>
+                <span>تجربة UAT داخلية ضمن النطاق المصرح</span>
               </div>
             </div>
           </header>

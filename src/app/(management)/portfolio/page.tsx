@@ -1,9 +1,21 @@
 import { AssignedClients } from "@/ui/management/assigned-clients";
 import { resolveRoleAwareNavigation } from "@/modules/navigation/navigation-resolver";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
+  fixtureManagementCommercialSummary,
+  readCommercialSummary,
+} from "@/server/actions/commercial-summary-read";
+import {
+  canUseRouteActorFixtures,
   guardPortfolioRoute,
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
+import { ButtonLink } from "@/ui/core/button";
+import {
+  buildEmptyMvpStats,
+  buildManagementMvpStats,
+  HadnaMvpHero,
+} from "@/ui/mvp/hadna-mvp-summary";
 import { RoleAwareNavigation } from "@/ui/navigation/role-aware-nav";
 import {
   AccessDeniedState,
@@ -57,11 +69,55 @@ export default async function PortfolioPage({
       ? true
       : navigation.items.some((item) => item.id === `client.${client.id}`),
   );
+  const primaryClient = visibleClients[0];
+  const summary =
+    primaryClient && canUseRouteActorFixtures()
+      ? { ok: true as const, value: fixtureManagementCommercialSummary }
+      : primaryClient
+        ? await readCommercialSummary({
+            supabase: await createSupabaseServerClient(),
+            tenantId: primaryClient.tenantId,
+            clientId: primaryClient.id,
+            audience: "management",
+          })
+        : { ok: false as const };
+  const stats =
+    summary.ok && summary.value.audience === "management"
+      ? buildManagementMvpStats(summary.value)
+      : buildEmptyMvpStats();
+  const roleLabel = navigation.items.some(
+    (item) => item.id === "management.clients",
+  )
+    ? "الإدارة / مدير المشروع"
+    : "مدير الحساب";
 
   return (
     <main className="grid gap-6">
       <RoleAwareNavigation items={navigation.items} label="تنقل مساحة الفريق" />
-      <h1 className="text-2xl font-semibold">عملائي</h1>
+      {primaryClient ? (
+        <HadnaMvpHero
+          clientName={primaryClient.name}
+          roleLabel={roleLabel}
+          stats={stats}
+        >
+          <ButtonLink href={`/clients/${primaryClient.id}`} variant="primary">
+            عرض هدنة
+          </ButtonLink>
+          <ButtonLink
+            href={`/clients/${primaryClient.id}/deliverables`}
+            variant="secondary"
+          >
+            عرض المخرجات
+          </ButtonLink>
+          <ButtonLink
+            href={`/clients/${primaryClient.id}/commercial`}
+            variant="secondary"
+          >
+            فتح المتابعة / SLA
+          </ButtonLink>
+        </HadnaMvpHero>
+      ) : null}
+      <h2 className="text-xl font-semibold">عملائي</h2>
       <AssignedClients clients={visibleClients} />
     </main>
   );

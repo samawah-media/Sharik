@@ -7,11 +7,14 @@ test("management commercial summary shows scoped cards without later workflow fe
     waitUntil: "domcontentloaded",
   });
 
-  await expect(page.getByRole("heading", { name: "ملخص المتابعة" })).toBeVisible();
-  const summaryRegion = page.getByRole("region", { name: "ملخص الإدارة التجاري" });
+  await expect(page.getByRole("heading", { name: "تجربة هدنة" })).toBeVisible();
+  const mvpSnapshot = page.getByRole("region", { name: "ملخص تجربة هدنة" });
+  await expect(mvpSnapshot.getByText("عدد المخرجات")).toBeVisible();
+  await expect(mvpSnapshot.getByText("52", { exact: true })).toBeVisible();
+  const summaryRegion = page.getByRole("region", { name: "ملخص المتابعة للإدارة" });
   await expect(summaryRegion).toBeVisible();
-  await expect(summaryRegion.getByText("محجوز: 1").first()).toBeVisible();
-  await expect(summaryRegion.getByText("متاح: 3").first()).toBeVisible();
+  await expect(summaryRegion.getByText("قيد العمل:").first()).toBeVisible();
+  await expect(summaryRegion.getByText("المتبقي:").first()).toBeVisible();
   await expect(page.getByText("Kanban")).toHaveCount(0);
   await expect(page.getByText("files")).toHaveCount(0);
   await expect(page.getByText("comments")).toHaveCount(0);
@@ -25,11 +28,15 @@ test("client commercial summary hides internal fields and other-client identifie
     waitUntil: "domcontentloaded",
   });
 
-  await expect(page.getByRole("heading", { name: "ملخص الباقة" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "تجربة هدنة" })).toBeVisible();
   await expect(
-    page.getByRole("region", { name: "ملخص العميل التجاري" }),
+    page.getByRole("region", { name: "ملخص بوابة العميل" }),
   ).toBeVisible();
-  await expect(page.getByText("المتبقي: 3")).toBeVisible();
+  const clientRegion = page.getByRole("region", { name: "ملخص بوابة العميل" });
+  await expect(
+    clientRegion.getByRole("heading", { name: "الباقة والمتبقي" }),
+  ).toBeVisible();
+  await expect(clientRegion.getByRole("heading", { name: "مخرجاتي" })).toBeVisible();
   await expect(page.getByText("tenant_a")).toHaveCount(0);
   await expect(page.getByText("client_b")).toHaveCount(0);
   await expect(page.getByText("internal")).toHaveCount(0);

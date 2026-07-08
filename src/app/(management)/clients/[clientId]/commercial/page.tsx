@@ -11,6 +11,11 @@ import {
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
 import { ManagementCommercialSummaryCards } from "@/ui/management/commercial-summary";
+import { ButtonLink } from "@/ui/core/button";
+import {
+  buildManagementMvpStats,
+  HadnaMvpHero,
+} from "@/ui/mvp/hadna-mvp-summary";
 import {
   AccessDeniedState,
   ClientUnavailableState,
@@ -95,10 +100,24 @@ export default async function ManagementCommercialSummaryPage({
 
   return (
     <main className="grid gap-5" dir="rtl">
-      <div>
-        <h1 className="text-2xl font-semibold">ملخص المتابعة</h1>
-        <p className="mt-2 text-sm text-muted">{client.name}</p>
-      </div>
+      <HadnaMvpHero
+        clientName={client.name}
+        roleLabel="المتابعة / SLA"
+        stats={buildManagementMvpStats(summary.value)}
+      >
+        <ButtonLink href={`/clients/${client.id}/deliverables`} variant="primary">
+          عرض المخرجات
+        </ButtonLink>
+        <ButtonLink href={`/clients/${client.id}/contracts`} variant="secondary">
+          عرض الباقة
+        </ButtonLink>
+        <ButtonLink
+          href={`/clients/${client.id}/deliverables/board`}
+          variant="secondary"
+        >
+          فتح لوحة العمل
+        </ButtonLink>
+      </HadnaMvpHero>
       <ManagementCommercialSummaryCards summary={summary.value} />
     </main>
   );

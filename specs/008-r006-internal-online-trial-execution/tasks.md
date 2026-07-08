@@ -91,6 +91,20 @@
 - [x] T039 Re-run `npm run secret:scan` after the execution/evidence docs update
 - [x] T040 Re-run `git diff --check` after the execution/evidence docs update
 
+## Phase 8: MVP Productization Sprint
+
+- [x] T041 Confirm PR #34 was merged and create `codex/r006-mvp-productization` from updated `main`
+- [x] T042 Run product/UX audit for sign-in, management, Hadna, deliverables, commercial summary, and client portal pages
+- [x] T043 Define role navigation model for management/project manager, account manager, and client
+- [x] T044 Implement Hadna-first MVP snapshot cards and role landing pages without hosted DB mutation
+- [x] T045 Simplify deliverables display to safe MVP fields: name, type/channel, date, status, progress
+- [x] T046 Simplify client portal to Hadna, package summary, allowed deliverables, and no management/other-client surface
+- [x] T047 Add/update unit, component, and E2E coverage for MVP navigation, route guards, and Viewer B isolation
+- [x] T048 Record MVP productization evidence in docs and verification notes
+- [x] T049 Run full requested verification suite after documentation update
+- [x] T050 Deploy to Vercel UAT alias and run post-deploy smoke
+- [x] T051 Commit, push, and open the MVP Productization PR
+
 ## Dependencies & Execution Order
 
 - Phase 1 must complete before target preflight.
@@ -98,6 +112,7 @@
 - US1 owner authorization unblocked this Hadna-only UAT run.
 - US2 account creation completed for smoke; credential handoff remains outside repo/chat/logs.
 - US3 deployment and smoke checks completed on the promoted temporary UAT alias.
+- Phase 8 must not perform hosted DB mutation unless a separate minimum-scope owner approval is recorded.
 
 ## Implementation Strategy
 

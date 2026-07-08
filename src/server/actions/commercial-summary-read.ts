@@ -4,6 +4,8 @@ import type {
   CommercialSummary,
   ManagementCommercialSummary,
 } from "@/modules/commercial/commercial-summary";
+import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
+import type { DeliverableLifecycleStatus } from "@/modules/deliverables/deliverable-rules";
 import {
   toClientDeliverableSummary,
   toManagementDeliverableSummary,
@@ -24,6 +26,117 @@ import {
   type PackageWriteRow,
 } from "./package-write-rpc";
 
+const progressByStatus: Record<DeliverableLifecycleStatus, number> = {
+  not_started: 0,
+  in_progress: 30,
+  ready_for_internal_review: 50,
+  internal_changes_requested: 45,
+  internally_approved: 70,
+  waiting_client_approval: 80,
+  client_changes_requested: 65,
+  client_approved: 90,
+  ready_for_delivery: 95,
+  delivered: 100,
+  cancelled: 0,
+  archived: 100,
+};
+
+const fixturePackageLines = [
+  {
+    id: "package_line_posts_a",
+    serviceLabel: "منشورات",
+    deliverableTypeHint: "post",
+    unitLabel: "منشور",
+    committedQuantity: 20,
+    reserved: 14,
+    available: 6,
+  },
+  {
+    id: "package_line_reels_a",
+    serviceLabel: "ريلز",
+    deliverableTypeHint: "reel",
+    unitLabel: "فيديو",
+    committedQuantity: 10,
+    reserved: 7,
+    available: 3,
+  },
+  {
+    id: "package_line_stories_a",
+    serviceLabel: "ستوري",
+    deliverableTypeHint: "story",
+    unitLabel: "ستوري",
+    committedQuantity: 8,
+    reserved: 5,
+    available: 3,
+  },
+  {
+    id: "package_line_designs_a",
+    serviceLabel: "تصاميم",
+    deliverableTypeHint: "design",
+    unitLabel: "تصميم",
+    committedQuantity: 8,
+    reserved: 4,
+    available: 4,
+  },
+  {
+    id: "package_line_reports_a",
+    serviceLabel: "تقارير",
+    deliverableTypeHint: "report",
+    unitLabel: "تقرير",
+    committedQuantity: 6,
+    reserved: 3,
+    available: 3,
+  },
+] as const;
+
+const fixtureStatusPlan: DeliverableLifecycleStatus[] = [
+  ...Array<DeliverableLifecycleStatus>(12).fill("delivered"),
+  ...Array<DeliverableLifecycleStatus>(8).fill("in_progress"),
+  ...Array<DeliverableLifecycleStatus>(7).fill("ready_for_internal_review"),
+  ...Array<DeliverableLifecycleStatus>(6).fill("internally_approved"),
+  ...Array<DeliverableLifecycleStatus>(5).fill("waiting_client_approval"),
+  ...Array<DeliverableLifecycleStatus>(4).fill("client_changes_requested"),
+  ...Array<DeliverableLifecycleStatus>(10).fill("not_started"),
+];
+
+const fixtureDeliverables: DeliverableSafeSummary[] = fixtureStatusPlan.map(
+  (status, index) => {
+    const line = fixturePackageLines[index % fixturePackageLines.length];
+    const number = index + 1;
+    const dateDay = String((index % 28) + 1).padStart(2, "0");
+
+    return {
+      id: `hadna_deliverable_${number}`,
+      tenantId: "tenant_a",
+      clientId: "client_a",
+      contractId: "contract_a",
+      packageId: "package_a",
+      packageLineId: line.id,
+      name: `${line.serviceLabel} هدنة ${number}`,
+      type: line.deliverableTypeHint,
+      status,
+      priority: index % 9 === 0 ? "high" : "normal",
+      ownerUserId: "assigned_internal_a",
+      contributorUserIds: [],
+      startDate: `2026-07-${dateDay}`,
+      internalDueDate: `2026-07-${dateDay}`,
+      clientDueDate: `2026-08-${dateDay}`,
+      finalDueDate: `2026-08-${dateDay}`,
+      requiresInternalApproval: true,
+      requiresClientApproval: true,
+      progressPercentage: progressByStatus[status],
+      approvedExtra: false,
+      revision: 1,
+      createdAt: `2026-07-${dateDay}T00:00:00.000Z`,
+      updatedAt: `2026-07-${dateDay}T00:00:00.000Z`,
+      reservation: {
+        packageLineId: line.id,
+        reservedQuantity: 1,
+      },
+    };
+  },
+);
+
 export const fixtureManagementCommercialSummary: ManagementCommercialSummary = {
   audience: "management",
   clientId: "client_a",
@@ -32,8 +145,8 @@ export const fixtureManagementCommercialSummary: ManagementCommercialSummary = {
       id: "contract_a",
       tenantId: "tenant_a",
       clientId: "client_a",
-      name: "عقد إدارة المحتوى",
-      summary: "متابعة آمنة للعقد ضمن نطاق العميل.",
+      name: "عقد هدنة للتشغيل التسويقي",
+      summary: "متابعة داخلية آمنة لتجربة هدنة.",
       status: "active",
       createdAt: "2026-06-28T00:00:00.000Z",
       updatedAt: "2026-06-28T00:00:00.000Z",
@@ -45,72 +158,43 @@ export const fixtureManagementCommercialSummary: ManagementCommercialSummary = {
       tenantId: "tenant_a",
       clientId: "client_a",
       contractId: "contract_a",
-      name: "باقة المحتوى الشهرية",
+      name: "باقة هدنة",
       status: "active",
       createdAt: "2026-06-28T00:00:00.000Z",
       updatedAt: "2026-06-28T00:00:00.000Z",
-      lines: [
-        {
-          id: "package_line_posts_a",
-          tenantId: "tenant_a",
-          clientId: "client_a",
-          packageId: "package_a",
-          serviceLabel: "منشورات",
-          unitLabel: "منشور",
-          committedQuantity: 4,
-          status: "active",
-          createdAt: "2026-06-28T00:00:00.000Z",
-          updatedAt: "2026-06-28T00:00:00.000Z",
-          balance: {
-            committed: 4,
-            reserved: 1,
-            consumed: 0,
-            released: 0,
-            adjustments: 0,
-            available: 3,
-          },
-        },
-      ],
-      balances: [
-        {
-          packageLineId: "package_line_posts_a",
-          committed: 4,
-          reserved: 1,
+      lines: fixturePackageLines.map((line) => ({
+        id: line.id,
+        tenantId: "tenant_a",
+        clientId: "client_a",
+        packageId: "package_a",
+        serviceLabel: line.serviceLabel,
+        deliverableTypeHint: line.deliverableTypeHint,
+        unitLabel: line.unitLabel,
+        committedQuantity: line.committedQuantity,
+        status: "active" as const,
+        createdAt: "2026-06-28T00:00:00.000Z",
+        updatedAt: "2026-06-28T00:00:00.000Z",
+        balance: {
+          committed: line.committedQuantity,
+          reserved: line.reserved,
           consumed: 0,
           released: 0,
           adjustments: 0,
-          available: 3,
+          available: line.available,
         },
-      ],
+      })),
+      balances: fixturePackageLines.map((line) => ({
+        packageLineId: line.id,
+        committed: line.committedQuantity,
+        reserved: line.reserved,
+        consumed: 0,
+        released: 0,
+        adjustments: 0,
+        available: line.available,
+      })),
     },
   ],
-  deliverables: [
-    {
-      id: "deliverable_a",
-      tenantId: "tenant_a",
-      clientId: "client_a",
-      contractId: "contract_a",
-      packageId: "package_a",
-      packageLineId: "package_line_posts_a",
-      name: "منشور إطلاق الحملة",
-      description: "وصف آمن للعميل.",
-      type: "post",
-      status: "not_started",
-      priority: "normal",
-      contributorUserIds: [],
-      requiresInternalApproval: true,
-      requiresClientApproval: true,
-      progressPercentage: 0,
-      approvedExtra: false,
-      revision: 1,
-      createdAt: "2026-06-28T00:00:00.000Z",
-      updatedAt: "2026-06-28T00:00:00.000Z",
-      reservation: {
-        packageLineId: "package_line_posts_a",
-        reservedQuantity: 1,
-      },
-    },
-  ],
+  deliverables: fixtureDeliverables,
 };
 
 export const fixtureClientCommercialSummary: ClientCommercialSummary = {
@@ -123,7 +207,7 @@ export const fixtureClientCommercialSummary: ClientCommercialSummary = {
   packages: fixtureManagementCommercialSummary.packages.map((packageSummary) => ({
     name: packageSummary.name,
     status: packageSummary.status,
-    lines: packageSummary.lines.map((line) => ({
+    lines: (packageSummary.lines ?? []).map((line) => ({
       serviceLabel: line.serviceLabel,
       unitLabel: line.unitLabel,
       balance: line.balance,
@@ -277,7 +361,7 @@ export const readCommercialSummary = async ({
           periodStart: packageSummary.periodStart,
           periodEnd: packageSummary.periodEnd,
           status: packageSummary.status,
-          lines: packageSummary.lines.map((line) => ({
+          lines: (packageSummary.lines ?? []).map((line) => ({
             serviceLabel: line.serviceLabel,
             unitLabel: line.unitLabel,
             balance: line.balance,

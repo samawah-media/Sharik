@@ -1,6 +1,12 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
+  fixtureManagementCommercialSummary,
+  readCommercialSummary,
+} from "@/server/actions/commercial-summary-read";
+import {
+  canUseRouteActorFixtures,
   guardClientDetailRoute,
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
@@ -8,6 +14,12 @@ import { Badge } from "@/ui/core/badge";
 import { ButtonLink } from "@/ui/core/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/ui/core/card";
 import { PageHeader } from "@/ui/layout/page-header";
+import {
+  buildEmptyMvpStats,
+  buildManagementMvpStats,
+  formatMvpClientName,
+  HadnaMvpHero,
+} from "@/ui/mvp/hadna-mvp-summary";
 import {
   AccessDeniedState,
   ClientUnavailableState,
@@ -87,14 +99,50 @@ export default async function ClientDetailPage({
       permission: PERMISSIONS.LEDGER_VIEW_SUMMARY,
       resource: permissionResource,
     }).allowed;
+  const summary =
+    canViewCommercial && canUseRouteActorFixtures()
+      ? { ok: true as const, value: fixtureManagementCommercialSummary }
+      : canViewCommercial
+        ? await readCommercialSummary({
+            supabase: await createSupabaseServerClient(),
+            tenantId: client.tenantId,
+            clientId: client.id,
+            audience: "management",
+          })
+        : { ok: false as const };
+  const stats =
+    summary.ok && summary.value.audience === "management"
+      ? buildManagementMvpStats(summary.value)
+      : buildEmptyMvpStats();
+  const displayClientName = formatMvpClientName(client.name);
 
   return (
     <main className="grid gap-5">
       <PageHeader
         description="مسارات التشغيل الأساسية للعميل المسند لك."
         status={<Badge tone="success">نشط</Badge>}
-        title={client.name}
+        title={displayClientName}
       />
+      <HadnaMvpHero clientName={client.name} roleLabel="مساحة سماوة" stats={stats}>
+        {canViewDeliverables ? (
+          <ButtonLink href={`/clients/${client.id}/deliverables`} variant="primary">
+            عرض المخرجات
+          </ButtonLink>
+        ) : null}
+        {canViewContracts ? (
+          <ButtonLink href={`/clients/${client.id}/contracts`} variant="secondary">
+            عرض الباقة
+          </ButtonLink>
+        ) : null}
+        {canUpdateDeliverableStatus ? (
+          <ButtonLink
+            href={`/clients/${client.id}/deliverables/board`}
+            variant="secondary"
+          >
+            فتح لوحة العمل
+          </ButtonLink>
+        ) : null}
+      </HadnaMvpHero>
       <section
         aria-label="مسارات تجربة العميل"
         className="grid gap-3 md:grid-cols-2 xl:grid-cols-4"
@@ -136,7 +184,7 @@ export default async function ClientDetailPage({
         {canUpdateDeliverableStatus ? (
           <Card>
             <CardHeader>
-              <CardTitle>لوحة المتابعة</CardTitle>
+              <CardTitle>لوحة العمل</CardTitle>
               <CardDescription>متابعة العمل الداخلي للعميل.</CardDescription>
             </CardHeader>
             <ButtonLink
@@ -144,14 +192,14 @@ export default async function ClientDetailPage({
               href={`/clients/${client.id}/deliverables/board`}
               variant="primary"
             >
-              لوحة المتابعة
+              لوحة العمل
             </ButtonLink>
           </Card>
         ) : null}
         {canViewCommercial ? (
           <Card>
             <CardHeader>
-              <CardTitle>ملخص المتابعة</CardTitle>
+              <CardTitle>المتابعة / SLA</CardTitle>
               <CardDescription>
                 ملخص الرصيد والاستهلاك وحالة الباقة.
               </CardDescription>
@@ -161,7 +209,7 @@ export default async function ClientDetailPage({
               href={`/clients/${client.id}/commercial`}
               variant="secondary"
             >
-              ملخص المتابعة
+              المتابعة / SLA
             </ButtonLink>
           </Card>
         ) : null}

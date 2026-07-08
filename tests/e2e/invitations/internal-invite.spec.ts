@@ -15,6 +15,6 @@ test("shows internal invite form and assigned-client portfolio surface", async (
   await page.goto("/portfolio", { waitUntil: "domcontentloaded" });
 
   await expect(page.getByRole("heading", { name: "عملائي" })).toBeVisible();
-  await expect(page.getByText("Client A")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "هدنة", exact: true })).toBeVisible();
   await expect(page.getByText("Client B")).toHaveCount(0);
 });

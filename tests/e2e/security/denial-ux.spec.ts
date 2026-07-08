@@ -10,11 +10,11 @@ test("denies assigned internal direct URL access to unassigned same-tenant clien
   await expect(
     page.getByRole("heading", { name: "لا يمكنك الوصول لهذا العميل" }),
   ).toBeVisible();
-  await expect(page.getByText("Client C")).toHaveCount(0);
+  await expect(page.getByText("عميل غير مسند")).toHaveCount(0);
   await expect(page.getByText("client_c")).toHaveCount(0);
 });
 
-test("denies cross-tenant and Client B URL tampering without enumeration leakage", async ({
+test("denies cross-tenant and non-Hadna URL tampering without enumeration leakage", async ({
   page,
 }) => {
   await page.goto("/clients/client_b?as=assigned_internal_a", {
@@ -24,7 +24,7 @@ test("denies cross-tenant and Client B URL tampering without enumeration leakage
   await expect(
     page.getByRole("heading", { name: "لا يمكنك الوصول لهذا العميل" }),
   ).toBeVisible();
-  await expect(page.getByText("Client B")).toHaveCount(0);
+  await expect(page.getByText("عميل خارج النطاق")).toHaveCount(0);
   await expect(page.getByText("tenant_b")).toHaveCount(0);
   await expect(page.getByText("client_b")).toHaveCount(0);
 });
@@ -53,6 +53,6 @@ test("shows a safe no-client state for users without assigned clients", async ({
   await expect(
     page.getByRole("heading", { name: "لا يوجد عملاء مسندون" }),
   ).toBeVisible();
-  await expect(page.getByText("Client A")).toHaveCount(0);
-  await expect(page.getByText("Client B")).toHaveCount(0);
+  await expect(page.getByText("هدنة")).toHaveCount(0);
+  await expect(page.getByText("عميل خارج النطاق")).toHaveCount(0);
 });

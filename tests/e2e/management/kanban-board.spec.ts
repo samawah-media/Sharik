@@ -10,7 +10,7 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
   });
 
   const main = page.getByRole("main");
-  const boardLink = main.getByRole("link", { name: "لوحة المتابعة" });
+  const boardLink = main.getByRole("link", { name: "لوحة العمل" });
 
   await expect(boardLink).toHaveAttribute(
     "href",
@@ -19,10 +19,10 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
   await boardLink.click();
 
   await expect(
-    page.getByRole("heading", { name: "لوحة المتابعة" }),
+    page.getByRole("heading", { name: "لوحة العمل" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("region", { name: "لوحة المتابعة" }),
+    page.getByRole("region", { name: "لوحة العمل" }),
   ).toBeVisible();
   const firstColumn = page.getByTestId("kanban-column").first();
   await expect(firstColumn).toBeVisible();
@@ -32,11 +32,11 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
       return Math.round(box?.width ?? 0);
     })
     .toBeGreaterThanOrEqual(320);
-  await expect(page.getByText("منشور إطلاق الحملة")).toBeVisible();
+  await expect(page.getByText("ستوري هدنة 43")).toBeVisible();
 
   await page.getByText("تغيير الحالة").first().click();
   await expect(
-    page.getByRole("form", { name: "تغيير حالة منشور إطلاق الحملة" }),
+    page.getByRole("form", { name: "تغيير حالة ستوري هدنة 43" }),
   ).toBeVisible();
   await page.getByLabel("الحالة").first().selectOption("in_progress");
   await expect(page.getByLabel("الحالة").first()).toHaveValue("in_progress");
@@ -54,7 +54,7 @@ test("client viewer cannot access the internal Kanban board", async ({
   await expect(page.getByRole("heading").first()).toBeVisible();
   await expect(page.getByText("منشور إطلاق الحملة")).toHaveCount(0);
   await expect(
-    page.getByRole("region", { name: "لوحة المتابعة" }),
+    page.getByRole("region", { name: "لوحة العمل" }),
   ).toHaveCount(0);
   await expect(page.getByText("client_b")).toHaveCount(0);
 });

@@ -91,6 +91,78 @@ Follow-up pass to make the first UAT step clearer for the three tested views:
 - Deployed `https://sharik-platform-16z047sh3-omarhussien2s-projects.vercel.app` and promoted `https://sharik-platform.vercel.app`.
 - Public alias unauthenticated check redirects to `/sign-in`; authenticated account checks still require the out-of-band UAT credentials.
 
+## MVP Productization Sprint - 2026-07-03
+
+Follow-up pass after PR #34 was merged. This pass turns R-006 from a technically valid UAT into a clearer MVP evaluation flow for the owner.
+
+| Item | Value |
+|---|---|
+| Branch | `codex/r006-mvp-productization` |
+| PR | [#35 R-006 MVP Productization Sprint](https://github.com/samawah-media/Sharik/pull/35) |
+| Base | `main` after PR #34 merge |
+| Scope | Product/UX/copy/tests/docs for Hadna-only MVP UAT |
+| Hosted DB mutation | None |
+| Production acceptance | Not granted |
+
+Product changes:
+
+- Added a reusable Hadna MVP snapshot for role entry pages and summaries: 52 deliverables, 5 package lines, internal UAT state, work waiting count, and client waiting count.
+- Updated role navigation:
+  - Management/project admin: `لوحة الإدارة`, `العملاء`, `هدنة`, `المخرجات`, `المتابعة / SLA`.
+  - Account manager: `عملائي`, `هدنة`, `مخرجات هدنة`, `ملخص المتابعة`.
+  - Client: `الرئيسية`, `مخرجاتي`, `الباقة والمتبقي`, with `بانتظار موافقتي` reserved for later approval workflow.
+- Changed the first screen after login to make Hadna, the package, and the deliverables visible immediately for authorized internal roles.
+- Changed client portal copy so the client sees Hadna, package balance, and allowed deliverables only; no management/customer-list surface is exposed.
+- Changed deliverable cards to show only MVP-safe fields: name, channel/type, date, status, and progress.
+- Added display-only normalization so `Hadna` renders as `هدنة` without mutating hosted records.
+- Kept `commercial` and `portfolio` route names as internal paths only; user-facing labels are Arabic business terms.
+
+Terminology before/after:
+
+| Before | After |
+|---|---|
+| `تسجيل الدخول الإداري` | `تسجيل الدخول إلى شريك` |
+| `لوحة المتابعة` for the internal board | `لوحة العمل` |
+| `commercial` / `الملخص التجاري` | `المتابعة / SLA` or `الباقة والمتبقي` |
+| `portfolio` / ambiguous portfolio entry | `لوحة الإدارة` or `عملائي` by role |
+| UUID-like route segment | `العميل`, `العقد`, or hidden from page text |
+| generic unavailable-resource copy | `لا يمكنك الوصول لهذا العميل` with safe recovery |
+
+Local and release verification completed before deployment:
+
+| Check | Status |
+|---|---:|
+| `npm run lint` | PASS |
+| `npm run typecheck` | PASS |
+| `npm run test:unit` | PASS |
+| `npm run test:component` | PASS |
+| `npm run test:e2e` | PASS |
+| `npm run secret:scan` | PASS |
+| `git diff --check` | PASS |
+| `npm run build` | PASS |
+| Targeted Playwright MVP/commercial/denial smoke | PASS |
+
+Detailed results: unit tests passed 24 files / 84 tests; component tests passed 16 files / 51 tests; E2E passed 79 tests with 2 skipped across desktop, mobile, and RTL projects. `git diff --check` reported only Windows CRLF working-copy warnings.
+
+Vercel UAT deployment:
+
+| Item | Value |
+|---|---|
+| Direct deployment | `https://sharik-platform-ao0fjvrwn-omarhussien2s-projects.vercel.app` |
+| UAT alias | `https://sharik-platform.vercel.app` |
+| Build | PASS on Vercel remote build |
+| Hosted DB mutation | None |
+| Production acceptance | Not granted |
+
+Post-deploy smoke:
+
+| Check | Status | Result |
+|---|---:|---|
+| `/` | PASS | 307 redirect to `/sign-in`. |
+| `/sign-in` | PASS | 200 and Arabic sign-in shell. |
+| `/portfolio`, `/clients`, `/client`, `/client/commercial` unauthenticated | PASS | Safe sign-in/session state; no Hadna scoped data rendered without an authenticated session. |
+| Hosted role fixtures | PASS | Disabled in hosted/runtime by design; authenticated role smoke remains dependent on out-of-band UAT credentials. |
+
 ## Smoke Results
 
 | Check | Status | Result |

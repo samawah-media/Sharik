@@ -19,6 +19,93 @@ R-006 was executed against the owner-authorized UAT target.
 
 This is not Production acceptance, Ready conversion, PR merge approval, or approval to reuse non-Hadna customer data.
 
+## MVP Productization Sprint Evidence - 2026-07-03
+
+PR #34 was merged before this pass. Current branch: `codex/r006-mvp-productization`.
+
+### Product/UX Audit
+
+Scoring: 1 = confusing or unsafe, 5 = clear enough for MVP evaluation.
+
+| Page | Before | After | Notes |
+|---|---:|---:|---|
+| `/sign-in` | 3 | 4 | Changed from admin-only wording to Sharik UAT login for all roles. |
+| `/portfolio` | 2 | 4 | Became the role landing page with Hadna MVP snapshot and direct CTAs. |
+| `/clients` | 3 | 4 | Hadna is first-class with snapshot and no slug/UUID display. |
+| `/clients/{hadnaId}` | 3 | 4 | Added Hadna snapshot and clear paths to deliverables, package, and work board. |
+| `/clients/{hadnaId}/deliverables` | 2 | 4 | Now shows name, type/channel, date, status, and progress without full captions/descriptions. |
+| `/clients/{hadnaId}/commercial` | 2 | 4 | User-facing label is now `المتابعة / SLA`; package and deliverables are readable. |
+| `/client` | 2 | 4 | Client sees Hadna, package/deliverable CTAs, and no management concepts. |
+| `/client/commercial` | 2 | 4 | User-facing label is now package/deliverables summary; client-safe fields only. |
+
+Remaining reason no page is scored 5: files/final delivery and approval decision actions remain out of MVP scope for this pass.
+
+### Implemented MVP Navigation Model
+
+| Role | Navigation model |
+|---|---|
+| Management / project manager | `لوحة الإدارة`, `العملاء`, `هدنة`, `المخرجات`, `المتابعة / SLA` |
+| Account manager | `عملائي`, `هدنة`, `مخرجات هدنة`, `ملخص المتابعة` |
+| Client viewer / approver | `الرئيسية`, `مخرجاتي`, `الباقة والمتبقي`, `بانتظار موافقتي` later for approval workflow |
+
+### Terminology Replacement
+
+| Before | After |
+|---|---|
+| `تسجيل الدخول الإداري` | `تسجيل الدخول إلى شريك` |
+| `لوحة المتابعة` for internal board | `لوحة العمل` |
+| `commercial` / commercial summary | `المتابعة / SLA`, `الباقة والمتبقي` |
+| `portfolio` as visible idea | `لوحة الإدارة` or `عملائي` |
+| `Kanban` in user-facing copy | `لوحة العمل` |
+| generic unavailable resource wording | safe Arabic access guidance |
+
+### Local Verification Before Full Release Checks
+
+| Check | Status | Notes |
+|---|---:|---|
+| `npm run typecheck` | PASS | TypeScript passed after MVP summary/data-shape updates. |
+| `npm run test:unit` | PASS | 24 files / 84 tests. |
+| `npm run test:component` | PASS | 16 files / 51 tests. |
+| `npm run lint` | PASS | Full ESLint pass. |
+| Targeted Playwright MVP set | PASS | 39 tests across desktop/mobile/RTL. |
+
+No hosted DB mutation, credential generation, workbook row disclosure, screenshots, or secret values were introduced by this pass.
+
+### Full Release Verification and Deployment - 2026-07-03
+
+| Check | Status | Notes |
+|---|---:|---|
+| `npm run lint` | PASS | Full ESLint pass with `--max-warnings=0`. |
+| `npm run typecheck` | PASS | `tsc --noEmit`. |
+| `npm run test:unit` | PASS | 24 files / 84 tests. |
+| `npm run test:component` | PASS | 16 files / 51 tests. |
+| `npm run test:e2e` | PASS | 79 passed / 2 skipped across desktop, mobile, and RTL projects. |
+| `npm run secret:scan` | PASS | No high-confidence secrets found. |
+| `git diff --check` | PASS | CRLF working-copy warnings only; no whitespace errors. |
+| `npm run build` | PASS | Local Next.js production build compiled, typechecked, and generated static pages. |
+| Vercel remote build | PASS | Built and aliased the deployment below. |
+
+| Deployment item | Value |
+|---|---|
+| Pull request | [#35 R-006 MVP Productization Sprint](https://github.com/samawah-media/Sharik/pull/35) |
+| Direct deployment | `https://sharik-platform-ao0fjvrwn-omarhussien2s-projects.vercel.app` |
+| UAT alias | `https://sharik-platform.vercel.app` |
+| Scope | Internal UAT only; not Production acceptance. |
+| Hosted DB mutation | None in this MVP Productization pass. |
+
+Post-deploy smoke on `https://sharik-platform.vercel.app`:
+
+| Route | Status | Non-sensitive result |
+|---|---:|---|
+| `/` | PASS | 307 redirect to `/sign-in`. |
+| `/sign-in` | PASS | 200 and Arabic Sharik sign-in shell. |
+| `/portfolio` unauthenticated | PASS | Safe sign-in/session state; no Hadna scoped data rendered. |
+| `/clients` unauthenticated | PASS | Safe sign-in/session state; no Hadna scoped data rendered. |
+| `/client` unauthenticated | PASS | Safe sign-in/session state; no Hadna scoped data rendered. |
+| `/client/commercial` unauthenticated | PASS | Safe sign-in/session state; no Hadna scoped data rendered. |
+
+Authenticated role smoke for the deployed alias requires the out-of-band UAT credentials. Local E2E covered account manager, management/project admin, client viewer A, and viewer B isolation with route fixtures; hosted route fixtures remain disabled by design outside local/test runtimes.
+
 ## Targets
 
 | Target | Value |
@@ -261,6 +348,7 @@ Authenticated three-role smoke was not repeated in-chat because UAT credentials 
 | Arabic UX UAT promote | PASS | Public smoke URL was promoted to the Arabic UX UAT deployment. |
 | Three-role navigation polish deploy | PASS | Build completed and produced deployment `https://sharik-platform-16z047sh3-omarhussien2s-projects.vercel.app`. |
 | Three-role navigation polish promote | PASS | Public smoke URL was promoted to the navigation-polish deployment. |
+| MVP Productization deploy | PASS | Build completed and aliased deployment `https://sharik-platform-ao0fjvrwn-omarhussien2s-projects.vercel.app` to `https://sharik-platform.vercel.app`. |
 
 ## Remaining Risks
 

@@ -1,8 +1,13 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
-  guardClientsIndexRoute,
+  fixtureManagementCommercialSummary,
+  readCommercialSummary,
+} from "@/server/actions/commercial-summary-read";
+import {
   canUseRouteActorFixtures,
+  guardClientsIndexRoute,
   guardManagementRoute,
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
@@ -11,6 +16,12 @@ import { Badge } from "@/ui/core/badge";
 import { ButtonLink } from "@/ui/core/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/ui/core/card";
 import { PageHeader } from "@/ui/layout/page-header";
+import {
+  buildEmptyMvpStats,
+  buildManagementMvpStats,
+  formatMvpClientName,
+  HadnaMvpHero,
+} from "@/ui/mvp/hadna-mvp-summary";
 import {
   AccessDeniedState,
   MembershipDisabledState,
@@ -64,7 +75,22 @@ export default async function ClientsPage({
       resource: { tenantId: client.tenantId, clientId: client.id },
     }).allowed,
   );
-  const showFixtureEmptyState = canUseRouteActorFixtures();
+  const primaryClient = visibleClients[0];
+  const summary =
+    primaryClient && canUseRouteActorFixtures()
+      ? { ok: true as const, value: fixtureManagementCommercialSummary }
+      : primaryClient
+        ? await readCommercialSummary({
+            supabase: await createSupabaseServerClient(),
+            tenantId: primaryClient.tenantId,
+            clientId: primaryClient.id,
+            audience: "management",
+          })
+        : { ok: false as const };
+  const stats =
+    summary.ok && summary.value.audience === "management"
+      ? buildManagementMvpStats(summary.value)
+      : buildEmptyMvpStats();
 
   return (
     <main className="grid gap-6">
@@ -79,7 +105,30 @@ export default async function ClientsPage({
         description="العملاء المسندون لك مع روابط التشغيل الأساسية."
         title="العملاء"
       />
-      {visibleClients.length > 0 && !showFixtureEmptyState ? (
+      {primaryClient ? (
+        <HadnaMvpHero
+          clientName={primaryClient.name}
+          roleLabel="قائمة العملاء"
+          stats={stats}
+        >
+          <ButtonLink href={`/clients/${primaryClient.id}`} variant="primary">
+            عرض هدنة
+          </ButtonLink>
+          <ButtonLink
+            href={`/clients/${primaryClient.id}/deliverables`}
+            variant="secondary"
+          >
+            عرض المخرجات
+          </ButtonLink>
+          <ButtonLink
+            href={`/clients/${primaryClient.id}/commercial`}
+            variant="secondary"
+          >
+            عرض الباقة
+          </ButtonLink>
+        </HadnaMvpHero>
+      ) : null}
+      {visibleClients.length > 0 ? (
         <section
           aria-label="قائمة العملاء"
           className="grid gap-3 md:grid-cols-2 xl:grid-cols-3"
@@ -88,14 +137,14 @@ export default async function ClientsPage({
             <Card className="grid content-between gap-4" key={client.id}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <CardHeader>
-                  <CardTitle>{client.name}</CardTitle>
-                  <CardDescription>عميل مسند لك</CardDescription>
+                  <CardTitle>{formatMvpClientName(client.name)}</CardTitle>
+                  <CardDescription>تجربة UAT داخلية</CardDescription>
                 </CardHeader>
                 <Badge tone="success">نشط</Badge>
               </div>
               <div className="grid gap-3">
                 <ButtonLink href={`/clients/${client.id}`} variant="primary">
-                  عرض العميل
+                  عرض هدنة
                 </ButtonLink>
                 <div className="flex flex-wrap gap-2">
                   <ButtonLink
@@ -117,7 +166,7 @@ export default async function ClientsPage({
                     size="sm"
                     variant="secondary"
                   >
-                    ملخص المتابعة
+                    المتابعة / SLA
                   </ButtonLink>
                   {writeAccess.allowed ? (
                     <ButtonLink

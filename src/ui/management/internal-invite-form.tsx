@@ -30,7 +30,7 @@ export function InternalInviteForm() {
             name="clientIds"
             required
           >
-            <option value="client_a">Client A</option>
+            <option value="client_a">هدنة</option>
           </select>
         </label>
         <button

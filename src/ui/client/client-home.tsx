@@ -1,4 +1,6 @@
 import { ButtonLink } from "@/ui/core/button";
+import { Badge } from "@/ui/core/badge";
+import type { ReactNode } from "react";
 import {
   formatMvpClientName,
   MvpSnapshotCards,
@@ -6,23 +8,33 @@ import {
 } from "@/ui/mvp/hadna-mvp-summary";
 
 type ClientHomeProps = {
+  children?: ReactNode;
   clientName?: string;
   stats?: MvpSnapshotStats;
 };
 
-export function ClientHome({ clientName = "هدنة", stats }: ClientHomeProps) {
+export function ClientHome({
+  children,
+  clientName = "هدنة",
+  stats,
+}: ClientHomeProps) {
   const displayClientName = formatMvpClientName(clientName);
 
   return (
-    <main className="mx-auto grid w-full max-w-4xl gap-6 px-4 py-8">
-      <section className="grid gap-3">
-        <p className="text-sm font-medium text-muted">بوابة العميل</p>
-        <h1 className="text-2xl font-semibold">مساحة {displayClientName}</h1>
+    <main className="mx-auto grid w-full max-w-5xl gap-6 px-4 py-6 sm:py-8">
+      <section className="grid gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-7">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-accent">بوابة العميل</p>
+          <Badge tone="success">مساحتك الخاصة</Badge>
+        </div>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          مساحة {displayClientName}
+        </h1>
         <p className="max-w-2xl text-sm leading-6 text-muted">
           هذه واجهة هدنة المبسطة. تظهر هنا الباقة والمخرجات المسموحة لك فقط،
           بدون لوحات الإدارة الداخلية أو عملاء آخرين.
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <ButtonLink href="/client/commercial#deliverables" variant="primary">
             عرض مخرجاتي
           </ButtonLink>
@@ -32,14 +44,16 @@ export function ClientHome({ clientName = "هدنة", stats }: ClientHomeProps) 
         </div>
       </section>
       {stats ? <MvpSnapshotCards stats={stats} /> : null}
-      <section className="grid gap-3 rounded-lg border border-border p-5">
-        <h2 className="text-lg font-semibold">بانتظار موافقتي</h2>
-        <p className="text-sm text-muted">
-          لا توجد عناصر بانتظار موافقتك الآن. سيتم تفعيل هذه المساحة لاحقًا
-          لمسار الاعتماد.
-        </p>
-      </section>
-      <section className="grid gap-3 rounded-lg border border-border p-5">
+      {children ?? (
+        <section className="grid gap-3 rounded-lg border border-border p-5">
+          <h2 className="text-lg font-semibold">بانتظار موافقتي</h2>
+          <p className="text-sm text-muted">
+            لا توجد عناصر بانتظار موافقتك الآن. سيتم تفعيل هذه المساحة لاحقًا
+            لمسار الاعتماد.
+          </p>
+        </section>
+      )}
+      <section className="grid gap-3 rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
         <h2 className="text-lg font-semibold">المخرجات والباقة</h2>
         <p className="text-sm text-muted">
           افتح مخرجاتي لمراجعة الاسم والنوع والتاريخ والحالة والتقدم، وافتح

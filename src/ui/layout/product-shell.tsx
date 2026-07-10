@@ -47,6 +47,8 @@ const segmentLabels: Record<string, string> = {
   invitations: "الدعوات",
   internal: "دعوة داخلية",
   portfolio: "لوحة الإدارة",
+  readiness: "الجاهزية",
+  r007: "R-007",
 };
 
 const uuidLikePattern =
@@ -170,14 +172,14 @@ export function ProductShell({
       data-testid="product-shell"
       dir="rtl"
     >
-      <div className="grid min-h-screen lg:grid-cols-[17rem_minmax(0,1fr)]">
-        <aside className="border-b border-border bg-surface/95 px-4 py-4 lg:border-b-0 lg:border-l">
-          <div className="mx-auto grid max-w-7xl gap-4 lg:sticky lg:top-4">
+      <div className="grid min-h-screen lg:grid-cols-[18rem_minmax(0,1fr)]">
+        <aside className="border-b border-border bg-surface/95 px-3 py-3 shadow-sm lg:border-b-0 lg:border-l lg:px-4 lg:py-5 lg:shadow-none">
+          <div className="mx-auto grid max-w-7xl gap-4 lg:sticky lg:top-5">
             <Link
-              className="flex items-center gap-3 rounded-lg px-2 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              className="flex items-center gap-3 rounded-xl px-2 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
               href={homeHref}
             >
-              <span className="flex size-10 items-center justify-center rounded-lg bg-accent text-sm font-bold text-white">
+              <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-sm font-bold text-white shadow-sm">
                 ش
               </span>
               <span className="grid">
@@ -188,7 +190,7 @@ export function ProductShell({
             {navigationItems.length > 0 ? (
               <nav
                 aria-label={navigationLabel}
-                className="flex gap-2 overflow-x-auto pb-1 lg:grid lg:overflow-visible lg:pb-0"
+                className="flex snap-x gap-2 overflow-x-auto pb-1 lg:grid lg:overflow-visible lg:pb-0"
               >
                 {navigationItems.map((item) => {
                   const Icon = shellIcons[item.icon ?? "briefcase"];
@@ -197,7 +199,7 @@ export function ProductShell({
                   return (
                     <Link
                       className={cn(
-                        "flex min-w-fit items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors",
+                        "flex min-w-fit snap-start items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors",
                         "focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent",
                         active
                           ? "border-accent/20 bg-accent-soft text-accent"
@@ -205,6 +207,7 @@ export function ProductShell({
                       )}
                       href={item.href}
                       key={`${item.href}-${item.label}`}
+                      aria-current={active ? "page" : undefined}
                     >
                       <Icon aria-hidden="true" size={18} />
                       <span>{item.label}</span>
@@ -216,7 +219,7 @@ export function ProductShell({
           </div>
         </aside>
         <div className="min-w-0">
-          <header className="border-b border-border bg-background/90 px-4 py-4 backdrop-blur">
+          <header className="sticky top-0 z-20 border-b border-border bg-background/90 px-4 py-3 backdrop-blur sm:py-4">
             <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <Breadcrumbs
                 pathname={pathname}
@@ -225,7 +228,10 @@ export function ProductShell({
               />
               <div className="flex items-center gap-2 text-xs text-muted">
                 <FileText aria-hidden="true" size={15} />
-                <span>تجربة UAT داخلية ضمن النطاق المصرح</span>
+                <span className="hidden sm:inline">
+                  تجربة UAT داخلية ضمن النطاق المصرح
+                </span>
+                <span className="sm:hidden">ضمن النطاق المصرح</span>
               </div>
             </div>
           </header>

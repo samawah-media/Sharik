@@ -10,10 +10,13 @@ const eslintConfig = [
       "node_modules/**",
       "node_modules.partial/**",
       ".vercel/**",
+      "dist/**",
+      "build/**",
       "demo/**",
       "coverage/**",
       "test-results/**",
       "playwright-report/**",
+      "*.min.js",
     ],
   },
   {

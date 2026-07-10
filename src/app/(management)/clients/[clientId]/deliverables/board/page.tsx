@@ -78,6 +78,17 @@ export default async function ClientDeliverablesBoardPage({
     permission: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
     resource: { tenantId: client.tenantId, clientId: client.id },
   }).allowed;
+  const canUseApprovalWorkflow =
+    evaluatePermission({
+      actor: runtime.actor,
+      permission: PERMISSIONS.DELIVERABLE_INTERNAL_APPROVE,
+      resource: { tenantId: client.tenantId, clientId: client.id },
+    }).allowed ||
+    evaluatePermission({
+      actor: runtime.actor,
+      permission: PERMISSIONS.DELIVERABLE_SEND_TO_CLIENT,
+      resource: { tenantId: client.tenantId, clientId: client.id },
+    }).allowed;
 
   if (!canUpdateDeliverableStatus) {
     return <DeliverableDeniedState />;
@@ -120,6 +131,9 @@ export default async function ClientDeliverablesBoardPage({
       {deliverableList.deliverables.length > 0 ? (
         <DeliverableBoard
           action={updateDeliverableStatusAction}
+          approvalAction={
+            canUseApprovalWorkflow ? updateDeliverableStatusAction : undefined
+          }
           deliverables={deliverableList.deliverables}
         />
       ) : (

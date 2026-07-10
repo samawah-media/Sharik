@@ -8,6 +8,7 @@ import { deriveSlaStatus, type SlaStatus } from "@/modules/sla/sla-policy";
 import { Badge } from "@/ui/core/badge";
 import { Button } from "@/ui/core/button";
 import { EmptyState } from "@/ui/core/states";
+import { DeliverableApprovalWorkflowControl } from "./deliverable-actions";
 
 type StatusUpdateAction = (formData: FormData) => void | Promise<void>;
 
@@ -166,10 +167,12 @@ function DeliverableStatusControl({
 function DeliverableCard({
   deliverable,
   action,
+  approvalAction,
   now,
 }: {
   deliverable: DeliverableSafeSummary;
   action?: StatusUpdateAction;
+  approvalAction?: StatusUpdateAction;
   now: string;
 }) {
   const sla = deriveSlaStatus({
@@ -187,7 +190,7 @@ function DeliverableCard({
     : deliverable.status;
 
   return (
-    <article className="min-w-0 overflow-hidden rounded-lg border border-border bg-surface p-4 shadow-sm">
+    <article className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md">
       <div className="grid gap-3">
         <div className="flex items-start justify-between gap-3">
           <h3 className="min-w-0 text-sm font-semibold leading-6">
@@ -203,6 +206,19 @@ function DeliverableCard({
           </Badge>
           <Badge tone={slaTone(sla.status)}>{slaLabels[sla.status]}</Badge>
         </div>
+      </div>
+      <div
+        className="mt-4 h-1.5 overflow-hidden rounded-full bg-border"
+        aria-label={`تقدم ${deliverable.progressPercentage}%`}
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={deliverable.progressPercentage}
+      >
+        <div
+          className="h-full rounded-full bg-accent transition-all"
+          style={{ width: `${deliverable.progressPercentage}%` }}
+        />
       </div>
       <dl className="mt-4 grid gap-3 text-xs text-muted">
         <div className="min-w-0">
@@ -230,6 +246,10 @@ function DeliverableCard({
           </div>
         </div>
       </dl>
+      <DeliverableApprovalWorkflowControl
+        action={approvalAction}
+        deliverable={deliverable}
+      />
       <DeliverableStatusControl action={action} deliverable={deliverable} />
     </article>
   );
@@ -247,10 +267,12 @@ export function DeliverableBoardEmptyState() {
 export function DeliverableBoard({
   deliverables,
   action,
+  approvalAction,
   now = new Date().toISOString(),
 }: {
   deliverables: DeliverableSafeSummary[];
   action?: StatusUpdateAction;
+  approvalAction?: StatusUpdateAction;
   now?: string;
 }) {
   if (deliverables.length === 0) {
@@ -286,7 +308,7 @@ export function DeliverableBoard({
           return (
             <section
               aria-label={kanbanStatusLabels[status]}
-              className="flex min-h-[32rem] w-80 min-w-80 flex-col rounded-lg border border-border bg-background"
+              className="flex min-h-[32rem] w-80 min-w-80 flex-col rounded-xl border border-border bg-background"
               data-testid="kanban-column"
               key={status}
             >
@@ -304,6 +326,7 @@ export function DeliverableBoard({
                   items.map((deliverable) => (
                     <DeliverableCard
                       action={action}
+                      approvalAction={approvalAction}
                       deliverable={deliverable}
                       key={deliverable.id}
                       now={now}

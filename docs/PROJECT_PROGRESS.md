@@ -1,6 +1,352 @@
 # Project Progress
 
-Last updated: 2026-07-08
+Last updated: 2026-07-09
+
+## Current Status Dashboard — R-011A Stage 2A (2026-07-10)
+
+| Area                  | Status         | Current truth                                                                                                                                      |
+| --------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Local MVP baseline    | IN PROGRESS    | R-007–R-011 local workflows and R-011A safe setup/readiness paths are present on the consolidation branch.                                         |
+| Professional RTL UX   | IN PROGRESS    | Existing sign-in, management, client, deliverable, SLA, approval, file, waiting-approval, and portal surfaces are being consolidated and polished. |
+| SaaS guardrails       | IN PROGRESS    | Tenant/client scope, deny-by-default, internal-content separation, version-aware approvals, audit, and SLA rules remain mandatory review targets.  |
+| Local verification    | PENDING        | Full Stage 2A matrix must be rerun after implementation; unavailable DB/hosted checks will remain explicitly blocked/skipped.                      |
+| Hosted R-011A Stage 2 | BLOCKED / OPEN | T032 remains open. No hosted mutation, file operation, deploy, promotion, or Production acceptance is authorized by this pass.                     |
+| Next route            | OWNER DECISION | Stage 2B requires reviewed hosted executor, bounded Hadna-only gap closure, UAT deployment, and team-access preparation.                           |
+
+Stage 2A does not change the historical evidence below and does not convert local readiness into hosted or Production acceptance.
+
+## R-011A Stage 2A Local Verification — 2026-07-10
+
+- Passed: `npm run lint`, `npm run typecheck`, unit (45 files / 159 tests), integration (28 files / 112 tests), component (17 files / 54 tests), RLS simulator (8 files / 24 tests), `npm run secret:scan`, `git diff --check`, `npm run build`, and E2E (105 passed / 6 skipped across desktop, mobile, and RTL projects).
+- The six E2E skips remain skipped by the existing test configuration and are not counted as PASS.
+- RLS DB test was attempted and is BLOCKED because the local Postgres connection failed (`LegacyDbConnectError`). No hosted DB or hosted state was accessed.
+- E2E emitted one non-fatal hydration warning on the board fixture because a `details` element rendered with an open state differed between SSR and browser hydration; the scenario still passed. This remains a follow-up risk for Stage 2B/defect burn-down.
+- Spec Kit prerequisite check passed and the read-only consistency review found the original R-011 FR/SC history needed explicit Stage 2A boundary wording; that reconciliation is now recorded in the artifacts.
+
+## R-011A Hosted Dry-Run No-Op Rehearsal - 2026-07-09
+
+- Owner explicit approval recorded for R-011A hosted dry-run only. `apply_hosted`, hosted mutation, hosted DB write/read, hosted route checks, account creation, role changes, hosted file operations, deploy/promotion, non-Hadna data use, and Production acceptance remained forbidden.
+- Confirmed the existing `hosted_dry_run` code path maps to the local `dry_run` command through injected repository/audit boundaries. The focused harness uses in-memory repository and audit sinks, does not create setup records, and emits category/count-only evidence.
+- Ran only the focused hosted dry-run/no-op readiness wrapper case. Result: passed.
+- Category readiness summary: client approver category, waiting approval category, and final delivery/file-list category were ready for no-op rehearsal only with expected `would_create` status labels. They remain unresolved as hosted evidence, and T032 remains open.
+- Expected no-op counts: hosted mutation 0, hosted DB read/write 0, hosted route check 0, hosted file operation 0, account/category change 0, approval/status/delivery mutation 0, deploy/promotion 0, non-Hadna data use 0, Production acceptance 0, sensitive value output 0.
+- `apply_hosted` remains blocked by the existing code path because it requires a future apply approval category and still denies when no hosted executor is configured. It was not invoked in this dry-run.
+- Verification for this docs/evidence update passed: focused hosted dry-run wrapper test, `npm run secret:scan`, `git diff --check`, and scoped count-only redaction scan. `git diff --check` reported only existing broader dirty-worktree CRLF warnings and no whitespace errors. Scoped redaction scan found 0 URL, 0 email, and 0 image-reference matches in touched R-011A dry-run docs and the new project-progress section; 80 R-011A doc keyword matches and 3 progress-section keyword matches were reviewed as safe redaction vocabulary. Lint/typecheck were not run because no product code changed.
+
+## R-011A Hosted Execution Readiness Pass - 2026-07-09
+
+- Owner direction continued R-011A with hosted-execution readiness only. Hosted mutation, hosted dry-run against real hosted access, hosted DB reads, hosted route checks, deploy/promotion, non-Hadna data use, hosted file operations, account creation, approval/status/delivery mutation, and Production acceptance remained forbidden.
+- Added a hosted-readiness wrapper at `src/server/commands/release/r011a-hosted-gap-setup-readiness.ts`.
+- Added explicit hosted execution modes for `hosted_dry_run` and `apply_hosted`.
+- `hosted_dry_run` now requires the no-op approval category `r011a_hosted_dry_run_noop_rehearsal`, Hadna-only scope, read-only/no-op approval, and value-free evidence.
+- `apply_hosted` is denied without explicit apply approval category `r011a_apply_hosted_bounded_mutation` and remains blocked because no hosted executor is configured in this pass.
+- Added value-free hosted evidence summary building with category labels, status labels, and counts only.
+- Added hosted readiness tests for dry-run approval, hosted apply denial, non-Hadna denial, over-count denial, unsafe file operation denial, evidence redaction shape, and rollback-summary no-op before apply.
+- Added R-011A hosted execution runbook, hosted dry-run plan, stop conditions, and evidence policy.
+- Updated R-011A mutation, rollback, safe-path implementation, execution log, verification evidence, and release documentation.
+- Targeted hosted-readiness integration test passed and `npm run typecheck` passed during implementation.
+- Full verification passed: targeted R-011A tests, `npm run lint`, `npm run typecheck`, `npm run test:unit`, `npm run test:integration`, `npm run secret:scan`, `git diff --check`, scoped R-011A redaction scan, and `npm run build`.
+- Full unit suite passed: 45 files / 159 tests.
+- Full integration suite passed: 28 files / 112 tests.
+- Scoped R-011A redaction scan passed/reviewed: 12 scoped docs/sections, 0 URL, 0 email, 0 image-reference matches, and 126 redaction-vocabulary matches reviewed as category/prohibition wording.
+- RLS tests were not run because this pass does not change database migrations, RLS policies, or hosted DB paths.
+- Real hosted dry-run execution remains pending owner/operator window if hosted access is needed.
+- Hosted apply remains blocked pending explicit owner apply approval and reviewed hosted executor.
+- No hosted mutation, hosted DB read query, hosted route check, hosted file operation, deploy/promotion, non-Hadna data use, sensitive evidence output, or Production acceptance occurred.
+
+## R-011A Safe Local UAT Gap Setup Paths - 2026-07-09
+
+- Owner direction continued R-011A with a local implementation pass only. Hosted mutation, hosted DB reads, hosted route checks, deploy/promotion, non-Hadna data use, hosted file operations, real hosted account creation, and Production acceptance remained forbidden.
+- Added a domain/service layer for R-011A setup planning and denial rules at `src/modules/release/r011a-gap-setup-plan.ts`.
+- Added an injected local setup repository contract at `src/modules/release/r011a-gap-setup-repository.ts`.
+- Added a management-only server command at `src/server/commands/release/r011a-gap-setup.ts` with `dry_run`, `apply_local`, and `rollback_summary` modes.
+- The command is tenant/client scoped, denies non-Hadna or unapproved scope, requires active tenant-level management/admin authority, prevents over-count and duplicate-category requests, denies hosted mutation and Production acceptance requests, denies unsafe hosted file operations, creates audit events, supports idempotent no-op behavior, and rolls back local setup records if audit append fails.
+- Added unit, integration, and authorization tests for the R-011A safe local setup paths.
+- Updated R-011A evidence for mutation planning, rollback/no-op handling, safe path implementation, and verification.
+- Verification passed: targeted R-011A unit tests, targeted R-011A integration tests, `npm run lint`, `npm run typecheck`, `npm run test:unit`, `npm run test:integration`, `npm run secret:scan`, `git diff --check`, scoped R-011A redaction scan, and `npm run build`.
+- RLS tests were not run because this pass does not change database migrations, RLS policies, or hosted DB paths.
+- Later hosted Stage 2 is not executed and not accepted in this pass. It still requires owner-approved execution timing, safe hosted persistence/execution wiring, value-free evidence collection, and stop-condition review.
+
+## R-011A Limited Hosted UAT Gap Closure Preflight - 2026-07-09
+
+- Owner selected R-011A and explicitly approved minimal Hadna-only hosted mutation for the three unresolved categories only: client approver account/category, waiting approval item/category, and final delivery/file-list category.
+- R-011A Stage 1 completed: owner approval record, mutation plan, rollback/no-op plan, test data boundary, and execution log were added under the R-011 evidence package.
+- Existing code/server/schema paths were inspected. Scoped deliverable creation and status-transition RPC paths exist, but no safe hosted account/category repair path, no safe waiting item/category context, and no hosted final-delivery file-list marker path were available inside the current repo and local category context.
+- Stage 2 stopped before hosted mutation. No hosted mutation, hosted DB read query by this agent, hosted route check, account/category change, approval/status/delivery mutation, file operation, deploy/promotion/config change, non-Hadna data use, screenshot, sensitive evidence output, or Production acceptance occurred.
+- The client approver hosted auth/portal/approval controls/isolation category remains unresolved.
+- The waiting approval safe non-empty item/category remains unresolved.
+- The final delivery/file-list category remains unresolved.
+- Rollback status is no-op only because no hosted mutation occurred.
+- Verification passed: `npm run secret:scan`, `git diff --check`, and scoped count-only redaction scans over R-011A evidence/release/task/R-010 traceability plus the new project progress section. R-011A evidence/release/task/R-010 traceability files had 0 URL, 0 email, 0 image-reference, and 95 keyword matches reviewed as redaction vocabulary or prohibited-category labels. The new progress section had 0 URL, 0 email, 0 image-reference, and 6 keyword matches reviewed as redaction vocabulary or prohibited-category labels. Lint/typecheck and targeted tests were not run because no product code changed.
+- Recommended next owner decision: provide safe R-011A execution categories or authorize a narrower direct mutation runbook with exact scoped path, audit expectation, rollback/no-op handling, and stop conditions; otherwise choose R-011B residual-risk acceptance for non-Production planning or R-011C stop/request missing UAT categories.
+
+## R-011 Production-Candidate Residual Risk Treatment And Hosted Acceptance Readiness - 2026-07-09
+
+- Owner decision recorded: start R-011 as the next Spec Kit package after R-010 Path B for production-candidate residual-risk treatment and hosted acceptance readiness.
+- R-011 package created at `specs/013-r011-production-candidate-residual-risk-treatment-and-hosted-acceptance-readiness/`.
+- R-011 scope is planning/readiness only: treat R-010 residual risks, define production-candidate blockers, define owner-acceptable residual risks for non-Production planning, define hosted acceptance readiness gates, and define future routes R-011A/R-011B/R-011C.
+- Residual risks carried forward remain explicit: client approver auth/portal/approval controls/isolation unproven, waiting approval remains empty-state, and final delivery/file-list category remains unproven.
+- Production-candidate review remains blocked unless the owner later selects R-011A with explicit mutation approval, selects R-011B with explicit accepted residual risk for non-Production planning, or selects R-011C to stop and request missing UAT data/categories.
+- Production acceptance remains blocked. R-011 cannot claim full hosted completion, client approver hosted acceptance, waiting-approval hosted acceptance, final-delivery hosted acceptance, hosted file-list readiness, Production readiness, or Production acceptance.
+- R-011 defines owner gates for client approver validation, waiting approval validation, final delivery/file-list validation, tenant/client isolation evidence, approval workflow evidence, SLA reporting evidence, audit completeness evidence, and rollback/no-op readiness.
+- R-011 does not authorize or perform hosted checks, hosted mutation, hosted DB reads, deploy/promote/config changes, account or role changes, hosted file operations, non-Hadna data use, dependency changes, product code implementation, or Production acceptance.
+- Recommended next implementation route after R-011: R-011A limited hosted completion with explicit mutation approval if the owner wants proof before production-candidate review; otherwise R-011B only with explicit non-Production residual-risk acceptance, or R-011C to stop and request missing UAT data/categories.
+- Verification for this planning pass passed: `git diff --check`, `npm run secret:scan`, and scoped redaction scan over 16 new R-011 docs/release files. `git diff --check` reported existing Windows line-ending warnings from the broader dirty worktree and no whitespace errors. The scoped redaction scan found 0 link, 0 email, and 0 image-reference matches; prohibited-vocabulary matches were reviewed as redaction vocabulary or prohibited-category labels. Lint/typecheck were not run because R-011 changed documentation only.
+
+## R-010 Path B Production-Candidate Planning Evidence Hardening - 2026-07-09
+
+- Owner Path B decision recorded: proceed with production-candidate planning using R-009 as partial owner-deferred evidence.
+- R-010 status is PATH B ACTIVE / PRODUCTION-CANDIDATE PLANNING ONLY; no hosted check, hosted mutation, hosted DB read, deploy/promote/config change, account or role change, hosted file operation, non-Hadna data use, code implementation, or Production acceptance was introduced.
+- Accepted evidence from R-008/R-009 is limited to R-008 local readiness, R-009 available-category hosted read-only evidence, R-009 no-op proof, and R-009 redaction rules.
+- Partial/deferred evidence remains explicit: client approver auth/portal/approval controls/isolation unproven, waiting approval remains empty-state, final-delivery list/category remains unproven, and R-009 T038, T039, and T044 remain unchecked.
+- R-010 cannot claim full hosted completion, client approver hosted acceptance, waiting-approval hosted acceptance, final-delivery list/category hosted acceptance, hosted file-list readiness, Production readiness, or Production acceptance.
+- Path B evidence hardening added a production-candidate gap register, residual-risk matrix, production-candidate go/no-go checklist, and Path B rollback/no-op planning note under `specs/012-r010-production-candidate-gap-closure-hosted-completion-decision/evidence/`.
+- Path A remains a fallback only if the owner later requires hosted proof or bounded category prep; it still requires explicit mutation approval with environment, Hadna-only scope, exact category/item limits, rollback/no-op owner, evidence rules, and stop conditions.
+- Recommended next package: `specs/013-r011-production-candidate-residual-risk-treatment-and-hosted-acceptance-readiness/`.
+- Exact next owner decision: approve R-011 residual-risk treatment and hosted acceptance readiness, return to Path A with explicit mutation approval, or stop.
+- Verification for this Path B planning pass passed: `npm run secret:scan`, `git diff --check`, and scoped count-only redaction scan over 11 R-010/R-009 docs plus the new project progress section. `git diff --check` reported LF-to-CRLF warnings from the broader dirty worktree only. Lint/typecheck were not run because this pass changed documentation/evidence only.
+
+## R-010 Gap Closure Planning And Owner Decision Package - 2026-07-09
+
+- Owner decision recorded: close R-009 as PARTIAL OWNER-DEFERRED after the final retry; do not attempt more R-009 hosted checks; proceed to R-010 planning/gap closure only.
+- R-009 unresolved gaps summarized in R-010: client approver credential/auth gap, waiting approval empty-state gap, and final delivery list/category gap.
+- R-010 Path A now defines hosted completion prep only with explicit owner mutation approval before any account/category/data exposure change.
+- Path A exact candidate mutation boundaries are limited to fixing or creating one safe client approver account/category, creating or exposing one safe waiting-approval item, and creating or exposing one safe final-delivery list/category.
+- Path A also defines rollback/no-op requirements, evidence redaction rules, and stop conditions; no Path A mutation or hosted check was run.
+- R-010 Path B defines deferring unresolved hosted categories into production-candidate planning as explicit residual risks.
+- Path B documents that full R-009 hosted completion, client approver hosted acceptance, waiting-approval hosted acceptance, final-delivery list/category hosted acceptance, hosted file-list readiness, and Production acceptance cannot be claimed.
+- R-009 T038, T039, and T044 remain unchecked and were not relabeled by R-010 planning.
+- R-010 decision evidence was added at `specs/012-r010-production-candidate-gap-closure-hosted-completion-decision/evidence/gap-closure-decision.md`.
+- R-009 release wording was clarified to reflect the final owner closure decision and the no-more-R-009-hosted-checks boundary.
+- Verification for this planning pass passed: `npm run secret:scan`, `git diff --check`, and scoped count-only redaction scan over touched R-010/R-009 docs and the new project progress section.
+- `git diff --check` reported LF-to-CRLF warnings from the broader dirty worktree only; no whitespace error was reported.
+- Lint/typecheck were not run because this task changed documentation and evidence only.
+- No hosted DB read query, hosted mutation, hosted check, deploy/promote/config change, non-Hadna data use, account creation, role change, hosted file operation, approval/status/delivery mutation, screenshot, sensitive evidence output, code change, dependency change, or Production acceptance was introduced.
+- Exact next owner decision: choose R-010 Path A with explicit mutation approval, choose R-010 Path B with residual-risk acceptance for production-candidate planning, or stop.
+
+## R-009 Final Hosted Read-Only Retry After Owner Category Correction - 2026-07-09
+
+- Corrected local `.env.r009-hosted.local` category source was present for hosted base, client approver email category, client approver password category, and final-delivery route category.
+- Waiting-approval route category remains empty and is recorded as OWNER-DEFERRED / EMPTY-STATE; no waiting route was opened and no waiting item was created.
+- Hosted sign-in category loaded through the safe sign-in route category and exposed RTL sign-in signals.
+- Client approver sign-in was attempted once using the approved local credential categories, but it remained on the authentication surface with a generic auth state.
+- Client approver portal, approval-control visibility, role shell/navigation, and client approver isolation remain unresolved and uncounted.
+- Final-delivery route category opened read-only without another credential submission, but no file-list/final-delivery markers were exposed.
+- Final-delivery list/category visibility remains unresolved; no file was opened, downloaded, uploaded, deleted, or mutated.
+- No deferred R-009 task checkbox was newly marked complete. T038, T039, and T044 remain unchecked.
+- Final retry result is PARTIAL OWNER-DEFERRED / AUTH STILL BLOCKED, not PASS.
+- No hosted DB read query, hosted mutation, deploy/promote/config change, non-Hadna data use, account creation, hosted file operation, approval/status/delivery mutation, screenshot, sensitive evidence output, or Production acceptance was introduced.
+- Recommendation: close R-009 as PARTIAL OWNER-DEFERRED and proceed to R-010 planning/gap closure.
+
+## R-009 Hosted Completion Retry With Local Env - 2026-07-09
+
+- Local `.env.r009-hosted.local` preflight now passes for required present categories: hosted target, client approver email category, client approver password category, and final-delivery route category.
+- Waiting-approval route category is present as an empty value and is recorded as OWNER-DEFERRED / EMPTY-STATE; no waiting-approval route was opened and no waiting item was created.
+- Hosted target base route opened and exposed the sign-in category with Arabic RTL signals.
+- Client approver sign-in was attempted once using the approved local credential categories, but it remained on the authentication surface with a generic auth-error signal; no credential value or error text was printed.
+- Because client approver sign-in did not complete, client approver portal, approval-control visibility, role shell/navigation, and client approver isolation remain unresolved and uncounted.
+- Final-delivery route category was opened read-only after the sign-in blocker; it did not expose file-list/final-delivery signals and showed denied/not-found/auth-state signals. No file was opened, downloaded, uploaded, deleted, or mutated.
+- No deferred R-009 task checkbox was newly marked complete. T038, T039, and T044 remain unchecked.
+- Completion retry status is PARTIAL OWNER-DEFERRED / BLOCKED BY AUTH AND ROUTE STATE, not PASS.
+- No hosted DB read query, hosted mutation, deploy/promote/config change, non-Hadna data use, account creation, hosted file operation, approval/status/delivery mutation, screenshot, sensitive evidence output, or Production acceptance was introduced.
+
+## R-009 Hosted Completion Pass Attempt - 2026-07-09
+
+- Owner approval was recorded to continue R-009 hosted read-only completion using locally supplied `.env.r009-hosted.local` values.
+- Completion pass preflight failed before hosted route execution because the exact local env file was not present in the workspace or user-profile filename search, and no R-009 category variables were loaded in the shell environment.
+- Missing categories recorded by name only: local env file category, hosted target category, client approver credential category, waiting-approval route or empty-state category, and files/final-delivery route category.
+- No hosted route was opened in this completion attempt.
+- No deferred category was resolved; client approver, waiting approval, and files/final delivery remain unresolved from the prior partial closure.
+- Waiting approval could not be classified as EMPTY-STATE in this attempt because the local category source needed to confirm the empty route/value was unavailable.
+- Files/final-delivery could not be inspected because the final-delivery route category was unavailable; no file was opened, downloaded, uploaded, deleted, or mutated.
+- R-009 completion pass status for this attempt is FAIL at local env preflight; prior available-category evidence remains PASS, and the release remains PARTIAL OWNER-DEFERRED overall.
+- T038, T039, and T044 remain unchecked because their required categories were not actually executed.
+- R-010 was reassessed with no Production acceptance granted and no path implementation started. This earlier next-step option is superseded by the final owner closure decision: no more R-009 hosted checks; proceed to R-010 planning/gap closure only.
+- No hosted mutation, deploy/promote/config change, non-Hadna data use, account creation, hosted file operation, approval/status/delivery mutation, screenshot, sensitive evidence output, or Production acceptance was introduced.
+
+## R-009 Final Closure And R-010 Proposed Direction - 2026-07-09
+
+- R-009 final status is CLOSED - PARTIAL OWNER-DEFERRED available-category hosted read-only evidence.
+- Available-category hosted read-only evidence passed for management/project admin, assigned internal/account manager, client viewer, and unassigned/unauthorized client categories.
+- Client approver remains OWNER-DEFERRED because credential category unavailable.
+- Waiting-approval remains OWNER-DEFERRED because hosted read-only route/data category unavailable.
+- Files/final-delivery remains OWNER-DEFERRED because hosted read-only route/data category unavailable; no file was opened, downloaded, uploaded, deleted, or mutated.
+- Production acceptance is NOT GRANTED.
+- Hosted mutation is NOT GRANTED.
+- T040, T043, T045, T046, and T047 are complete. T038, T039, and T044 remain unchecked because their wording requires actual deferred-category execution.
+- Final closure evidence was added at `specs/011-r009-limited-hosted-read-only-uat-authorization-execution/evidence/final-closure.md`.
+- Proposed R-010 planning-only package was created at `specs/012-r010-production-candidate-gap-closure-hosted-completion-decision/` and later refined into two owner paths: hosted completion prep with explicit owner mutation approval, or production-candidate gap planning with R-009 deferred categories carried forward.
+- No hosted mutation, deploy/promote/config change, non-Hadna data use, account creation, hosted file upload/delete/download/opening, approval/status/delivery mutation, screenshot, sensitive evidence output, or Production acceptance was introduced.
+- Exact next owner decision is superseded by R-010 gap closure planning: choose Path A with explicit mutation approval, choose Path B with residual-risk acceptance for production-candidate planning, or stop.
+
+## R-009 Phase 6 Read-Only Isolation Available Categories - 2026-07-09
+
+- Owner direction started Phase 6 read-only isolation checks under the OWNER-DEFERRED Phase 5 scope.
+- Phase 6 status is PARTIAL OWNER-DEFERRED, not full PASS.
+- Available approved category checks passed for management/project admin, assigned internal/account manager, client viewer, and unassigned/unauthorized client.
+- Management/project admin route categories remained read-only and did not trigger mutation.
+- Assigned internal/account manager category did not expose unrelated client scope.
+- Client viewer category stayed in allowed client scope and did not expose management chrome or approval-action categories.
+- Unassigned/unauthorized client category remained safe denied/empty and exposed no customer content.
+- Client approver remains OWNER-DEFERRED because credential category unavailable.
+- Waiting-approval and files/final-delivery remain OWNER-DEFERRED because hosted read-only data/route category unavailable; no file was opened or downloaded.
+- T043, T045, T046, and T047 are complete. T044 remains unchecked. T038 and T039 remain unchecked from Phase 5. T040 remains complete.
+- No hosted mutation, deploy/promote/config change, non-Hadna data use, account creation, file upload/delete/download/opening, approval/status/delivery mutation, screenshot, sensitive evidence output, or Production acceptance was introduced.
+- Recommendation: close R-009 as partial owner-deferred available-category evidence, or require owner-supplied client approver credential category plus safely exposed hosted read-only waiting/files route or data categories before any deferred completion pass.
+
+## R-009 Phase 5 Blocker Burn-Down - 2026-07-09
+
+- Owner direction accelerated R-009 Phase 5 blocker burn-down under the existing limited hosted read-only boundary.
+- Approved target and credential availability were confirmed by category only; no target value, credential, email, token, secret, route URL, screenshot, workbook content, link, caption, deliverable title, or row-level customer content was recorded.
+- Phase 5 hosted smoke and blocker burn-down ran in read-only browser mode for available approved persona and route categories.
+- Phase 5 final outcome is OWNER-DEFERRED, not PASS.
+- Management/project admin recheck passed for sign-in, management shell, client summary, and readiness summary categories.
+- Assigned internal/account manager route categories passed for sign-in, management/readiness summary, client list/detail summary, deliverables summary, package/contract summary, SLA/audit summary, and RTL.
+- Client viewer route categories passed for sign-in, client portal home, package/contract summary, deliverables summary, RTL, and mobile rendering.
+- Unassigned/unauthorized client category passed for sign-in and safe denied/empty client portal route categories.
+- Client approver route categories are OWNER-DEFERRED with exact reason: credential category unavailable.
+- Waiting-approval and files/final-delivery route categories are OWNER-DEFERRED with exact reason: hosted read-only data/route category unavailable; no file was opened or downloaded.
+- T038 and T039 remain unchecked because deferred categories were not actually executed; T040 remains complete.
+- Phase 6 read-only isolation checks were not started in this burn-down.
+- No hosted mutation, deploy/promote/config change, non-Hadna data use, account creation, file upload/delete/download/opening, approval/status/delivery mutation, screenshot, sensitive evidence output, or Production acceptance was introduced.
+- Recommendation: Phase 6 may start only under the owner-deferred Phase 5 scope and must exclude client approver, waiting-approval, and files/final-delivery categories unless the owner supplies a client approver credential category and safely exposed hosted read-only waiting/files route or data categories.
+
+## R-009 Limited Hosted Read-Only UAT Start Pass - 2026-07-08
+
+- Owner approval for R-009 limited hosted read-only UAT execution was recorded inside the R-009 package using safe labels/categories only.
+- Hosted target metadata preflight passed by category only: existing hosted read-only UAT target category, no target URL or secret value recorded, no deploy/promotion, no hosted configuration change, no account creation, no file operation, and no mutation.
+- Route/persona smoke categories were approved by category only for management/project admin, assigned internal/account manager, client approver, client viewer, and unassigned/unauthorized client category.
+- Hosted route/persona smoke was blocked, not failed, because approved out-of-band credentials were unavailable in this local execution context; no hosted route was opened.
+- Read-only tenant/client isolation categories were approved, but hosted isolation execution was blocked by the same credential availability blocker; no direct object identifiers, row content, file content, or customer content were accessed.
+- No-op proof was recorded with aggregate operational counts only: 0 hosted routes opened, 0 hosted DB reads by this agent, 0 hosted mutations, 0 file operations, 0 account operations, 0 deploy/promote/config operations, and 0 approval/status/delivery mutations.
+- Customer-content baseline counts were blocked because collecting hosted data counts would require approved credentials or hosted DB access not available here; no row content was read.
+- No hosted DB mutation, deploy/promote action, non-Hadna customer data use, account creation, file upload/delete/download/opening, credential output, screenshot, workbook content, evidence link, caption, deliverable title, token value, secret value, row-level customer content, or Production acceptance was introduced.
+- Recommended next phase after target preflight/no-op proof: resume Phase 5 route/persona smoke only after approved credentials are supplied out-of-band, then Phase 6 read-only isolation checks if all routes remain read-only.
+
+## R-009 Limited Hosted Read-Only UAT Authorization & Execution Planning - 2026-07-08
+
+- Owner accepted R-008 as local readiness only.
+- R-008 remains closed as local readiness evidence only; it is not Production acceptance and does not authorize hosted DB mutation, deploy/promote, or non-Hadna data use.
+- Owner authorized creating R-009 as the next large Spec Kit package for limited hosted read-only UAT authorization and execution planning.
+- R-009 package created at `specs/011-r009-limited-hosted-read-only-uat-authorization-execution/` with spec, plan, tasks, research, data model, contracts, quickstart, checklist, and evidence scaffolds.
+- R-009 defines hosted target requirements, allowed read-only checks, forbidden actions, credential and evidence redaction rules, no-op proof, route/persona smoke categories, and tenant/client isolation checks that can be run read-only.
+- R-009 execution is blocked until explicit owner approval is recorded inside the R-009 package with target environment, Hadna-only data boundary, personas, read-only routes/checks, duration, credential handling, evidence rules, no-op proof, stop conditions, and rollback/no-op owner.
+- No hosted check, hosted DB mutation, deploy/promote action, non-Hadna customer data use, account creation, file upload/delete, dependency addition, product code change, credential output, screenshot, workbook content, external evidence link, caption, deliverable title, token value, secret value, or Production acceptance was introduced by this planning pass.
+
+## R-008 Final Local-Only Go/No-Go Package - 2026-07-08
+
+- Owner direction continued R-008 with a large final local-only pass covering Phase 7 / US5 and Phase 8.
+- US5 added the final go/no-go summary builder, release boundary tests, and owner decision package.
+- The owner package offers these choices: accept R-008 local readiness only, request fixes, authorize limited hosted read-only UAT, authorize limited hosted UAT mutation with named environment/data/rollback/duration/evidence, or start a separate production-candidate package.
+- Targeted US5 verification passed: 2 files / 5 tests.
+- Final Phase 8 local verification passed for lint, typecheck, unit, integration, component, RLS simulator, full E2E, secret scan, whitespace check, build, and final R-008 evidence redaction scan.
+- Local pgTAP database verification was blocked by local Docker engine availability; no DB/RLS changed in this pass, RLS simulator passed, and no hosted database check was used.
+- No hosted database mutation, deploy/promote action, non-Hadna customer data use, dependency addition, credential output, screenshot, workbook content, external evidence link, caption, deliverable title, token, secret value, or Production acceptance was introduced.
+- Next owner decision: choose one R-008 go/no-go outcome from the final package. Production acceptance remains a separate explicit owner decision and is not granted or implied.
+
+## R-008 Controlled V1 Pilot / Production-Candidate Readiness Execution Planning - 2026-07-08
+
+- Owner accepted R-007 for readiness review with the recorded local Docker repeatability risk.
+- This acceptance is not Production acceptance and does not authorize hosted database mutation, non-Hadna customer data use, deploy, or promotion.
+- Owner authorized starting R-008 as a new Spec Kit package, planning first only.
+- R-008 package created at `specs/010-r008-controlled-v1-pilot-production-candidate-readiness-execution/` with spec, plan, tasks, research, data model, contracts, quickstart, checklist, and initial evidence.
+- R-008 scope is controlled pilot execution gates, tenant/client isolation proof, production-candidate security checklist, hosted UAT authorization boundary, client approval hardening, file/final-delivery readiness, audit completeness, SLA reporting readiness, rollback planning, and owner go/no-go evidence.
+- No R-008 code implementation, hosted DB mutation, non-Hadna data use, dependency addition, deploy, promotion, or Production acceptance was introduced by this planning pass.
+- Next owner decision: approve a specific R-008 implementation path, such as local-only hardening, limited hosted read-only UAT, or limited hosted UAT mutation with named environment, data boundary, mutation plan, rollback plan, duration, and evidence rules.
+
+## R-008 Phase 3/4 Local Hardening - 2026-07-08
+
+- Owner direction continued R-008 on the approved local-only hardening path.
+- Phase 3 / US1 implemented owner-controlled pilot gate logic for allowed local actions, blocked hosted mutation, deploy/promote, non-Hadna data, production-candidate review, and separate Production acceptance.
+- Phase 4 / US2 implemented tenant/client isolation proof using synthetic local fixture categories only.
+- Isolation proof covers management/project admin, assigned internal user, client viewer, client approver, and unassigned client user categories.
+- Client A category cannot see Client B category deliverables, files, or approval items; unassigned client category receives a safe empty/denied state.
+- Client viewer category cannot approve; client approver category can approve only assigned current visible client items.
+- Targeted local unit verification passed: 5 files / 18 tests.
+- Targeted local integration verification passed: 1 file / 4 tests.
+- Targeted local client isolation E2E passed: 9 tests across desktop, mobile, and RTL projects.
+- Final local verification for this US1/US2 pass passed:
+  - `npm run lint`
+  - `npm run typecheck`
+  - `npm run secret:scan`
+  - `git diff --check` with existing Windows line-ending warnings only
+  - `npm run test:unit`: 36 files / 129 tests
+  - `npm run test:integration`: 24 files / 96 tests
+  - `npm run test:component`: 17 files / 54 tests
+  - `npm run test:rls:simulator`: 8 files / 24 tests
+  - `npm run test:e2e`: 98 passed / 4 skipped
+  - `npm run build`
+- No hosted database mutation, deploy/promote action, non-Hadna customer data use, dependency addition, credential output, screenshot, workbook content, external evidence reference, caption, deliverable title, token, secret value, or Production acceptance was introduced.
+
+## R-008 Phase 5/6 Local Hardening - 2026-07-08
+
+- Owner direction continued R-008 on the approved local-only hardening path.
+- Phase 5 / US3 implemented production-candidate security checklist, R-008 evidence redaction policy, rollback plan model, and safe security/rollback evidence docs.
+- Phase 6 / US4 implemented local approval journey, final delivery file readiness, audit completeness, and SLA reporting readiness probes.
+- Client approval journey is locally proven for current-version approval, stale-version denial, viewer denial, and approver scope denial.
+- Final delivery readiness proves internal file categories stay hidden and final files require authorized final visibility.
+- Audit completeness covers approval, file, SLA, delivery, package-affecting, and security-denial categories.
+- SLA reporting readiness proves client waiting time is separated from Samawah-owned work time.
+- Client approval/final-delivery mobile and RTL readiness is covered locally.
+- Targeted US3 verification passed: 3 unit files / 9 tests.
+- Targeted US4 verification passed: 2 integration files / 4 tests, 2 unit files / 5 tests, and focused Playwright 7 passed / 2 skipped.
+- Final local verification for this pass passed:
+  - `npm run lint`
+  - `npm run typecheck`
+  - `npm run secret:scan`
+  - `git diff --check` with existing Windows line-ending warnings only
+  - `npm run test:unit`: 41 files / 143 tests
+  - `npm run test:integration`: 26 files / 100 tests
+  - `npm run test:component`: 17 files / 54 tests
+  - `npm run test:e2e`: 105 passed / 6 skipped
+  - `npm run build`
+- Count-only R-008 evidence redaction scan returned 0 link, 0 email, and 0 image-reference matches in R-008 evidence/release docs; remaining matches are redaction vocabulary only.
+- No hosted database mutation, deploy/promote action, non-Hadna customer data use, dependency addition, credential output, screenshot, workbook content, external evidence reference, caption, deliverable title, token, secret value, or Production acceptance was introduced.
+- Next recommended phase is Phase 7 / US5: owner go/no-go evidence package. Hosted mutation, deploy/promote, non-Hadna data, and Production acceptance remain blocked unless separately approved.
+
+## R-007 Phase 7 Final Polish And Verification - 2026-07-08
+
+- R-007 is ready for owner readiness review, not Production acceptance.
+- Fixed the full E2E client-invitation portal route regression caused by the R-007 client detail waiting-approval label no longer being exposed as a heading.
+- Full E2E now passes: 89 passed / 4 skipped across desktop, mobile, and RTL route categories.
+- Final local checks passed for lint, typecheck, unit, integration, component, RLS simulator, standalone pgTAP after local reset, secret scan, whitespace, and build.
+- Standalone `npm run test:rls:db` passed after starting Docker Desktop and resetting the local Supabase database: 4 pgTAP files / 142 tests.
+- Repeat combined `npm run test:rls` remains locally unstable because Docker Desktop later stayed in a starting/API-error state. Simulator and standalone pgTAP evidence passed, but the combined command was not repeatably green at the end of Phase 7.
+- No hosted database mutation, non-Hadna customer data use, dependency change, credential output, screenshot, workbook content, link, caption, deliverable title, token, secret value, or Production acceptance was introduced by Phase 7.
+- Next owner decision: accept R-007 owner readiness review with the recorded local Docker repeatability risk, then decide separately whether to authorize a broader pilot or production-candidate Spec Kit package.
+
+## R-007 US4 Release Evidence Readiness - 2026-07-08
+
+- R-007 remains a readiness package only; it does not grant Production acceptance.
+- US4 added release evidence completeness coverage and role matrix regression coverage using local synthetic categories only.
+- Evidence categories now include `tenant_client_isolation`, `role_negative_tests`, `client_waiting_pause`, `resume_on_client_change_request`, `version_bound_decisions`, `stale_version_denial`, `internal_file_hidden`, `client_visible_file_authorization`, `sensitive_transition_audit`, `security_denial_audit`, `client_rtl_mobile`, `secret_scan_outcome`, `blocked_checks_and_residual_risks`, and `production_acceptance_separate_owner_decision`.
+- Persona categories recorded for owner review: `management_project_admin`, `assigned_internal_user`, `client_approver`, `client_viewer`, and `unassigned_client_user`.
+- Local quickstart verification passed for typecheck, lint, unit, integration, component, RLS simulator, secret scan, whitespace, and build checks.
+- Local pgTAP DB verification is blocked by local database connectivity; no hosted DB mutation was attempted.
+- Full E2E is not green: the client-invitation portal route category fails across desktop, mobile, and RTL projects, while the R-007 client portal readiness route category passed across those projects.
+- No hosted database mutation, non-Hadna customer data use, dependency change, credential output, screenshot, workbook content, link, caption, deliverable title, token, secret value, or Production acceptance was introduced by US4.
+- Next owner decision: accept R-007 for Phase 7 final polish/verification, then decide separately whether to authorize a broader pilot or production-candidate Spec Kit package.
+
+## R-006 Owner Acceptance Decision - 2026-07-08
+
+- Owner explicitly accepted R-006 after the final owner acceptance smoke passed.
+- Accepted scope: Hadna-only internal UAT/MVP evaluation flow on the promoted alias after PR #36 merge.
+- This acceptance does not grant Production acceptance, does not authorize non-Hadna customer data use, and does not authorize new hosted DB mutation.
+- No code, dependency, hosted data, credential, screenshot, workbook-content, link, caption, or deliverable-title change was introduced by this decision record.
+- Next larger work should start as a new Spec Kit package with explicit scope before code, using R-006 as the accepted baseline.
+
+## R-006 Final Owner Acceptance Smoke - 2026-07-08
+
+- Ran the final owner acceptance smoke on the current promoted `main` alias after PR #36 merge.
+- Scope used only Hadna R-006 UAT accounts and out-of-band credentials.
+- No hosted DB mutation was performed, and no credentials, emails, screenshots, workbook row content, links, captions, deliverable titles, tokens, or secret values were recorded.
+- Management/project admin passed: Hadna context loaded with the correct admin shell.
+- Account manager passed: role shell labels were visible and admin-only shell labels were absent.
+- Client viewer A passed: simplified client portal, package, and deliverables scope loaded without management chrome or management-only links.
+- Viewer B isolation passed: no Hadna context and no client data cards were visible.
+- Mobile client portal passed: no horizontal overflow and no management chrome.
+- Final smoke found no Product, UX, Security, or Data issue in the requested scope.
+- R-006 is ready for owner acceptance review as internal UAT evidence only; this is not Production acceptance.
 
 ## R-006 PR #36 Merge And Post-Merge Smoke - 2026-07-08
 
@@ -103,21 +449,21 @@ This section supersedes the older R-006 blocked/preflight notes below for the cu
 
 ## Current Execution Gate
 
-| Item | Value |
-|---|---|
-| Product name | `Sharik` |
-| Package slug | `sharik-platform` |
-| Feature | R-006 Internal Online Trial Execution |
-| Worktree | `codex/r006-internal-online-trial-execution` |
-| Branch | `codex/r006-internal-online-trial-execution` from PR #32 `origin/main` |
-| Draft PR | [#33 R-006 Internal Online Trial Execution - Preflight Blocked](https://github.com/samawah-media/Sharik/pull/33) |
-| PR status | Draft / Open / Preflight Blocked; GitHub live check reports mergeable. |
-| Draft PR creation HEAD | `2e3fe7e830336e24b56ce078da4af23d8bf98734` |
-| Current allowed stage | Internal UAT mapping and execution evidence only; no hosted mutation/deployment until mapping and a minimum-scope insertion/deploy plan are reviewed. |
-| Status | R-006 execution started from `10fc4a3b4c8f717d284d177906d1f32f5f61976c`. Owner update on 2026-07-02 authorizes using Supabase UAT `sharik-uat` / `jnvuccapgsabrwwkxnbh` despite previous users/data, authorizes the local workbook `خطة محتوى هدنة - العدد الثاني (1)` as internal source input, and authorizes Vercel deployment for internal testing only, not Production acceptance. Workbook structure was inspected without printing sensitive row content. No trial URL, credentials, hosted seed, hosted migration, hosted insertion, deployment, production promotion, public signup, dependency change, or product feature expansion was introduced. |
-| Latest preflight refresh | 2026-07-02: Project-control refresh confirmed PR #33 remains Draft/Open/MERGEABLE from HEAD `ea3512f4be0164bb13c5e711936251c8d4f1deb7`. The earlier clean-target blocker is superseded by owner authorization for internal UAT only. Local workbook review found 15 sheets and three main convertible blocks with 20, 40, and 52 candidate rows. The run still stopped before hosted mutation/deploy because mapping and exact insertion/deploy plans must be reviewed first. |
-| Next gate | Review the workbook-to-Sharik mapping, choose the exact row subset, decide whether to create an isolated internal-trial client/contract/package or attach to existing UAT records, then prepare a minimum hosted insertion plan using existing scoped/audited paths. |
-| Owner decision required | Approve the exact mapping/execution path and row subset. Do not convert PR #33 to Ready and do not merge. |
+| Item                     | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Product name             | `Sharik`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Package slug             | `sharik-platform`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Feature                  | R-006 Internal Online Trial Execution                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Worktree                 | `codex/r006-internal-online-trial-execution`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Branch                   | `codex/r006-internal-online-trial-execution` from PR #32 `origin/main`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Draft PR                 | [#33 R-006 Internal Online Trial Execution - Preflight Blocked](https://github.com/samawah-media/Sharik/pull/33)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| PR status                | Draft / Open / Preflight Blocked; GitHub live check reports mergeable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Draft PR creation HEAD   | `2e3fe7e830336e24b56ce078da4af23d8bf98734`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Current allowed stage    | Internal UAT mapping and execution evidence only; no hosted mutation/deployment until mapping and a minimum-scope insertion/deploy plan are reviewed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Status                   | R-006 execution started from `10fc4a3b4c8f717d284d177906d1f32f5f61976c`. Owner update on 2026-07-02 authorizes using Supabase UAT `sharik-uat` / `jnvuccapgsabrwwkxnbh` despite previous users/data, authorizes the local workbook `خطة محتوى هدنة - العدد الثاني (1)` as internal source input, and authorizes Vercel deployment for internal testing only, not Production acceptance. Workbook structure was inspected without printing sensitive row content. No trial URL, credentials, hosted seed, hosted migration, hosted insertion, deployment, production promotion, public signup, dependency change, or product feature expansion was introduced. |
+| Latest preflight refresh | 2026-07-02: Project-control refresh confirmed PR #33 remains Draft/Open/MERGEABLE from HEAD `ea3512f4be0164bb13c5e711936251c8d4f1deb7`. The earlier clean-target blocker is superseded by owner authorization for internal UAT only. Local workbook review found 15 sheets and three main convertible blocks with 20, 40, and 52 candidate rows. The run still stopped before hosted mutation/deploy because mapping and exact insertion/deploy plans must be reviewed first.                                                                                                                                                                                 |
+| Next gate                | Review the workbook-to-Sharik mapping, choose the exact row subset, decide whether to create an isolated internal-trial client/contract/package or attach to existing UAT records, then prepare a minimum hosted insertion plan using existing scoped/audited paths.                                                                                                                                                                                                                                                                                                                                                                                          |
+| Owner decision required  | Approve the exact mapping/execution path and row subset. Do not convert PR #33 to Ready and do not merge.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 ## R-006 Internal Online Trial Execution - 2026-07-02
 
@@ -1041,16 +1387,16 @@ Latest stabilization verification:
 
 ## Stage Status
 
-| Stage | Status | Evidence |
-|---|---|---|
-| A0 Project Foundation | COMPLETE | Existing evidence: `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a0.md` |
-| A1 Identity and Tenant Context | VERIFIED AFTER A1R | Existing evidence: `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a1.md`; real DB verification completed in A1R. |
-| A1R Real Supabase RLS Verification | FULLY VERIFIED | Local Docker Desktop/WSL2 stack is running; local Supabase database reset passed twice; pgTAP RLS tests passed. |
-| A2 Client Foundation | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a2.md`. |
-| A3 Internal Member Invitation | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a3.md`. |
-| A4 Client Member Invitation | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a4.md`. |
-| A5 Invitation Lifecycle Hardening | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a5.md`. |
-| A6 Membership and Role Lifecycle | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a6.md`. |
+| Stage                              | Status                | Evidence                                                                                                                               |
+| ---------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| A0 Project Foundation              | COMPLETE              | Existing evidence: `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a0.md`                                         |
+| A1 Identity and Tenant Context     | VERIFIED AFTER A1R    | Existing evidence: `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a1.md`; real DB verification completed in A1R. |
+| A1R Real Supabase RLS Verification | FULLY VERIFIED        | Local Docker Desktop/WSL2 stack is running; local Supabase database reset passed twice; pgTAP RLS tests passed.                        |
+| A2 Client Foundation               | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a2.md`.                                      |
+| A3 Internal Member Invitation      | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a3.md`.                                      |
+| A4 Client Member Invitation        | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a4.md`.                                      |
+| A5 Invitation Lifecycle Hardening  | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a5.md`.                                      |
+| A6 Membership and Role Lifecycle   | COMPLETE AND VERIFIED | Evidence captured in `specs/001-secure-tenant-client-onboarding/evidence/f001a/checkpoint-a6.md`.                                      |
 
 ## Latest A6 Checkpoint
 

@@ -58,6 +58,9 @@ export function ClientCommercialSummaryCards({
       </div>
       <div className="grid gap-3 md:grid-cols-2" id="package">
         <h2 className="md:col-span-2 text-lg font-semibold">الباقة والمتبقي</h2>
+        <p className="md:col-span-2 text-sm leading-6 text-muted">
+          هذا ملخص مبسط لما تم الاتفاق عليه وما هو قيد العمل وما تبقى للعميل.
+        </p>
         {summary.packages.flatMap((packageSummary) =>
           packageSummary.lines.map((line) => (
             <article

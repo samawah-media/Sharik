@@ -54,12 +54,16 @@ export function SignInForm() {
   }
 
   return (
-    <form aria-label="تسجيل الدخول" className="grid gap-4" onSubmit={handleSubmit}>
+    <form
+      aria-label="تسجيل الدخول"
+      className="grid gap-5"
+      onSubmit={handleSubmit}
+    >
       <label className="grid gap-2 text-sm font-medium">
         البريد الإلكتروني
         <input
           autoComplete="email"
-          className="rounded-md border border-border bg-background px-3 py-2"
+          className="min-h-11 rounded-xl border border-border bg-background px-3 py-2.5 outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/10"
           name="email"
           type="email"
         />
@@ -69,13 +73,15 @@ export function SignInForm() {
         <span className="relative block">
           <input
             autoComplete="current-password"
-            className="w-full rounded-md border border-border bg-background px-3 py-2 pl-11"
+            className="w-full min-h-11 rounded-xl border border-border bg-background px-3 py-2.5 pl-11 outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/10"
             id="sign-in-password"
             name="password"
             type={showPassword ? "text" : "password"}
           />
           <button
-            aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+            aria-label={
+              showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"
+            }
             aria-pressed={showPassword}
             className="absolute inset-y-1 left-1 inline-flex w-9 items-center justify-center rounded-md text-muted transition hover:bg-muted/10 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             onClick={() => setShowPassword((value) => !value)}
@@ -91,12 +97,15 @@ export function SignInForm() {
         </span>
       </div>
       {error ? (
-        <p className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+        <p
+          className="rounded-xl border border-danger/30 bg-danger/10 px-3 py-2.5 text-sm leading-6 text-danger"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
       <button
-        className="w-fit rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+        className="min-h-11 w-full rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
         disabled={isSubmitting}
         type="submit"
       >

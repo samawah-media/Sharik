@@ -4,6 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
+import {
+  r007WorkflowStepTargets,
+  type R007WorkflowStep,
+} from "@/modules/deliverables/r007-deliverable-lifecycle";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   updateDeliverableStatusSchema,
@@ -16,6 +20,25 @@ import { nullableFormValue } from "./deliverable-write-mappers";
 type ReadyRuntimeContext = Extract<RuntimeContext, { ok: true }>;
 type StatusUpdateResult = "status-updated" | "denied";
 
+const r007WorkflowPermissions = {
+  approve_internally: PERMISSIONS.DELIVERABLE_INTERNAL_APPROVE,
+  request_internal_changes: PERMISSIONS.DELIVERABLE_INTERNAL_APPROVE,
+  send_to_client: PERMISSIONS.DELIVERABLE_SEND_TO_CLIENT,
+  approve_as_client: PERMISSIONS.DELIVERABLE_CLIENT_APPROVE,
+  request_client_changes: PERMISSIONS.DELIVERABLE_CLIENT_APPROVE,
+  deliver_after_client_approval: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
+} as const satisfies Record<R007WorkflowStep, (typeof PERMISSIONS)[keyof typeof PERMISSIONS]>;
+
+const resolveR007WorkflowStep = (
+  value: FormDataEntryValue | null,
+): R007WorkflowStep | undefined => {
+  if (typeof value !== "string" || !(value in r007WorkflowStepTargets)) {
+    return undefined;
+  }
+
+  return value as R007WorkflowStep;
+};
+
 const redirectWithSafeResult = (
   clientId: string,
   result: StatusUpdateResult,
@@ -24,10 +47,14 @@ const redirectWithSafeResult = (
 };
 
 export async function updateDeliverableStatusAction(formData: FormData) {
+  const workflowStep = resolveR007WorkflowStep(formData.get("workflowStep"));
+  const workflowTarget = workflowStep
+    ? r007WorkflowStepTargets[workflowStep]
+    : undefined;
   const values = {
     clientId: String(formData.get("clientId") ?? ""),
     deliverableId: String(formData.get("deliverableId") ?? ""),
-    toStatus: String(formData.get("toStatus") ?? ""),
+    toStatus: workflowTarget ?? String(formData.get("toStatus") ?? ""),
     expectedRevision: String(formData.get("expectedRevision") ?? ""),
     reason: String(formData.get("reason") ?? ""),
     idempotencyKey: String(formData.get("idempotencyKey") ?? ""),
@@ -63,7 +90,9 @@ export async function updateDeliverableStatusAction(formData: FormData) {
 
   const allowed = evaluatePermission({
     actor: readyRuntime.actor,
-    permission: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
+    permission: workflowStep
+      ? r007WorkflowPermissions[workflowStep]
+      : PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
     resource: { tenantId: scopedClient.tenantId, clientId: scopedClient.id },
   }).allowed;
 

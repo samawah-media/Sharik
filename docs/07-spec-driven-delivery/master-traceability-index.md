@@ -19,3 +19,6 @@
 - Offboarding and delegation expiry: traced to F-001 family but needs separate spec if included in V1.
 - Bulk approval: UX exists but V1 inclusion remains open.
 - Audit export: explicitly deferred unless owner changes scope.
+# Canonical execution pointer (2026-07-10)
+
+Active objective: persistent Hadna-only MVP completion. Canonical spec/plan/tasks: `specs/015-persistent-mvp-pilot-completion/`. Historical R-007–R-011A artifacts remain evidence and are superseded for execution.

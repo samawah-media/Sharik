@@ -4,7 +4,7 @@
 
 R-011A Stage 2A local consolidation started on 2026-07-10 on branch `codex/r011a-mvp-baseline-consolidation`.
 
-This pass updates the stale planning-only framing to cover local MVP baseline consolidation, professional Arabic RTL UX, SaaS guardrail review, synthetic negative coverage, and honest local verification. It does not close hosted T032 or grant any hosted/Production acceptance.
+This historical Stage 2C record covers local MVP baseline consolidation, Arabic RTL UX, SaaS guardrail review, synthetic negative coverage, and honest local verification. It is `Verified with blockers / superseded for execution by Spec 015`; it does not close hosted T032 or grant any hosted/Production acceptance.
 
 Stage 2A local verification: lint, typecheck, unit, integration, component, RLS simulator, secret scan, diff check, build, and E2E passed; local Postgres RLS verification is blocked by unavailable local database connectivity, and six configured E2E cases remain skipped. No hosted state was accessed.
 

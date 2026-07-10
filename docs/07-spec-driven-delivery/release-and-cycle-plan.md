@@ -22,3 +22,6 @@
 | C4 | Approval and SLA loop | 1 cycle | VS-006, VS-007, VS-008 | delivery consumption | client approve/change + SLA pause/resume | stale version, SLA tests | Samawah pilot | workflow coupling |
 | C5 | Delivery and dashboards | 1 cycle | VS-009, VS-010, VS-011 | advanced analytics | final delivery + client/admin summary | ledger/file/portal tests | client pilot | dashboard scope |
 | C6 | Pilot hardening | 1 cycle | VS-012 | new features | ASVS/a11y/backup/perf evidence | production readiness | production V1 | late security issues |
+# Canonical execution update (2026-07-10)
+
+Spec 015 (`specs/015-persistent-mvp-pilot-completion/`) is the only active execution package. Stage 2C and R-007–R-011A are historical evidence. No further Stage-letter, readiness, verification, defect, or handoff package may be created for this objective.

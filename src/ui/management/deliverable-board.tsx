@@ -375,7 +375,7 @@ export function DeliverableBoard({
           return (
             <section
               aria-label={kanbanStatusLabels[status]}
-              className="flex min-h-[32rem] w-80 min-w-80 flex-col rounded-xl border border-border bg-background"
+              className="flex min-h-[32rem] w-[21rem] min-w-[21rem] flex-col rounded-xl border border-border bg-background"
               data-testid="kanban-column"
               key={status}
             >

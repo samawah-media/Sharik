@@ -75,7 +75,9 @@ describe("internal deliverable work board", () => {
       "overflow-x-auto",
     );
     expect(screen.getAllByTestId("kanban-column")).toHaveLength(10);
-    expect(screen.getAllByTestId("kanban-column")[0]).toHaveClass("min-w-80");
+    expect(screen.getAllByTestId("kanban-column")[0]).toHaveClass(
+      "min-w-[21rem]",
+    );
     expect(
       within(board).getByRole("region", { name: "لم يبدأ" }),
     ).toBeInTheDocument();

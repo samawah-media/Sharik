@@ -19,6 +19,9 @@ insert into public.clients (id, tenant_id, name, slug) values
 ('21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000001', 'S015 Client A', 's015-a'),
 ('21000000-0000-4000-8000-000000000302', '21000000-0000-4000-8000-000000000001', 'S015 Client B', 's015-b'),
 ('22000000-0000-4000-8000-000000000301', '22000000-0000-4000-8000-000000000001', 'S015 Tenant B Client', 's015-tenant-b');
+insert into public.client_memberships (id, tenant_id, client_id, auth_user_id, status) values
+('21000000-0000-4000-8000-000000000112', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000202', 'active'),
+('21000000-0000-4000-8000-000000000116', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000206', 'active');
 insert into public.role_assignments (id, tenant_id, membership_id, role_key, scope_type, scope_id, status) values
 ('21000000-0000-4000-8000-000000000401', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000101', 'account_manager', 'client', '21000000-0000-4000-8000-000000000301', 'active'),
 ('21000000-0000-4000-8000-000000000402', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000102', 'client_viewer', 'client', '21000000-0000-4000-8000-000000000301', 'active'),
@@ -274,6 +277,312 @@ select is((select count(*)::integer from public.comments where body = 'must roll
 select is((select count(*)::integer from public.sla_timeline_segments where deliverable_id = '21000000-0000-4000-8000-000000000502'), 0, 'failed command leaves no SLA segment');
 select is((select count(*)::integer from public.package_ledger_entries where deliverable_id = '21000000-0000-4000-8000-000000000502'), 0, 'failed command leaves no ledger entry');
 select is((select status from public.deliverables where id = '21000000-0000-4000-8000-000000000502'), 'in_progress', 'failed command leaves status unchanged');
+reset role;
+
+insert into public.contracts (
+  id, tenant_id, client_id, name, reference, status
+) values (
+  '21000000-0000-4000-8000-000000000901',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  'S015 Journey Contract', 'S015-JOURNEY', 'active'
+);
+insert into public.packages (
+  id, tenant_id, client_id, contract_id, name, status
+) values (
+  '21000000-0000-4000-8000-000000000902',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000901',
+  'S015 Journey Package', 'active'
+);
+insert into public.package_lines (
+  id, tenant_id, client_id, package_id, service_label, deliverable_type_hint,
+  unit_label, committed_quantity, status
+) values (
+  '21000000-0000-4000-8000-000000000903',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000902',
+  'Posts', 'post', 'item', 1, 'active'
+);
+insert into public.deliverables (
+  id, tenant_id, client_id, contract_id, package_id, package_line_id,
+  name, type, status, progress_percentage, idempotency_key,
+  requires_internal_approval, requires_client_approval, owner_user_id
+) values (
+  '21000000-0000-4000-8000-000000000520',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000901',
+  '21000000-0000-4000-8000-000000000902',
+  '21000000-0000-4000-8000-000000000903',
+  'Full persistent journey item', 'post', 'in_progress', 30,
+  's015-full-journey', true, true,
+  '21000000-0000-4000-8000-000000000203'
+);
+insert into public.package_ledger_entries (
+  id, tenant_id, client_id, contract_id, package_id, package_line_id,
+  deliverable_id, entry_type, quantity, reason, actor_user_id, idempotency_key
+) values (
+  '21000000-0000-4000-8000-000000000904',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000901',
+  '21000000-0000-4000-8000-000000000902',
+  '21000000-0000-4000-8000-000000000903',
+  '21000000-0000-4000-8000-000000000520',
+  'quantity_reserved', 1, 'persistent_journey_reservation',
+  '21000000-0000-4000-8000-000000000207',
+  's015-full-journey:reserved'
+);
+insert into public.deliverable_allocations (
+  id, tenant_id, client_id, deliverable_id, package_line_id,
+  reserved_quantity, status, reservation_ledger_entry_id
+) values (
+  '21000000-0000-4000-8000-000000000905',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000520',
+  '21000000-0000-4000-8000-000000000903',
+  1, 'reserved',
+  '21000000-0000-4000-8000-000000000904'
+);
+insert into public.sla_timeline_segments (
+  id, tenant_id, client_id, deliverable_id, kind, started_at, reason
+) values (
+  '21000000-0000-4000-8000-000000000906',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000520',
+  'running', now(), 'journey_started'
+);
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select results_eq(
+  $$select deliverable_status from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000620', 'submit_version', 1, 'first draft',
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-submit-v1')$$,
+  $$values ('ready_for_internal_review'::text)$$,
+  'journey assigned writer submits first exact version'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000105', true);
+select throws_ok(
+  $$select * from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    gen_random_uuid(), 'submit_version', 2, null,
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-unassigned')$$,
+  '42501', 'workflow command denied',
+  'journey unassigned same-client writer is denied'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select results_eq(
+  $$select deliverable_status from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000620', 'request_internal_changes', null, 'revise internally',
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-internal-changes')$$,
+  $$values ('internal_changes_requested'::text)$$,
+  'journey management requests internal changes'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select results_eq(
+  $$select deliverable_status from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000621', 'submit_version', 2, 'replacement draft',
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-submit-v2')$$,
+  $$values ('ready_for_internal_review'::text)$$,
+  'journey writer submits replacement version'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select throws_ok(
+  $$select * from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000621', 'send_to_client', null, null,
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-send-before-approval')$$,
+  'P0001', 'internal approval required for same version',
+  'journey cannot reach client before internal approval'
+);
+select results_eq(
+  $$select deliverable_status from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000621', 'approve_internal', null, null,
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-approve-v2')$$,
+  $$values ('internally_approved'::text)$$,
+  'journey management internally approves exact current version'
+);
+select results_eq(
+  $$select deliverable_status from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000621', 'send_to_client', null, null,
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-send-v2')$$,
+  $$values ('waiting_client_approval'::text)$$,
+  'journey management sends approved version to client'
+);
+select is(
+  (select kind from public.sla_timeline_segments
+   where deliverable_id = '21000000-0000-4000-8000-000000000520'
+     and ended_at is null),
+  'paused_waiting_client',
+  'journey SLA pauses while waiting for client'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202', true);
+select throws_ok(
+  $$select * from public.s015_client_decide_version(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000621', 'approved', null,
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-viewer-approve')$$,
+  '42501', 'client decision denied',
+  'journey client viewer cannot approve'
+);
+select is((select count(*)::integer from public.comments where body in ('first draft', 'replacement draft')), 0, 'journey internal comments remain hidden from client role');
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000206', true);
+select results_eq(
+  $$select deliverable_status from public.s015_client_decide_version(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000621', 'changes_requested', 'client requested polish',
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-client-change')$$,
+  $$values ('client_changes_requested'::text)$$,
+  'journey client approver requests changes'
+);
+reset role;
+select is(
+  (select kind from public.sla_timeline_segments
+   where deliverable_id = '21000000-0000-4000-8000-000000000520'
+     and ended_at is null),
+  'resumed',
+  'journey SLA resumes after client change request'
+);
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select results_eq(
+  $$select deliverable_status from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000622', 'submit_version', 3, 'final replacement',
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-submit-v3')$$,
+  $$values ('ready_for_internal_review'::text)$$,
+  'journey assigned writer submits final replacement'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select results_eq(
+  $$select deliverable_status from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000622', 'approve_internal', null, null,
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-approve-v3')$$,
+  $$values ('internally_approved'::text)$$,
+  'journey management approves final replacement'
+);
+select results_eq(
+  $$select deliverable_status from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000622', 'send_to_client', null, null,
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-send-v3')$$,
+  $$values ('waiting_client_approval'::text)$$,
+  'journey management sends final replacement to client'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000206', true);
+select throws_ok(
+  $$select * from public.s015_client_decide_version(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000621', 'approved', null,
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-stale-v2')$$,
+  'P0001', 'stale or unavailable client version',
+  'journey old version decisions are rejected'
+);
+select results_eq(
+  $$select deliverable_status from public.s015_client_decide_version(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000622', 'approved', 'approved final',
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-client-approve-final')$$,
+  $$values ('client_approved'::text)$$,
+  'journey client approver approves final exact version'
+);
+reset role;
+
+insert into public.file_assets (
+  id, tenant_id, client_id, deliverable_id, version_id, owner_user_id,
+  visibility, storage_path, file_type, file_size, version_number, is_final
+) values
+(
+  '21000000-0000-4000-8000-000000000907',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000520',
+  '21000000-0000-4000-8000-000000000622',
+  '21000000-0000-4000-8000-000000000203',
+  'internal_only', 'internal/s015/final.psd', 'image/vnd.adobe.photoshop', 10, 1, false
+),
+(
+  '21000000-0000-4000-8000-000000000908',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000520',
+  '21000000-0000-4000-8000-000000000622',
+  '21000000-0000-4000-8000-000000000203',
+  'final_delivery', 'final/s015/final.png', 'image/png', 10, 1, true
+);
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202', true);
+select is((select count(*)::integer from public.file_assets where deliverable_id = '21000000-0000-4000-8000-000000000520'), 0, 'journey files remain hidden from client before final delivery');
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select results_eq(
+  $$select deliverable_status from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000622', 'deliver', null, 'final delivery',
+    '21000000-0000-4000-8000-000000000909', gen_random_uuid(), 's015-journey-deliver-final')$$,
+  $$values ('delivered'::text)$$,
+  'journey final delivery uses approved exact version'
+);
+select results_eq(
+  $$select deliverable_status from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000622', 'deliver', null, 'replay final delivery',
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-deliver-final')$$,
+  $$values ('delivered'::text)$$,
+  'journey final delivery replay is idempotent'
+);
+select is((select status from public.deliverable_allocations where id = '21000000-0000-4000-8000-000000000905'), 'consumed_later', 'journey package allocation is consumed atomically');
+select is((select count(*)::integer from public.package_ledger_entries where deliverable_id = '21000000-0000-4000-8000-000000000520' and entry_type = 'quantity_consumed'), 1, 'journey package consumption ledger is append-once');
+select is((select count(*)::integer from public.audit_events where target_id = '21000000-0000-4000-8000-000000000622' and action = 'DeliverableFinalDelivered'), 1, 'journey final delivery audit is append-once');
+select is((select count(*)::integer from public.mvp_command_requests where idempotency_key = 's015-journey-deliver-final'), 1, 'journey delivery idempotency is committed once');
+select is((select kind from public.sla_timeline_segments where deliverable_id = '21000000-0000-4000-8000-000000000520' and kind = 'completed'), 'completed', 'journey SLA completion segment is recorded');
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202', true);
+select is((select count(*)::integer from public.file_assets where deliverable_id = '21000000-0000-4000-8000-000000000520'), 1, 'journey client sees only final delivery file after delivery');
+select is((select visibility from public.file_assets where deliverable_id = '21000000-0000-4000-8000-000000000520'), 'final_delivery', 'journey internal file remains hidden after delivery');
+select is((select count(*)::integer from public.comments where body in ('first draft', 'replacement draft', 'final replacement', 'final delivery')), 0, 'journey internal comments remain hidden after delivery');
 reset role;
 
 select * from finish();

@@ -73,7 +73,6 @@ create table if not exists public.file_assets (
   client_id uuid not null,
   deliverable_id uuid,
   version_id uuid,
-  version_id uuid,
   owner_user_id uuid,
   visibility text not null check (visibility in ('internal_only', 'client_visible', 'client_uploaded', 'final_delivery', 'contract_file', 'report_file', 'brand_asset')),
   storage_path text not null,
@@ -113,6 +112,7 @@ create table if not exists public.mvp_command_requests (
   tenant_id uuid not null,
   client_id uuid not null,
   deliverable_id uuid,
+  version_id uuid,
   idempotency_key text not null check (length(btrim(idempotency_key)) >= 8),
   command_name text not null,
   outcome text not null default 'pending' check (outcome in ('pending', 'allowed', 'denied', 'conflict')),
@@ -425,29 +425,6 @@ begin
   if target_deliverable.id is null then
     raise exception 'deliverable unavailable' using errcode = '42501';
   end if;
-  management_allowed := public.f001_has_active_role(
-    target_deliverable.tenant_id,
-    array['tenant_owner','tenant_administrator','project_manager','marketing_manager'],
-    'client', target_client_id
-  ) or public.f001_has_active_role(
-    target_deliverable.tenant_id,
-    array['tenant_owner','tenant_administrator','project_manager','marketing_manager'],
-    'tenant', target_deliverable.tenant_id
-  );
-  team_allowed := management_allowed or (
-    (
-      target_deliverable.owner_user_id = actor_user_id
-      or actor_user_id = any(coalesce(target_deliverable.contributor_user_ids, array[]::uuid[]))
-    ) and public.f001_has_active_role(
-    target_deliverable.tenant_id,
-    array['account_manager','content_writer','designer'],
-    'client', target_client_id
-    )
-  );
-  if (target_command = 'submit_version' and not team_allowed)
-    or (target_command <> 'submit_version' and not management_allowed) then
-    raise exception 'workflow command denied' using errcode = '42501';
-  end if;
 
   select * into existing_request from public.mvp_command_requests r
   where r.tenant_id = target_deliverable.tenant_id
@@ -468,6 +445,29 @@ begin
 
   if target_deliverable.status in ('delivered', 'cancelled', 'archived') then
     raise exception 'terminal deliverable state' using errcode = 'P0001';
+  end if;
+  management_allowed := public.f001_has_active_role(
+    target_deliverable.tenant_id,
+    array['tenant_owner','tenant_administrator','project_manager','marketing_manager'],
+    'client', target_client_id
+  ) or public.f001_has_active_role(
+    target_deliverable.tenant_id,
+    array['tenant_owner','tenant_administrator','project_manager','marketing_manager'],
+    'tenant', target_deliverable.tenant_id
+  );
+  team_allowed := coalesce(management_allowed, false) or (
+    (
+      coalesce(target_deliverable.owner_user_id = actor_user_id, false)
+      or coalesce(actor_user_id = any(coalesce(target_deliverable.contributor_user_ids, array[]::uuid[])), false)
+    ) and coalesce(public.f001_has_active_role(
+    target_deliverable.tenant_id,
+    array['account_manager','content_writer','designer'],
+    'client', target_client_id
+    ), false)
+  );
+  if (target_command = 'submit_version' and not team_allowed)
+    or (target_command <> 'submit_version' and not management_allowed) then
+    raise exception 'workflow command denied' using errcode = '42501';
   end if;
 
   if target_command = 'submit_version' then

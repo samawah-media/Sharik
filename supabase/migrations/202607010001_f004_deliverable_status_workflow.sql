@@ -313,6 +313,8 @@ begin
     status_denial_reason := 'expected_state_mismatch';
   elsif target_deliverable.status in ('delivered', 'cancelled', 'archived') then
     status_denial_reason := 'terminal_status_locked';
+  elsif normalized_target_status = 'waiting_client_approval' then
+    status_denial_reason := 'internal_approval_required_before_client_waiting';
   elsif normalized_target_status in (
     'ready_for_internal_review',
     'internal_changes_requested',

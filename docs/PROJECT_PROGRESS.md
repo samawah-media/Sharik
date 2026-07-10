@@ -2,6 +2,15 @@
 
 Last updated: 2026-07-10
 
+## Spec 015 Persistent MVP Local Closure - 2026-07-10
+
+- Continued from local commit `e52d5aa` on `codex/015-persistent-mvp-pilot-completion` and kept the scope to canonical Spec 015 only.
+- Unblocked local Docker/Supabase/PostgreSQL verification and fixed migration replay defects in the S015 persistent foundation.
+- Fixed DB workflow defects for protected status denial, nullable assigned-team authorization, idempotent terminal replay, realistic client memberships in pgTAP, exact-version workflow coverage, file/comment secrecy, SLA pause/resume/completion, package ledger consumption, audit counts, and final delivery replay.
+- Fixed the mobile Kanban width regression discovered by Playwright and reran the board/component coverage.
+- Final local matrix passed: `npm run lint`, `npm run typecheck`, `npm run test:unit` (48 files / 171 tests), `npm run test:integration` (28 files / 112 tests), `npm run test:component` (17 files / 55 tests), `npm run test:rls:simulator` (8 files / 24 tests), `npm run test:rls:db` (6 files / 228 tests), `npm run test:e2e` (105 passed / 6 configured skips), `npm run secret:scan`, `git diff --check`, and `npm run build`.
+- Local acceptance is green for synthetic/Hadna-only persistent MVP verification. Hosted UAT remains not authorized, Production acceptance is not granted, no hosted actions were performed, no real data was accessed, no dependency was added, and no push/deploy occurred.
+
 ## Spec 015 findings-first corrective closure - 2026-07-10
 
 - Reopened approval/state-machine P1 defects because the generic status path still allowed an exact-version bypass.

@@ -88,7 +88,7 @@ describe("internal deliverable work board", () => {
     expect(within(board).getByText("0%")).toBeInTheDocument();
     expect(within(board).getByText("70%")).toBeInTheDocument();
 
-    fireEvent.click(screen.getAllByText("تغيير الحالة")[0]);
+    fireEvent.click(screen.getAllByText(/^تغيير الحالة/)[0]);
 
     const firstForm = screen.getByRole("form", {
       name: "تغيير حالة منشور إطلاق الحملة",
@@ -115,7 +115,7 @@ describe("internal deliverable work board", () => {
       />,
     );
 
-    fireEvent.click(screen.getByText("تغيير الحالة"));
+    fireEvent.click(screen.getByText(/^تغيير الحالة/));
 
     const waitingOption = screen.getByRole("option", {
       name: "بانتظار اعتماد العميل",

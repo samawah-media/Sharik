@@ -112,7 +112,7 @@ function DeliverableStatusControl({
   action?: StatusUpdateAction;
 }) {
   return (
-    <DeliverableStatusDisclosure label="تغيير الحالة">
+    <DeliverableStatusDisclosure label={`تغيير الحالة ${deliverable.name}`}>
       <form
         action={action}
         aria-label={`تغيير حالة ${deliverable.name}`}

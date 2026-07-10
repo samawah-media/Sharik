@@ -39,9 +39,14 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
       return Math.round(box?.width ?? 0);
     })
     .toBeGreaterThanOrEqual(320);
-  await expect(page.getByText("ستوري هدنة 43")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "ستوري هدنة 43" }),
+  ).toBeVisible();
 
-  await page.getByText("تغيير الحالة").first().click();
+  await page
+    .locator("summary")
+    .filter({ hasText: "تغيير الحالة ستوري هدنة 43" })
+    .click();
   await expect(
     page.getByRole("form", { name: "تغيير حالة ستوري هدنة 43" }),
   ).toBeVisible();

@@ -19,6 +19,7 @@ import {
 } from "@/modules/files/file-visibility-rules";
 import { resolveRoleAwareNavigation } from "@/modules/navigation/navigation-resolver";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
 import { InMemoryDeliverableRepository } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableRecord } from "@/modules/deliverables/deliverable-repository";
 import { approveAsClientCommand } from "@/server/commands/approvals/approve-as-client";
@@ -27,6 +28,10 @@ import {
   fixtureClientCommercialSummary,
   readCommercialSummary,
 } from "@/server/actions/commercial-summary-read";
+import {
+  decidePersistentClientVersion,
+  readPersistentClientApprovalDetail,
+} from "@/server/actions/persistent-client-approval";
 import {
   canUseRouteActorFixtures,
   guardClientDetailRoute,
@@ -216,6 +221,25 @@ async function submitR007ClientPortalApproval(formData: FormData) {
   "use server";
 
   if (!canUseRouteActorFixtures()) {
+    const actionKind = String(formData.get("clientApprovalAction") ?? "");
+    if (actionKind !== "approve" && actionKind !== "request_changes") {
+      return;
+    }
+
+    const result = await decidePersistentClientVersion({
+      supabase: await createSupabaseServerClient(),
+      input: {
+        clientId: String(formData.get("clientId") ?? ""),
+        deliverableId: String(formData.get("deliverableId") ?? ""),
+        versionId: String(formData.get("versionId") ?? ""),
+        decision: actionKind === "approve" ? "approved" : "changes_requested",
+        comment: String(formData.get("reason") ?? ""),
+        idempotencyKey: String(formData.get("idempotencyKey") ?? ""),
+      },
+    });
+    if (result.ok) {
+      revalidatePath("/client");
+    }
     return;
   }
 
@@ -317,7 +341,11 @@ export default async function ClientPage({
   }).allowed;
   const portalDetail = canUseRouteActorFixtures()
     ? buildR007ClientPortalDetail({ actor, clientId: primaryClient.id })
-    : undefined;
+    : await readPersistentClientApprovalDetail({
+        supabase: await createSupabaseServerClient(),
+        tenantId: primaryClient.tenantId,
+        clientId: primaryClient.id,
+      });
 
   return (
     <>

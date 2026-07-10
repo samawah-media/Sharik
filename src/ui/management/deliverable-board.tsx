@@ -2,6 +2,7 @@ import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-
 import {
   activeKanbanStatuses,
   canChangeDeliverableStatus,
+  genericOperationalStatuses,
   type ActiveKanbanStatus,
 } from "@/modules/deliverables/deliverable-rules";
 import { deriveSlaStatus, type SlaStatus } from "@/modules/sla/sla-policy";
@@ -122,7 +123,7 @@ const formatPeople = (deliverable: DeliverableSafeSummary) => {
 };
 
 const statusOptions = (deliverable: DeliverableSafeSummary) =>
-  activeKanbanStatuses.map((status) => {
+  genericOperationalStatuses.map((status) => {
     const allowed =
       status === deliverable.status ||
       canChangeDeliverableStatus({
@@ -312,7 +313,9 @@ function DeliverableCard({
         action={versionAction}
         deliverable={deliverable}
       />
-      <DeliverableStatusControl action={action} deliverable={deliverable} />
+      {action ? (
+        <DeliverableStatusControl action={action} deliverable={deliverable} />
+      ) : null}
     </article>
   );
 }

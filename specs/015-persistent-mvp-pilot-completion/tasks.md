@@ -10,14 +10,14 @@
 ## Milestone 2: persistent foundation
 
 - [ ] T005 Apply and review persistent MVP migration.
-- [x] T006 Add schema/RLS tests for tenant, same-tenant client, role-negative, composite-FK, append-only, and idempotency behavior.
+- [ ] T006 Add and execute schema/RLS tests for tenant, same-tenant client, role-negative, composite-FK, append-only, atomicity, and idempotency behavior. Tests are implemented; PostgreSQL execution is blocked.
 - [ ] T007 Add persistent repository contracts for versions, approvals, comments, files, and SLA segments.
 - [x] T008 Add audited server commands for internal review, internal approval, client submission, client decision, delivery, and closure.
 
 ## Milestone 3: workflow wiring
 
 - [ ] T009 Replace production route fixture reads with scoped persistent reads.
-- [x] T010 Wire team submission and internal review UI to persistent commands.
+- [ ] T010 Wire and DB-verify account_manager/content_writer/designer assigned-team submission and internal review UI. Wiring is implemented; DB-backed use remains blocked.
 - [x] T011 Wire client approval/change-request UI with exact-version and scope checks.
 - [x] T012 Persist SLA pause/resume and package consumption in the same audited workflow.
 - [ ] T013 Add complete persistent role-based E2E journey and secrecy assertions.

@@ -1,5 +1,14 @@
 -- Spec 015 persistent MVP foundation. No hosted or customer data is touched.
 
+insert into public.permission_references (id, description, status)
+values (
+  'PERM.DELIVERABLE.VERSION_SUBMIT',
+  'Submit an assigned deliverable version for internal review',
+  'active'
+)
+on conflict (id) do update
+set description = excluded.description, status = excluded.status;
+
 create table if not exists public.deliverable_versions (
   id uuid primary key,
   tenant_id uuid not null,
@@ -64,6 +73,7 @@ create table if not exists public.file_assets (
   client_id uuid not null,
   deliverable_id uuid,
   version_id uuid,
+  version_id uuid,
   owner_user_id uuid,
   visibility text not null check (visibility in ('internal_only', 'client_visible', 'client_uploaded', 'final_delivery', 'contract_file', 'report_file', 'brand_asset')),
   storage_path text not null,
@@ -109,10 +119,16 @@ create table if not exists public.mvp_command_requests (
   audit_event_id uuid not null references public.audit_events(id),
   created_at timestamptz not null default now(),
   completed_at timestamptz,
+  result_deliverable_status text,
+  result_deliverable_revision integer,
+  result_version_status text,
   unique (tenant_id, idempotency_key),
   constraint mvp_commands_deliverable_scope
     foreign key (deliverable_id, tenant_id, client_id)
-    references public.deliverables(id, tenant_id, client_id)
+    references public.deliverables(id, tenant_id, client_id),
+  constraint mvp_commands_version_scope
+    foreign key (version_id, deliverable_id, tenant_id, client_id)
+    references public.deliverable_versions(id, deliverable_id, tenant_id, client_id)
 );
 
 alter table public.deliverables
@@ -259,10 +275,13 @@ begin
   if existing_request.id is not null then
     if existing_request.client_id <> target_client_id
       or existing_request.deliverable_id <> target_deliverable_id
-      or existing_request.command_name <> ('client_' || target_decision) then
+      or existing_request.command_name <> ('client_' || target_decision)
+      or existing_request.version_id is distinct from target_version_id then
       raise exception 'idempotency conflict' using errcode = 'P0001';
     end if;
-    return query select target_deliverable.status, target_deliverable.revision;
+    return query select
+      existing_request.result_deliverable_status,
+      existing_request.result_deliverable_revision;
     return;
   end if;
 
@@ -289,11 +308,11 @@ begin
     target_version_id::text, target_decision
   );
   insert into public.mvp_command_requests (
-    id, tenant_id, client_id, deliverable_id, idempotency_key,
+    id, tenant_id, client_id, deliverable_id, version_id, idempotency_key,
     command_name, outcome, audit_event_id, completed_at
   ) values (
     request_id, target_deliverable.tenant_id, target_client_id,
-    target_deliverable_id, btrim(request_idempotency_key),
+    target_deliverable_id, target_version_id, btrim(request_idempotency_key),
     'client_' || target_decision, 'allowed', audit_event_id, now()
   );
   insert into public.approval_decisions (
@@ -350,6 +369,13 @@ begin
     and d.client_id = target_client_id
   returning d.status, d.revision
   into deliverable_status, deliverable_revision;
+  update public.mvp_command_requests
+  set result_deliverable_status = deliverable_status,
+      result_deliverable_revision = deliverable_revision,
+      result_version_status = (
+        select status from public.deliverable_versions where id = target_version_id
+      )
+  where id = request_id;
   return next;
 end;
 $$;
@@ -399,10 +425,6 @@ begin
   if target_deliverable.id is null then
     raise exception 'deliverable unavailable' using errcode = '42501';
   end if;
-  if target_deliverable.status in ('delivered', 'cancelled', 'archived') then
-    raise exception 'terminal deliverable state' using errcode = 'P0001';
-  end if;
-
   management_allowed := public.f001_has_active_role(
     target_deliverable.tenant_id,
     array['tenant_owner','tenant_administrator','project_manager','marketing_manager'],
@@ -412,10 +434,15 @@ begin
     array['tenant_owner','tenant_administrator','project_manager','marketing_manager'],
     'tenant', target_deliverable.tenant_id
   );
-  team_allowed := management_allowed or public.f001_has_active_role(
+  team_allowed := management_allowed or (
+    (
+      target_deliverable.owner_user_id = actor_user_id
+      or actor_user_id = any(coalesce(target_deliverable.contributor_user_ids, array[]::uuid[]))
+    ) and public.f001_has_active_role(
     target_deliverable.tenant_id,
-    array['account_manager','content_writer','designer','performance_specialist'],
+    array['account_manager','content_writer','designer'],
     'client', target_client_id
+    )
   );
   if (target_command = 'submit_version' and not team_allowed)
     or (target_command <> 'submit_version' and not management_allowed) then
@@ -428,15 +455,19 @@ begin
   if existing_request.id is not null then
     if existing_request.client_id <> target_client_id
       or existing_request.deliverable_id <> target_deliverable_id
-      or existing_request.command_name <> target_command then
+      or existing_request.command_name <> target_command
+      or existing_request.version_id is distinct from target_version_id then
       raise exception 'idempotency conflict' using errcode = 'P0001';
     end if;
-    select * into target_version from public.deliverable_versions v
-    where v.id = target_deliverable.current_version_id
-      and v.tenant_id = target_deliverable.tenant_id
-      and v.client_id = target_client_id;
-    return query select target_deliverable.status, target_deliverable.revision, target_version.status;
+    return query select
+      existing_request.result_deliverable_status,
+      existing_request.result_deliverable_revision,
+      existing_request.result_version_status;
     return;
+  end if;
+
+  if target_deliverable.status in ('delivered', 'cancelled', 'archived') then
+    raise exception 'terminal deliverable state' using errcode = 'P0001';
   end if;
 
   if target_command = 'submit_version' then
@@ -593,11 +624,15 @@ begin
     audit_action, 'allowed', 'deliverable_version', target_version_id::text, target_command
   );
   insert into public.mvp_command_requests (
-    id, tenant_id, client_id, deliverable_id, idempotency_key,
-    command_name, outcome, audit_event_id, completed_at
+    id, tenant_id, client_id, deliverable_id, version_id, idempotency_key,
+    command_name, outcome, audit_event_id, completed_at,
+    result_deliverable_status, result_deliverable_revision, result_version_status
   ) values (
-    request_id, target_deliverable.tenant_id, target_client_id, target_deliverable_id,
-    btrim(request_idempotency_key), target_command, 'allowed', audit_event_id, now()
+    request_id, target_deliverable.tenant_id, target_client_id, target_deliverable_id, target_version_id,
+    btrim(request_idempotency_key), target_command, 'allowed', audit_event_id, now(),
+    (select status from public.deliverables where id = target_deliverable_id),
+    (select revision from public.deliverables where id = target_deliverable_id),
+    (select status from public.deliverable_versions where id = target_version_id)
   );
 
   select * into target_deliverable from public.deliverables d

@@ -172,4 +172,7 @@
 | Multi-approver sequential approval | Open Question؛ لا يبنى كقاعدة مؤكدة قبل اعتماد المالك | Open Question |
 | Emergency Override | يبقى صلاحية نادرة للإدارة العليا فقط | Assumed |
 | Manual external client decision | مسار انتقالي مشروط وليس الهدف الأساسي | Open Question |
+# Spec 015 corrective permission
+
+`PERM.DELIVERABLE.VERSION_SUBMIT` is independent from generic status authority. It is granted to scoped `account_manager`, `content_writer`, and `designer` roles, but execution also requires the actor to be the deliverable owner or a contributor. It does not grant internal approval, client send, client decision, or final delivery.
 

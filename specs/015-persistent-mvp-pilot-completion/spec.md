@@ -23,6 +23,13 @@ Move the Hadna-only local MVP from synthetic route fixtures to one persistent, t
 7. Local DB RLS tests and complete role-based E2E pass. If the DB cannot start, acceptance remains blocked.
 8. No open P0/P1 defects remain; every P2 has accountable owner disposition and evidence.
 
+## Corrective workflow integrity requirements
+
+- The generic status command permits only documented operational transitions between `not_started` and `in_progress`, plus resuming change-request work to `in_progress`.
+- Approval-derived statuses and delivery require exact-version commands; `delivered`, `cancelled`, and `archived` are terminal.
+- `account_manager`, `content_writer`, and `designer` may submit only assigned deliverables in their active client scope. They receive no approval, client-send, client-decision, or delivery authority.
+- Database acceptance requires executed replay, append-only, atomicity, exact-version, assigned-team, Tenant A/B, and same-tenant Client A/B regressions.
+
 ## Out of scope
 
 Hosted UAT execution, deployment/promotion, team access, real customer data, social scheduling, billing, mobile apps, microservices, new dependencies, and Production acceptance.

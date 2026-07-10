@@ -2,6 +2,16 @@
 
 Last updated: 2026-07-10
 
+## Spec 015 findings-first corrective closure - 2026-07-10
+
+- Reopened approval/state-machine P1 defects because the generic status path still allowed an exact-version bypass.
+- Implemented PostgreSQL and UI denial for approval-derived/delivery statuses in the generic command; delivered, cancelled, and archived are terminal.
+- Added independent assigned-team version-submission authority for account manager, content writer, and designer without approval/send/client-decision/delivery grants.
+- Expanded local pgTAP coverage for Tenant A/B, same-tenant Client A/B, assignments, exact-version decisions, secrecy, append-only, replay/conflict, terminal states, and atomic rollback.
+- DB-dependent P1 findings remain `implemented, verification blocked`; local MVP and Production acceptance are not granted.
+- Added no dependency. S015-P2-009 remains open for a bounded amendment to this same Spec 015 after P1 and DB-backed acceptance.
+- Hosted actions performed: zero.
+
 ## R-011A Stage 2C Internal Team MVP Trial And Hardening - 2026-07-10
 
 - Created Stage 2C Spec Kit package at `specs/014-r011a-stage-2c-internal-team-mvp-trial-defect-burn-down-and-production-candidate-hardening/` with spec, plan, tasks, contracts, quickstart, trial matrix, defect register, and execution log.

@@ -198,10 +198,24 @@ export async function submitDeliverableVersionAction(formData: FormData) {
   }
   const allowed = evaluatePermission({
     actor: readyRuntime.actor,
-    permission: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
+    permission: PERMISSIONS.DELIVERABLE_VERSION_SUBMIT,
     resource: { tenantId: client.tenantId, clientId: client.id },
   }).allowed;
   if (!allowed) {
+    return redirectWithSafeResult(client.id, "denied");
+  }
+
+  const { data: assignedDeliverable, error: assignmentError } = await supabase
+    .from("deliverables")
+    .select("id")
+    .eq("tenant_id", client.tenantId)
+    .eq("client_id", client.id)
+    .eq("id", input.deliverableId)
+    .or(
+      `owner_user_id.eq.${readyRuntime.actor.userId},contributor_user_ids.cs.{${readyRuntime.actor.userId}}`,
+    )
+    .maybeSingle();
+  if (assignmentError || !assignedDeliverable) {
     return redirectWithSafeResult(client.id, "denied");
   }
 

@@ -41,4 +41,7 @@ Writes الحساسة لا تعتمد على RLS فقط. RLS تمنع الصفو
 | Internal file | Deny | Assigned | Allow | Allow | Deny by default |
 | Final file | Own client | Assigned | Allow | Allow | Limited |
 | Audit internal | Limited external only | Deny/limited | Allow | Allow | Restricted |
+# Spec 015 exact-version command boundary
+
+PostgreSQL rejects approval-derived and delivery targets through `f004_update_deliverable_status`. The persistent submission RPC checks tenant, client, supported internal role, and owner/contributor assignment. Delivered, cancelled, and archived records are terminal. Acceptance requires executed pgTAP evidence; test presence without a reachable local PostgreSQL instance is BLOCKED, not PASS.
 

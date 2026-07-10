@@ -92,8 +92,17 @@ export default async function ClientDeliverablesBoardPage({
       permission: PERMISSIONS.DELIVERABLE_SEND_TO_CLIENT,
       resource: { tenantId: client.tenantId, clientId: client.id },
     }).allowed;
+  const canSubmitDeliverableVersion = evaluatePermission({
+    actor: runtime.actor,
+    permission: PERMISSIONS.DELIVERABLE_VERSION_SUBMIT,
+    resource: { tenantId: client.tenantId, clientId: client.id },
+  }).allowed;
 
-  if (!canUpdateDeliverableStatus) {
+  if (
+    !canUpdateDeliverableStatus &&
+    !canSubmitDeliverableVersion &&
+    !canUseApprovalWorkflow
+  ) {
     return <DeliverableDeniedState />;
   }
 
@@ -105,6 +114,14 @@ export default async function ClientDeliverablesBoardPage({
   if (!deliverableList.ok) {
     return <DeliverableDeniedState />;
   }
+  const visibleDeliverables =
+    canUpdateDeliverableStatus || canUseApprovalWorkflow
+      ? deliverableList.deliverables
+      : deliverableList.deliverables.filter(
+          (deliverable) =>
+            deliverable.ownerUserId === runtime.actor.userId ||
+            deliverable.contributorUserIds.includes(runtime.actor.userId),
+        );
   const displayClientName = formatMvpClientName(client.name);
 
   return (
@@ -131,14 +148,22 @@ export default async function ClientDeliverablesBoardPage({
         }
         title="لوحة العمل"
       />
-      {deliverableList.deliverables.length > 0 ? (
+      {visibleDeliverables.length > 0 ? (
         <DeliverableBoard
-          action={updateDeliverableStatusAction}
+          action={
+            canUpdateDeliverableStatus
+              ? updateDeliverableStatusAction
+              : undefined
+          }
           approvalAction={
             canUseApprovalWorkflow ? updateDeliverableStatusAction : undefined
           }
-          deliverables={deliverableList.deliverables}
-          versionAction={submitDeliverableVersionAction}
+          deliverables={visibleDeliverables}
+          versionAction={
+            canSubmitDeliverableVersion
+              ? submitDeliverableVersionAction
+              : undefined
+          }
         />
       ) : (
         <DeliverableBoardEmptyState />

@@ -83,7 +83,7 @@ describe("deliverable rules", () => {
     expect(isActiveKanbanStatus("archived")).toBe(false);
   });
 
-  it("enforces internal approval before waiting for client approval", () => {
+  it("reserves approval-derived statuses for exact-version commands", () => {
     expect(
       canChangeDeliverableStatus({
         currentStatus: "ready_for_internal_review",
@@ -92,7 +92,7 @@ describe("deliverable rules", () => {
       }),
     ).toEqual({
       allowed: false,
-      reason: "internal_approval_required_before_client_waiting",
+      reason: "protected_status_requires_command",
     });
 
     expect(
@@ -101,10 +101,10 @@ describe("deliverable rules", () => {
         targetStatus: "waiting_client_approval",
         requiresClientApproval: true,
       }),
-    ).toEqual({ allowed: true });
+    ).toEqual({ allowed: false, reason: "protected_status_requires_command" });
   });
 
-  it("enforces client approval before delivery when client approval is required", () => {
+  it("reserves delivery for the audited exact-version command", () => {
     expect(
       canChangeDeliverableStatus({
         currentStatus: "ready_for_delivery",
@@ -113,7 +113,7 @@ describe("deliverable rules", () => {
       }),
     ).toEqual({
       allowed: false,
-      reason: "client_approval_required_before_delivery",
+      reason: "protected_status_requires_command",
     });
 
     expect(
@@ -122,7 +122,7 @@ describe("deliverable rules", () => {
         targetStatus: "delivered",
         requiresClientApproval: true,
       }),
-    ).toEqual({ allowed: true });
+    ).toEqual({ allowed: false, reason: "protected_status_requires_command" });
 
     expect(
       canChangeDeliverableStatus({
@@ -130,10 +130,17 @@ describe("deliverable rules", () => {
         targetStatus: "delivered",
         requiresClientApproval: false,
       }),
-    ).toEqual({ allowed: true });
+    ).toEqual({ allowed: false, reason: "protected_status_requires_command" });
   });
 
-  it("denies status changes from terminal non-board states", () => {
+  it("denies status changes from every terminal state", () => {
+    expect(
+      canChangeDeliverableStatus({
+        currentStatus: "delivered",
+        targetStatus: "in_progress",
+        requiresClientApproval: true,
+      }),
+    ).toEqual({ allowed: false, reason: "terminal_status_locked" });
     expect(
       canChangeDeliverableStatus({
         currentStatus: "cancelled",

@@ -12,3 +12,12 @@
 | 2026-07-10 | P1 corrective verification | verified with DB blocker | lint PASS; typecheck PASS; unit 170/170; integration 112/112; component baseline 54/54 plus persistent workflow component regression 5/5; RLS simulator 24/24; build PASS; secret scan PASS; Kanban mobile/RTL passed and desktop retry 2/2 passed. Behavioral RLS DB remains BLOCKED by local PostgreSQL connectivity. |
 
 Hosted actions performed: zero. Production acceptance: not granted.
+
+## Findings-first corrective continuation
+
+- Reopened S015-P1-004 and S015-P1-005; prior `fixed` wording was invalid while the generic `f004` bypass remained and DB regression execution was blocked.
+- Implemented protected-status denial in `f004`, terminal delivered/cancelled/archived behavior, safe generic UI options, independent team version-submit permission, and assigned deliverable enforcement.
+- Expanded pgTAP with Tenant A/B, same-tenant Client A/B, assigned/unassigned account manager/content writer/designer cases, exact-version client decisions, secrecy, replay/conflict, append-only, terminal, and atomicity assertions.
+- Targeted TypeScript/unit/component checks passed. DB-dependent findings remain `implemented, verification blocked` until local PostgreSQL executes the suite.
+- Final local matrix: lint PASS; typecheck PASS; unit 48 files/171 tests PASS; integration 28/112 PASS; component 17/55 PASS; RLS simulator 8/24 PASS; E2E 105 PASS/6 configured skips; targeted Kanban desktop/mobile/RTL 6/6 PASS; secret scan PASS; diff check PASS; build PASS.
+- `npm run test:rls:db` BLOCKED with `LegacyDbConnectError: failed to connect to postgres`. Operator sequence: start a local Docker-compatible PostgreSQL/Supabase stack, run `npx supabase@2.107.0 db reset --local --no-seed`, then run `npm run test:rls:db`. Hosted database substitution is prohibited.

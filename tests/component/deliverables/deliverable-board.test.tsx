@@ -64,6 +64,7 @@ describe("internal deliverable work board", () => {
   it("renders active columns, scoped cards, SLA, due dates, and status update forms", () => {
     render(
       <DeliverableBoard
+        action={async () => undefined}
         deliverables={deliverables}
         now="2026-07-01T10:00:00.000Z"
       />,
@@ -108,9 +109,10 @@ describe("internal deliverable work board", () => {
     expect(screen.queryByText("approval log")).not.toBeInTheDocument();
   });
 
-  it("disables direct waiting-client transition until internal approval exists", () => {
+  it("does not offer protected workflow transitions in the generic status form", () => {
     render(
       <DeliverableBoard
+        action={async () => undefined}
         deliverables={[deliverables[0]]}
         now="2026-07-01T10:00:00.000Z"
       />,
@@ -118,10 +120,10 @@ describe("internal deliverable work board", () => {
 
     fireEvent.click(screen.getByText(/^تغيير الحالة/));
 
-    const waitingOption = screen.getByRole("option", {
-      name: "بانتظار اعتماد العميل",
-    });
-    expect(waitingOption).toBeDisabled();
+    expect(screen.getAllByRole("option")).toHaveLength(2);
+    expect(
+      screen.queryByRole("option", { name: "بانتظار اعتماد العميل" }),
+    ).not.toBeInTheDocument();
   });
 
   it("keeps empty columns readable without stretching cards", () => {

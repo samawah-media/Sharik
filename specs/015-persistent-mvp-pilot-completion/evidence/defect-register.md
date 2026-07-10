@@ -1,13 +1,19 @@
 # Spec 015 defect register
 
-| ID | Severity | Role/workflow | Owner | Status | Disposition/evidence |
-|---|---|---|---|---|---|
-| S015-P2-001 | P2 | Local DB RLS verification | Platform/Infrastructure | blocked | Install/start Docker-compatible PostgreSQL and Supabase CLI, then run `npm run test:rls:db`; not PASS. |
-| S015-P2-002 | P2 | Hosted T032/UAT | Owner/Release | blocked | Outside authorization; remains separate from local acceptance. |
-| S015-P2-003 | P2 | Kanban disclosure hydration/E2E | Frontend | fixed | Native deterministic disclosure; targeted Playwright 6/6 desktop/mobile/RTL. |
-| S015-P1-004 | P1 | Account manager internal approval/send/delivery | Database authorization | fixed, DB retest blocked | Removed `account_manager` from management authority; behavioral pgTAP requires local DB. |
-| S015-P1-005 | P1 | Persistent workflow state-machine bypass | Database workflow | fixed, DB retest blocked | Terminal/status guards added and `request_internal_changes` implemented. |
-| S015-P1-006 | P1 | Cross-deliverable version binding | Database integrity | fixed, DB retest blocked | Composite FKs now include version, deliverable, tenant, and client. |
-| S015-P1-007 | P1 | System/internal comment exposure | Database visibility | fixed, DB retest blocked | Independent comment `visibility` added; client RLS requires `client_visible`. |
-| S015-P2-008 | P2 | Behavioral DB coverage | QA/Database | implemented, execution blocked | Added role-negative, terminal-state, cross-deliverable, comment secrecy, and same-tenant isolation pgTAP. |
-| S015-P2-009 | P2 | Approved V1 UI/file dependencies | Owner/Architecture | awaiting owner decision | No dependency was added without explicit approval; Uppy/Tiptap/dnd-kit/TanStack/RHF remain open. |
+Governance: P0/P1 blocks completion. P2 requires explicit owner disposition. P3 may be deferred only with rationale. `Fixed` requires an executed regression test; a regression that exists but cannot execute is not PASS.
+
+| ID | Severity | Affected role | Affected workflow | Reproduction | Security/data impact | Owner | Fix status | Regression test | Evidence reference |
+|---|---|---|---|---|---|---|---|---|---|
+| S015-P2-001 | P2 | All | Local DB RLS verification | Run `npm run test:rls:db` without reachable local PostgreSQL. | DB authorization cannot be accepted. | Platform/Infrastructure | blocked; owner must provide local infrastructure | Command exists; execution BLOCKED | `execution-log.md` |
+| S015-P2-002 | P2 | Release owner | Hosted T032/UAT | Requires a separately authorized hosted window. | Hosted acceptance is unproven. | Owner/Release | blocked; outside this task | Not run | `gate-status.md` |
+| S015-P2-003 | P2 | Internal board users | Kanban disclosure hydration | Exercise disclosure in desktop/mobile/RTL. | UX stability only. | Frontend | fixed | Playwright regression executed PASS | `execution-log.md` |
+| S015-P1-004 | P1 | account_manager | Internal approval/send/delivery | Call protected commands or forge protected statuses through `f004`. | Least-privilege and approval integrity. | Database authorization | implemented, verification blocked; reopened | Expanded pgTAP exists; PostgreSQL execution BLOCKED | `s015_persistent_mvp_behavior.test.sql` |
+| S015-P1-005 | P1 | Internal status updater | Persistent state machine | Call `f004_update_deliverable_status` with approval-derived status or reopen delivered. | Workflow, audit, SLA and delivery bypass. | Database workflow | implemented, verification blocked; reopened | Expanded f004/terminal pgTAP exists; PostgreSQL execution BLOCKED | `s015_persistent_mvp_behavior.test.sql` |
+| S015-P1-006 | P1 | Approval actors | Exact-version binding | Bind stale/cross-deliverable version. | Wrong work may be approved. | Database integrity | implemented, verification blocked | Composite-FK and behavioral pgTAP exist; execution BLOCKED | `s015_persistent_mvp_behavior.test.sql` |
+| S015-P1-007 | P1 | Client roles | Comment visibility | Read internal/system-internal comment as client. | Internal information disclosure. | Database visibility | implemented, verification blocked | Secrecy pgTAP exists; execution BLOCKED | `s015_persistent_mvp_behavior.test.sql` |
+| S015-P2-008 | P2 | QA/Database | Behavioral DB coverage | Prior seed lacked true Tenant B and actual Client B protected-row proof. | Isolation regressions could escape detection. | QA/Database | implemented, verification blocked | Expanded seeded pgTAP; execution BLOCKED | `s015_persistent_mvp_behavior.test.sql` |
+| S015-P2-009 | P2 | Product/Architecture | Approved V1 dependencies | Compare V1 stack to installed dependencies. | Deferred UX/file integration debt. | Owner/Architecture | open; explicit owner disposition | Bounded amendment to this same Spec 015 after P1 integrity and DB acceptance; no dependency added now | `plan.md` |
+| S015-P1-010 | P1 | content_writer/designer/account_manager | Team version submission | Open board as supported team role and submit assigned work. | Team cannot complete the governed review handoff. | Application/Database | implemented, verification blocked | Unit/component PASS; assigned-role pgTAP execution BLOCKED | `execution-log.md` |
+| S015-P1-011 | P1 | Scoped client/team users | Same-tenant isolation | Seed Client B row, then query as Client A. | Cross-client disclosure risk. | QA/Database | implemented, verification blocked | Real Client A/B and Tenant A/B pgTAP added; execution BLOCKED | `s015_persistent_mvp_behavior.test.sql` |
+| S015-P1-012 | P1 | Approval/delivery actors | Idempotency and append-only behavior | Replay, conflict key by version/scope, or mutate decision. | Duplicate decisions, drift, or lost audit history. | Database workflow | implemented, verification blocked | Replay/conflict/append-only/atomicity pgTAP added; execution BLOCKED | `s015_persistent_mvp_behavior.test.sql` |
+| S015-P2-013 | P2 | Release/QA | Defect governance | Prior register combined role/workflow and disposition/evidence columns. | Ambiguous verification claims. | QA/Governance | implemented | Documentation schema review; no product regression required | This register |

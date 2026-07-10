@@ -44,8 +44,7 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
   ).toBeVisible();
 
   await page
-    .locator("summary")
-    .filter({ hasText: "تغيير الحالة ستوري هدنة 43" })
+    .getByRole("button", { name: "تغيير الحالة ستوري هدنة 43" })
     .click();
   await expect(
     page.getByRole("form", { name: "تغيير حالة ستوري هدنة 43" }),

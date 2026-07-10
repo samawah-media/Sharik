@@ -12,3 +12,10 @@
 ## Design constraints
 
 Use existing Supabase SSR client, server actions/RPCs, Zod, current RLS helper functions, and existing audit/status workflow patterns. Do not introduce a dependency. Sensitive writes must be idempotent, server-side, tenant/client scoped, and audited.
+
+## Corrective sequencing
+
+1. Close the generic `f004` approval/delivery bypass in PostgreSQL and UI.
+2. Separate `DELIVERABLE_VERSION_SUBMIT` from generic status and management authority, with assignment enforcement.
+3. Execute the expanded behavioral pgTAP matrix before any P1 is called fixed.
+4. Keep dependency work open as a bounded amendment to this same Spec 015 after P1 and DB-backed acceptance; add no dependency in this corrective task.

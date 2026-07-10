@@ -111,6 +111,24 @@ The local safe setup paths and hosted dry-run/no-op wrapper reduce execution ris
 
 Provide safe R-011A execution categories or authorize a narrower direct mutation runbook that names the safe path, audit behavior, rollback/no-op handling, and stop conditions without exposing prohibited values. Production acceptance remains blocked.
 
+## Stage 2B Owner-Approved Execution Addendum — 2026-07-10
+
+Owner approval was received for execution within the stated Hadna-only, UAT-only boundary. The hosted executor and stop conditions were reviewed before any action. The only executable path was the value-free local no-op rehearsal; `apply_hosted` remained blocked because no reviewed hosted executor is configured.
+
+Result: HOSTED DRY-RUN REHEARSAL PASS / HOSTED GAP CLOSURE NOT APPLIED / UAT DEPLOYMENT NOT RUN.
+
+Mutation count: 0 hosted mutations, 0 account/role changes, 0 approval/status/delivery changes, 0 hosted file operations, 0 deploy/promotion/config changes, 0 non-Hadna uses, 0 Production decisions.
+
+No-op count: 3 category previews, 3 requested items, 0 persisted setup records. Rollback: not required; rollback-summary path remained no-op and was verified before any apply path.
+
+Audit evidence: allowed rehearsal and denial paths were verified through the injected append-only audit harness using action/category/count metadata only. No hosted audit event exists for a mutation because none occurred.
+
+Isolation: local synthetic management, assigned-team, client-viewer, client-approver, and unauthorized category checks passed. Hosted isolation remains unproven.
+
+Remaining blockers: reviewed hosted executor, hosted client-approver evidence, non-empty waiting-approval evidence, final-delivery/file-list evidence, hosted isolation evidence, and a separately approved UAT deployment/team-access target.
+
+The complete `NEXT_AGENT_PROMPT` and `EXPERT_REVIEW_AGENT_PROMPT` are recorded in `r011a-stage-2b-execution-and-next-prompts.md`.
+
 ## Verification
 
 | Check | Status | Safe result |

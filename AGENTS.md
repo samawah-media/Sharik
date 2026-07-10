@@ -79,7 +79,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/013-r011-production-candidate-residual-risk-treatment-and-hosted-acceptance-readiness/plan.md
+at specs/014-r011a-stage-2c-internal-team-mvp-trial-defect-burn-down-and-production-candidate-hardening/plan.md
 <!-- SPECKIT END -->
 
 أي اقتراح لا يخدم هذه العناصر يجب تأجيله أو توثيقه كخارج نطاق V1.

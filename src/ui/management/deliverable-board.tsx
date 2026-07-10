@@ -9,6 +9,7 @@ import { Badge } from "@/ui/core/badge";
 import { Button } from "@/ui/core/button";
 import { EmptyState } from "@/ui/core/states";
 import { DeliverableApprovalWorkflowControl } from "./deliverable-actions";
+import { DeliverableStatusDisclosure } from "./deliverable-status-disclosure";
 
 type StatusUpdateAction = (formData: FormData) => void | Promise<void>;
 
@@ -111,10 +112,7 @@ function DeliverableStatusControl({
   action?: StatusUpdateAction;
 }) {
   return (
-    <details className="mt-4 rounded-lg border border-border bg-background/70">
-      <summary className="cursor-pointer list-none px-3 py-2 text-sm font-semibold text-accent marker:hidden">
-        تغيير الحالة
-      </summary>
+    <DeliverableStatusDisclosure label="تغيير الحالة">
       <form
         action={action}
         aria-label={`تغيير حالة ${deliverable.name}`}
@@ -160,7 +158,7 @@ function DeliverableStatusControl({
           تحديث الحالة
         </Button>
       </form>
-    </details>
+    </DeliverableStatusDisclosure>
   );
 }
 

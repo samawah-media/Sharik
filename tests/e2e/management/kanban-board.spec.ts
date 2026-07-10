@@ -5,6 +5,13 @@ test.describe.configure({ timeout: 90_000 });
 test("tenant admin can open the internal Kanban board from deliverables", async ({
   page,
 }) => {
+  const browserErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") {
+      browserErrors.push(message.text());
+    }
+  });
+
   await page.goto("/clients/client_a/deliverables?as=tenant_admin_a", {
     waitUntil: "domcontentloaded",
   });
@@ -42,6 +49,7 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
   await expect(page.getByLabel("الحالة").first()).toHaveValue("in_progress");
   await expect(page.getByText("client_b")).toHaveCount(0);
   await expect(page.getByText("approval log")).toHaveCount(0);
+  expect(browserErrors).toEqual([]);
 });
 
 test("client viewer cannot access the internal Kanban board", async ({

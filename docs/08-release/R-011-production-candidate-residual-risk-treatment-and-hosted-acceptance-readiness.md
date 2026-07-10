@@ -20,6 +20,25 @@ A hosted-execution readiness pass later added no-op hosted dry-run wiring, hoste
 
 The approved R-011A hosted dry-run/no-op readiness wrapper was later executed locally through the focused in-memory harness on 2026-07-09. It passed with category/count-only evidence. Real hosted access, hosted DB reads/writes, hosted route checks, hosted file operations, deploy/promotion, account creation, approval/status/delivery mutation, non-Hadna data use, `apply_hosted`, and Production acceptance remained untouched.
 
+R-011A Stage 2C later created a local internal team MVP trial and hardening package under `specs/014-r011a-stage-2c-internal-team-mvp-trial-defect-burn-down-and-production-candidate-hardening/`. The initial local trial verification passed, but a corrective completion audit found the Stage 2C defect register and handoff prompts were incomplete. The correction added a traceable defect register and required internal/expert review prompts.
+
+Stage 2C corrective status: LOCAL TRIAL EVIDENCE RECORDED / DEFECT REGISTER CORRECTED / HOSTED AND PRODUCTION STILL BLOCKED.
+
+Corrective defect reconciliation:
+
+- P0 open: 0.
+- P1 open: 0.
+- P2 fixed/retested: Kanban hydration warning on the RTL management board.
+- P2 blocked/dispositioned: local RLS DB verification remains blocked by local database connectivity; hosted executor/UAT deployment limitation remains outside Stage 2C authority and tied to open R-011A T032.
+- P3 deferred with rationale: 6 configured E2E skips are mobile-only duplicate assertions skipped in non-mobile projects and covered by the mobile project; they are not counted as pass.
+
+Stage 2C documentation reconciliation:
+
+- UX documentation beyond Stage 2C evidence was not changed because the Kanban disclosure user behavior did not change; only a hydration-warning suppression was added to preserve existing behavior.
+- Security/RLS documentation beyond Stage 2C evidence was not changed because no RLS policy, security rule, or database behavior changed; local RLS DB remains blocked.
+- Audit/SLA/approval/files documentation beyond Stage 2C evidence was not changed because no audit, SLA, approval, or file behavior changed in this corrective pass.
+- Stage 2C tasks and evidence now explicitly distinguish passed, skipped, blocked, hosted boundary, Production boundary, and remaining R-011A T032 status.
+
 ## Scope
 
 R-011 treats the residual risks carried from R-010 Path B:
@@ -188,6 +207,16 @@ Current dry-run handoff verification passed:
 - Scoped redaction scan over touched R-011A dry-run docs and the new project-progress section found 0 URL, 0 email, and 0 image-reference matches.
 - Redaction-vocabulary keyword matches were reviewed as safe policy/category wording.
 - Lint/typecheck were not run because no product code changed in this dry-run docs/evidence update.
+
+Stage 2C corrective completion audit verification passed:
+
+- Targeted unit check passed: `tests/unit/release/r011a-stage-2c-trial.test.ts`, 1 file / 4 tests.
+- Targeted component check passed: `tests/component/deliverables/deliverable-board.test.tsx`, 1 file / 4 tests.
+- `npm run secret:scan` passed with no high-confidence secrets found.
+- `git diff --check` passed with LF-to-CRLF warnings only and no whitespace errors.
+- Spec Kit prerequisite/consistency analysis resolved the Stage 2C feature directory and found 12/12 functional requirements mapped to tasks. One medium residual remains: local RLS DB verification is blocked and must not be counted as pass.
+- Scoped redaction scan passed for the Stage 2C package, this release document, and the new Stage 2C project-progress section.
+- `npm run build` passed.
 
 ## Final Boundary Confirmation
 

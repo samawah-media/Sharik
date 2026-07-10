@@ -57,6 +57,7 @@ export function SignInForm() {
     <form
       aria-label="تسجيل الدخول"
       className="grid gap-5"
+      method="post"
       onSubmit={handleSubmit}
     >
       <label className="grid gap-2 text-sm font-medium">

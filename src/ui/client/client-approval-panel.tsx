@@ -10,6 +10,7 @@ export type ClientApprovalPanelItem = {
   deliverableId: string;
   versionId: string;
   expectedRevision: number;
+  isActionable?: boolean;
   displayName: string;
   typeLabel: string;
   statusLabel: string;
@@ -54,6 +55,7 @@ export function ClientApprovalPanel({
   item: ClientApprovalPanelItem;
   requestChangesAction?: ClientApprovalFormAction;
 }) {
+  const canSubmitDecision = canApprove && item.isActionable !== false;
   const hasServerActions = Boolean(approveAction && requestChangesAction);
 
   return (
@@ -85,19 +87,19 @@ export function ClientApprovalPanel({
         </div>
       </dl>
 
-      {!canApprove ? (
+      {!canSubmitDecision ? (
         <p className="rounded-md bg-background px-3 py-2 text-sm text-muted">
           يمكنك مشاهدة المخرج فقط.
         </p>
       ) : null}
 
-      {canApprove && !hasServerActions ? (
+      {canSubmitDecision && !hasServerActions ? (
         <p className="rounded-md bg-background px-3 py-2 text-sm text-muted">
           إجراءات الاعتماد تحتاج أمر خادم محمي قبل التفعيل.
         </p>
       ) : null}
 
-      {canApprove && hasServerActions ? (
+      {canSubmitDecision && hasServerActions ? (
         <div className="grid gap-3 sm:grid-cols-2">
           <form action={approveAction} className="grid gap-2">
             <HiddenApprovalFields

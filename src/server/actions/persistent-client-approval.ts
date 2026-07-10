@@ -28,7 +28,7 @@ export async function readPersistentClientApprovalDetail({
     .select("id, client_id, name, type, status, progress_percentage, client_due_date, revision, current_version_id")
     .eq("tenant_id", tenantId)
     .eq("client_id", clientId)
-    .eq("status", "waiting_client_approval")
+    .in("status", ["waiting_client_approval", "delivered"])
     .not("current_version_id", "is", null)
     .order("updated_at", { ascending: false })
     .limit(1)
@@ -47,7 +47,7 @@ export async function readPersistentClientApprovalDetail({
         .eq("client_id", clientId)
         .eq("deliverable_id", deliverable.id)
         .eq("id", deliverable.current_version_id)
-        .eq("status", "client_visible")
+        .in("status", ["client_visible", "final"])
         .maybeSingle(),
       supabase
         .from("file_assets")
@@ -72,19 +72,22 @@ export async function readPersistentClientApprovalDetail({
     return undefined;
   }
 
+  const delivered = deliverable.status === "delivered";
+
   return {
     approvalItem: {
       clientId,
       deliverableId: deliverable.id,
       versionId: version.id,
       expectedRevision: deliverable.revision,
+      isActionable: !delivered,
       displayName: deliverable.name,
       typeLabel: deliverable.type,
-      statusLabel: "بانتظار موافقتك",
+      statusLabel: delivered ? "تم التسليم" : "بانتظار موافقتك",
       versionLabel: `النسخة ${version.version_number}`,
       dueDateLabel: deliverable.client_due_date ?? undefined,
     },
-    statusLabel: "بانتظار موافقتك",
+    statusLabel: delivered ? "تم التسليم" : "بانتظار موافقتك",
     progressPercentage: deliverable.progress_percentage,
     files: (filesResult.data ?? []).map((file) => ({
       id: file.id,

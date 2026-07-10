@@ -9,6 +9,8 @@ import type {
   TenantMembership,
 } from "@/modules/memberships/membership";
 import { resolveRuntimeContext } from "@/server/auth/runtime-context";
+import { canUseRouteActorFixtures } from "./route-fixture-env";
+export { canUseRouteActorFixtures } from "./route-fixture-env";
 
 export type RouteActorKey =
   | "tenant_admin_a"
@@ -27,23 +29,6 @@ export type RouteAccessDecision =
       reason: "permission_denied" | "not_found" | "no_assigned_clients" | "membership_disabled";
       safeReturnHref: string;
     };
-
-export const canUseRouteActorFixtures = ({
-  appEnv = process.env.APP_ENV,
-  nodeEnv = process.env.NODE_ENV,
-}: {
-  appEnv?: string;
-  nodeEnv?: string;
-} = {}) => {
-  if (!appEnv) {
-    return false;
-  }
-
-  return (
-    nodeEnv !== "production" &&
-    (appEnv === "local" || appEnv === "development" || appEnv === "test")
-  );
-};
 
 export const routeClients: ClientRecord[] = [
   {

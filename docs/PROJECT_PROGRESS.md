@@ -1649,3 +1649,26 @@ The local Supabase stack initially attempted to pull images from the default reg
 - Production Supabase usage.
 - Real customer data.
 - Merging into `main`.
+
+## Latest Spec 015 Persistent MVP Checkpoint
+
+Spec 015 local persistent MVP verification completed on 2026-07-11 after correcting the browser acceptance gap found in `S015-P1-019`.
+
+Implemented scope:
+
+- Added `APP_ENV=test-persistent` and a separate `npm run test:e2e:persistent` Playwright path.
+- Exercised real local Supabase Auth/API sign-in and browser actions with route actor fixtures disabled.
+- Verified assigned team submission, role-negative denials, internal approval, client change request/approval, stale-version rejection, delivery, final file visibility, audit, SLA, idempotency, and package ledger state through database assertions.
+- Enabled only the local Supabase services required for API/Auth E2E and kept hosted/Vercel values out of the test app process.
+
+Verification results:
+
+- `npx supabase@2.107.0 db reset --local --no-seed`: passed.
+- `npm run test:e2e:persistent`: passed, 3 tests.
+- Full matrix passed: lint, typecheck, unit, integration, component, RLS simulator, RLS DB, fixture E2E, persistent E2E, secret scan, diff check, and build.
+
+Boundary:
+
+- Hosted actions performed: zero.
+- Production acceptance: not granted.
+- Hosted Hadna UAT remains separate and owner-approved only.

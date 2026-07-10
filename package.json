@@ -17,6 +17,7 @@
     "test:rls:db": "node scripts/supabase-rls-db-test.mjs",
     "test:component": "node node_modules/vitest/vitest.mjs run --project component",
     "test:e2e": "node node_modules/@playwright/test/cli.js test",
+    "test:e2e:persistent": "node node_modules/@playwright/test/cli.js test --config=playwright.persistent.config.ts",
     "test:e2e:list": "node node_modules/@playwright/test/cli.js test --list",
     "secret:scan": "node scripts/secret-scan.mjs"
   },

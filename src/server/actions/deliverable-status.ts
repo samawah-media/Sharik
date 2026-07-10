@@ -16,6 +16,8 @@ import {
 import { resolveRuntimeContext, type RuntimeContext } from "@/server/auth/runtime-context";
 import { updateDeliverableStatusViaRpc } from "./deliverable-write-rpc";
 import { nullableFormValue } from "./deliverable-write-mappers";
+import { executePersistentInternalWorkflow } from "./persistent-internal-workflow";
+import { z } from "zod";
 
 type ReadyRuntimeContext = Extract<RuntimeContext, { ok: true }>;
 type StatusUpdateResult = "status-updated" | "denied";
@@ -38,6 +40,13 @@ const resolveR007WorkflowStep = (
 
   return value as R007WorkflowStep;
 };
+
+const persistentCommandForStep = {
+  approve_internally: "approve_internal",
+  request_internal_changes: "request_internal_changes",
+  send_to_client: "send_to_client",
+  deliver_after_client_approval: "deliver",
+} as const;
 
 const redirectWithSafeResult = (
   clientId: string,
@@ -100,6 +109,32 @@ export async function updateDeliverableStatusAction(formData: FormData) {
     redirectWithSafeResult(scopedClient.id, "denied");
   }
 
+  if (workflowStep && workflowStep in persistentCommandForStep) {
+    const versionId = String(formData.get("versionId") ?? "");
+    const persistentResult = await executePersistentInternalWorkflow({
+      supabase,
+      input: {
+        clientId: scopedClient.id,
+        deliverableId: parsedInput.deliverableId,
+        versionId,
+        command:
+          persistentCommandForStep[
+            workflowStep as keyof typeof persistentCommandForStep
+          ],
+        comment: nullableFormValue(parsedInput.reason) ?? undefined,
+        idempotencyKey: parsedInput.idempotencyKey,
+      },
+    });
+
+    if (!persistentResult.ok) {
+      redirectWithSafeResult(scopedClient.id, "denied");
+    }
+
+    revalidatePath(`/clients/${scopedClient.id}/deliverables`);
+    revalidatePath(`/clients/${scopedClient.id}/deliverables/board`);
+    redirectWithSafeResult(scopedClient.id, "status-updated");
+  }
+
   const result = await updateDeliverableStatusViaRpc({
     supabase,
     input: {
@@ -120,4 +155,72 @@ export async function updateDeliverableStatusAction(formData: FormData) {
   revalidatePath(`/clients/${scopedClient.id}/deliverables`);
   revalidatePath(`/clients/${scopedClient.id}/deliverables/board`);
   redirectWithSafeResult(scopedClient.id, "status-updated");
+}
+
+const submitVersionSchema = z.object({
+  clientId: z.string().uuid(),
+  deliverableId: z.string().uuid(),
+  versionNumber: z.coerce.number().int().positive(),
+  comment: z.string().trim().max(2000).optional(),
+  idempotencyKey: z.string().trim().min(8).max(200),
+});
+
+export async function submitDeliverableVersionAction(formData: FormData) {
+  const parsed = submitVersionSchema.safeParse({
+    clientId: formData.get("clientId"),
+    deliverableId: formData.get("deliverableId"),
+    versionNumber: formData.get("versionNumber"),
+    comment: formData.get("reason"),
+    idempotencyKey: formData.get("idempotencyKey"),
+  });
+  if (!parsed.success) {
+    return redirectWithSafeResult(
+      String(formData.get("clientId") ?? ""),
+      "denied",
+    );
+  }
+  const input = parsed.data;
+
+  const supabase = await createSupabaseServerClient();
+  const runtime = await resolveRuntimeContext(supabase);
+  if (!("actor" in runtime)) {
+    return redirectWithSafeResult(input.clientId, "denied");
+  }
+  const readyRuntime = runtime as ReadyRuntimeContext;
+  const client = readyRuntime.clients.find(
+    (item) =>
+      item.id === input.clientId &&
+      item.tenantId === readyRuntime.actor.tenantId &&
+      item.status === "active",
+  );
+  if (!client) {
+    return redirectWithSafeResult(input.clientId, "denied");
+  }
+  const allowed = evaluatePermission({
+    actor: readyRuntime.actor,
+    permission: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
+    resource: { tenantId: client.tenantId, clientId: client.id },
+  }).allowed;
+  if (!allowed) {
+    return redirectWithSafeResult(client.id, "denied");
+  }
+
+  const result = await executePersistentInternalWorkflow({
+    supabase,
+    input: {
+      clientId: client.id,
+      deliverableId: input.deliverableId,
+      versionId: crypto.randomUUID(),
+      command: "submit_version",
+      versionNumber: input.versionNumber,
+      comment: input.comment,
+      idempotencyKey: input.idempotencyKey,
+    },
+  });
+  if (!result.ok) {
+    return redirectWithSafeResult(client.id, "denied");
+  }
+  revalidatePath(`/clients/${client.id}/deliverables`);
+  revalidatePath(`/clients/${client.id}/deliverables/board`);
+  redirectWithSafeResult(client.id, "status-updated");
 }

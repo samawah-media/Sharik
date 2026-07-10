@@ -1,7 +1,10 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { listScopedDeliverables } from "@/server/actions/deliverable-read";
-import { updateDeliverableStatusAction } from "@/server/actions/deliverable-status";
+import {
+  submitDeliverableVersionAction,
+  updateDeliverableStatusAction,
+} from "@/server/actions/deliverable-status";
 import {
   guardClientDetailRoute,
   resolveRouteRuntime,
@@ -135,6 +138,7 @@ export default async function ClientDeliverablesBoardPage({
             canUseApprovalWorkflow ? updateDeliverableStatusAction : undefined
           }
           deliverables={deliverableList.deliverables}
+          versionAction={submitDeliverableVersionAction}
         />
       ) : (
         <DeliverableBoardEmptyState />

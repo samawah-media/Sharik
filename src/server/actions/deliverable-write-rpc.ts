@@ -15,6 +15,7 @@ type DeliverableWriteRow = {
   contract_id: string | null;
   package_id: string | null;
   package_line_id: string | null;
+  current_version_id?: string | null;
   name: string;
   description: string | null;
   type: string;
@@ -73,6 +74,7 @@ export const toDeliverableRecordFromWriteRow = (
   contractId: row.contract_id ?? undefined,
   packageId: row.package_id ?? undefined,
   packageLineId: row.package_line_id ?? undefined,
+  currentVersionId: row.current_version_id ?? undefined,
   name: row.name,
   description: row.description ?? undefined,
   type: row.type,
@@ -132,6 +134,7 @@ export const toDeliverableSafeSummaryFromRows = ({
     contractId: deliverable.contractId,
     packageId: deliverable.packageId,
     packageLineId: deliverable.packageLineId,
+    currentVersionId: deliverable.currentVersionId,
     name: deliverable.name,
     description: deliverable.description,
     type: deliverable.type,

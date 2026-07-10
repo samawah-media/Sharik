@@ -13,6 +13,64 @@ import { DeliverableStatusDisclosure } from "./deliverable-status-disclosure";
 
 type StatusUpdateAction = (formData: FormData) => void | Promise<void>;
 
+function DeliverableVersionSubmissionControl({
+  deliverable,
+  action,
+}: {
+  deliverable: DeliverableSafeSummary;
+  action?: StatusUpdateAction;
+}) {
+  if (
+    !action ||
+    ![
+      "not_started",
+      "in_progress",
+      "internal_changes_requested",
+      "client_changes_requested",
+    ].includes(deliverable.status)
+  ) {
+    return null;
+  }
+
+  return (
+    <form
+      action={action}
+      aria-label={`رفع نسخة ${deliverable.name}`}
+      className="mt-4 grid gap-2 rounded-lg border border-border bg-background/70 p-3"
+      dir="rtl"
+    >
+      <input name="clientId" type="hidden" value={deliverable.clientId} />
+      <input name="deliverableId" type="hidden" value={deliverable.id} />
+      <input
+        name="idempotencyKey"
+        type="hidden"
+        value={`s015-submit-${deliverable.id}-${deliverable.revision}`}
+      />
+      <label className="grid gap-1 text-xs font-semibold">
+        رقم النسخة
+        <input
+          className="min-h-9 rounded-md border border-border bg-surface px-2"
+          min={1}
+          name="versionNumber"
+          required
+          type="number"
+        />
+      </label>
+      <label className="grid gap-1 text-xs font-semibold">
+        ملاحظة داخلية
+        <textarea
+          className="min-h-16 rounded-md border border-border bg-surface px-2 py-1"
+          maxLength={2000}
+          name="reason"
+        />
+      </label>
+      <Button size="sm" type="submit" variant="secondary">
+        رفع النسخة للمراجعة الداخلية
+      </Button>
+    </form>
+  );
+}
+
 export const kanbanStatusLabels: Record<ActiveKanbanStatus, string> = {
   not_started: "لم يبدأ",
   in_progress: "قيد التنفيذ",
@@ -166,11 +224,13 @@ function DeliverableCard({
   deliverable,
   action,
   approvalAction,
+  versionAction,
   now,
 }: {
   deliverable: DeliverableSafeSummary;
   action?: StatusUpdateAction;
   approvalAction?: StatusUpdateAction;
+  versionAction?: StatusUpdateAction;
   now: string;
 }) {
   const sla = deriveSlaStatus({
@@ -248,6 +308,10 @@ function DeliverableCard({
         action={approvalAction}
         deliverable={deliverable}
       />
+      <DeliverableVersionSubmissionControl
+        action={versionAction}
+        deliverable={deliverable}
+      />
       <DeliverableStatusControl action={action} deliverable={deliverable} />
     </article>
   );
@@ -266,11 +330,13 @@ export function DeliverableBoard({
   deliverables,
   action,
   approvalAction,
+  versionAction,
   now = new Date().toISOString(),
 }: {
   deliverables: DeliverableSafeSummary[];
   action?: StatusUpdateAction;
   approvalAction?: StatusUpdateAction;
+  versionAction?: StatusUpdateAction;
   now?: string;
 }) {
   if (deliverables.length === 0) {
@@ -325,6 +391,7 @@ export function DeliverableBoard({
                     <DeliverableCard
                       action={action}
                       approvalAction={approvalAction}
+                      versionAction={versionAction}
                       deliverable={deliverable}
                       key={deliverable.id}
                       now={now}

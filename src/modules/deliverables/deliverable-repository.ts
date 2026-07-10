@@ -24,6 +24,7 @@ export type DeliverableRecord = {
   contractId?: string;
   packageId?: string;
   packageLineId?: string;
+  currentVersionId?: string;
   name: string;
   description?: string;
   type: string;
@@ -343,6 +344,7 @@ export class InMemoryDeliverableRepository implements DeliverableRepository {
       contractId: deliverable.contractId,
       packageId: deliverable.packageId,
       packageLineId: deliverable.packageLineId,
+      currentVersionId: deliverable.currentVersionId,
       name: deliverable.name,
       description: deliverable.description,
       type: deliverable.type,

@@ -64,7 +64,7 @@ export async function readPersistentClientApprovalDetail({
         .eq("client_id", clientId)
         .eq("deliverable_id", deliverable.id)
         .eq("version_id", deliverable.current_version_id)
-        .in("comment_type", ["client_comment", "approval_comment", "system_comment"])
+        .eq("visibility", "client_visible")
         .order("created_at", { ascending: true }),
     ]);
 

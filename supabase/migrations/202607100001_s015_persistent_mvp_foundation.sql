@@ -17,7 +17,7 @@ create table if not exists public.deliverable_versions (
   constraint deliverable_versions_unique_number
     unique (tenant_id, client_id, deliverable_id, version_number),
   constraint deliverable_versions_unique_scope_id
-    unique (id, tenant_id, client_id)
+    unique (id, deliverable_id, tenant_id, client_id)
 );
 
 create table if not exists public.approval_decisions (
@@ -35,8 +35,8 @@ create table if not exists public.approval_decisions (
     foreign key (deliverable_id, tenant_id, client_id)
     references public.deliverables(id, tenant_id, client_id),
   constraint approval_decisions_version_scope
-    foreign key (version_id, tenant_id, client_id)
-    references public.deliverable_versions(id, tenant_id, client_id)
+    foreign key (version_id, deliverable_id, tenant_id, client_id)
+    references public.deliverable_versions(id, deliverable_id, tenant_id, client_id)
 );
 
 create table if not exists public.comments (
@@ -47,14 +47,15 @@ create table if not exists public.comments (
   version_id uuid,
   author_user_id uuid,
   comment_type text not null check (comment_type in ('internal_comment', 'client_comment', 'system_comment', 'approval_comment')),
+  visibility text not null check (visibility in ('internal_only', 'client_visible')),
   body text not null check (length(btrim(body)) > 0),
   created_at timestamptz not null default now(),
   constraint comments_deliverable_scope
     foreign key (deliverable_id, tenant_id, client_id)
     references public.deliverables(id, tenant_id, client_id),
   constraint comments_version_scope
-    foreign key (version_id, tenant_id, client_id)
-    references public.deliverable_versions(id, tenant_id, client_id)
+    foreign key (version_id, deliverable_id, tenant_id, client_id)
+    references public.deliverable_versions(id, deliverable_id, tenant_id, client_id)
 );
 
 create table if not exists public.file_assets (
@@ -75,8 +76,10 @@ create table if not exists public.file_assets (
     foreign key (deliverable_id, tenant_id, client_id)
     references public.deliverables(id, tenant_id, client_id),
   constraint file_assets_version_scope
-    foreign key (version_id, tenant_id, client_id)
-    references public.deliverable_versions(id, tenant_id, client_id)
+    foreign key (version_id, deliverable_id, tenant_id, client_id)
+    references public.deliverable_versions(id, deliverable_id, tenant_id, client_id),
+  constraint file_assets_version_requires_deliverable
+    check (version_id is null or deliverable_id is not null)
 );
 
 create table if not exists public.sla_timeline_segments (
@@ -126,8 +129,8 @@ begin
   ) then
     alter table public.deliverables
       add constraint deliverables_current_version_scope
-      foreign key (current_version_id, tenant_id, client_id)
-      references public.deliverable_versions(id, tenant_id, client_id);
+      foreign key (current_version_id, id, tenant_id, client_id)
+      references public.deliverable_versions(id, deliverable_id, tenant_id, client_id);
   end if;
 end;
 $$;
@@ -165,7 +168,7 @@ create policy s015_approvals_select on public.approval_decisions for select usin
 
 drop policy if exists s015_comments_select on public.comments;
 create policy s015_comments_select on public.comments for select using (
-  (comment_type <> 'internal_comment' and public.f001_has_active_role(tenant_id, array['client_admin','client_approver','client_viewer'], 'client', client_id))
+  (visibility = 'client_visible' and public.f001_has_active_role(tenant_id, array['client_admin','client_approver','client_viewer'], 'client', client_id))
   or public.f001_has_active_role(tenant_id, array['tenant_owner','tenant_administrator','project_manager','marketing_manager','account_manager','content_writer','designer'], 'client', client_id)
   or public.f001_has_active_role(tenant_id, array['tenant_owner','tenant_administrator','project_manager','marketing_manager'], 'tenant', tenant_id)
 );
@@ -304,11 +307,11 @@ begin
   if nullif(btrim(decision_comment), '') is not null then
     insert into public.comments (
       id, tenant_id, client_id, deliverable_id, version_id,
-      author_user_id, comment_type, body
+      author_user_id, comment_type, visibility, body
     ) values (
       gen_random_uuid(), target_deliverable.tenant_id, target_client_id,
       target_deliverable_id, target_version_id, actor_user_id,
-      'approval_comment', btrim(decision_comment)
+      'approval_comment', 'client_visible', btrim(decision_comment)
     );
   end if;
 
@@ -382,7 +385,7 @@ begin
   if actor_user_id is null then
     raise exception 'authentication required' using errcode = '42501';
   end if;
-  if target_command not in ('submit_version', 'approve_internal', 'send_to_client', 'deliver') then
+  if target_command not in ('submit_version', 'approve_internal', 'request_internal_changes', 'send_to_client', 'deliver') then
     raise exception 'invalid workflow command' using errcode = 'P0001';
   end if;
   if request_idempotency_key is null or length(btrim(request_idempotency_key)) < 8 then
@@ -396,10 +399,13 @@ begin
   if target_deliverable.id is null then
     raise exception 'deliverable unavailable' using errcode = '42501';
   end if;
+  if target_deliverable.status in ('delivered', 'cancelled', 'archived') then
+    raise exception 'terminal deliverable state' using errcode = 'P0001';
+  end if;
 
   management_allowed := public.f001_has_active_role(
     target_deliverable.tenant_id,
-    array['tenant_owner','tenant_administrator','project_manager','marketing_manager','account_manager'],
+    array['tenant_owner','tenant_administrator','project_manager','marketing_manager'],
     'client', target_client_id
   ) or public.f001_has_active_role(
     target_deliverable.tenant_id,
@@ -408,7 +414,7 @@ begin
   );
   team_allowed := management_allowed or public.f001_has_active_role(
     target_deliverable.tenant_id,
-    array['content_writer','designer','performance_specialist'],
+    array['account_manager','content_writer','designer','performance_specialist'],
     'client', target_client_id
   );
   if (target_command = 'submit_version' and not team_allowed)
@@ -437,6 +443,11 @@ begin
     if target_version_number is null or target_version_number < 1 then
       raise exception 'invalid version number' using errcode = 'P0001';
     end if;
+    if target_deliverable.status not in (
+      'not_started', 'in_progress', 'internal_changes_requested', 'client_changes_requested'
+    ) then
+      raise exception 'deliverable not ready for version submission' using errcode = 'P0001';
+    end if;
     insert into public.deliverable_versions (
       id, tenant_id, client_id, deliverable_id, version_number, status, submitted_by
     ) values (
@@ -461,7 +472,8 @@ begin
     end if;
 
     if target_command = 'approve_internal' then
-      if target_version.status <> 'internal_only' then
+      if target_version.status <> 'internal_only'
+        or target_deliverable.status <> 'ready_for_internal_review' then
         raise exception 'version not ready for internal approval' using errcode = 'P0001';
       end if;
       insert into public.approval_decisions (
@@ -476,8 +488,25 @@ begin
         revision = d.revision + 1, updated_at = now()
       where d.id = target_deliverable_id and d.tenant_id = target_deliverable.tenant_id;
       audit_action := 'DeliverableVersionInternallyApproved';
+    elsif target_command = 'request_internal_changes' then
+      if target_version.status <> 'internal_only'
+        or target_deliverable.status <> 'ready_for_internal_review' then
+        raise exception 'version not ready for internal change request' using errcode = 'P0001';
+      end if;
+      insert into public.approval_decisions (
+        id, tenant_id, client_id, deliverable_id, version_id, approval_kind, decision, actor_user_id
+      ) values (
+        gen_random_uuid(), target_deliverable.tenant_id, target_client_id,
+        target_deliverable_id, target_version_id, 'internal', 'changes_requested', actor_user_id
+      );
+      update public.deliverables d
+      set status = 'internal_changes_requested', progress_percentage = 45,
+        revision = d.revision + 1, updated_at = now()
+      where d.id = target_deliverable_id and d.tenant_id = target_deliverable.tenant_id;
+      audit_action := 'DeliverableInternalChangesRequested';
     elsif target_command = 'send_to_client' then
-      if target_version.status <> 'internally_approved' then
+      if target_version.status <> 'internally_approved'
+        or target_deliverable.status <> 'internally_approved' then
         raise exception 'internal approval required for same version' using errcode = 'P0001';
       end if;
       update public.deliverable_versions set status = 'client_visible'
@@ -496,8 +525,13 @@ begin
       );
       audit_action := 'DeliverableVersionSentToClient';
     else
-      if target_deliverable.requires_client_approval and target_version.status <> 'client_approved' then
+      if target_deliverable.requires_client_approval
+        and (target_version.status <> 'client_approved' or target_deliverable.status <> 'client_approved') then
         raise exception 'client approval required for same version' using errcode = 'P0001';
+      end if;
+      if not target_deliverable.requires_client_approval
+        and target_deliverable.status not in ('internally_approved', 'ready_for_delivery') then
+        raise exception 'deliverable not ready for delivery' using errcode = 'P0001';
       end if;
       update public.deliverable_versions set status = 'final'
       where id = target_version_id and tenant_id = target_deliverable.tenant_id;
@@ -545,11 +579,11 @@ begin
   if nullif(btrim(command_comment), '') is not null then
     insert into public.comments (
       id, tenant_id, client_id, deliverable_id, version_id,
-      author_user_id, comment_type, body
+      author_user_id, comment_type, visibility, body
     ) values (
       gen_random_uuid(), target_deliverable.tenant_id, target_client_id,
       target_deliverable_id, target_version_id, actor_user_id,
-      'internal_comment', btrim(command_comment)
+      'internal_comment', 'internal_only', btrim(command_comment)
     );
   end if;
   insert into public.audit_events (

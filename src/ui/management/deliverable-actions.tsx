@@ -167,6 +167,13 @@ export function DeliverableApprovalWorkflowControl({
               value={deliverable.id}
             />
             <input name="workflowStep" type="hidden" value={workflow.step} />
+            {deliverable.currentVersionId ? (
+              <input
+                name="versionId"
+                type="hidden"
+                value={deliverable.currentVersionId}
+              />
+            ) : null}
             <input
               name="toStatus"
               type="hidden"

@@ -38,6 +38,7 @@ const deliverables: DeliverableSafeSummary[] = [
   },
   {
     id: "deliverable_ready",
+    currentVersionId: "version_ready",
     tenantId: "tenant_a",
     clientId: "client_a",
     name: "تصميم إعلان المنتج",
@@ -137,6 +138,26 @@ describe("internal deliverable work board", () => {
     expect(
       within(inProgressColumn).getByText("ما فيه مخرجات في هذه المرحلة."),
     ).toBeInTheDocument();
+  });
+
+  it("renders persistent version submission and exact-version approval inputs", () => {
+    const action = async () => undefined;
+    render(
+      <DeliverableBoard
+        approvalAction={action}
+        deliverables={deliverables}
+        now="2026-07-01T10:00:00.000Z"
+        versionAction={action}
+      />,
+    );
+
+    expect(
+      screen.getByRole("form", { name: /رفع نسخة/ }),
+    ).toBeInTheDocument();
+    const sendForm = screen.getByRole("form", { name: /إرسال للعميل/ });
+    expect(sendForm.querySelector('input[name="versionId"]')).toHaveValue(
+      "version_ready",
+    );
   });
 
   it("renders a safe empty state", () => {

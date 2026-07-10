@@ -19,7 +19,7 @@ const selectDeliverableRows = async (
   supabase
     .from("deliverables")
     .select(
-      "id, tenant_id, client_id, contract_id, package_id, package_line_id, name, description, type, status, priority, owner_user_id, contributor_user_ids, start_date, internal_due_date, client_due_date, final_due_date, requires_internal_approval, requires_client_approval, progress_percentage, approved_extra, extra_reason, idempotency_key, created_by, created_at, updated_at, cancelled_at, revision",
+      "id, tenant_id, client_id, contract_id, package_id, package_line_id, current_version_id, name, description, type, status, priority, owner_user_id, contributor_user_ids, start_date, internal_due_date, client_due_date, final_due_date, requires_internal_approval, requires_client_approval, progress_percentage, approved_extra, extra_reason, idempotency_key, created_by, created_at, updated_at, cancelled_at, revision",
     )
     .eq("tenant_id", tenantId)
     .eq("client_id", clientId)

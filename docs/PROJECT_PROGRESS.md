@@ -22,6 +22,7 @@ Stage 2A does not change the historical evidence below and does not convert loca
 - RLS DB test was attempted and is BLOCKED because the local Postgres connection failed (`LegacyDbConnectError`). No hosted DB or hosted state was accessed.
 - E2E emitted one non-fatal hydration warning on the board fixture because a `details` element rendered with an open state differed between SSR and browser hydration; the scenario still passed. This remains a follow-up risk for Stage 2B/defect burn-down.
 - Spec Kit prerequisite check passed and the read-only consistency review found the original R-011 FR/SC history needed explicit Stage 2A boundary wording; that reconciliation is now recorded in the artifacts.
+- Local consolidation commit prepared: `49dce8b` (`feat: consolidate Samawah MVP baseline and R-011A UX`). No push, deploy, promotion, hosted mutation, or configuration change was performed.
 
 ## R-011A Hosted Dry-Run No-Op Rehearsal - 2026-07-09
 

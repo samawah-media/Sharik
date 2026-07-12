@@ -7,4 +7,4 @@
 - [x] SLA pause/resume required.
 - [x] Local DB RLS green.
 - [x] Persistent E2E green.
-- [ ] Hosted UAT separately approved.
+- [x] Hosted UAT separately approved.

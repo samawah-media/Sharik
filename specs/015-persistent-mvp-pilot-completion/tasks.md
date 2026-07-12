@@ -36,7 +36,7 @@
 
 ## Owner-Authorized Hosted Team UAT Amendment
 
-Status: PARTIAL HOSTED EXECUTION COMPLETE / BLOCKED ON OWNER ACCESS INPUTS.
+Status: HOSTED UAT ACCESS READY / WORKFLOW EXECUTION PENDING.
 
 The following hosted tasks extend Spec 015 only. They do not reopen or invalidate completed local tasks T001-T019.
 
@@ -45,7 +45,7 @@ The following hosted tasks extend Spec 015 only. They do not reopen or invalidat
 - [x] H003 Draft PR and CI: run full local verification, push the safe reviewed branch, create a Draft PR, inspect CI, and fix only in-scope failures. Do not merge.
 - [x] H004 Supabase UAT migration: verify UAT target, compare migration state, review migration inventory for destructive or unsafe operations, apply only pending reviewed repository migrations, and run post-migration schema/RLS/RPC smoke checks.
 - [x] H005 Synthetic Hadna UAT seed: create minimal idempotent run-ID-scoped Hadna tenant/client/contract/package/deliverable/file metadata records and record category/count-only evidence.
-- [ ] H006 Team account/access setup: configure only approved individual Samawah team testers and team-controlled client personas; if approved email mapping is unavailable, stop with `TEAM_ACCESS_INPUT_REQUIRED`.
+- [x] H006 Team account/access setup: configure only approved individual Samawah team testers and team-controlled client personas; if approved email mapping is unavailable, stop with `TEAM_ACCESS_INPUT_REQUIRED`. Owner-approved synthetic UAT accounts now cover management, account manager, assigned writer, assigned designer, unassigned internal negative tester, client approver, and client viewer; Auth, membership, and role checks pass for all categories.
 - [x] H007 Vercel Preview deployment: configure Preview/UAT env only, deploy reviewed branch to Preview/UAT, verify Supabase UAT binding, sign-in, Arabic RTL shell, no fixture actor support, non-local `APP_ENV`, no service-role key in client bundles/logs. Preview is Ready, the owner-configured public UAT alias resolves without Deployment Protection, and hosted smoke passes for the available valid personas.
 - [ ] H008 Hosted team workflow UAT: run the online UI journey with actual UAT Auth sessions across management, assigned team, unassigned internal negative, client viewer, and client approver roles.
 - [ ] H009 Defect burn-down and T032 evidence: record defects in the existing register, block on P0/P1, owner-disposition every P2, verify rollback/no-op rehearsal, and record hosted T032 outcome.

@@ -24,4 +24,8 @@
 | C6 | Pilot hardening | 1 cycle | VS-012 | new features | ASVS/a11y/backup/perf evidence | production readiness | production V1 | late security issues |
 ## Canonical execution update (2026-07-10)
 
+## Hosted Team UAT amendment (2026-07-12)
+
+The owner-authorized hosted Team UAT path remains inside Spec 015 as an amendment. It is Preview/UAT-only, Hadna-only, Team-only, and non-Production. The current state is `OWNER AUTHORIZED / PREFLIGHT IN PROGRESS`; PASS requires H001-H010 completion and T032 evidence.
+
 Spec 015 (`specs/015-persistent-mvp-pilot-completion/`) is the only active execution package. Stage 2C and R-007–R-011A are historical evidence. No further Stage-letter, readiness, verification, defect, or handoff package may be created for this objective.

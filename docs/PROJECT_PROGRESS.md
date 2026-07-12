@@ -1,6 +1,17 @@
 # Project Progress
 
-Last updated: 2026-07-10
+Last updated: 2026-07-12
+
+## Spec 015 Hosted Team UAT Amendment - 2026-07-12
+
+- Owner authorized a controlled online Team-Only Hadna UAT amendment to the existing Spec 015 package.
+- Status is `OWNER AUTHORIZED / PREFLIGHT IN PROGRESS`, not PASS.
+- This amendment does not create Spec 016, does not alter the accepted local evidence, and does not grant Production readiness, Production acceptance, customer acceptance, or public release.
+- Safe preflight performed so far: clean worktree confirmed, `origin` fetched, branch/HEAD/merge-base reviewed, and migration inventory review started.
+- Current blocker: required pre-push local DB reset failed on local Supabase/Postgres health/connection timeout, so full local matrix, push, Draft PR, Preview deployment, Supabase UAT migration/seed, and hosted UAT are blocked until local reset, RLS DB, and persistent E2E pass again.
+- No Vercel Preview deployment, hosted environment variable change, Supabase hosted read/mutation, hosted migration, hosted seed, hosted account invitation, hosted UI journey, or rollback action has been performed yet.
+- Next hosted gates are H001-H010 in `specs/015-persistent-mvp-pilot-completion/tasks.md`: branch/PR preflight, rollback approval, Draft PR/CI, Supabase UAT migration, synthetic Hadna seed, team access, Vercel Preview deployment, hosted workflow UAT, defect/T032 evidence, and hosted handoff.
+- Production boundary remains strict: no Production deployment, Production alias/domain change, Vercel Production env change, Production Supabase access, real customer data, external client invitation, public signup, force push, PR merge, or Production acceptance.
 
 ## Spec 015 persistent E2E reproducibility hardening - 2026-07-12
 

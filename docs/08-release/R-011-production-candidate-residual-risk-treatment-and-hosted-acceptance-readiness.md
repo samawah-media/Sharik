@@ -2,6 +2,8 @@
 
 ## Status
 
+Spec 015 hosted amendment update on 2026-07-12: OWNER AUTHORIZED / PREFLIGHT IN PROGRESS for a controlled Team-Only Hadna Preview/UAT run. This update extends Spec 015 only and does not reopen R-011 as the active execution package. Production acceptance remains blocked.
+
 R-011A Stage 2A local consolidation started on 2026-07-10 on branch `codex/r011a-mvp-baseline-consolidation`.
 
 This historical Stage 2C record covers local MVP baseline consolidation, Arabic RTL UX, SaaS guardrail review, synthetic negative coverage, and honest local verification. It is `Verified with blockers / superseded for execution by Spec 015`; it does not close hosted T032 or grant any hosted/Production acceptance.
@@ -220,6 +222,8 @@ Stage 2C corrective completion audit verification passed:
 
 ## Final Boundary Confirmation
 
+- The active hosted path is now the Owner-Authorized Hosted Team UAT Amendment in `specs/015-persistent-mvp-pilot-completion/`.
+- R-011 remains historical readiness and residual-risk evidence.
 - A local no-op hosted dry-run wrapper rehearsal was performed by this pass.
 - No real hosted access, hosted route check, hosted DB read/write, or hosted completion check was performed by this pass.
 - No hosted mutation is performed by R-011/R-011A.

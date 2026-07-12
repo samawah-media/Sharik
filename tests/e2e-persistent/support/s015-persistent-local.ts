@@ -805,13 +805,12 @@ export const resetLocalDatabase = () => {
 export const signInViaUi = async (page: Page, actor: Actor) => {
   await page.context().clearCookies();
   await page.goto("/sign-in", { waitUntil: "domcontentloaded" });
-  await page.locator('input[name="email"]').fill(actor.email);
-  await page.locator('input[name="password"]').fill(actor.password);
-  await page.locator('button[type="submit"]').click();
-  await page.waitForTimeout(2_000);
-  if (new URL(page.url()).pathname === "/sign-in") {
-    await page.locator('button[type="submit"]').click();
-  }
+  const form = page.locator("form").filter({
+    has: page.locator('input[name="email"]'),
+  });
+  await form.locator('input[name="email"]').fill(actor.email);
+  await form.locator('input[name="password"]').fill(actor.password);
+  await form.locator('button[type="submit"]').click();
   await expect(page).not.toHaveURL(/\/sign-in(?:\?|$)/u);
 };
 

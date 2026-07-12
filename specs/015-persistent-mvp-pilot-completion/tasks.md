@@ -40,8 +40,8 @@ Status: OWNER AUTHORIZED / PREFLIGHT IN PROGRESS.
 
 The following hosted tasks extend Spec 015 only. They do not reopen or invalidate completed local tasks T001-T019.
 
-- [ ] H001 Hosted target and branch preflight: confirm clean worktree, fetch origin, inspect merge base, commit list, full diff/stat, migrations, generated files, secrets, and unrelated historical work.
-- [ ] H002 Rollback and stop-condition approval: record deployment, database, access rollback, rollback owner, executor, execution window, stop authority, expected rollback time, and verification steps before hosted mutation.
+- [x] H001 Hosted target and branch preflight: confirm clean worktree, fetch origin, inspect merge base, commit list, full diff/stat, migrations, generated files, secrets, and unrelated historical work.
+- [x] H002 Rollback and stop-condition approval: record deployment, database, access rollback, rollback owner, executor, execution window, stop authority, expected rollback time, and verification steps before hosted mutation.
 - [ ] H003 Draft PR and CI: run full local verification, push the safe reviewed branch, create a Draft PR, inspect CI, and fix only in-scope failures. Do not merge.
 - [ ] H004 Supabase UAT migration: verify UAT target, compare migration state, review migration inventory for destructive or unsafe operations, apply only pending reviewed repository migrations, and run post-migration schema/RLS/RPC smoke checks.
 - [ ] H005 Synthetic Hadna UAT seed: create minimal idempotent run-ID-scoped Hadna tenant/client/contract/package/deliverable/file metadata records and record category/count-only evidence.

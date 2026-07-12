@@ -17,10 +17,10 @@
 
 | Gate | Status | Reason |
 |---|---|---|
-| Branch/PR preflight | blocked | Worktree was clean and origin fetch completed, but the required pre-push local matrix is blocked because `npx supabase@2.107.0 db reset --local --no-seed` failed on local Postgres health/connection timeout. No push, PR, hosted mutation, or hosted target read may proceed until this is fixed and the full matrix passes. |
+| Branch/PR preflight | green | `git fetch origin --prune` completed; current branch is `codex/015-persistent-mvp-pilot-completion`; merge base with `origin/main` is `37027d458145dbf8a7e6d8d4e63a0eecd12a9328`; branch commit list and full diff/name-status were inspected. Current uncommitted fix is scoped to the persistent E2E sign-in helper. No hosted target has been read or mutated. |
 | Hosted target verification | pending | No Vercel or Supabase hosted mutation may occur until Preview/UAT and Supabase UAT are verified as non-Production in redacted form. |
-| Rollback approval | pending | Deployment, database, access, owner stop authority, and rollback verification steps must be recorded before hosted mutation. |
-| Migration gate | blocked | Local reset failed before RLS DB and persistent E2E could run; hosted migration remains forbidden until local reset, DB tests, persistent E2E, inventory, UAT comparison, hosted apply, and post-migration smoke checks pass. |
+| Rollback approval | green | Owner-authorized amendment remains bounded to Team-Only Hadna Preview/UAT. Rollback owner and stop authority: project owner. Executor: Codex in this session. Window: current 2026-07-12 preflight/hosted attempt. Deployment rollback: disable/remove only this run's Preview alias/deployment. Database rollback: prefer forward fixes; remove only run-ID-scoped synthetic rows. Access rollback: revoke/disable only accounts/role assignments created by this run. Expected rollback verification: count/category-only checks plus Preview access check. |
+| Migration gate | local prerequisite green / hosted pending | Local reset PASS, RLS DB PASS, and persistent E2E PASS. Hosted migration remains forbidden until Supabase UAT target verification, migration inventory comparison, hosted apply, and post-migration smoke checks pass. |
 | Synthetic Hadna seed | pending | No hosted seed has been created; future seed must be idempotent, run-ID scoped, and category/count-only in evidence. |
 | Team access | pending | Approved email/role mapping is required before invitations; no guessed invitations are allowed. |
 | Preview deployment | pending | Vercel Preview/UAT deployment has not yet been created by this amendment. Production remains untouched. |

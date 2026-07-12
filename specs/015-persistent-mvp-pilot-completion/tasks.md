@@ -36,7 +36,7 @@
 
 ## Owner-Authorized Hosted Team UAT Amendment
 
-Status: OWNER AUTHORIZED / PREFLIGHT IN PROGRESS.
+Status: PARTIAL HOSTED EXECUTION COMPLETE / BLOCKED ON OWNER ACCESS INPUTS.
 
 The following hosted tasks extend Spec 015 only. They do not reopen or invalidate completed local tasks T001-T019.
 
@@ -46,12 +46,12 @@ The following hosted tasks extend Spec 015 only. They do not reopen or invalidat
 - [x] H004 Supabase UAT migration: verify UAT target, compare migration state, review migration inventory for destructive or unsafe operations, apply only pending reviewed repository migrations, and run post-migration schema/RLS/RPC smoke checks.
 - [x] H005 Synthetic Hadna UAT seed: create minimal idempotent run-ID-scoped Hadna tenant/client/contract/package/deliverable/file metadata records and record category/count-only evidence.
 - [ ] H006 Team account/access setup: configure only approved individual Samawah team testers and team-controlled client personas; if approved email mapping is unavailable, stop with `TEAM_ACCESS_INPUT_REQUIRED`.
-- [ ] H007 Vercel Preview deployment: configure Preview/UAT env only, deploy reviewed branch to Preview/UAT, verify Supabase UAT binding, sign-in, Arabic RTL shell, no fixture actor support, non-local `APP_ENV`, no service-role key in client bundles/logs. BLOCKED on Vercel Deployment Protection bypass/disablement for browser access.
+- [x] H007 Vercel Preview deployment: configure Preview/UAT env only, deploy reviewed branch to Preview/UAT, verify Supabase UAT binding, sign-in, Arabic RTL shell, no fixture actor support, non-local `APP_ENV`, no service-role key in client bundles/logs. Preview is Ready and agent verification passes through Vercel automation bypass; team entry remains blocked under H006/H008 until the owner provides a safe Vercel Deployment Protection share/bypass path or disables protection for this Preview.
 - [ ] H008 Hosted team workflow UAT: run the online UI journey with actual UAT Auth sessions across management, assigned team, unassigned internal negative, client viewer, and client approver roles.
 - [ ] H009 Defect burn-down and T032 evidence: record defects in the existing register, block on P0/P1, owner-disposition every P2, verify rollback/no-op rehearsal, and record hosted T032 outcome.
 - [ ] H010 Hosted handoff and boundary record: produce final owner-facing result with hosted state, PR/CI/deployment status, redacted target category, seed run ID category/count summary, team access category/count summary, isolation/approval/secrecy/audit/SLA/ledger findings, rollback result, out-of-scope work, and Production boundary.
 
-Hosted amendment note: H001 preflight has started under owner authorization. Hosted UAT is not PASS until H001-H010 complete successfully.
+Hosted amendment note: H001-H007 have completed under owner authorization. Hosted UAT is not PASS until H006, H008, H009, and H010 complete successfully.
 
 ## Correction note: persistent browser verification
 

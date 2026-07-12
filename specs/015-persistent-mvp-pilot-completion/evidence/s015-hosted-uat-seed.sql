@@ -6,10 +6,20 @@ with scope as (
   select
     c.tenant_id,
     c.id as client_id,
-    (select u.id from auth.users u order by u.created_at asc limit 1) as actor_id
+    tm.auth_user_id as actor_id
   from public.clients c
+  join public.tenant_memberships tm
+    on tm.tenant_id = c.tenant_id
+   and tm.status = 'active'
+  join public.role_assignments ra
+    on ra.tenant_id = tm.tenant_id
+   and ra.membership_id = tm.id
+   and ra.scope_type = 'client'
+   and ra.scope_id = c.id
+   and ra.role_key = 'client_viewer'
+   and ra.status = 'active'
   where c.status = 'active'
-  order by c.created_at asc
+  order by c.created_at asc, tm.created_at asc
   limit 1
 ),
 contract_seed as (

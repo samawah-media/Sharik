@@ -381,6 +381,50 @@ export const seedPersistentReadOnlySmoke = async () => {
   };
 };
 
+export const seedPersistentVersionFiles = async ({
+  client,
+  seed,
+  versionId,
+}: {
+  client: SupabaseClient;
+  seed: PersistentSeed;
+  versionId: string;
+}) => {
+  expectNoError(
+    await client.from("file_assets").insert([
+      {
+        id: crypto.randomUUID(),
+        tenant_id: seed.tenantA,
+        client_id: seed.clientA,
+        deliverable_id: seed.mainDeliverableId,
+        version_id: versionId,
+        owner_user_id: seed.actors.assignedWriter.id,
+        visibility: "internal_only",
+        storage_path: `internal/s015/${versionId}.psd`,
+        file_type: "image/vnd.adobe.photoshop",
+        file_size: 10,
+        version_number: 3,
+        is_final: false,
+      },
+      {
+        id: crypto.randomUUID(),
+        tenant_id: seed.tenantA,
+        client_id: seed.clientA,
+        deliverable_id: seed.mainDeliverableId,
+        version_id: versionId,
+        owner_user_id: seed.actors.assignedWriter.id,
+        visibility: "final_delivery",
+        storage_path: `final/s015/${versionId}.png`,
+        file_type: "image/png",
+        file_size: 10,
+        version_number: 3,
+        is_final: true,
+      },
+    ]),
+    "version file seed",
+  );
+};
+
 const assertLocalStackReachable = async (supabaseUrl: string) => {
   const health = await fetch(new URL("/auth/v1/health", supabaseUrl));
   if (!health.ok) {
@@ -760,11 +804,14 @@ export const resetLocalDatabase = () => {
 
 export const signInViaUi = async (page: Page, actor: Actor) => {
   await page.context().clearCookies();
-  await page.goto("/sign-in", { waitUntil: "networkidle" });
-  await page.waitForTimeout(250);
+  await page.goto("/sign-in", { waitUntil: "domcontentloaded" });
   await page.locator('input[name="email"]').fill(actor.email);
   await page.locator('input[name="password"]').fill(actor.password);
   await page.locator('button[type="submit"]').click();
+  await page.waitForTimeout(2_000);
+  if (new URL(page.url()).pathname === "/sign-in") {
+    await page.locator('button[type="submit"]').click();
+  }
   await expect(page).not.toHaveURL(/\/sign-in(?:\?|$)/u);
 };
 

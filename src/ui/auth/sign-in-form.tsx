@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import {
@@ -10,12 +10,19 @@ import {
 } from "@/modules/auth/sign-in";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
+const subscribeToHydration = () => () => undefined;
+
 export function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const hydrated = useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false,
+  );
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -107,7 +114,7 @@ export function SignInForm() {
       ) : null}
       <button
         className="min-h-11 w-full rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
-        disabled={isSubmitting}
+        disabled={isSubmitting || !hydrated}
         type="submit"
       >
         {isSubmitting ? "جار تسجيل الدخول..." : "تسجيل الدخول"}

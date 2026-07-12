@@ -2,11 +2,12 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
   expectNoHorizontalOverflow,
   seedPersistentLifecycle,
+  seedPersistentVersionFiles,
   signInViaUi,
   type PersistentSeed,
 } from "./support/s015-persistent-local";
 
-test.describe.configure({ mode: "serial", timeout: 180_000 });
+test.describe.configure({ mode: "serial", timeout: 600_000 });
 
 let seeded: Awaited<ReturnType<typeof seedPersistentLifecycle>>;
 
@@ -339,42 +340,22 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
     current_version_id: version3.id,
   });
 
-  await seeded.client.from("file_assets").insert([
-    {
-      id: crypto.randomUUID(),
-      tenant_id: seed.tenantA,
-      client_id: seed.clientA,
-      deliverable_id: seed.mainDeliverableId,
-      version_id: version3.id,
-      owner_user_id: seed.actors.assignedWriter.id,
-      visibility: "internal_only",
-      storage_path: `internal/s015/${version3.id}.psd`,
-      file_type: "image/vnd.adobe.photoshop",
-      file_size: 10,
-      version_number: 3,
-      is_final: false,
-    },
-    {
-      id: crypto.randomUUID(),
-      tenant_id: seed.tenantA,
-      client_id: seed.clientA,
-      deliverable_id: seed.mainDeliverableId,
-      version_id: version3.id,
-      owner_user_id: seed.actors.assignedWriter.id,
-      visibility: "final_delivery",
-      storage_path: `final/s015/${version3.id}.png`,
-      file_type: "image/png",
-      file_size: 10,
-      version_number: 3,
-      is_final: true,
-    },
-  ]);
+  await seedPersistentVersionFiles({
+    client: seeded.client,
+    seed,
+    versionId: version3.id,
+  });
 
   await signInViaUi(page, seed.actors.tenantAdmin);
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
-  await runManagementStep({
-    card: cardFor(page, "S015 Persistent Browser Journey"),
-    step: "deliver_after_client_approval",
+  const deliveryButton = cardFor(page, "S015 Persistent Browser Journey")
+    .locator(
+      'form:has(input[name="workflowStep"][value="deliver_after_client_approval"]) button[type="submit"]',
+    );
+  await expect(deliveryButton).toBeVisible();
+  await deliveryButton.evaluate((button: HTMLButtonElement) => {
+    button.click();
+    button.click();
   });
   await expectBoardSaved(page);
   await assertDeliverable(seed.mainDeliverableId, {

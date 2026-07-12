@@ -13,3 +13,4 @@ Persistent E2E safety rules:
 - Hosted/Vercel environment values and service-role credentials must not be passed into the Next.js browser app process.
 - Service-role access is allowed only in Node test setup/assertion code for synthetic local data.
 - Generated passwords, tokens, cookies, traces, and reports must not be committed.
+- The persistent command performs a guarded local database reset in global setup and global teardown. Do not run it against data that must be retained.

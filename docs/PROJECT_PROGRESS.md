@@ -2,6 +2,14 @@
 
 Last updated: 2026-07-10
 
+## Spec 015 persistent E2E reproducibility hardening - 2026-07-12
+
+- Reproduced the persistent suite from a stopped local Docker engine and clean Supabase reset; no hosted target was contacted.
+- Added guarded global database reset before and after the persistent Playwright suite and increased first-compile/hook time budgets.
+- Prevented native pre-hydration sign-in submission without adding an authentication bypass.
+- Persistent E2E passed 3/3; fixture E2E passed 105 with 6 configured viewport duplicates skipped; pgTAP passed 228.
+- Hosted actions: zero. Production acceptance remains not granted.
+
 ## Spec 015 Persistent MVP Local Closure - 2026-07-10
 
 - Continued from local commit `e52d5aa` on `codex/015-persistent-mvp-pilot-completion` and kept the scope to canonical Spec 015 only.

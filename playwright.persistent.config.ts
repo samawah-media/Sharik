@@ -9,6 +9,9 @@ const baseURL =
 
 export default defineConfig({
   testDir: "./tests/e2e-persistent",
+  globalSetup: "./tests/e2e-persistent/global-setup.ts",
+  globalTeardown: "./tests/e2e-persistent/global-teardown.ts",
+  timeout: 600_000,
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,
@@ -19,11 +22,12 @@ export default defineConfig({
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
+  expect: { timeout: 15_000 },
   webServer: {
     command: "node scripts/playwright-persistent-webserver.mjs",
     url: `http://${appHost}:${readyPort}/ready`,
     reuseExistingServer: false,
-    timeout: 240_000,
+    timeout: 480_000,
   },
   projects: [
     {

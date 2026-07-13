@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set search_path = public, extensions;
-select plan(22);
+select plan(48);
 
 select has_table('public', 'deliverable_versions', 'versions persist');
 select has_table('public', 'approval_decisions', 'approval decisions persist');
@@ -39,6 +39,59 @@ select ok(
 select ok(has_function_privilege('authenticated', 'public.s015_execute_internal_workflow(uuid,uuid,uuid,text,integer,text,uuid,uuid,text)', 'execute'), 'authenticated can execute internal workflow RPC');
 select ok(not has_function_privilege('anon', 'public.s015_execute_internal_workflow(uuid,uuid,uuid,text,integer,text,uuid,uuid,text)', 'execute'), 'anon cannot execute internal workflow RPC');
 select ok(not has_table_privilege('authenticated', 'public.deliverable_versions', 'insert'), 'direct version insert denied');
+select has_table('public', 'member_profiles', 'member profiles persist');
+select ok(
+  has_function_privilege('authenticated', 'public.s015_client_current_version_is_visible(uuid,uuid,uuid,uuid)', 'execute'),
+  'authenticated may invoke the internally authorized exact-version helper'
+);
+select ok(
+  not has_function_privilege('anon', 'public.s015_client_current_version_is_visible(uuid,uuid,uuid,uuid)', 'execute'),
+  'anonymous exact-version RPC invocation is denied'
+);
+select ok(
+  has_function_privilege('authenticated', 'private.s015_can_read_member_profile(uuid,uuid)', 'execute'),
+  'authenticated may execute the private member policy helper only through database policy evaluation'
+);
+select ok(
+  not has_schema_privilege('anon', 'private', 'usage'),
+  'anonymous users cannot access the private policy boundary'
+);
+select has_table('public', 'deliverable_tasks', 'workspace tasks persist');
+select has_table('public', 'deliverable_quality_checks', 'quality checks persist');
+select ok((select relrowsecurity from pg_class where oid = 'public.deliverable_tasks'::regclass), 'task RLS enabled');
+select ok((select relrowsecurity from pg_class where oid = 'public.deliverable_quality_checks'::regclass), 'quality RLS enabled');
+select ok(
+  exists (select 1 from storage.buckets where id = 'deliverable-assets' and not public),
+  'deliverable asset bucket is private'
+);
+select ok(
+  (select prosecdef from pg_proc where oid = 'public.s015_save_or_submit_version(uuid,uuid,uuid,integer,boolean,text,text,text,text,text,text,text,text,uuid,uuid,text)'::regprocedure),
+  'version content command is security definer'
+);
+select ok(has_function_privilege('authenticated', 'public.s015_save_or_submit_version(uuid,uuid,uuid,integer,boolean,text,text,text,text,text,text,text,text,uuid,uuid,text)', 'execute'), 'authenticated can execute version content command');
+select ok(not has_function_privilege('anon', 'public.s015_save_or_submit_version(uuid,uuid,uuid,integer,boolean,text,text,text,text,text,text,text,text,uuid,uuid,text)', 'execute'), 'anonymous cannot execute version content command');
+select ok(
+  (select prosecdef from pg_proc where oid = 'public.s015_add_workspace_comment(uuid,uuid,uuid,text,text,jsonb,uuid,uuid,text)'::regprocedure),
+  'workspace comment command is security definer'
+);
+select ok(has_function_privilege('authenticated', 'public.s015_add_workspace_comment(uuid,uuid,uuid,text,text,jsonb,uuid,uuid,text)', 'execute'), 'authenticated can execute workspace comment command');
+select ok(not has_function_privilege('anon', 'public.s015_add_workspace_comment(uuid,uuid,uuid,text,text,jsonb,uuid,uuid,text)', 'execute'), 'anonymous cannot execute workspace comment command');
+select ok(
+  (select prosecdef from pg_proc where oid = 'public.s015_register_file_asset(uuid,uuid,uuid,uuid,text,text,text,text,bigint,text,boolean,uuid,uuid,text)'::regprocedure),
+  'file registration command is security definer'
+);
+select ok(has_function_privilege('authenticated', 'public.s015_register_file_asset(uuid,uuid,uuid,uuid,text,text,text,text,bigint,text,boolean,uuid,uuid,text)', 'execute'), 'authenticated can register authorized file metadata');
+select ok(not has_function_privilege('anon', 'public.s015_register_file_asset(uuid,uuid,uuid,uuid,text,text,text,text,bigint,text,boolean,uuid,uuid,text)', 'execute'), 'anonymous cannot register file metadata');
+select ok(
+  (select prosecdef from pg_proc where oid = 'public.s015_authorize_file_download(uuid)'::regprocedure),
+  'file download authorization is security definer'
+);
+select ok(has_function_privilege('authenticated', 'public.s015_authorize_file_download(uuid)', 'execute'), 'authenticated can request authorized file downloads');
+select ok(not has_function_privilege('anon', 'public.s015_authorize_file_download(uuid)', 'execute'), 'anonymous cannot request file downloads');
+select ok(has_function_privilege('service_role', 'public.s015_import_uat_payload(uuid,uuid,uuid,uuid,text,jsonb)', 'execute'), 'service role can execute bounded UAT import');
+select ok(not has_function_privilege('authenticated', 'public.s015_import_uat_payload(uuid,uuid,uuid,uuid,text,jsonb)', 'execute'), 'authenticated cannot execute UAT import');
+select ok(has_function_privilege('service_role', 'public.s015_rollback_uat_import(uuid,uuid,text,boolean)', 'execute'), 'service role can execute bounded UAT rollback');
+select ok(not has_function_privilege('authenticated', 'public.s015_rollback_uat_import(uuid,uuid,text,boolean)', 'execute'), 'authenticated cannot execute UAT rollback');
 
 select * from finish();
 rollback;

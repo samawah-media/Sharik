@@ -14,6 +14,7 @@ insert into public.tenant_memberships (id, tenant_id, auth_user_id, status) valu
 ('21000000-0000-4000-8000-000000000105', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000205', 'active'),
 ('21000000-0000-4000-8000-000000000106', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000206', 'active'),
 ('21000000-0000-4000-8000-000000000107', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000207', 'active'),
+('21000000-0000-4000-8000-000000000108', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000208', 'active'),
 ('22000000-0000-4000-8000-000000000101', '22000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000201', 'active');
 insert into public.clients (id, tenant_id, name, slug) values
 ('21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000001', 'S015 Client A', 's015-a'),
@@ -21,7 +22,8 @@ insert into public.clients (id, tenant_id, name, slug) values
 ('22000000-0000-4000-8000-000000000301', '22000000-0000-4000-8000-000000000001', 'S015 Tenant B Client', 's015-tenant-b');
 insert into public.client_memberships (id, tenant_id, client_id, auth_user_id, status) values
 ('21000000-0000-4000-8000-000000000112', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000202', 'active'),
-('21000000-0000-4000-8000-000000000116', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000206', 'active');
+('21000000-0000-4000-8000-000000000116', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000206', 'active'),
+('21000000-0000-4000-8000-000000000118', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000302', '21000000-0000-4000-8000-000000000208', 'active');
 insert into public.role_assignments (id, tenant_id, membership_id, role_key, scope_type, scope_id, status) values
 ('21000000-0000-4000-8000-000000000401', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000101', 'account_manager', 'client', '21000000-0000-4000-8000-000000000301', 'active'),
 ('21000000-0000-4000-8000-000000000402', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000102', 'client_viewer', 'client', '21000000-0000-4000-8000-000000000301', 'active'),
@@ -30,6 +32,7 @@ insert into public.role_assignments (id, tenant_id, membership_id, role_key, sco
 ('21000000-0000-4000-8000-000000000405', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000105', 'content_writer', 'client', '21000000-0000-4000-8000-000000000301', 'active'),
 ('21000000-0000-4000-8000-000000000406', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000106', 'client_approver', 'client', '21000000-0000-4000-8000-000000000301', 'active'),
 ('21000000-0000-4000-8000-000000000407', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000107', 'tenant_administrator', 'tenant', '21000000-0000-4000-8000-000000000001', 'active'),
+('21000000-0000-4000-8000-000000000408', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000108', 'client_viewer', 'client', '21000000-0000-4000-8000-000000000302', 'active'),
 ('22000000-0000-4000-8000-000000000401', '22000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000101', 'tenant_administrator', 'tenant', '22000000-0000-4000-8000-000000000001', 'active');
 insert into public.deliverables (
   id, tenant_id, client_id, name, type, status, progress_percentage,
@@ -70,6 +73,107 @@ update public.deliverables set current_version_id = '21000000-0000-4000-8000-000
 where id = '21000000-0000-4000-8000-000000000501';
 update public.deliverables set current_version_id = '21000000-0000-4000-8000-000000000608'
 where id = '21000000-0000-4000-8000-000000000508';
+
+set local role anon;
+select throws_ok(
+  $$select public.s015_client_current_version_is_visible(
+    '21000000-0000-4000-8000-000000000001',
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000000508',
+    '21000000-0000-4000-8000-000000000608')$$,
+  '42501', null, 'anonymous direct exact-version RPC invocation is denied'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '22000000-0000-4000-8000-000000000201', true);
+select is(public.s015_client_current_version_is_visible(
+  '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000508', '21000000-0000-4000-8000-000000000608'
+), false, 'unrelated authenticated Tenant B receives a uniform false result');
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000208', true);
+select is(public.s015_client_current_version_is_visible(
+  '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000508', '21000000-0000-4000-8000-000000000608'
+), false, 'same-tenant Client B receives a uniform false result for Client A');
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202', true);
+select is(public.s015_client_current_version_is_visible(
+  '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000508', '21000000-0000-4000-8000-000000000608'
+), true, 'Client A viewer may resolve only the exact visible current version');
+select is(public.s015_client_current_version_is_visible(
+  '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000508', '21000000-0000-4000-8000-000000000601'
+), false, 'Client A viewer cannot resolve a stale version');
+select is(public.s015_client_current_version_is_visible(
+  '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000508', 'ffffffff-ffff-4fff-8fff-ffffffffffff'
+), false, 'Client A viewer UUID tampering yields a uniform false result');
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000206', true);
+select is(public.s015_client_current_version_is_visible(
+  '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000508', '21000000-0000-4000-8000-000000000608'
+), true, 'Client A approver may resolve the exact visible current version');
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000201', true);
+select is(public.s015_client_current_version_is_visible(
+  '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000508', '21000000-0000-4000-8000-000000000608'
+), true, 'authorized internal Client A role may resolve the exact visible version');
+reset role;
+
+insert into public.member_profiles (
+  tenant_id, user_id, display_name, role_label, sync_run_id
+) values
+('21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000201', 'Account A', 'Account manager', 'local-scope-test'),
+('21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000203', 'Writer A', 'Content writer', 'local-scope-test'),
+('21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000204', 'Designer A', 'Designer', 'local-scope-test'),
+('21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000205', 'Unassigned A', 'Content writer', 'local-scope-test'),
+('21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000207', 'Manager A', 'Tenant administrator', 'local-scope-test'),
+('22000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000201', 'Manager B', 'Tenant administrator', 'local-scope-test');
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select is((select count(*)::integer from public.member_profiles), 5, 'tenant management reads permitted Tenant A display profiles');
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000201', true);
+select is((select count(*)::integer from public.member_profiles), 3, 'client-scoped internal role resolves only assigned Client A member profiles');
+select is((select count(*)::integer from public.member_profiles where user_id = '21000000-0000-4000-8000-000000000205'), 0, 'unassigned member profile is not a raw directory fallback');
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202', true);
+select is((select count(*)::integer from public.member_profiles), 0, 'client viewer cannot read internal member directory');
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000206', true);
+select is((select count(*)::integer from public.member_profiles), 0, 'client approver cannot read internal member directory');
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000208', true);
+select is((select count(*)::integer from public.member_profiles), 0, 'same-tenant Client B cannot read internal member directory');
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '22000000-0000-4000-8000-000000000201', true);
+select is((select count(*)::integer from public.member_profiles where tenant_id = '21000000-0000-4000-8000-000000000001'), 0, 'Tenant B cannot read Tenant A member profiles');
+select is((select count(*)::integer from public.member_profiles), 1, 'Tenant B management reads only its permitted tenant profile');
+reset role;
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000201', true);
@@ -583,6 +687,329 @@ select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202
 select is((select count(*)::integer from public.file_assets where deliverable_id = '21000000-0000-4000-8000-000000000520'), 1, 'journey client sees only final delivery file after delivery');
 select is((select visibility from public.file_assets where deliverable_id = '21000000-0000-4000-8000-000000000520'), 'final_delivery', 'journey internal file remains hidden after delivery');
 select is((select count(*)::integer from public.comments where body in ('first draft', 'replacement draft', 'final replacement', 'final delivery')), 0, 'journey internal comments remain hidden after delivery');
+reset role;
+
+-- Persistent execution workspace: content drafts, Tiptap comments, and exact scope.
+insert into public.deliverables (
+  id, tenant_id, client_id, name, type, status, progress_percentage,
+  idempotency_key, requires_internal_approval, requires_client_approval,
+  owner_user_id
+) values (
+  '21000000-0000-4000-8000-000000000531',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  'Workspace content item', 'post', 'in_progress', 30,
+  's015-workspace-content', true, true,
+  '21000000-0000-4000-8000-000000000203'
+);
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select results_eq(
+  $$select deliverable_status, version_status from public.s015_save_or_submit_version(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000531',
+    '21000000-0000-4000-8000-000000000631', 1, false,
+    'brief', 'body', 'caption', 'instagram', 'post', 'awareness', 'reach', null,
+    '21000000-0000-4000-8000-000000000731', '21000000-0000-4000-8000-000000000831',
+    's015-workspace-draft')$$,
+  $$values ('in_progress'::text, 'draft'::text)$$,
+  'assigned writer saves a persistent content draft'
+);
+select results_eq(
+  $$select deliverable_status, version_status from public.s015_save_or_submit_version(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000531',
+    '21000000-0000-4000-8000-000000000631', 1, false,
+    'ignored replay', 'ignored replay', null, null, null, null, null, null,
+    gen_random_uuid(), gen_random_uuid(), 's015-workspace-draft')$$,
+  $$values ('in_progress'::text, 'draft'::text)$$,
+  'draft replay returns the first committed result'
+);
+select is(
+  (select count(*)::integer from public.audit_events where action = 'DeliverableVersionDraftSaved' and target_id = '21000000-0000-4000-8000-000000000631'),
+  1, 'draft audit is append-once'
+);
+select results_eq(
+  $$select deliverable_status, version_status from public.s015_save_or_submit_version(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000531',
+    '21000000-0000-4000-8000-000000000631', 1, true,
+    'brief', 'body', 'caption', 'instagram', 'post', 'awareness', 'reach', null,
+    '21000000-0000-4000-8000-000000000732', '21000000-0000-4000-8000-000000000832',
+    's015-workspace-submit')$$,
+  $$values ('ready_for_internal_review'::text, 'internal_only'::text)$$,
+  'assigned writer submits the exact draft for internal review'
+);
+select lives_ok(
+  $$select public.s015_add_workspace_comment(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000531',
+    '21000000-0000-4000-8000-000000000631', 'internal_only', 'structured note',
+    '{"type":"doc","content":[]}'::jsonb,
+    '21000000-0000-4000-8000-000000000733', '21000000-0000-4000-8000-000000000833',
+    's015-workspace-comment')$$,
+  'assigned writer adds an internal Tiptap comment'
+);
+select is(
+  (select body_format from public.comments where deliverable_id = '21000000-0000-4000-8000-000000000531'),
+  'tiptap_json', 'structured comment persists as JSON rather than trusted HTML'
+);
+select throws_ok(
+  $$select * from public.s015_save_or_submit_version(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000506',
+    gen_random_uuid(), 1, false, null, 'unauthorized', null, null, null, null, null, null,
+    gen_random_uuid(), gen_random_uuid(), 's015-denied-draft')$$,
+  '42501', 'version command denied', 'unassigned writer cannot save another deliverable draft'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202', true);
+select is(
+  (select count(*)::integer from public.comments where deliverable_id = '21000000-0000-4000-8000-000000000531'),
+  0, 'client viewer cannot read internal workspace comments'
+);
+select throws_ok(
+  $$select public.s015_add_workspace_comment(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000531',
+    '21000000-0000-4000-8000-000000000631', 'internal_only', 'forbidden', null,
+    gen_random_uuid(), gen_random_uuid(), 's015-client-internal-comment')$$,
+  '42501', 'client comment denied', 'client cannot create an internal comment'
+);
+reset role;
+
+-- Supabase Storage: exact path, client, tenant, visibility, and delivery state.
+insert into public.deliverables (
+  id, tenant_id, client_id, name, type, status, progress_percentage,
+  idempotency_key, requires_internal_approval, requires_client_approval,
+  owner_user_id
+) values (
+  '21000000-0000-4000-8000-000000000532',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  'Storage visible item', 'design', 'waiting_client_approval', 80,
+  's015-storage-visible', true, true,
+  '21000000-0000-4000-8000-000000000203'
+);
+insert into public.deliverable_versions (
+  id, tenant_id, client_id, deliverable_id, version_number, status
+) values (
+  '21000000-0000-4000-8000-000000000632',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000532', 1, 'client_visible'
+);
+update public.deliverables set current_version_id = '21000000-0000-4000-8000-000000000632'
+where id = '21000000-0000-4000-8000-000000000532';
+insert into storage.objects (id, bucket_id, name, owner_id)
+values (
+  '21000000-0000-4000-8000-000000000932', 'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/client-note.txt',
+  '21000000-0000-4000-8000-000000000202'
+), (
+  '21000000-0000-4000-8000-000000000934', 'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/internal.txt',
+  '21000000-0000-4000-8000-000000000207'
+), (
+  '21000000-0000-4000-8000-000000000935', 'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/visible.pdf',
+  '21000000-0000-4000-8000-000000000207'
+), (
+  '21000000-0000-4000-8000-000000000936', 'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/final.pdf',
+  '21000000-0000-4000-8000-000000000207'
+);
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select lives_ok(
+  $$select public.s015_add_workspace_comment(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000532',
+    '21000000-0000-4000-8000-000000000632', 'client_visible', 'visible team note',
+    '{"type":"doc","content":[]}'::jsonb,
+    '21000000-0000-4000-8000-000000000735', '21000000-0000-4000-8000-000000000835',
+    's015-visible-team-comment')$$,
+  'management publishes an explicit client-visible comment'
+);
+select lives_ok(
+  $$select public.s015_register_file_asset(
+    '21000000-0000-4000-8000-000000000937',
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000000532',
+    '21000000-0000-4000-8000-000000000632', 'deliverable-assets',
+    '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/internal.txt',
+    'internal.txt', 'text/plain', 12, 'internal_only', false,
+    gen_random_uuid(), gen_random_uuid(), 's015-internal-file')$$,
+  'management registers an internal-only object'
+);
+select lives_ok(
+  $$select public.s015_register_file_asset(
+    '21000000-0000-4000-8000-000000000938',
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000000532',
+    '21000000-0000-4000-8000-000000000632', 'deliverable-assets',
+    '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/visible.pdf',
+    'visible.pdf', 'application/pdf', 12, 'client_visible', false,
+    gen_random_uuid(), gen_random_uuid(), 's015-visible-file')$$,
+  'management explicitly registers a client-visible object'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202', true);
+select results_eq(
+  $$select display_name from public.member_profiles$$,
+  $$values ('Manager A'::text)$$,
+  'Client A resolves only the author name attached to its visible comment'
+);
+select lives_ok(
+  $$select public.s015_add_workspace_comment(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000532',
+    '21000000-0000-4000-8000-000000000632', 'client_visible', 'client reply',
+    '{"type":"doc","content":[]}'::jsonb,
+    '21000000-0000-4000-8000-000000000736', '21000000-0000-4000-8000-000000000836',
+    's015-visible-client-comment')$$,
+  'Client A can add a client-visible Tiptap comment to the exact visible version'
+);
+select ok(private.s015_can_upload_storage_object(
+  'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/client-note.txt'
+), 'Client A viewer can upload only to its exact visible version path');
+select results_eq(
+  $$select public.s015_register_file_asset(
+    '21000000-0000-4000-8000-000000000933',
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000000532',
+    '21000000-0000-4000-8000-000000000632',
+    'deliverable-assets',
+    '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/client-note.txt',
+    'client-note.txt', 'text/plain', 12, 'client_uploaded', false,
+    '21000000-0000-4000-8000-000000000734',
+    '21000000-0000-4000-8000-000000000834', 's015-client-file-upload')$$,
+  $$values ('21000000-0000-4000-8000-000000000933'::uuid)$$,
+  'Client A registers only client-uploaded visibility'
+);
+select lives_ok(
+  $$select * from public.s015_authorize_file_download('21000000-0000-4000-8000-000000000933')$$,
+  'Client A can authorize its registered visible file'
+);
+select is(private.s015_can_read_storage_object(
+  'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/internal.txt'
+), false, 'Client A cannot read internal-only storage objects');
+select is(private.s015_can_read_storage_object(
+  'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/visible.pdf'
+), true, 'Client A can read explicitly client-visible storage objects');
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000208', true);
+select is((select count(*)::integer from public.member_profiles), 0, 'Client B cannot read Client A visible-comment authors');
+select is(private.s015_can_upload_storage_object(
+  'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/client-note.txt'
+), false, 'same-tenant Client B cannot upload into Client A path');
+select throws_ok(
+  $$select * from public.s015_authorize_file_download('21000000-0000-4000-8000-000000000933')$$,
+  '42501', 'file download denied', 'same-tenant Client B cannot download Client A file'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '22000000-0000-4000-8000-000000000201', true);
+select is(private.s015_can_upload_storage_object(
+  'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/client-note.txt'
+), false, 'Tenant B cannot upload into Tenant A path');
+select throws_ok(
+  $$select * from public.s015_authorize_file_download('21000000-0000-4000-8000-000000000933')$$,
+  '42501', 'file download denied', 'Tenant B cannot download Tenant A file'
+);
+reset role;
+
+update public.deliverables set status = 'client_approved', progress_percentage = 90
+where id = '21000000-0000-4000-8000-000000000532';
+update public.deliverable_versions set status = 'client_approved'
+where id = '21000000-0000-4000-8000-000000000632';
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select lives_ok(
+  $$select public.s015_register_file_asset(
+    '21000000-0000-4000-8000-000000000939',
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000000532',
+    '21000000-0000-4000-8000-000000000632', 'deliverable-assets',
+    '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/final.pdf',
+    'final.pdf', 'application/pdf', 12, 'final_delivery', true,
+    gen_random_uuid(), gen_random_uuid(), 's015-final-file')$$,
+  'management registers a final file only against an approved exact version'
+);
+select is(private.s015_can_read_storage_object(
+  'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/internal.txt'
+), true, 'authorized management can read internal-only storage objects');
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202', true);
+select is(private.s015_can_read_storage_object(
+  'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/final.pdf'
+), false, 'Client A cannot read final delivery before delivery state');
+reset role;
+
+update public.deliverables set status = 'delivered', progress_percentage = 100
+where id = '21000000-0000-4000-8000-000000000532';
+update public.deliverable_versions set status = 'final'
+where id = '21000000-0000-4000-8000-000000000632';
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202', true);
+select is(private.s015_can_read_storage_object(
+  'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/final.pdf'
+), true, 'Client A can read final delivery only after delivered state');
+reset role;
+
+-- Generic UAT import is service-role only, idempotent, count-only, and rollback scoped.
+set local role service_role;
+select set_config('request.jwt.claim.role', 'service_role', true);
+select results_eq(
+  $$select * from public.s015_import_uat_payload(
+    '21000000-0000-4000-8000-000000000001',
+    '21000000-0000-4000-8000-000000000301', null, null, 'pgtap-import-001',
+    '{"deliverables":[{"id":"21000000-0000-4000-8000-000000000541","versionId":"21000000-0000-4000-8000-000000000641","name":"Imported test item","type":"post","sourceMetadata":{"sheetCategory":"test"}}],"tasks":[]}'::jsonb
+  )$$,
+  $$values (1, 1, 0)$$,
+  'service role imports one bounded run-scoped draft'
+);
+select results_eq(
+  $$select * from public.s015_import_uat_payload(
+    '21000000-0000-4000-8000-000000000001',
+    '21000000-0000-4000-8000-000000000301', null, null, 'pgtap-import-001',
+    '{"deliverables":[{"id":"21000000-0000-4000-8000-000000000541","versionId":"21000000-0000-4000-8000-000000000641","name":"Imported test item","type":"post","sourceMetadata":{"sheetCategory":"test"}}],"tasks":[]}'::jsonb
+  )$$,
+  $$values (1, 1, 0)$$,
+  'same import run replays without duplication'
+);
+select results_eq(
+  $$select deliverable_count, version_count, task_count, would_delete
+    from public.s015_rollback_uat_import(
+      '21000000-0000-4000-8000-000000000001',
+      '21000000-0000-4000-8000-000000000301', 'pgtap-import-001', true
+    )$$,
+  $$values (1, 1, 0, false)$$,
+  'rollback dry-run reports counts without deletion'
+);
+select results_eq(
+  $$select deliverable_count, version_count, task_count, would_delete
+    from public.s015_rollback_uat_import(
+      '21000000-0000-4000-8000-000000000001',
+      '21000000-0000-4000-8000-000000000301', 'pgtap-import-001', false
+    )$$,
+  $$values (1, 1, 0, true)$$,
+  'unused import run rolls back within exact scope'
+);
+select is((select count(*)::integer from public.deliverables where import_run_id = 'pgtap-import-001'), 0, 'rollback removes only the imported deliverable');
 reset role;
 
 select * from finish();

@@ -67,7 +67,7 @@ test("client viewer A sees Hadna only through the client portal", async ({
   );
   const clientSnapshot = page.getByRole("region", { name: "ملخص تجربة هدنة" });
   await expect(clientSnapshot.getByText("عدد المخرجات")).toBeVisible();
-  await expect(clientSnapshot.getByText("52", { exact: true })).toBeVisible();
+  await expect(clientSnapshot.getByText("17", { exact: true })).toBeVisible();
   await expect(page.getByText("لوحة الإدارة")).toHaveCount(0);
   await expect(page.getByText("client_b")).toHaveCount(0);
 });

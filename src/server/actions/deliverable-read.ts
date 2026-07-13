@@ -3,6 +3,10 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fixtureManagementCommercialSummary } from "@/server/actions/commercial-summary-read";
 import { canUseRouteActorFixtures } from "@/server/navigation/route-guards";
 import {
+  createMemberDirectory,
+  resolveMemberDisplays,
+} from "@/modules/members/member-directory";
+import {
   toDeliverableSafeSummaryFromRows,
   type DeliverableAllocationRow,
   type DeliverableWriteRow,
@@ -35,11 +39,24 @@ export const listScopedDeliverables = async ({
   supabase?: SupabaseClient;
 }) => {
   if (canUseRouteActorFixtures()) {
+    const fixtureDirectory = createMemberDirectory([
+      { user_id: "assigned_internal_a", display_name: "أحمد العتيبي", role_label: "مدير مشروع" },
+      { user_id: "assigned_writer_a", display_name: "سارة القحطاني", role_label: "كاتبة محتوى" },
+      { user_id: "assigned_designer_a", display_name: "رائد الحربي", role_label: "مصمم" },
+      { user_id: "designer_a", display_name: "رائد الحربي", role_label: "مصمم" },
+    ]);
     return {
       ok: true as const,
       deliverables:
         tenantId === "tenant_a" && clientId === "client_a"
-          ? fixtureManagementDeliverables
+          ? fixtureManagementDeliverables.map((deliverable) => ({
+              ...deliverable,
+              ownerDisplay: fixtureDirectory[deliverable.ownerUserId ?? ""],
+              contributorDisplays: resolveMemberDisplays(
+                fixtureDirectory,
+                deliverable.contributorUserIds,
+              ),
+            }))
           : [],
     };
   }
@@ -73,14 +90,44 @@ export const listScopedDeliverables = async ({
 
   const allocations = (allocationRows ?? []) as DeliverableAllocationRow[];
 
+  const memberIds = Array.from(
+    new Set(
+      deliverableRows
+        .flatMap((row) => [
+          row.owner_user_id,
+          ...(row.contributor_user_ids ?? []),
+        ])
+        .filter((id): id is string => Boolean(id)),
+    ),
+  );
+  const { data: memberRows, error: memberError } = memberIds.length
+    ? await client
+        .from("member_profiles")
+        .select("user_id, display_name, role_label, avatar_url")
+        .eq("tenant_id", tenantId)
+        .in("user_id", memberIds)
+    : { data: [], error: null };
+
+  if (memberError) {
+    return { ok: false as const };
+  }
+
+  const memberDirectory = createMemberDirectory(memberRows ?? []);
+
   return {
     ok: true as const,
     deliverables: (deliverableRows as DeliverableWriteRow[]).map(
-      (deliverableRow) =>
-        toDeliverableSafeSummaryFromRows({
-          deliverableRow,
-          allocationRows: allocations.filter(
-            (allocation) => allocation.deliverable_id === deliverableRow.id,
+      (deliverableRow) => ({
+          ...toDeliverableSafeSummaryFromRows({
+            deliverableRow,
+            allocationRows: allocations.filter(
+              (allocation) => allocation.deliverable_id === deliverableRow.id,
+            ),
+          }),
+          ownerDisplay: memberDirectory[deliverableRow.owner_user_id ?? ""],
+          contributorDisplays: resolveMemberDisplays(
+            memberDirectory,
+            deliverableRow.contributor_user_ids ?? [],
           ),
         }),
     ),

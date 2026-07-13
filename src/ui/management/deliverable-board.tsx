@@ -113,22 +113,16 @@ const formatDate = (value?: string) => {
 };
 
 const formatPeople = (deliverable: DeliverableSafeSummary) => {
-  const contributors = deliverable.contributorUserIds ?? [];
+  const members = [
+    deliverable.ownerDisplay,
+    ...(deliverable.contributorDisplays ?? []),
+  ].filter(Boolean);
 
-  if (!deliverable.ownerUserId && contributors.length === 0) {
+  if (members.length === 0) {
     return "غير محدد";
   }
 
-  const labels = [deliverable.ownerUserId, ...contributors]
-    .filter(Boolean)
-    .map((id) => {
-      if (id === "assigned_writer_a") return "كاتب المحتوى";
-      if (id === "assigned_designer_a" || id === "designer_a") return "المصمم";
-      if (id === "assigned_internal_a") return "مسؤول التنفيذ";
-      return "عضو من الفريق";
-    });
-
-  return [...new Set(labels)].join("، ");
+  return [...new Set(members.map((member) => member?.displayName))].join("، ");
 };
 
 const statusOptions = (deliverable: DeliverableSafeSummary) =>

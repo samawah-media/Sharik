@@ -72,6 +72,8 @@ export type DeliverableSafeSummary = Omit<
   DeliverableRecord,
   "idempotencyKey" | "createdBy" | "extraReason" | "cancelledAt"
 > & {
+  ownerDisplay?: import("@/modules/members/member-directory").MemberDisplay;
+  contributorDisplays?: import("@/modules/members/member-directory").MemberDisplay[];
   reservation?: DeliverableReservationSummary;
 };
 

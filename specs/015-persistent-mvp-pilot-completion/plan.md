@@ -55,6 +55,6 @@ No hosted mutation may begin until target identity, environment category, data c
 
 ## Product Experience Rescue Amendment
 
-Status: implementation in progress within Spec 015. The first slice closes client navigation/profile discoverability, creates the real pending-approval route, removes raw assignee identifiers from the management board, and establishes the shared Samawah design contract. It adds no dependency and changes no tenancy, RLS, workflow, SLA, or storage architecture. Remaining hosted workflow and visual UAT gates are H008-H010.
+Status: implementation in progress within Spec 015. The current slice closes client navigation/profile discoverability, creates the real multi-item pending-approval route, narrows client visibility to the exact current client-visible version, resolves scoped member display data, removes raw assignee identifiers from the management board, and expands the shared Samawah design contract. It adds no package dependency; the two additive migrations update the existing persistent contract and RLS. Remaining hosted workflow and visual UAT gates are H008-H010, and local DB execution is blocked by missing Docker Desktop.
 
 Dependency inventory: unchanged; `package.json` and lockfile require no additions for this slice.

@@ -24,6 +24,12 @@ const deliverables: DeliverableSafeSummary[] = [
     status: "not_started",
     priority: "normal",
     ownerUserId: "assigned_internal_a",
+    ownerDisplay: {
+      userId: "assigned_internal_a",
+      displayName: "أحمد العتيبي",
+      roleLabel: "مدير مشروع",
+      initial: "أ",
+    },
     contributorUserIds: [],
     internalDueDate: "2026-07-03",
     clientDueDate: "2026-07-05",
@@ -46,7 +52,21 @@ const deliverables: DeliverableSafeSummary[] = [
     status: "internally_approved",
     priority: "high",
     ownerUserId: "assigned_internal_a",
+    ownerDisplay: {
+      userId: "assigned_internal_a",
+      displayName: "أحمد العتيبي",
+      roleLabel: "مدير مشروع",
+      initial: "أ",
+    },
     contributorUserIds: ["designer_a"],
+    contributorDisplays: [
+      {
+        userId: "designer_a",
+        displayName: "رائد الحربي",
+        roleLabel: "مصمم",
+        initial: "ر",
+      },
+    ],
     internalDueDate: "2026-07-02",
     clientDueDate: "2026-07-04",
     finalDueDate: "2026-07-06",
@@ -86,8 +106,7 @@ describe("internal deliverable work board", () => {
     ).toBeInTheDocument();
     expect(within(board).getByText("منشور إطلاق الحملة")).toBeInTheDocument();
     expect(within(board).getByText("تصميم إعلان المنتج")).toBeInTheDocument();
-    expect(within(board).getByText("مسؤول التنفيذ")).toBeInTheDocument();
-    expect(within(board).getByText(/المصمم/)).toBeInTheDocument();
+    expect(within(board).getByText("أحمد العتيبي")).toBeInTheDocument();
     expect(within(board).getByText("07-03")).toBeInTheDocument();
     expect(within(board).getByText("0%")).toBeInTheDocument();
     expect(within(board).getByText("70%")).toBeInTheDocument();

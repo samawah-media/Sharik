@@ -16,6 +16,7 @@ grant select on public.contracts to authenticated;
 grant select on public.packages to authenticated;
 grant select on public.package_lines to authenticated;
 grant select on public.deliverables to authenticated;
+grant select on public.deliverable_versions to authenticated;
 grant select on public.package_ledger_entries to authenticated;
 grant select on public.deliverable_allocations to authenticated;
 
@@ -179,8 +180,39 @@ values (
   '0f060000-0000-4000-8000-000000000801',
   'F006 Deliverable',
   'post',
-  'not_started',
-  0,
+  'waiting_client_approval',
+  80,
+  '0f060000-0000-4000-8000-000000000201'
+);
+
+insert into public.deliverable_versions (
+  id, tenant_id, client_id, deliverable_id, version_number, status, caption
+)
+values (
+  '0f060000-0000-4000-8000-000000001201',
+  '0f060000-0000-4000-8000-000000000001',
+  '0f060000-0000-4000-8000-000000000301',
+  '0f060000-0000-4000-8000-000000000901',
+  1,
+  'client_visible',
+  'F006 client-visible caption'
+);
+
+update public.deliverables
+set current_version_id = '0f060000-0000-4000-8000-000000001201'
+where id = '0f060000-0000-4000-8000-000000000901';
+
+insert into public.deliverables (
+  id, tenant_id, client_id, name, type, status, progress_percentage, created_by
+)
+values (
+  '0f060000-0000-4000-8000-000000001301',
+  '0f060000-0000-4000-8000-000000000001',
+  '0f060000-0000-4000-8000-000000000301',
+  'F006 hidden internal deliverable',
+  'post',
+  'in_progress',
+  30,
   '0f060000-0000-4000-8000-000000000201'
 );
 

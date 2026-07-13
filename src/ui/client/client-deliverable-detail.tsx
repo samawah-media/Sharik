@@ -24,6 +24,15 @@ export type ClientSafeDeliverableDetail = {
   progressPercentage: number;
   files: ClientPortalFileSummary[];
   comments: ClientPortalCommentSummary[];
+  content?: {
+    brief?: string;
+    body?: string;
+    caption?: string;
+    channel?: string;
+    format?: string;
+    objective?: string;
+    kpi?: string;
+  };
 };
 
 const visibilityLabels: Record<FileAssetVisibility, string> = {
@@ -86,6 +95,20 @@ export function ClientDeliverableDetail({
         item={detail.approvalItem}
         requestChangesAction={requestChangesAction}
       />
+
+      {detail.content ? (
+        <section aria-label="محتوى المخرج" className="grid gap-3 rounded-lg border border-border bg-surface p-4">
+          <h3 className="text-base font-semibold">المحتوى والنسخة</h3>
+          {detail.content.caption ? <p className="text-sm leading-7">{detail.content.caption}</p> : null}
+          {detail.content.body ? <p className="whitespace-pre-wrap text-sm leading-7">{detail.content.body}</p> : null}
+          <dl className="grid gap-2 text-xs text-muted sm:grid-cols-2">
+            {detail.content.channel ? <div><dt className="font-semibold text-foreground">القناة</dt><dd>{detail.content.channel}</dd></div> : null}
+            {detail.content.format ? <div><dt className="font-semibold text-foreground">الصيغة</dt><dd>{detail.content.format}</dd></div> : null}
+            {detail.content.objective ? <div><dt className="font-semibold text-foreground">الهدف</dt><dd>{detail.content.objective}</dd></div> : null}
+            {detail.content.kpi ? <div><dt className="font-semibold text-foreground">مؤشر القياس</dt><dd>{detail.content.kpi}</dd></div> : null}
+          </dl>
+        </section>
+      ) : null}
 
       <section aria-label="ملفات العميل" className="grid gap-3">
         <h3 className="text-base font-semibold">الملفات المتاحة</h3>

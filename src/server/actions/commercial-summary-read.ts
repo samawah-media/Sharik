@@ -125,6 +125,14 @@ const fixtureDeliverables: DeliverableSafeSummary[] = fixtureStatusPlan.map(
       requiresInternalApproval: true,
       requiresClientApproval: true,
       progressPercentage: progressByStatus[status],
+      currentVersionId: [
+        "waiting_client_approval",
+        "client_approved",
+        "ready_for_delivery",
+        "delivered",
+      ].includes(status)
+        ? `hadna_version_${number}`
+        : undefined,
       approvedExtra: false,
       revision: 1,
       createdAt: `2026-07-${dateDay}T00:00:00.000Z`,
@@ -136,6 +144,16 @@ const fixtureDeliverables: DeliverableSafeSummary[] = fixtureStatusPlan.map(
     };
   },
 );
+
+const clientVisibleStatuses = new Set<DeliverableLifecycleStatus>([
+  "waiting_client_approval",
+  "client_approved",
+  "ready_for_delivery",
+  "delivered",
+]);
+
+const isClientVisibleDeliverable = (deliverable: DeliverableSafeSummary) =>
+  clientVisibleStatuses.has(deliverable.status) && Boolean(deliverable.currentVersionId);
 
 export const fixtureManagementCommercialSummary: ManagementCommercialSummary = {
   audience: "management",
@@ -213,9 +231,9 @@ export const fixtureClientCommercialSummary: ClientCommercialSummary = {
       balance: line.balance,
     })),
   })),
-  deliverables: fixtureManagementCommercialSummary.deliverables.map(
-    toClientDeliverableSummary,
-  ),
+  deliverables: fixtureManagementCommercialSummary.deliverables
+    .filter(isClientVisibleDeliverable)
+    .map(toClientDeliverableSummary),
 };
 
 const selectContracts = async (
@@ -264,7 +282,7 @@ export const readCommercialSummary = async ({
       supabase
         .from("deliverables")
         .select(
-          "id, tenant_id, client_id, contract_id, package_id, package_line_id, name, description, type, status, priority, owner_user_id, contributor_user_ids, start_date, internal_due_date, client_due_date, final_due_date, requires_internal_approval, requires_client_approval, progress_percentage, approved_extra, extra_reason, idempotency_key, created_by, created_at, updated_at, cancelled_at, revision",
+          "id, tenant_id, client_id, contract_id, package_id, package_line_id, current_version_id, name, description, type, status, priority, owner_user_id, contributor_user_ids, start_date, internal_due_date, client_due_date, final_due_date, requires_internal_approval, requires_client_approval, progress_percentage, approved_extra, extra_reason, idempotency_key, created_by, created_at, updated_at, cancelled_at, revision",
         )
         .eq("tenant_id", tenantId)
         .eq("client_id", clientId)
@@ -280,7 +298,12 @@ export const readCommercialSummary = async ({
   }
 
   const packageRows = (packageResponse.data ?? []) as PackageWriteRow[];
-  const deliverableRows = (deliverableResponse.data ?? []) as DeliverableWriteRow[];
+  const deliverableRows = ((deliverableResponse.data ?? []) as DeliverableWriteRow[]).filter(
+    (row) => audience === "management" || (
+      clientVisibleStatuses.has(row.status as DeliverableLifecycleStatus) &&
+      Boolean(row.current_version_id)
+    ),
+  );
   const packageIds = packageRows.map((row) => row.id);
   const deliverableIds = deliverableRows.map((row) => row.id);
 

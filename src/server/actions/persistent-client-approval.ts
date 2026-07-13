@@ -14,81 +14,113 @@ const decisionSchema = z.object({
 
 export type PersistentClientDecisionInput = z.infer<typeof decisionSchema>;
 
-export async function readPersistentClientApprovalDetail({
-  supabase,
-  tenantId,
-  clientId,
-}: {
-  supabase: SupabaseClient;
-  tenantId: string;
-  clientId: string;
-}): Promise<ClientSafeDeliverableDetail | undefined> {
-  const { data: deliverable, error: deliverableError } = await supabase
+export type PersistentClientApprovalInboxItem = ClientSafeDeliverableDetail;
+
+const clientVisibleDeliverableStatuses = [
+  "waiting_client_approval",
+  "client_approved",
+  "ready_for_delivery",
+  "delivered",
+] as const;
+
+type ClientVisibleDeliverable = {
+  id: string;
+  client_id: string;
+  name: string;
+  type: string;
+  status: string;
+  progress_percentage: number;
+  client_due_date: string | null;
+  revision: number;
+  current_version_id: string;
+};
+
+async function readClientApprovalDetails(
+  supabase: SupabaseClient,
+  tenantId: string,
+  clientId: string,
+  statuses: readonly string[],
+) {
+  const { data, error } = await supabase
     .from("deliverables")
     .select("id, client_id, name, type, status, progress_percentage, client_due_date, revision, current_version_id")
     .eq("tenant_id", tenantId)
     .eq("client_id", clientId)
-    .in("status", ["waiting_client_approval", "delivered"])
+    .in("status", statuses)
     .not("current_version_id", "is", null)
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .order("updated_at", { ascending: false });
 
-  if (deliverableError || !deliverable?.current_version_id) {
-    return undefined;
-  }
+  if (error) return [];
 
-  const [{ data: version, error: versionError }, filesResult, commentsResult] =
-    await Promise.all([
-      supabase
-        .from("deliverable_versions")
-        .select("id, version_number, status")
-        .eq("tenant_id", tenantId)
-        .eq("client_id", clientId)
-        .eq("deliverable_id", deliverable.id)
-        .eq("id", deliverable.current_version_id)
-        .in("status", ["client_visible", "final"])
-        .maybeSingle(),
-      supabase
-        .from("file_assets")
-        .select("id, visibility, file_type, file_size, version_number, is_final, created_at")
-        .eq("tenant_id", tenantId)
-        .eq("client_id", clientId)
-        .eq("deliverable_id", deliverable.id)
-        .eq("version_id", deliverable.current_version_id)
-        .in("visibility", ["client_visible", "client_uploaded", "final_delivery"]),
-      supabase
-        .from("comments")
-        .select("id, body, created_at")
-        .eq("tenant_id", tenantId)
-        .eq("client_id", clientId)
-        .eq("deliverable_id", deliverable.id)
-        .eq("version_id", deliverable.current_version_id)
-        .eq("visibility", "client_visible")
-        .order("created_at", { ascending: true }),
-    ]);
+  return Promise.all(
+    ((data ?? []) as ClientVisibleDeliverable[]).map((deliverable) =>
+      readClientApprovalDetailForDeliverable(supabase, tenantId, clientId, deliverable),
+    ),
+  ).then((details) => details.filter((detail): detail is ClientSafeDeliverableDetail => Boolean(detail)));
+}
 
-  if (versionError || !version || filesResult.error || commentsResult.error) {
-    return undefined;
-  }
+async function readClientApprovalDetailForDeliverable(
+  supabase: SupabaseClient,
+  tenantId: string,
+  clientId: string,
+  deliverable: ClientVisibleDeliverable,
+): Promise<ClientSafeDeliverableDetail | undefined> {
+  const [{ data: version, error: versionError }, filesResult, commentsResult] = await Promise.all([
+    supabase
+      .from("deliverable_versions")
+      .select("id, version_number, status, brief, content_body, caption, channel, format, objective, kpi")
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .eq("deliverable_id", deliverable.id)
+      .eq("id", deliverable.current_version_id)
+      .in("status", ["client_visible", "client_approved", "final"])
+      .maybeSingle(),
+    supabase
+      .from("file_assets")
+      .select("id, visibility, file_type, file_size, version_number, is_final, created_at")
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .eq("deliverable_id", deliverable.id)
+      .eq("version_id", deliverable.current_version_id)
+      .in("visibility", ["client_visible", "client_uploaded", "final_delivery"]),
+    supabase
+      .from("comments")
+      .select("id, body, created_at")
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .eq("deliverable_id", deliverable.id)
+      .eq("version_id", deliverable.current_version_id)
+      .eq("visibility", "client_visible")
+      .order("created_at", { ascending: true }),
+  ]);
+
+  if (versionError || !version || filesResult.error || commentsResult.error) return undefined;
 
   const delivered = deliverable.status === "delivered";
-
   return {
     approvalItem: {
       clientId,
       deliverableId: deliverable.id,
       versionId: version.id,
       expectedRevision: deliverable.revision,
-      isActionable: !delivered,
+      isActionable: !delivered && deliverable.status === "waiting_client_approval",
       displayName: deliverable.name,
       typeLabel: deliverable.type,
-      statusLabel: delivered ? "تم التسليم" : "بانتظار موافقتك",
+      statusLabel: delivered ? "تم التسليم" : deliverable.status === "waiting_client_approval" ? "بانتظار موافقتك" : "قيد التسليم",
       versionLabel: `النسخة ${version.version_number}`,
       dueDateLabel: deliverable.client_due_date ?? undefined,
     },
-    statusLabel: delivered ? "تم التسليم" : "بانتظار موافقتك",
+    statusLabel: delivered ? "تم التسليم" : deliverable.status === "waiting_client_approval" ? "بانتظار موافقتك" : "قيد التسليم",
     progressPercentage: deliverable.progress_percentage,
+    content: {
+      brief: version.brief ?? undefined,
+      body: version.content_body ?? undefined,
+      caption: version.caption ?? undefined,
+      channel: version.channel ?? undefined,
+      format: version.format ?? undefined,
+      objective: version.objective ?? undefined,
+      kpi: version.kpi ?? undefined,
+    },
     files: (filesResult.data ?? []).map((file) => ({
       id: file.id,
       tenantId,
@@ -102,12 +134,33 @@ export async function readPersistentClientApprovalDetail({
       isFinal: file.is_final,
       createdAt: file.created_at,
     })),
-    comments: (commentsResult.data ?? []).map((comment) => ({
-      id: comment.id,
-      body: comment.body,
-      createdAt: comment.created_at,
-    })),
+    comments: (commentsResult.data ?? []).map((comment) => ({ id: comment.id, body: comment.body, createdAt: comment.created_at })),
   };
+}
+
+export async function readPersistentClientApprovalInbox({
+  supabase,
+  tenantId,
+  clientId,
+}: {
+  supabase: SupabaseClient;
+  tenantId: string;
+  clientId: string;
+}): Promise<PersistentClientApprovalInboxItem[]> {
+  return readClientApprovalDetails(supabase, tenantId, clientId, ["waiting_client_approval"]);
+}
+
+export async function readPersistentClientApprovalDetail({
+  supabase,
+  tenantId,
+  clientId,
+}: {
+  supabase: SupabaseClient;
+  tenantId: string;
+  clientId: string;
+}): Promise<ClientSafeDeliverableDetail | undefined> {
+  const details = await readClientApprovalDetails(supabase, tenantId, clientId, clientVisibleDeliverableStatuses);
+  return details[0];
 }
 
 export async function decidePersistentClientVersion({

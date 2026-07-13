@@ -59,7 +59,7 @@ Hosted amendment note: H001-H007 have completed under owner authorization. Hoste
 - [x] X002 Establish the Samawah design contract and shared RTL/accessibility tokens.
 - [x] X003 Make client pending approval navigation real and add a discoverable client shell/profile/sign-out path.
 - [x] X004 Remove raw assignee identifiers from normal management card UI.
-- [ ] X005 Add persistent regression coverage for client pending/home/summary consistency and raw-ID secrecy.
+- [x] X005 Add persistent regression coverage for client pending/home/summary consistency and raw-ID secrecy. Local component, fixture browser, server filtering, and SQL/RLS regression coverage are now present; DB execution remains environment-blocked by missing Docker Desktop.
 - [ ] X006 Complete universal role-aware deliverable detail, persistent content/file/comment execution, and team board/list UAT.
 - [ ] X007 Execute hosted persona UAT, defect burn-down, rollback/no-op evidence, and H008-H010 handoff.
 

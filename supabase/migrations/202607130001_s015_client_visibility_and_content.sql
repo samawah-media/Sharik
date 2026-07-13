@@ -106,6 +106,17 @@ drop policy if exists s015_files_select on public.file_assets;
 create policy s015_files_select on public.file_assets for select using (
   (
     visibility in ('client_visible', 'client_uploaded', 'final_delivery')
+    and (
+      visibility <> 'final_delivery'
+      or exists (
+        select 1
+        from public.deliverables d
+        where d.id = file_assets.deliverable_id
+          and d.tenant_id = file_assets.tenant_id
+          and d.client_id = file_assets.client_id
+          and d.status = 'delivered'
+      )
+    )
     and version_id is not null
     and public.s015_client_current_version_is_visible(
       file_assets.tenant_id,

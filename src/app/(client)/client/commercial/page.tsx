@@ -16,8 +16,6 @@ import {
   buildClientMvpStats,
   HadnaMvpHero,
 } from "@/ui/mvp/hadna-mvp-summary";
-import { RoleAwareNavigation } from "@/ui/navigation/role-aware-nav";
-import { resolveRoleAwareNavigation } from "@/modules/navigation/navigation-resolver";
 import {
   AccessDeniedState,
   MembershipDisabledState,
@@ -87,10 +85,6 @@ export default async function ClientCommercialSummaryPage({
     return <AccessDeniedState />;
   }
 
-  const navigation = resolveRoleAwareNavigation({
-    actor,
-    assignedClients: clients.filter((client) => client.id === primaryClient.id),
-  });
   const summary = canUseRouteActorFixtures()
     ? { ok: true as const, value: fixtureClientCommercialSummary }
     : await readCommercialSummary({
@@ -106,7 +100,6 @@ export default async function ClientCommercialSummaryPage({
 
   return (
     <>
-      <RoleAwareNavigation items={navigation.items} label="تنقل بوابة العميل" />
       <main className="mx-auto grid w-full max-w-4xl gap-5 px-4 py-8" dir="rtl">
         <HadnaMvpHero
           clientName={primaryClient.name}

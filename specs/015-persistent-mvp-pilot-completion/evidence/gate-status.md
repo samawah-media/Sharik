@@ -27,3 +27,14 @@
 | Preview deployment | green for Preview build and public UAT entry | Preview deployment built successfully and is Ready. Preview env contains the required app and public Supabase configuration; the public UAT alias returns the Arabic sign-in shell, signs in available valid UAT personas, has zero observed browser console errors for those personas, and shows no service-role marker or internal secret leakage. Production remains untouched. |
 | Hosted workflow/UX UAT | ready / pending execution | The complete required persona matrix is now available with active Auth, membership, role, and assignment setup. H008 full workflow execution remains pending and must still prove approval, secrecy, isolation, SLA, audit, ledger, and terminal-state behavior. |
 | T032 hosted evidence | pending | T032 remains open. Rollback boundary and migration/seed/deploy/public-entry/access evidence exist; workflow and final rollback/no-op evidence remain pending. |
+
+## Product Experience Rescue amendment status (2026-07-13)
+
+| Gate | Status | Evidence |
+|---|---|---|
+| Spec/design amendment | green locally | Spec 015 `spec.md`, `plan.md`, and `tasks.md` amended; root `DESIGN.md` added. |
+| Client pending entry point | green locally / hosted pending | `/client/pending` is present in the Next build route manifest and client shell navigation. Hosted persona verification remains H008. |
+| Raw assignee secrecy | green locally / hosted visual pending | Board maps known scoped members to human labels and unknown members to a generic team label; component regression passes. |
+| Local UX rescue verification | green | Typecheck, lint, unit, component, secret scan, diff check, and build all passed on 2026-07-13. |
+| Hosted team workflow | open | H008-H010 remain open; no claim of hosted PASS is made from local evidence. |
+| Client E2E navigation regression | green locally | Initial duplicate-landmark failure was fixed; affected client/accessibility tests pass across desktop/mobile/RTL with configured skips unchanged. |

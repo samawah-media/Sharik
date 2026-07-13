@@ -1,5 +1,9 @@
 # Project Progress
 
+## Spec 015 Product Experience Rescue — 2026-07-13
+
+The owner-authorized rescue is continuing inside Spec 015 only. The first implementation slice added the shared Samawah design contract, a client RTL shell with discoverable sign-out, a real `/client/pending` route, safe human-readable management assignee labels, and reduced-motion/focus tokens. Local verification passed: typecheck, lint, unit (48 files/171 tests), component (17 files/55 tests), secret scan, diff check, and build. H008-H010 and T032 remain open pending direct hosted persona workflow, visual QA, defect burn-down, rollback/no-op evidence, and handoff. Production acceptance remains not granted.
+
 Last updated: 2026-07-12
 
 ## Spec 015 Hosted Team UAT Amendment - 2026-07-12

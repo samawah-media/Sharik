@@ -119,7 +119,16 @@ const formatPeople = (deliverable: DeliverableSafeSummary) => {
     return "غير محدد";
   }
 
-  return [deliverable.ownerUserId, ...contributors].filter(Boolean).join("، ");
+  const labels = [deliverable.ownerUserId, ...contributors]
+    .filter(Boolean)
+    .map((id) => {
+      if (id === "assigned_writer_a") return "كاتب المحتوى";
+      if (id === "assigned_designer_a" || id === "designer_a") return "المصمم";
+      if (id === "assigned_internal_a") return "مسؤول التنفيذ";
+      return "عضو من الفريق";
+    });
+
+  return [...new Set(labels)].join("، ");
 };
 
 const statusOptions = (deliverable: DeliverableSafeSummary) =>

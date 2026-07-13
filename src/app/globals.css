@@ -11,6 +11,7 @@
   --success: #1a7f64;
   --warning: #a86600;
   --danger: #b42318;
+  --focus: #5b35d5;
 }
 
 @theme inline {
@@ -27,6 +28,7 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
+  --color-focus: var(--focus);
   --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
 }
@@ -54,6 +56,10 @@ a {
 }
 
 :focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--accent) 70%, white);
+  outline: 3px solid color-mix(in srgb, var(--focus) 70%, white);
   outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }

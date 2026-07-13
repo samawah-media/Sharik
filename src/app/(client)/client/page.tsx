@@ -17,7 +17,6 @@ import {
   toClientVisibleFileAssetSummary,
   type FileAssetRecord,
 } from "@/modules/files/file-visibility-rules";
-import { resolveRoleAwareNavigation } from "@/modules/navigation/navigation-resolver";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { InMemoryDeliverableRepository } from "@/modules/deliverables/deliverable-repository";
@@ -42,7 +41,6 @@ import {
   buildClientMvpStats,
   buildEmptyMvpStats,
 } from "@/ui/mvp/hadna-mvp-summary";
-import { RoleAwareNavigation } from "@/ui/navigation/role-aware-nav";
 import {
   AccessDeniedState,
   MembershipDisabledState,
@@ -318,10 +316,6 @@ export default async function ClientPage({
     return <AccessDeniedState />;
   }
 
-  const navigation = resolveRoleAwareNavigation({
-    actor,
-    assignedClients: clients.filter((client) => client.id === primaryClient.id),
-  });
   const summary = canUseRouteActorFixtures()
     ? { ok: true as const, value: fixtureClientCommercialSummary }
     : await readCommercialSummary({
@@ -349,7 +343,6 @@ export default async function ClientPage({
 
   return (
     <>
-      <RoleAwareNavigation items={navigation.items} label="تنقل بوابة العميل" />
       <ClientHome clientName={primaryClient.name} stats={stats}>
         {portalDetail ? (
           <ClientDeliverableDetail

@@ -52,3 +52,9 @@ This hosted amendment is additive to the accepted local baseline. T001-T019 rema
 ### Hosted mutation boundary
 
 No hosted mutation may begin until target identity, environment category, data category, migration inventory, rollback owner/window, and stop authority are verified and recorded in redacted form.
+
+## Product Experience Rescue Amendment
+
+Status: implementation in progress within Spec 015. The first slice closes client navigation/profile discoverability, creates the real pending-approval route, removes raw assignee identifiers from the management board, and establishes the shared Samawah design contract. It adds no dependency and changes no tenancy, RLS, workflow, SLA, or storage architecture. Remaining hosted workflow and visual UAT gates are H008-H010.
+
+Dependency inventory: unchanged; `package.json` and lockfile require no additions for this slice.

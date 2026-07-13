@@ -79,3 +79,11 @@ Use only one hosted final state:
 - `HOSTED_TEAM_UAT_BLOCKED`
 
 Do not use Production ready, Production accepted, customer accepted, or live release for this amendment.
+
+## Product Experience Rescue Amendment (owner-authorized)
+
+This additive amendment remains inside Spec 015 and is the canonical execution scope for the Preview/UAT rescue. Management needs exception-first work and scoped clients; assigned team members need clear assigned work, human-readable ownership, internal collaboration, version submission, and review; clients need a calm read-only portal and a real exact-version approval journey.
+
+Acceptance additions: `/client/pending` is a real role-correct route; home, summary, and pending use one server-side visibility definition; client payloads exclude unsent/unapproved deliverables, internal comments, quality notes, internal files, private activity, and raw IDs; the client shell exposes home, pending, contract/follow-up, profile, and sign-out; team cards never render raw assignee identifiers; Arabic RTL, mobile, keyboard focus, 44px targets, reduced motion, and honest content fallbacks are covered by the shared `DESIGN.md` contract.
+
+The existing persistent version, approval, file, comment, audit, SLA, idempotency, and RLS contracts remain authoritative. No dependency, tenancy model, workflow rule, or storage architecture changes in this slice. H008-H010 remain open until direct hosted persona evidence, defect disposition, rollback/no-op evidence, and redacted handoff are complete. Production remains explicitly out of scope.

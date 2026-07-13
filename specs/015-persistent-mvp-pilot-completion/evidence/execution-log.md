@@ -29,6 +29,9 @@
 
 Hosted Team UAT amendment status: ACCESS READY / HOSTED WORKFLOW EXECUTION PENDING. Production acceptance: not granted.
 
+| 2026-07-13 | Product Experience Rescue implementation slice | passed locally | Within Spec 015 only: added the project-owned `DESIGN.md`, client RTL shell with discoverable profile/sign-out, real `/client/pending` route, safe human-readable board assignee labels, reduced-motion/focus tokens, and updated component expectations. `npm run typecheck`, `npm run lint`, `npm run test:unit` (48 files / 171 tests), `npm run test:component` (17 files / 55 tests), `npm run secret:scan`, `git diff --check`, and `npm run build` passed. No hosted mutation or Production action was performed in this slice. |
+| 2026-07-13 | Product Experience Rescue E2E regression | corrected and reverified | Initial full E2E surfaced 4 failures caused by duplicate client navigation landmarks/links after the shell was introduced (101 passed / 6 skipped). Removed the legacy duplicate client navigation from client pages and reran the affected accessibility/client tests: 4 passed / 2 skipped across desktop/mobile/RTL. No product security or workflow bypass was observed. |
+
 ## Verification notes
 
 - Docker Desktop was started locally only to unblock the local Supabase/PostgreSQL stack. No hosted database, hosted route, hosted storage, deploy, promotion, production credential, real client data, or production-like mutation was used.

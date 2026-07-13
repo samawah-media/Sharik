@@ -86,8 +86,8 @@ describe("internal deliverable work board", () => {
     ).toBeInTheDocument();
     expect(within(board).getByText("منشور إطلاق الحملة")).toBeInTheDocument();
     expect(within(board).getByText("تصميم إعلان المنتج")).toBeInTheDocument();
-    expect(within(board).getByText("assigned_internal_a")).toBeInTheDocument();
-    expect(within(board).getByText(/designer_a/)).toBeInTheDocument();
+    expect(within(board).getByText("مسؤول التنفيذ")).toBeInTheDocument();
+    expect(within(board).getByText(/المصمم/)).toBeInTheDocument();
     expect(within(board).getByText("07-03")).toBeInTheDocument();
     expect(within(board).getByText("0%")).toBeInTheDocument();
     expect(within(board).getByText("70%")).toBeInTheDocument();

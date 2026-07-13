@@ -53,6 +53,16 @@ The following hosted tasks extend Spec 015 only. They do not reopen or invalidat
 
 Hosted amendment note: H001-H007 have completed under owner authorization. Hosted UAT is not PASS until H006, H008, H009, and H010 complete successfully.
 
+## Product Experience Rescue Amendment — same Spec 015
+
+- [x] X001 Amend Spec 015 with role outcomes, UX/security acceptance, hosted gates, and explicit boundaries.
+- [x] X002 Establish the Samawah design contract and shared RTL/accessibility tokens.
+- [x] X003 Make client pending approval navigation real and add a discoverable client shell/profile/sign-out path.
+- [x] X004 Remove raw assignee identifiers from normal management card UI.
+- [ ] X005 Add persistent regression coverage for client pending/home/summary consistency and raw-ID secrecy.
+- [ ] X006 Complete universal role-aware deliverable detail, persistent content/file/comment execution, and team board/list UAT.
+- [ ] X007 Execute hosted persona UAT, defect burn-down, rollback/no-op evidence, and H008-H010 handoff.
+
 ## Correction note: persistent browser verification
 
 On 2026-07-11, T013, T016, and T017 were reopened after defect `S015-P1-019` identified that the prior Playwright path used route actor fixtures under `APP_ENV=test` and therefore did not prove a real browser-to-persistent-database journey. They were closed again only after `npm run test:e2e:persistent` passed against the local Supabase API/Auth stack with `APP_ENV=test-persistent`, route fixtures disabled, synthetic Auth users, and DB assertions for version binding, role boundaries, comments/files secrecy, SLA, audit, package ledger, and delivery.

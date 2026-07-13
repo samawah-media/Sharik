@@ -43,7 +43,6 @@ revoke all on function private.s015_team_can_execute_deliverable(public.delivera
   from public, anon, authenticated;
 grant execute on function private.s015_team_can_execute_deliverable(public.deliverables)
   to authenticated;
-
 create or replace function public.s015_save_or_submit_version(
   target_client_id uuid,
   target_deliverable_id uuid,
@@ -351,4 +350,3 @@ revoke all on function public.s015_add_workspace_comment(uuid,uuid,uuid,text,tex
   from public, anon, authenticated;
 grant execute on function public.s015_add_workspace_comment(uuid,uuid,uuid,text,text,jsonb,uuid,uuid,text)
   to authenticated;
-

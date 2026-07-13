@@ -198,4 +198,3 @@ revoke all on function public.s015_import_uat_payload(uuid,uuid,uuid,uuid,text,j
 grant execute on function public.s015_import_uat_payload(uuid,uuid,uuid,uuid,text,jsonb),
   public.s015_rollback_uat_import(uuid,uuid,text,boolean)
   to service_role;
-

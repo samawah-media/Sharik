@@ -135,4 +135,3 @@ create policy s015_member_profiles_select on public.member_profiles
 
 comment on column public.member_profiles.sync_run_id is
   'Opaque run identifier for bounded UAT profile sync and rollback; never an email or hosted credential.';
-

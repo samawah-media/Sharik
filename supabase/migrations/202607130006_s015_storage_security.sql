@@ -107,7 +107,6 @@ grant execute on function private.s015_storage_scope(text),
   private.s015_can_upload_storage_object(text,text),
   private.s015_can_read_storage_object(text,text)
   to authenticated;
-
 drop policy if exists s015_deliverable_assets_insert on storage.objects;
 create policy s015_deliverable_assets_insert on storage.objects
   for insert to authenticated
@@ -311,4 +310,3 @@ revoke all on function public.s015_authorize_file_download(uuid)
   from public, anon, authenticated;
 grant execute on function public.s015_authorize_file_download(uuid)
   to authenticated;
-

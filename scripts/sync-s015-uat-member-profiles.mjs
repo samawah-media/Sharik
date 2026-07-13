@@ -112,4 +112,3 @@ if (error) throw new Error(`PROFILE_SYNC_APPLY_FAILED:${error.code ?? "unknown"}
 console.log(
   JSON.stringify({ status: "applied", category: "member_profiles", count: profiles.length }),
 );
-

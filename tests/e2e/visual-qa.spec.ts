@@ -52,7 +52,11 @@ const expectNoUnexpectedHorizontalOverflow = async (
     const allowedElement = allowed
       ? document.querySelector(`[data-testid="${allowed}"]`)
       : null;
-    const documentWidth = document.documentElement.clientWidth;
+    const documentWidth = Math.max(
+      document.documentElement.clientWidth,
+      window.innerWidth,
+      window.visualViewport?.width ?? 0,
+    );
     return Array.from(document.querySelectorAll("body *"))
       .filter((element) => {
         const rect = element.getBoundingClientRect();

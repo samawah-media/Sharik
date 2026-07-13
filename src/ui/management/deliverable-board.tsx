@@ -545,6 +545,7 @@ export function DeliverableBoard({
       {dragFeedback ? <p aria-live="polite" className="mb-3 rounded-lg bg-surface px-3 py-2 text-sm">{dragFeedback}</p> : null}
       <DndContext
         collisionDetection={closestCenter}
+        id="deliverables-board"
         onDragCancel={() => setActiveId(undefined)}
         onDragEnd={finishDrag}
         onDragStart={({ active }) => setActiveId(String(active.id))}

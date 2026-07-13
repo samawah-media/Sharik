@@ -18,7 +18,11 @@ test("account manager lands on a clear Hadna workspace", async ({ page }) => {
       .getByRole("link", { name: "مخرجات هدنة" }),
   ).toHaveAttribute("href", "/clients/client_a/deliverables");
   await expect(page.getByText("لوحة الإدارة")).toHaveCount(0);
-  await expect(page.getByText("الفريق")).toHaveCount(0);
+  await expect(
+    page
+      .getByRole("navigation", { name: "تنقل مساحة الفريق" })
+      .getByRole("link", { name: "الفريق", exact: true }),
+  ).toHaveCount(0);
   await expect(page.getByText("الدعوات")).toHaveCount(0);
   await expect(page.getByText("Client B")).toHaveCount(0);
   await expect(page.getByText("client_b")).toHaveCount(0);

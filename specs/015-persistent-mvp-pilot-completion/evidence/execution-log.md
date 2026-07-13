@@ -51,3 +51,5 @@ Hosted Team UAT amendment status: ACCESS READY / HOSTED WORKFLOW EXECUTION PENDI
 - `git diff --check` reported Windows line-ending warnings only and no whitespace errors.
 - The persistent E2E webserver strips hosted/Vercel values and service-role credentials from the browser app process, refuses non-local Supabase URLs, and uses service-role access only inside the Node test setup/assertion harness for synthetic local data.
 - Persistent global setup and teardown validate the local-only environment before resetting the database, so synthetic Auth users and rows are removed after execution, including failed runs.
+
+| 2026-07-13 | X006 evidence reconciliation | partially closed | Owner reported latest GitHub quality CI `29248954232: SUCCESS`; this directly closes X006-A through X006-G against the committed implementation and final migration set. X006-H remains open because the direct Preview visual QA attempt could not start: the temporary Playwright harness hit a Windows ESM import resolution error before navigating. No visual PASS is claimed. |

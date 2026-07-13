@@ -61,13 +61,13 @@ Hosted amendment note: H001-H007 have completed under owner authorization. Hoste
 - [x] X004 Remove raw assignee identifiers from normal management card UI.
 - [x] X005 Add persistent regression coverage for client pending/home/summary consistency and raw-ID secrecy. CI run `29239615839` passed RLS 228/228 and fixture E2E 108 for migrations 202607130001/002; later X006 migrations and persistent browser rerun remain open.
 - [ ] X006 Complete universal role-aware deliverable detail, persistent content/file/comment execution, and team board/list UAT.
-  - [ ] X006-A Harden exact-current-version RPC invocation and scoped member-profile reads/sync with direct RPC and RLS tests.
-  - [ ] X006-B Implement the shared keyboard-accessible role-filtered deliverable drawer and persistent execution read model.
-  - [ ] X006-C Implement Zod/React Hook Form content editing, version submission, internal review/change/approval, and exact-version client send.
-  - [ ] X006-D Implement Uppy + Supabase Storage upload, metadata, cleanup, previews, signed access, and Storage/RLS tests.
-  - [ ] X006-E Implement persistent Tiptap comments with explicit visibility and client payload/markup secrecy tests.
-  - [ ] X006-F Implement assigned-work List/Board views, filters, five-to-six macro lanes, and governed dnd-kit interaction.
-  - [ ] X006-G Complete exception-first management and scannable client portal experiences.
+  - [x] X006-A Harden exact-current-version RPC invocation and scoped member-profile reads/sync with direct RPC and RLS tests.
+  - [x] X006-B Implement the shared keyboard-accessible role-filtered deliverable drawer and persistent execution read model.
+  - [x] X006-C Implement Zod/React Hook Form content editing, version submission, internal review/change/approval, and exact-version client send.
+  - [x] X006-D Implement Uppy + Supabase Storage upload, metadata, cleanup, previews, signed access, and Storage/RLS tests.
+  - [x] X006-E Implement persistent Tiptap comments with explicit visibility and client payload/markup secrecy tests.
+  - [x] X006-F Implement assigned-work List/Board views, filters, five-to-six macro lanes, and governed dnd-kit interaction.
+  - [x] X006-G Complete exception-first management and scannable client portal experiences.
   - [ ] X006-H Execute DESIGN.md RTL/mobile/keyboard/reduced-motion/state visual QA and close all local gates.
 - [ ] X007 Execute generic run-ID-scoped Glass/Hadna import, hosted persona UAT, defect burn-down, rollback/no-op evidence, and H008-H010 handoff.
 

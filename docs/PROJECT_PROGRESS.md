@@ -1695,3 +1695,10 @@ Boundary:
 - Hosted actions performed: zero.
 - Production acceptance: not granted.
 - Hosted Hadna UAT remains separate and owner-approved only.
+
+## Spec 015 latest reconciliation - 2026-07-13
+
+- Owner-provided GitHub quality run `29248954232` is `SUCCESS`; the final X006 implementation/migration slice is CI-backed.
+- X006-A through X006-G are closed in the canonical task list. X006-H remains open pending direct Preview visual QA across the DESIGN.md matrix.
+- The visual harness was removed after a pre-navigation Windows Playwright ESM loading failure; no visual PASS or hosted persona PASS is claimed.
+- X007 and H008-H010 remain open. No UAT migration/import, rollback/no-op rehearsal, Production action, external client invitation, public signup, PR merge, or workbook tracking occurred in this continuation.

@@ -42,3 +42,8 @@
 Continuation evidence correction: CI run `29239615839` is valid database evidence for migrations 202607130001/002 (RLS 228/228) and fixture evidence (E2E 108). It is not evidence for later X006 migrations, the not-yet-rerun persistent browser suite, Supabase UAT application, or H008-H010. X006, X007, H008-H010, and T032 remain open.
 
 Latest local X006 evidence: lint, typecheck, unit 49/172, integration 28/112, component 18/57, secret scan, dependency audit (0 findings), workbook dry-run (15 content deliverables + 1 coordination deliverable + 16 draft versions + 7 tasks; 0 approvals/files), diff check, and production build pass. Database/RLS and persistent-browser evidence for migrations 202607130003-007 remains pending CI/local Supabase availability.
+
+## 2026-07-13 reconciliation
+- Latest owner-provided quality CI `29248954232` is `SUCCESS`; X006-A through X006-G are evidence-backed in `tasks.md`.
+- X006-H remains open. Direct Preview visual QA did not reach the application because the temporary harness failed during Playwright module loading; this is not a product defect result.
+- X007, H008-H010, UAT migration/import, rollback/no-op rehearsal, and T032 remain open.

@@ -245,7 +245,11 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
   await page.goto("/client", { waitUntil: "domcontentloaded" });
   const viewerDetail = page.getByTestId("client-approval-detail");
   await expect(viewerDetail).toBeVisible();
-  await expect(viewerDetail.locator('form button[type="submit"]')).toHaveCount(0);
+  await expect(
+    viewerDetail
+      .getByTestId("client-approval-actions")
+      .locator('form button[type="submit"]'),
+  ).toHaveCount(0);
   await expect(page.getByText("first draft")).toHaveCount(0);
   await expect(page.getByText("replacement draft")).toHaveCount(0);
   await expect(page.getByText("S015 Persistent Client B Hidden")).toHaveCount(0);

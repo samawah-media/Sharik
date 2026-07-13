@@ -10,10 +10,12 @@ import { z } from "zod";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableVersionWorkspace } from "@/modules/deliverables/deliverable-workspace";
 import {
-  addWorkspaceComment,
-  saveOrSubmitVersionContent,
   versionContentInputSchema,
   workspaceCommentInputSchema,
+} from "@/modules/deliverables/workspace-inputs";
+import {
+  addWorkspaceComment,
+  saveOrSubmitVersionContent,
 } from "@/server/actions/deliverable-workspace-actions";
 import { Button } from "@/ui/core/button";
 

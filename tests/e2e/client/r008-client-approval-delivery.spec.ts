@@ -8,9 +8,10 @@ test("R-008 client approver sees approval controls and final files without inter
   });
 
   const detail = page.getByTestId("client-approval-detail");
+  const approvalActions = detail.getByTestId("client-approval-actions");
   await expect(detail).toBeVisible();
   await expect(detail).toHaveAttribute("dir", "rtl");
-  await expect(detail.locator('form button[type="submit"]')).toHaveCount(2);
+  await expect(approvalActions.locator('form button[type="submit"]')).toHaveCount(2);
   await expect(detail.getByTestId("client-files")).toBeVisible();
   await expect(detail.locator('[data-file-visibility="final_delivery"]')).toHaveCount(1);
   await expect(detail.locator('[data-file-visibility="internal_only"]')).toHaveCount(0);
@@ -25,8 +26,9 @@ test("R-008 client viewer sees the current item but cannot approve", async ({
   });
 
   const detail = page.getByTestId("client-approval-detail");
+  const approvalActions = detail.getByTestId("client-approval-actions");
   await expect(detail).toBeVisible();
-  await expect(detail.locator('form button[type="submit"]')).toHaveCount(0);
+  await expect(approvalActions.locator('form button[type="submit"]')).toHaveCount(0);
   await expect(detail.locator('[data-file-visibility="final_delivery"]')).toHaveCount(1);
   await expect(page.getByText("INTERNAL_QA_NOTE_SHOULD_NOT_RENDER")).toHaveCount(0);
 });

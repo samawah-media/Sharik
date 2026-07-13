@@ -62,6 +62,7 @@ export function ClientApprovalPanel({
     <section
       aria-label="قرار اعتماد العميل"
       className="grid gap-4 rounded-lg border border-border bg-surface p-4"
+      data-testid="client-approval-actions"
       dir="rtl"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">

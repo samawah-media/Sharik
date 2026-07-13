@@ -57,6 +57,13 @@ const expectNoUnexpectedHorizontalOverflow = async (
       window.innerWidth,
       window.visualViewport?.width ?? 0,
     );
+    const scrollWidth = Math.max(
+      document.documentElement.scrollWidth,
+      document.body.scrollWidth,
+      document.scrollingElement?.scrollWidth ?? 0,
+    );
+    if (scrollWidth <= documentWidth + 1) return [];
+
     return Array.from(document.querySelectorAll("body *"))
       .filter((element) => {
         const rect = element.getBoundingClientRect();

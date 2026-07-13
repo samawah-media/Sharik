@@ -24,7 +24,7 @@ export function DeliverableStatusDisclosure({
       <button
         aria-controls={contentId}
         aria-expanded={open}
-        className="w-full cursor-pointer px-3 py-2 text-right text-sm font-semibold text-accent"
+        className="min-h-11 w-full cursor-pointer px-3 py-2.5 text-right text-sm font-semibold text-accent"
         disabled={!hydrated}
         onClick={() => setOpen((value) => !value)}
         type="button"

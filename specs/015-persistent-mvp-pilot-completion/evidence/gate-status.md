@@ -7,9 +7,9 @@
 | Persistent workflow | green | Internal review, internal approval, client submission, client decision, delivery, closure, exact-version binding, audit, SLA, ledger, idempotency, terminal-state, and rollback paths are covered by local DB-backed tests. |
 | Fixture boundary | green | Production routes use scoped persistent reads outside local/test actor-fixture mode; persistent read failures do not silently instantiate fixture repositories. `APP_ENV=test-persistent` is denied by the fixture predicate and verified by the persistent E2E helper. |
 | Role and secrecy boundary | X006 verification in progress | The 202607130001/002 client boundary passed CI DB/RLS. Direct-RPC and scoped-member hardening has new pgTAP coverage but has not yet completed the final CI/persistent matrix. |
-| RTL/mobile/keyboard UX | partial | Targeted desktop fixture pending inbox 2/2 and prior client/accessibility evidence pass; the newly added pending spec has not yet been rerun across every configured project after its selector fix. |
-| Persistent browser E2E | rerun required after X006 | The earlier baseline passed against local Supabase API/Auth, but it has not rerun after the latest Product Experience Rescue changes. |
-| Local MVP acceptance | open for X006 | CI run `29239615839` passed RLS 228/228 and fixture E2E 108 for the prior rescue slice. The final matrix, including persistent E2E after X006, remains required. |
+| RTL/mobile/keyboard UX | green locally / hosted pending | Repository Playwright visual QA `tests/e2e/visual-qa.spec.ts` passed 12/12 across desktop, mobile, and Arabic RTL. Screenshots were inspected directly for board, drawer, and client pending states. |
+| Persistent browser E2E | blocked locally after X006 | The runner correctly refuses non-local Supabase. With explicit local overrides, the run blocks on unavailable local Supabase (`ECONNREFUSED 127.0.0.1:54321`). |
+| Local MVP acceptance | open / infrastructure blocked | Lint, typecheck, unit, integration, component, RLS simulator, fixture E2E, secret scan, diff check, build, and visual QA are green. DB-backed RLS and persistent browser gates are blocked by local Supabase/Postgres availability and still prevent X006-H closure. |
 | Hosted UAT | owner authorized / preflight in progress | Owner authorized a controlled Team-Only Hadna Preview/UAT run as an amendment to Spec 015. No hosted PASS is claimed until Draft PR, CI, Preview/UAT target verification, Supabase UAT migration/seed, approved team access, hosted workflow/UX checks, rollback validation, and T032 evidence complete. |
 | Production acceptance | not granted | Outside task boundary. Existing actions are limited to the authorized Draft PR and Preview/UAT target; no Production deployment, promotion, merge, public signup, external-client invitation, or real customer data is authorized. |
 
@@ -25,7 +25,7 @@
 | Synthetic Hadna seed | green | Idempotent S015 hosted seed now scopes to an active client-viewer role assignment through tenant membership and created one synthetic contract, package, package line, deliverable, version, file metadata row, client-visible comment, and SLA segment. Evidence is count/category-only. |
 | Team access | green | Owner approved synthetic UAT account creation. Seven active categories now cover management, account manager, assigned writer, assigned designer, unassigned internal negative tester, client approver, and client viewer. Direct Auth verification plus active tenant membership and role-assignment checks pass for every category. The assigned writer owns the run-scoped synthetic deliverable and the assigned designer is its contributor; credentials remain local-only and uncommitted. |
 | Preview deployment | green for Preview build and public UAT entry | Preview deployment built successfully and is Ready. Preview env contains the required app and public Supabase configuration; the public UAT alias returns the Arabic sign-in shell, signs in available valid UAT personas, has zero observed browser console errors for those personas, and shows no service-role marker or internal secret leakage. Production remains untouched. |
-| Hosted workflow/UX UAT | open | H008 remains open. X006 local gates, UAT migrations/imports, Preview update, and direct persona evidence are still required. |
+| Hosted workflow/UX UAT | open | H008 remains open. Hosted Playwright tooling is present and fails closed without an explicit secure-env hostname allowlist and non-Production target category. X006 exact-HEAD CI, UAT migrations/imports, Preview update, and direct persona evidence are still required. |
 | T032 hosted evidence | pending | T032 remains open. Rollback boundary and migration/seed/deploy/public-entry/access evidence exist; workflow and final rollback/no-op evidence remain pending. |
 
 ## Product Experience Rescue amendment status (2026-07-13)
@@ -47,3 +47,9 @@ Latest local X006 evidence: lint, typecheck, unit 49/172, integration 28/112, co
 - Latest owner-provided quality CI `29248954232` is `SUCCESS`; X006-A through X006-G are evidence-backed in `tasks.md`.
 - X006-H remains open. Direct Preview visual QA did not reach the application because the temporary harness failed during Playwright module loading; this is not a product defect result.
 - X007, H008-H010, UAT migration/import, rollback/no-op rehearsal, and T032 remain open.
+
+## 2026-07-13 local visual QA continuation
+- X006-H visual tooling now runs through the repository Playwright CLI, not the abandoned temporary ESM harness.
+- Local synthetic visual QA passed 12/12 across desktop, mobile, and Arabic RTL, with direct screenshot inspection.
+- Hosted UAT Playwright tooling now requires a secure local env with an explicit hostname allowlist and accepted non-Production target category; without them it fails closed before navigation.
+- X006-H remains open because `npm run test:rls:db` and `npm run test:e2e:persistent` are blocked by unavailable local Supabase/PostgreSQL in this workspace, and because this dirty-worktree slice still needs a new exact-HEAD PR #37 quality run.

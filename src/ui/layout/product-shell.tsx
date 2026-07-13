@@ -118,7 +118,10 @@ function Breadcrumbs({
     <nav aria-label="مسار الصفحة" className="min-w-0 text-xs text-muted">
       <ol className="flex min-w-0 flex-wrap items-center gap-1">
         <li>
-          <Link className="hover:text-foreground" href={rootHref}>
+          <Link
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md px-3 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+            href={rootHref}
+          >
             {rootLabel}
           </Link>
         </li>
@@ -134,7 +137,7 @@ function Breadcrumbs({
                 </span>
               ) : (
                 <Link
-                  className="truncate hover:text-foreground"
+                  className="inline-flex min-h-11 min-w-11 max-w-full items-center justify-center truncate rounded-md px-3 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                   href={crumb.href}
                 >
                   {crumb.label}
@@ -199,7 +202,7 @@ export function ProductShell({
                   return (
                     <Link
                       className={cn(
-                        "flex min-w-fit snap-start items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors",
+                        "flex min-h-11 min-w-fit snap-start items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors",
                         "focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent",
                         active
                           ? "border-accent/20 bg-accent-soft text-accent"

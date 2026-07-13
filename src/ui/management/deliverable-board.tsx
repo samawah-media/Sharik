@@ -72,7 +72,7 @@ function DeliverableVersionSubmissionControl({
       <label className="grid gap-1 text-xs font-semibold">
         رقم النسخة
         <input
-          className="min-h-9 rounded-md border border-border bg-surface px-2"
+          className="min-h-11 rounded-md border border-border bg-surface px-2"
           min={1}
           name="versionNumber"
           required
@@ -234,7 +234,7 @@ function DeliverableStatusControl({
         <label className="grid gap-1 text-xs font-semibold">
           الحالة
           <select
-            className="min-h-9 rounded-md border border-border bg-surface px-2 py-1 text-sm"
+            className="min-h-11 rounded-md border border-border bg-surface px-2 py-1 text-sm"
             defaultValue={deliverable.status}
             name="toStatus"
           >
@@ -248,7 +248,7 @@ function DeliverableStatusControl({
         <label className="grid gap-1 text-xs font-semibold">
           سبب التغيير
           <input
-            className="min-h-9 rounded-md border border-border bg-surface px-2 py-1 text-sm"
+            className="min-h-11 rounded-md border border-border bg-surface px-2 py-1 text-sm"
             maxLength={500}
             name="reason"
             placeholder="اختياري"

@@ -2,7 +2,7 @@
 
 ## Spec 015 Product Experience Rescue — 2026-07-13
 
-The owner-authorized rescue is continuing inside Spec 015 only. CI run `29239615839` passed the prior rescue slice with RLS 228/228 and fixture E2E 108. Migrations 202607130001-007 remain unapplied to Supabase UAT, persistent browser E2E has not rerun after the latest changes, and X006/X007, H008-H010, and T032 remain open. X006 now includes direct-RPC visibility hardening, scoped member-profile reads/sync, the universal drawer, persistent content/files/comments, role workspaces, and new local regression coverage; DESIGN.md visual QA is still open. Production acceptance remains not granted.
+The owner-authorized rescue is continuing inside Spec 015 only. X006-A through X006-G are evidence-backed by the owner-reported CI run `29248954232`; later dirty-worktree changes require a new exact-HEAD PR #37 quality run before X006-H can close. The temporary visual harness was abandoned and replaced with a repository Playwright visual QA spec; local synthetic visual QA now passes 12/12 across desktop, mobile, and Arabic RTL with direct screenshot inspection. Hosted UAT Playwright tooling now fails closed unless a secure local env provides an explicit hostname allowlist and non-Production target category. X006-H still remains open because the current workspace cannot reach local Supabase/PostgreSQL for `test:rls:db` or persistent E2E. X007, H008-H010, UAT migration/import, rollback/no-op evidence, T032, and Production acceptance remain open/not granted.
 
 Last updated: 2026-07-13
 

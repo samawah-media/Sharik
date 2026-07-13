@@ -60,7 +60,7 @@ Hosted amendment note: H001-H007 have completed under owner authorization. Hoste
 - [x] X003 Make client pending approval navigation real and add a discoverable client shell/profile/sign-out path.
 - [x] X004 Remove raw assignee identifiers from normal management card UI.
 - [x] X005 Add persistent regression coverage for client pending/home/summary consistency and raw-ID secrecy. CI run `29239615839` passed RLS 228/228 and fixture E2E 108 for migrations 202607130001/002; later X006 migrations and persistent browser rerun remain open.
-- [x] X006 Complete universal role-aware deliverable detail, persistent content/file/comment execution, and team board/list UAT. Exact-HEAD PR #37 quality run `29262690895` passed for commit `fbb588c3f30cd29fb57ed9543deae3fc91d792db`, including Supabase start/reset, RLS, fixture E2E, persistent E2E, secret scan, and build.
+- [x] X006 Complete universal role-aware deliverable detail, persistent content/file/comment execution, and team board/list UAT. Exact-HEAD PR #37 quality run `29263587871` attempt 2 passed for commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`, including Supabase start/reset, RLS, fixture E2E, persistent E2E, secret scan, and build.
   - [x] X006-A Harden exact-current-version RPC invocation and scoped member-profile reads/sync with direct RPC and RLS tests.
   - [x] X006-B Implement the shared keyboard-accessible role-filtered deliverable drawer and persistent execution read model.
   - [x] X006-C Implement Zod/React Hook Form content editing, version submission, internal review/change/approval, and exact-version client send.

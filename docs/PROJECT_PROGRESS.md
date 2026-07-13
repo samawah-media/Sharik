@@ -2,7 +2,7 @@
 
 ## Spec 015 Product Experience Rescue — 2026-07-13
 
-The owner-authorized rescue is continuing inside Spec 015 only. X006 is closed on exact-HEAD PR #37 quality run `29262690895` for commit `fbb588c3f30cd29fb57ed9543deae3fc91d792db`; the run passed npm ci, lint, typecheck, unit, integration, Supabase start/reset, RLS, component, fixture E2E, persistent E2E, secret scan, and build. The temporary visual harness was abandoned and replaced with a repository Playwright visual QA spec; local synthetic visual QA passes across desktop, mobile, and Arabic RTL with direct screenshot inspection, and CI fixture E2E now carries the visual checks. Hosted UAT Playwright tooling fails closed unless a secure local env provides an explicit hostname allowlist and non-Production target category. X007, H008-H010, UAT migration/import, rollback/no-op evidence, T032, and Production acceptance remain open/not granted.
+The owner-authorized rescue is continuing inside Spec 015 only. X006 is closed on exact-HEAD PR #37 quality run `29263587871` attempt 2 for commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`; the run passed npm ci, lint, typecheck, unit, integration, Supabase start/reset, RLS, component, fixture E2E, persistent E2E, secret scan, and build. The temporary visual harness was abandoned and replaced with a repository Playwright visual QA spec; local synthetic visual QA passes across desktop, mobile, and Arabic RTL with direct screenshot inspection, and CI fixture E2E now carries the visual checks. Hosted UAT Playwright tooling fails closed unless a secure local env provides an explicit hostname allowlist and non-Production target category. X007, H008-H010, UAT migration/import, rollback/no-op evidence, T032, and Production acceptance remain open/not granted.
 
 Last updated: 2026-07-13
 
@@ -1698,7 +1698,7 @@ Boundary:
 
 ## Spec 015 latest reconciliation - 2026-07-13
 
-- Owner-provided GitHub quality run `29248954232` initially backed X006-A through X006-G; exact-HEAD PR #37 quality run `29262690895` now closes X006-H and parent X006 for commit `fbb588c3f30cd29fb57ed9543deae3fc91d792db`.
+- Owner-provided GitHub quality run `29248954232` initially backed X006-A through X006-G; exact-HEAD PR #37 quality run `29263587871` attempt 2 now closes X006-H and parent X006 for commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`.
 - The temporary visual harness was removed after a pre-navigation Windows Playwright ESM loading failure; repository Playwright visual QA replaced it and is covered by the exact-HEAD CI fixture E2E run.
 - No hosted persona PASS is claimed.
 - X007 and H008-H010 remain open. No UAT migration/import, rollback/no-op rehearsal, Production action, external client invitation, public signup, PR merge, or workbook tracking occurred in this continuation.

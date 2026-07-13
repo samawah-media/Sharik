@@ -6,10 +6,10 @@
 | Persistent schema/RLS | CI green for 202607130001/002; X006 migration pending | GitHub quality run `29239615839` applied migrations 202607130001/002 on a clean Supabase stack and passed RLS 228/228. The later X006 hardening migration remains unapplied to Supabase UAT and must pass the final DB matrix. |
 | Persistent workflow | green | Internal review, internal approval, client submission, client decision, delivery, closure, exact-version binding, audit, SLA, ledger, idempotency, terminal-state, and rollback paths are covered by local DB-backed tests. |
 | Fixture boundary | green | Production routes use scoped persistent reads outside local/test actor-fixture mode; persistent read failures do not silently instantiate fixture repositories. `APP_ENV=test-persistent` is denied by the fixture predicate and verified by the persistent E2E helper. |
-| Role and secrecy boundary | green for X006 | PR #37 quality run `29262690895` passed exact commit `fbb588c3f30cd29fb57ed9543deae3fc91d792db`, including Supabase start/reset, RLS, fixture E2E, persistent E2E, and secret scan. |
-| RTL/mobile/keyboard UX | green for X006 / hosted pending | Repository Playwright visual QA `tests/e2e/visual-qa.spec.ts` passed locally across desktop, mobile, and Arabic RTL with direct screenshot inspection; the same visual checks are included in CI fixture E2E for exact commit `fbb588c3f30cd29fb57ed9543deae3fc91d792db`. |
-| Persistent browser E2E | green in CI / local Docker unavailable | Local workspace Supabase/PostgreSQL remained unavailable, but exact-HEAD PR #37 quality run `29262690895` passed persistent browser E2E after clean Supabase start/reset. |
-| Local MVP acceptance | green for X006 via exact CI | Exact-HEAD PR #37 quality run `29262690895` passed npm ci, lint, typecheck, unit, integration, Supabase start/reset, RLS, component, fixture E2E, persistent E2E, secret scan, and build. |
+| Role and secrecy boundary | green for X006 | PR #37 quality run `29263587871` attempt 2 passed exact commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`, including Supabase start/reset, RLS, fixture E2E, persistent E2E, and secret scan. |
+| RTL/mobile/keyboard UX | green for X006 / hosted pending | Repository Playwright visual QA `tests/e2e/visual-qa.spec.ts` passed locally across desktop, mobile, and Arabic RTL with direct screenshot inspection; the same visual checks are included in CI fixture E2E for exact commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`. |
+| Persistent browser E2E | green in CI / local Docker unavailable | Local workspace Supabase/PostgreSQL remained unavailable, but exact-HEAD PR #37 quality run `29263587871` attempt 2 passed persistent browser E2E after clean Supabase start/reset. |
+| Local MVP acceptance | green for X006 via exact CI | Exact-HEAD PR #37 quality run `29263587871` attempt 2 passed npm ci, lint, typecheck, unit, integration, Supabase start/reset, RLS, component, fixture E2E, persistent E2E, secret scan, and build. |
 | Hosted UAT | owner authorized / preflight in progress | Owner authorized a controlled Team-Only Hadna Preview/UAT run as an amendment to Spec 015. No hosted PASS is claimed until Draft PR, CI, Preview/UAT target verification, Supabase UAT migration/seed, approved team access, hosted workflow/UX checks, rollback validation, and T032 evidence complete. |
 | Production acceptance | not granted | Outside task boundary. Existing actions are limited to the authorized Draft PR and Preview/UAT target; no Production deployment, promotion, merge, public signup, external-client invitation, or real customer data is authorized. |
 
@@ -39,18 +39,18 @@
 | Hosted team workflow | open | H008-H010 remain open; no claim of hosted PASS is made from local evidence. |
 | Client E2E navigation regression | green locally | Initial duplicate-landmark failure was fixed; affected client/accessibility tests pass across desktop/mobile/RTL with configured skips unchanged. |
 
-Continuation evidence correction: CI run `29239615839` is valid database evidence for migrations 202607130001/002 (RLS 228/228) and fixture evidence (E2E 108). Later X006 closure is instead backed by exact-HEAD PR #37 quality run `29262690895` for commit `fbb588c3f30cd29fb57ed9543deae3fc91d792db`. X007, H008-H010, and T032 remain open.
+Continuation evidence correction: CI run `29239615839` is valid database evidence for migrations 202607130001/002 (RLS 228/228) and fixture evidence (E2E 108). Later X006 closure is instead backed by exact-HEAD PR #37 quality run `29263587871` attempt 2 for commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`. X007, H008-H010, and T032 remain open.
 
-Latest X006 evidence: local lint, typecheck, unit 50/174, integration 28/112, component 18/57, RLS simulator 8/24, fixture E2E 123 passed / 6 configured skips, visual QA, secret scan, diff check, production build, and workbook dry-run (15 content deliverables + 1 coordination deliverable + 16 draft versions + 7 tasks; 0 approvals/files). Exact-HEAD PR #37 quality run `29262690895` additionally passed Supabase start/reset, RLS, fixture E2E, persistent E2E, secret scan, and build.
+Latest X006 evidence: local lint, typecheck, unit 50/174, integration 28/112, component 18/57, RLS simulator 8/24, fixture E2E 123 passed / 6 configured skips, visual QA, secret scan, diff check, production build, and workbook dry-run (15 content deliverables + 1 coordination deliverable + 16 draft versions + 7 tasks; 0 approvals/files). Exact-HEAD PR #37 quality run `29263587871` attempt 2 additionally passed Supabase start/reset, RLS, fixture E2E, persistent E2E, secret scan, and build.
 
 ## 2026-07-13 reconciliation
 - Latest owner-provided quality CI `29248954232` remains historical evidence for X006-A through X006-G.
-- X006-H and parent X006 are closed by exact-HEAD PR #37 quality run `29262690895` for commit `fbb588c3f30cd29fb57ed9543deae3fc91d792db`.
+- X006-H and parent X006 are closed by exact-HEAD PR #37 quality run `29263587871` attempt 2 for commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`.
 - X007, H008-H010, UAT migration/import, rollback/no-op rehearsal, and T032 remain open.
 
 ## 2026-07-13 local visual QA continuation
 - X006-H visual tooling now runs through the repository Playwright CLI, not the abandoned temporary ESM harness.
 - Local synthetic visual QA passed 12/12 across desktop, mobile, and Arabic RTL, with direct screenshot inspection.
 - Hosted UAT Playwright tooling now requires a secure local env with an explicit hostname allowlist and accepted non-Production target category; without them it fails closed before navigation.
-- X006-H is closed by exact-HEAD PR #37 quality run `29262690895` for commit `fbb588c3f30cd29fb57ed9543deae3fc91d792db`.
+- X006-H is closed by exact-HEAD PR #37 quality run `29263587871` attempt 2 for commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`.
 - X007, H008-H010, T032, hosted UAT workflow, UAT import/rollback evidence, and Production acceptance remain open/not granted.

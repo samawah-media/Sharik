@@ -1,6 +1,7 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { listScopedDeliverables } from "@/server/actions/deliverable-read";
+import { listScopedDeliverableWorkspaces } from "@/server/actions/deliverable-workspace-read";
 import {
   submitDeliverableVersionAction,
   updateDeliverableStatusAction,
@@ -123,6 +124,14 @@ export default async function ClientDeliverablesBoardPage({
             deliverable.contributorUserIds.includes(runtime.actor.userId),
         );
   const displayClientName = formatMvpClientName(client.name);
+  const workspaces = await listScopedDeliverableWorkspaces({
+    tenantId: client.tenantId,
+    clientId: client.id,
+    deliverables: visibleDeliverables.map((deliverable) => ({
+      id: deliverable.id,
+      currentVersionId: deliverable.currentVersionId,
+    })),
+  });
 
   return (
     <main className="grid gap-5" dir="rtl">
@@ -159,11 +168,13 @@ export default async function ClientDeliverablesBoardPage({
             canUseApprovalWorkflow ? updateDeliverableStatusAction : undefined
           }
           deliverables={visibleDeliverables}
+          key={visibleDeliverables.map((deliverable) => `${deliverable.id}:${deliverable.revision}`).join("|")}
           versionAction={
             canSubmitDeliverableVersion
               ? submitDeliverableVersionAction
               : undefined
           }
+          workspaces={workspaces}
         />
       ) : (
         <DeliverableBoardEmptyState />

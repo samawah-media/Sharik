@@ -1,8 +1,28 @@
+"use client";
+
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical } from "lucide-react";
+import { useState } from "react";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
+import type { DeliverableWorkspace } from "@/modules/deliverables/deliverable-workspace";
 import {
   activeKanbanStatuses,
   canChangeDeliverableStatus,
   genericOperationalStatuses,
+  getProgressForDeliverableStatus,
   type ActiveKanbanStatus,
 } from "@/modules/deliverables/deliverable-rules";
 import { deriveSlaStatus, type SlaStatus } from "@/modules/sla/sla-policy";
@@ -11,6 +31,8 @@ import { Button } from "@/ui/core/button";
 import { EmptyState } from "@/ui/core/states";
 import { DeliverableApprovalWorkflowControl } from "./deliverable-actions";
 import { DeliverableStatusDisclosure } from "./deliverable-status-disclosure";
+import { UniversalDeliverableDrawer } from "@/ui/deliverables/universal-deliverable-drawer";
+import { moveDeliverableOnBoard } from "@/server/actions/deliverable-workspace-actions";
 
 type StatusUpdateAction = (formData: FormData) => void | Promise<void>;
 
@@ -101,6 +123,22 @@ const slaLabels: Record<SlaStatus, string> = {
   completed: "مكتمل",
   cancelled: "ملغي",
 };
+
+type MacroLane = {
+  id: string;
+  label: string;
+  statuses: readonly ActiveKanbanStatus[];
+  targetStatus?: "not_started" | "in_progress";
+};
+
+const macroLanes: readonly MacroLane[] = [
+  { id: "planning", label: "لم يبدأ", statuses: ["not_started"], targetStatus: "not_started" },
+  { id: "execution", label: "قيد التنفيذ والتعديلات", statuses: ["in_progress", "internal_changes_requested", "client_changes_requested"], targetStatus: "in_progress" },
+  { id: "internal-review", label: "المراجعة الداخلية", statuses: ["ready_for_internal_review", "internally_approved"] },
+  { id: "client-review", label: "مراجعة العميل", statuses: ["waiting_client_approval", "client_approved"] },
+  { id: "delivery", label: "جاهز للتسليم", statuses: ["ready_for_delivery"] },
+  { id: "completed", label: "تم التسليم", statuses: ["delivered"] },
+];
 
 const formatDate = (value?: string) => {
   if (!value) {
@@ -229,12 +267,16 @@ function DeliverableCard({
   action,
   approvalAction,
   versionAction,
+  workspace,
+  canPublishClientComment,
   now,
 }: {
   deliverable: DeliverableSafeSummary;
   action?: StatusUpdateAction;
   approvalAction?: StatusUpdateAction;
   versionAction?: StatusUpdateAction;
+  workspace?: DeliverableWorkspace;
+  canPublishClientComment: boolean;
   now: string;
 }) {
   const sla = deriveSlaStatus({
@@ -312,6 +354,14 @@ function DeliverableCard({
         action={approvalAction}
         deliverable={deliverable}
       />
+      <div className="mt-4">
+        <UniversalDeliverableDrawer
+          approvalAction={approvalAction}
+          canPublishClientComment={canPublishClientComment}
+          deliverable={deliverable}
+          workspace={workspace}
+        />
+      </div>
       <DeliverableVersionSubmissionControl
         action={versionAction}
         deliverable={deliverable}
@@ -320,6 +370,78 @@ function DeliverableCard({
         <DeliverableStatusControl action={action} deliverable={deliverable} />
       ) : null}
     </article>
+  );
+}
+
+function DraggableDeliverableCard({
+  canDrag,
+  children,
+  deliverable,
+}: {
+  canDrag: boolean;
+  children: React.ReactNode;
+  deliverable: DeliverableSafeSummary;
+}) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: deliverable.id,
+      data: { deliverableId: deliverable.id },
+      disabled: !canDrag,
+    });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Translate.toString(transform),
+        opacity: isDragging ? 0.55 : 1,
+      }}
+    >
+      {canDrag ? (
+        <button
+          aria-label={`سحب ${deliverable.name}. استخدم مفتاح المسافة ثم الأسهم للتحريك.`}
+          className="mb-1 flex min-h-11 w-full touch-none items-center justify-center rounded-lg border border-dashed border-border bg-surface text-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+          type="button"
+          {...listeners}
+          {...attributes}
+        >
+          <GripVertical aria-hidden="true" size={18} />
+          <span className="ms-2 text-xs">تحريك البطاقة</span>
+        </button>
+      ) : null}
+      {children}
+    </div>
+  );
+}
+
+function MacroLaneColumn({
+  activeDeliverable,
+  children,
+  lane,
+}: {
+  activeDeliverable?: DeliverableSafeSummary;
+  children: React.ReactNode;
+  lane: MacroLane;
+}) {
+  const { isOver, setNodeRef } = useDroppable({ id: lane.id });
+  const valid = Boolean(
+    activeDeliverable &&
+      lane.targetStatus &&
+      canChangeDeliverableStatus({
+        currentStatus: activeDeliverable.status,
+        targetStatus: lane.targetStatus,
+        requiresClientApproval: activeDeliverable.requiresClientApproval,
+      }).allowed,
+  );
+  return (
+    <section
+      aria-label={lane.label}
+      className={`flex min-h-[32rem] w-[20rem] min-w-[20rem] flex-col rounded-xl border bg-background ${isOver && valid ? "border-accent ring-2 ring-accent/30" : "border-border"}`}
+      data-drop-valid={valid ? "true" : "false"}
+      data-testid="kanban-column"
+      ref={setNodeRef}
+    >
+      {children}
+    </section>
   );
 }
 
@@ -337,32 +459,81 @@ export function DeliverableBoard({
   action,
   approvalAction,
   versionAction,
+  workspaces = {},
   now = new Date().toISOString(),
 }: {
   deliverables: DeliverableSafeSummary[];
   action?: StatusUpdateAction;
   approvalAction?: StatusUpdateAction;
   versionAction?: StatusUpdateAction;
+  workspaces?: Record<string, DeliverableWorkspace>;
   now?: string;
 }) {
+  const [items, setItems] = useState(deliverables);
+  const [activeId, setActiveId] = useState<string>();
+  const [dragFeedback, setDragFeedback] = useState<string>();
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+  const activeDeliverable = items.find((item) => item.id === activeId);
+
   if (deliverables.length === 0) {
     return <DeliverableBoardEmptyState />;
   }
 
-  const deliverablesByStatus = new Map<
-    ActiveKanbanStatus,
-    DeliverableSafeSummary[]
-  >(activeKanbanStatuses.map((status) => [status, []]));
-
-  for (const deliverable of deliverables) {
-    if (
-      activeKanbanStatuses.includes(deliverable.status as ActiveKanbanStatus)
-    ) {
-      deliverablesByStatus
-        .get(deliverable.status as ActiveKanbanStatus)
-        ?.push(deliverable);
+  const finishDrag = async ({ active, over }: DragEndEvent) => {
+    setActiveId(undefined);
+    if (!over || !action) return;
+    const deliverable = items.find((item) => item.id === active.id);
+    const lane = macroLanes.find((item) => item.id === over.id);
+    if (!deliverable || !lane?.targetStatus) {
+      setDragFeedback("هذه المرحلة تحتاج إجراء اعتماد مخصصًا من داخل مساحة المخرج.");
+      return;
     }
-  }
+    const targetStatus = lane.targetStatus;
+    const decision = canChangeDeliverableStatus({
+      currentStatus: deliverable.status,
+      targetStatus,
+      requiresClientApproval: deliverable.requiresClientApproval,
+    });
+    if (!decision.allowed || deliverable.status === targetStatus) {
+      setDragFeedback(
+        deliverable.status === targetStatus
+          ? undefined
+          : "لا يمكن تنفيذ هذه الحركة بالسحب. استخدم الإجراء المخصص للحالة.",
+      );
+      return;
+    }
+    const previous = items;
+    setItems((current) =>
+      current.map((item) =>
+        item.id === deliverable.id
+          ? {
+              ...item,
+              status: targetStatus,
+              progressPercentage: getProgressForDeliverableStatus(targetStatus),
+              revision: item.revision + 1,
+            }
+          : item,
+      ),
+    );
+    setDragFeedback("جارٍ حفظ الحركة…");
+    const result = await moveDeliverableOnBoard({
+      clientId: deliverable.clientId,
+      deliverableId: deliverable.id,
+      toStatus: targetStatus,
+      expectedRevision: deliverable.revision,
+      idempotencyKey: `s015-drag-${deliverable.id}-${deliverable.revision}-${crypto.randomUUID()}`,
+    });
+    if (!result.ok) {
+      setItems(previous);
+      setDragFeedback("تعذر حفظ الحركة وأُعيدت البطاقة إلى مكانها. راجع الصلاحية أو حدّث الصفحة.");
+    } else {
+      setDragFeedback("تم حفظ الحركة وتسجيلها في سجل النشاط.");
+    }
+  };
 
   return (
     <section
@@ -371,37 +542,49 @@ export function DeliverableBoard({
       data-testid="kanban-board-scroll"
       dir="rtl"
     >
+      {dragFeedback ? <p aria-live="polite" className="mb-3 rounded-lg bg-surface px-3 py-2 text-sm">{dragFeedback}</p> : null}
+      <DndContext
+        collisionDetection={closestCenter}
+        onDragCancel={() => setActiveId(undefined)}
+        onDragEnd={finishDrag}
+        onDragStart={({ active }) => setActiveId(String(active.id))}
+        sensors={sensors}
+      >
       <div className="flex min-w-max gap-4">
-        {activeKanbanStatuses.map((status) => {
-          const items = deliverablesByStatus.get(status) ?? [];
+        {macroLanes.map((lane) => {
+          const laneItems = items.filter((deliverable) =>
+            lane.statuses.includes(deliverable.status as never),
+          );
 
           return (
-            <section
-              aria-label={kanbanStatusLabels[status]}
-              className="flex min-h-[32rem] w-[21rem] min-w-[21rem] flex-col rounded-xl border border-border bg-background"
-              data-testid="kanban-column"
-              key={status}
-            >
+            <MacroLaneColumn activeDeliverable={activeDeliverable} key={lane.id} lane={lane}>
               <div className="sticky top-0 z-10 flex items-start justify-between gap-2 border-b border-border bg-background/95 p-3">
                 <div className="min-w-0">
                   <h2 className="truncate text-sm font-semibold">
-                    {kanbanStatusLabels[status]}
+                    {lane.label}
                   </h2>
-                  <p className="mt-1 text-xs text-muted">مرحلة تشغيل داخلية</p>
+                  <p className="mt-1 text-xs text-muted">مسار بصري يجمع حالات قاعدة البيانات كما هي</p>
                 </div>
-                <Badge tone="muted">{items.length}</Badge>
+                <Badge tone="muted">{laneItems.length}</Badge>
               </div>
               <div className="grid content-start gap-3 p-3">
-                {items.length > 0 ? (
-                  items.map((deliverable) => (
+                {laneItems.length > 0 ? (
+                  laneItems.map((deliverable) => (
+                    <DraggableDeliverableCard
+                      canDrag={Boolean(action)}
+                      deliverable={deliverable}
+                      key={deliverable.id}
+                    >
                     <DeliverableCard
                       action={action}
                       approvalAction={approvalAction}
+                      canPublishClientComment={Boolean(approvalAction)}
                       versionAction={versionAction}
                       deliverable={deliverable}
-                      key={deliverable.id}
                       now={now}
+                      workspace={workspaces[deliverable.id]}
                     />
+                    </DraggableDeliverableCard>
                   ))
                 ) : (
                   <p className="rounded-lg border border-dashed border-border bg-surface p-4 text-sm leading-6 text-muted">
@@ -409,10 +592,11 @@ export function DeliverableBoard({
                   </p>
                 )}
               </div>
-            </section>
+            </MacroLaneColumn>
           );
         })}
       </div>
+      </DndContext>
     </section>
   );
 }

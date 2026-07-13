@@ -12,7 +12,15 @@
 
 ## Design constraints
 
-Use existing Supabase SSR client, server actions/RPCs, Zod, current RLS helper functions, and existing audit/status workflow patterns. Do not introduce a dependency. Sensitive writes must be idempotent, server-side, tenant/client scoped, and audited.
+Use the existing Supabase SSR client, server actions/RPCs, current RLS helper
+functions, and existing audit/status workflow patterns. The owner-authorized
+rescue completes the `AGENTS.md` stack with React Hook Form + Zod for changed
+non-trivial forms, dnd-kit for the governed board interaction, Uppy with
+Supabase Storage for files, Tiptap for persistent comments, and TanStack
+Query/Table only where the shared persistent source needs them. Review and pin
+these dependencies; do not introduce any other technology. Sensitive writes
+must be idempotent, server-side, tenant/client scoped, atomic, SLA-aware, and
+audited.
 
 ## Corrective sequencing
 
@@ -55,6 +63,9 @@ No hosted mutation may begin until target identity, environment category, data c
 
 ## Product Experience Rescue Amendment
 
-Status: implementation in progress within Spec 015. The current slice closes client navigation/profile discoverability, creates the real multi-item pending-approval route, narrows client visibility to the exact current client-visible version, resolves scoped member display data, removes raw assignee identifiers from the management board, and expands the shared Samawah design contract. It adds no package dependency; the two additive migrations update the existing persistent contract and RLS. Remaining hosted workflow and visual UAT gates are H008-H010, and local DB execution is blocked by missing Docker Desktop.
+Status: implementation in progress within Spec 015. The rescue closes client navigation/profile discoverability, creates the real multi-item pending-approval route, narrows client visibility to the exact current client-visible version, resolves scoped member display data, removes raw assignee identifiers, and implements the shared Samawah design contract across the universal drawer and role workspaces. The owner has authorized the approved stack dependencies and generic Glass/Hadna UAT import in this same rescue. Migrations remain additive and reviewed before UAT application. X006/X007 and H008-H010 remain open until local persistent verification and hosted persona evidence pass.
 
-Dependency inventory: unchanged; `package.json` and lockfile require no additions for this slice.
+Dependency inventory: add only the pinned packages required for React Hook Form,
+dnd-kit, Uppy, Tiptap, and TanStack Query/Table after license/security review.
+No dependency may weaken the server/RLS boundary or become a source of client
+payload leakage.

@@ -94,15 +94,15 @@ describe("internal deliverable work board", () => {
     expect(screen.getByTestId("kanban-board-scroll")).toHaveClass(
       "overflow-x-auto",
     );
-    expect(screen.getAllByTestId("kanban-column")).toHaveLength(10);
+    expect(screen.getAllByTestId("kanban-column")).toHaveLength(6);
     expect(screen.getAllByTestId("kanban-column")[0]).toHaveClass(
-      "min-w-[21rem]",
+      "min-w-[20rem]",
     );
     expect(
       within(board).getByRole("region", { name: "لم يبدأ" }),
     ).toBeInTheDocument();
     expect(
-      within(board).getByRole("region", { name: "معتمد داخليًا" }),
+      within(board).getByRole("region", { name: "المراجعة الداخلية" }),
     ).toBeInTheDocument();
     expect(within(board).getByText("منشور إطلاق الحملة")).toBeInTheDocument();
     expect(within(board).getByText("تصميم إعلان المنتج")).toBeInTheDocument();
@@ -156,7 +156,7 @@ describe("internal deliverable work board", () => {
     );
 
     const inProgressColumn = screen.getByRole("region", {
-      name: "قيد التنفيذ",
+      name: "قيد التنفيذ والتعديلات",
     });
     expect(
       within(inProgressColumn).getByText("ما فيه مخرجات في هذه المرحلة."),

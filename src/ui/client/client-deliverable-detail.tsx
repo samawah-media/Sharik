@@ -1,21 +1,28 @@
-import type {
-  ClientVisibleFileAssetSummary,
-  FileAssetVisibility,
-} from "@/modules/files/file-visibility-rules";
+import type { FileAssetVisibility } from "@/modules/files/file-visibility-rules";
 import type { ClientApprovalFormAction } from "./client-approval-panel";
 import {
   ClientApprovalPanel,
   type ClientApprovalPanelItem,
 } from "./client-approval-panel";
+import { WorkspaceFileDownload, WorkspaceFilePreview } from "@/ui/deliverables/workspace-files";
+import { ClientWorkspaceCommentForm } from "@/ui/deliverables/workspace-forms";
 
-export type ClientPortalFileSummary = ClientVisibleFileAssetSummary & {
+export type ClientPortalFileSummary = {
+  id: string;
   label: string;
+  visibility: FileAssetVisibility;
+  fileType: string;
+  fileSize: number;
+  versionNumber: number;
+  isFinal: boolean;
+  createdAt: string;
 };
 
 export type ClientPortalCommentSummary = {
   id: string;
   body: string;
   createdAt: string;
+  authorName: string;
 };
 
 export type ClientSafeDeliverableDetail = {
@@ -124,6 +131,10 @@ export function ClientDeliverableDetail({
                 <p className="text-xs text-muted">
                   {visibilityLabels[file.visibility]} · نسخة {file.versionNumber}
                 </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <WorkspaceFileDownload fileId={file.id} />
+                  <WorkspaceFilePreview fileId={file.id} fileType={file.fileType} label={file.label} />
+                </div>
               </li>
             ))}
           </ul>
@@ -142,7 +153,7 @@ export function ClientDeliverableDetail({
               <li className="rounded-md bg-surface px-3 py-2" key={comment.id}>
                 <p className="text-sm leading-6">{comment.body}</p>
                 <p className="mt-1 text-xs text-muted">
-                  {formatDate(comment.createdAt)}
+                  {comment.authorName} · {formatDate(comment.createdAt)}
                 </p>
               </li>
             ))}
@@ -152,6 +163,11 @@ export function ClientDeliverableDetail({
             لا توجد تعليقات ظاهرة الآن.
           </p>
         )}
+        <ClientWorkspaceCommentForm
+          clientId={detail.approvalItem.clientId}
+          deliverableId={detail.approvalItem.deliverableId}
+          versionId={detail.approvalItem.versionId}
+        />
       </section>
     </section>
   );

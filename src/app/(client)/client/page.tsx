@@ -14,7 +14,6 @@ import {
 } from "@/modules/comments/comment-visibility-rules";
 import {
   filterClientVisibleFileAssets,
-  toClientVisibleFileAssetSummary,
   type FileAssetRecord,
 } from "@/modules/files/file-visibility-rules";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -183,7 +182,13 @@ const buildR007ClientPortalDetail = ({
     clientId,
     files: r007ClientPortalFiles,
   }).map((file) => ({
-    ...toClientVisibleFileAssetSummary(file),
+    id: file.id,
+    visibility: file.visibility,
+    fileType: file.fileType,
+    fileSize: file.fileSize,
+    versionNumber: file.versionNumber,
+    isFinal: file.isFinal,
+    createdAt: file.createdAt,
     label: fileLabels[file.id] ?? "ملف متاح للعميل",
   }));
   const comments = filterClientVisibleComments({
@@ -194,6 +199,7 @@ const buildR007ClientPortalDetail = ({
     id: comment.id,
     body: comment.body,
     createdAt: comment.createdAt,
+    authorName: "فريق سماوة",
   }));
 
   return {

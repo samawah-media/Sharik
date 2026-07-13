@@ -137,6 +137,7 @@ export const resolveRoleAwareNavigation = ({
     return {
       state: "ready",
       items: [
+        item("team.work", "مهامي", "/work"),
         item("team.portfolio", "عملائي", "/portfolio"),
         ...visibleClients.flatMap((client) => [
           item(

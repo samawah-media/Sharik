@@ -23,6 +23,8 @@ import {
   NoAssignedClientState,
   SessionExpiredState,
 } from "@/ui/shared/access-states";
+import { listScopedDeliverables } from "@/server/actions/deliverable-read";
+import { ManagementExceptionDashboard } from "@/ui/management/exception-dashboard";
 
 export default async function PortfolioPage({
   searchParams,
@@ -90,10 +92,22 @@ export default async function PortfolioPage({
   )
     ? "الإدارة / مدير المشروع"
     : "مدير الحساب";
+  const scopedDeliverables = (
+    await Promise.all(
+      visibleClients.map((client) =>
+        listScopedDeliverables({ tenantId: client.tenantId, clientId: client.id }),
+      ),
+    )
+  ).flatMap((result) => (result.ok ? result.deliverables : []));
 
   return (
     <main className="grid gap-6">
       <RoleAwareNavigation items={navigation.items} label="تنقل مساحة الفريق" />
+      <ManagementExceptionDashboard
+        clientNames={Object.fromEntries(visibleClients.map((client) => [client.id, client.name]))}
+        deliverables={scopedDeliverables}
+        now={new Date().toISOString()}
+      />
       {primaryClient ? (
         <HadnaMvpHero
           clientName={primaryClient.name}

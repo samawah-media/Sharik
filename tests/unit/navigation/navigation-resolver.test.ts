@@ -36,6 +36,7 @@ describe("role-aware navigation resolver", () => {
 
     expect(navigation.state).toBe("ready");
     expect(navigation.items.map((item) => item.id)).toEqual([
+      "team.work",
       "team.portfolio",
       "client.client_a",
       "client.client_a.deliverables",

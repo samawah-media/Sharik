@@ -10,7 +10,10 @@ Move the Hadna-only local MVP from synthetic route fixtures to one persistent, t
 
 - Local Hadna synthetic data only. No hosted mutation, deployment, access configuration, real customer data, or Production acceptance.
 - This is the only active execution package. Historical R-007–R-011A packages remain evidence and are superseded for execution.
-- Existing stack and dependencies remain unchanged.
+- The owner-authorized Product Experience Rescue uses only the stack already
+  approved by `AGENTS.md`: React Hook Form + Zod, dnd-kit, Uppy + Supabase
+  Storage, Tiptap, TanStack Query/Table where needed. These are reviewed
+  implementation dependencies inside Spec 015, not a new product architecture.
 
 ## Acceptance criteria
 
@@ -50,7 +53,7 @@ This is not a customer trial, Production deployment, Production acceptance, publ
 
 Allowed external actions are limited to fetching GitHub remote state, creating a safe reviewable branch if required, pushing the reviewed UAT branch, creating a Draft PR, inspecting CI, configuring only Preview/UAT environment variables, deploying only a Vercel Preview/UAT build from the reviewed branch, verifying only the reviewed Supabase UAT project, applying only reviewed pending repository migrations, creating run-ID-scoped synthetic Hadna data, creating or inviting only explicitly approved Samawah team test users, running bounded hosted route/auth/RLS/workflow/UX checks, and rolling back only deployment or synthetic data created by this hosted UAT run.
 
-Forbidden actions remain Production deployment, Production alias/domain changes, Vercel Production environment changes, Production Supabase access, real customer data, external client invitations, public signup, shared accounts or committed passwords, Non-Hadna data, destructive schema operations, deleting existing users or unrelated data, force push, PR merge, Production acceptance, product dependency additions, dnd-kit/Uppy/Tiptap/TanStack/React Hook Form integration, social scheduling, billing, AI, CRM, or other feature expansion.
+Forbidden actions remain Production deployment, Production alias/domain changes, Vercel Production environment changes, Production Supabase access, real customer data, external client invitations, public signup, shared accounts or committed passwords, destructive schema operations, deleting existing users or unrelated data, force push, PR merge, Production acceptance, unapproved product dependency additions, social scheduling, billing, AI, CRM, or other feature expansion. The owner-approved Glass UAT import and the approved dnd-kit/Uppy/Tiptap/TanStack/React Hook Form implementation are explicitly inside the Product Experience Rescue boundary.
 
 ### Hosted acceptance criteria
 
@@ -86,4 +89,4 @@ This additive amendment remains inside Spec 015 and is the canonical execution s
 
 Acceptance additions: `/client/pending` is a real role-correct route; home, summary, and pending use one server-side visibility definition; client payloads exclude unsent/unapproved deliverables, internal comments, quality notes, internal files, private activity, and raw IDs; the client shell exposes home, pending, contract/follow-up, profile, and sign-out; team cards never render raw assignee identifiers; Arabic RTL, mobile, keyboard focus, 44px targets, reduced motion, and honest content fallbacks are covered by the shared `DESIGN.md` contract.
 
-The existing persistent version, approval, file, comment, audit, SLA, idempotency, and RLS contracts remain authoritative. No dependency, tenancy model, workflow rule, or storage architecture changes in this slice. H008-H010 remain open until direct hosted persona evidence, defect disposition, rollback/no-op evidence, and redacted handoff are complete. Production remains explicitly out of scope.
+The existing persistent version, approval, file, comment, audit, SLA, idempotency, and RLS contracts remain authoritative. The rescue completes the approved UI and storage stack without changing the tenancy model, workflow rules, or Supabase Storage architecture. It includes a generic, idempotent, run-ID-scoped Glass/Hadna UAT import that never commits workbook content or hosted identifiers. H008-H010 remain open until direct hosted persona evidence, defect disposition, rollback/no-op evidence, and redacted handoff are complete. Production remains explicitly out of scope.

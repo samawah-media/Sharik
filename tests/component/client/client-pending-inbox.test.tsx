@@ -1,7 +1,11 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { ClientPendingInbox } from "@/ui/client/client-pending-inbox";
 import type { ClientSafeDeliverableDetail } from "@/ui/client/client-deliverable-detail";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
 
 afterEach(() => cleanup());
 
@@ -36,7 +40,10 @@ describe("client pending inbox", () => {
 
     expect(screen.getAllByText("فيديو الحملة")).not.toHaveLength(0);
     expect(screen.getAllByText("منشور الأسبوع")).not.toHaveLength(0);
-    expect(screen.getAllByRole("button", { name: "اعتماد المخرج" })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: "اعتماد المخرج" })).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: /منشور الأسبوع/ }));
+    expect(screen.getAllByRole("button", { name: "اعتماد المخرج" })).toHaveLength(1);
+    expect(screen.getByRole("heading", { name: "منشور الأسبوع" })).toBeInTheDocument();
   });
 
   it("keeps a viewer read-only and gives a safe empty state", () => {

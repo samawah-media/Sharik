@@ -85,7 +85,7 @@ async function readClientApprovalDetailForDeliverable(
       .in("visibility", ["client_visible", "client_uploaded", "final_delivery"]),
     supabase
       .from("comments")
-      .select("id, body, created_at")
+      .select("id, body, created_at, author_user_id, comment_type")
       .eq("tenant_id", tenantId)
       .eq("client_id", clientId)
       .eq("deliverable_id", deliverable.id)
@@ -95,6 +95,25 @@ async function readClientApprovalDetailForDeliverable(
   ]);
 
   if (versionError || !version || filesResult.error || commentsResult.error) return undefined;
+
+  const authorIds = [
+    ...new Set(
+      (commentsResult.data ?? [])
+        .map((comment) => comment.author_user_id)
+        .filter((authorId): authorId is string => Boolean(authorId)),
+    ),
+  ];
+  const profilesResult = authorIds.length
+    ? await supabase
+        .from("member_profiles")
+        .select("user_id, display_name")
+        .eq("tenant_id", tenantId)
+        .in("user_id", authorIds)
+    : { data: [], error: null };
+  if (profilesResult.error) return undefined;
+  const authorNames = new Map(
+    (profilesResult.data ?? []).map((profile) => [profile.user_id, profile.display_name]),
+  );
 
   const delivered = deliverable.status === "delivered";
   return {
@@ -123,9 +142,6 @@ async function readClientApprovalDetailForDeliverable(
     },
     files: (filesResult.data ?? []).map((file) => ({
       id: file.id,
-      tenantId,
-      clientId,
-      relatedDeliverableId: deliverable.id,
       visibility: file.visibility,
       label: file.is_final ? "ملف التسليم النهائي" : "ملف المراجعة",
       fileType: file.file_type,
@@ -134,7 +150,14 @@ async function readClientApprovalDetailForDeliverable(
       isFinal: file.is_final,
       createdAt: file.created_at,
     })),
-    comments: (commentsResult.data ?? []).map((comment) => ({ id: comment.id, body: comment.body, createdAt: comment.created_at })),
+    comments: (commentsResult.data ?? []).map((comment) => ({
+      id: comment.id,
+      body: comment.body,
+      createdAt: comment.created_at,
+      authorName:
+        authorNames.get(comment.author_user_id) ??
+        (comment.comment_type === "client_comment" ? "العميل" : "فريق سماوة"),
+    })),
   };
 }
 

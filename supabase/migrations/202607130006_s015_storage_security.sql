@@ -107,23 +107,31 @@ grant execute on function private.s015_storage_scope(text),
   private.s015_can_upload_storage_object(text,text),
   private.s015_can_read_storage_object(text,text)
   to authenticated;
-drop policy if exists s015_deliverable_assets_insert on storage.objects;
-create policy s015_deliverable_assets_insert on storage.objects
-  for insert to authenticated
-  with check (private.s015_can_upload_storage_object(bucket_id, name));
+do $$
+begin
+  -- See migration 202607130004: the first CLI bootstrap does not yet expose
+  -- storage.objects, while reset and hosted Supabase targets do.
+  if to_regclass('storage.objects') is not null then
+    drop policy if exists s015_deliverable_assets_insert on storage.objects;
+    create policy s015_deliverable_assets_insert on storage.objects
+      for insert to authenticated
+      with check (private.s015_can_upload_storage_object(bucket_id, name));
 
-drop policy if exists s015_deliverable_assets_select on storage.objects;
-create policy s015_deliverable_assets_select on storage.objects
-  for select to authenticated
-  using (private.s015_can_read_storage_object(bucket_id, name));
+    drop policy if exists s015_deliverable_assets_select on storage.objects;
+    create policy s015_deliverable_assets_select on storage.objects
+      for select to authenticated
+      using (private.s015_can_read_storage_object(bucket_id, name));
 
-drop policy if exists s015_deliverable_assets_cleanup on storage.objects;
-create policy s015_deliverable_assets_cleanup on storage.objects
-  for delete to authenticated
-  using (
-    owner_id = auth.uid()::text
-    and private.s015_can_upload_storage_object(bucket_id, name)
-  );
+    drop policy if exists s015_deliverable_assets_cleanup on storage.objects;
+    create policy s015_deliverable_assets_cleanup on storage.objects
+      for delete to authenticated
+      using (
+        owner_id = auth.uid()::text
+        and private.s015_can_upload_storage_object(bucket_id, name)
+      );
+  end if;
+end;
+$$;
 
 create or replace function public.s015_register_file_asset(
   target_file_id uuid,

@@ -179,15 +179,24 @@ as $$
     );
 $$;
 
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values (
-  'deliverable-assets',
-  'deliverable-assets',
-  false,
-  104857600,
-  array['image/jpeg','image/png','image/webp','image/gif','video/mp4','video/webm','application/pdf','text/plain']
-)
-on conflict (id) do update set
-  public = false,
-  file_size_limit = excluded.file_size_limit,
-  allowed_mime_types = excluded.allowed_mime_types;
+do $$
+begin
+  -- Supabase CLI's first `db start` applies user migrations before the Storage
+  -- service bootstraps its schema. The following `db reset`, and hosted UAT,
+  -- both have storage.buckets available and apply this reviewed configuration.
+  if to_regclass('storage.buckets') is not null then
+    insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+    values (
+      'deliverable-assets',
+      'deliverable-assets',
+      false,
+      104857600,
+      array['image/jpeg','image/png','image/webp','image/gif','video/mp4','video/webm','application/pdf','text/plain']
+    )
+    on conflict (id) do update set
+      public = false,
+      file_size_limit = excluded.file_size_limit,
+      allowed_mime_types = excluded.allowed_mime_types;
+  end if;
+end;
+$$;

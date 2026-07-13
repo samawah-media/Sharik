@@ -338,7 +338,13 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
   await page
     .locator('form:has(input[name="clientApprovalAction"][value="approve"]) button[type="submit"]')
     .click();
-  await expect(page.getByTestId("client-approval-detail")).toHaveCount(0);
+  const approvedDetail = page.getByTestId("client-approval-detail");
+  await expect(approvedDetail).toBeVisible();
+  await expect(
+    approvedDetail
+      .getByTestId("client-approval-actions")
+      .locator('form button[type="submit"]'),
+  ).toHaveCount(0);
   await assertDeliverable(seed.mainDeliverableId, {
     status: "client_approved",
     current_version_id: version3.id,

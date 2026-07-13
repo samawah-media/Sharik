@@ -1,5 +1,7 @@
 # Hosted Hadna Team UAT prompt
 
+> **Superseded for current execution:** This prompt records the earlier narrow Hadna hosted-UAT boundary. Continue the active product-experience rescue only through `owner-authorized-product-experience-rescue-agent-prompt.md`, which keeps the same Preview/UAT and Production restrictions while adding the owner-approved Hadna/Glass experience work. Do not execute these prompts as parallel plans.
+
 Status: OWNER AUTHORIZED / PREFLIGHT IN PROGRESS.
 
 This prompt belongs to the Owner-Authorized Hosted Team UAT Amendment inside Spec 015. It remains Hadna-only, Team-only, Preview/UAT-only, and non-Production. Historical local acceptance evidence remains unchanged.

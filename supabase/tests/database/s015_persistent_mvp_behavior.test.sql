@@ -724,10 +724,13 @@ select results_eq(
   $$values ('in_progress'::text, 'draft'::text)$$,
   'draft replay returns the first committed result'
 );
+reset role;
 select is(
   (select count(*)::integer from public.audit_events where action = 'DeliverableVersionDraftSaved' and target_id = '21000000-0000-4000-8000-000000000631'),
   1, 'draft audit is append-once'
 );
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
 select results_eq(
   $$select deliverable_status, version_status from public.s015_save_or_submit_version(
     '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000531',

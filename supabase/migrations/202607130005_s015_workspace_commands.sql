@@ -15,7 +15,7 @@ security definer
 set search_path = public
 stable
 as $$
-  select
+  select coalesce((
     public.f001_has_active_role(
       target_deliverable.tenant_id,
       array['tenant_owner','tenant_administrator','project_manager','marketing_manager'],
@@ -36,7 +36,7 @@ as $$
         array['account_manager','content_writer','designer','performance_specialist'],
         'client', target_deliverable.client_id
       )
-    );
+    ), false);
 $$;
 
 revoke all on function private.s015_team_can_execute_deliverable(public.deliverables)

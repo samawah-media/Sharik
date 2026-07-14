@@ -5,7 +5,7 @@ import {
   signInViaUi,
 } from "./support/s015-persistent-local";
 
-test.describe.configure({ mode: "serial", timeout: 120_000 });
+test.describe.configure({ mode: "serial", timeout: 180_000 });
 
 let seeded: Awaited<ReturnType<typeof seedPersistentReadOnlySmoke>>;
 

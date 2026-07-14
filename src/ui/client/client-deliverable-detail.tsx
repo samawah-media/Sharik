@@ -68,14 +68,14 @@ export function ClientDeliverableDetail({
   return (
     <section
       aria-label="تفاصيل مخرج العميل"
-      className="grid gap-5"
+      className="grid w-full min-w-0 max-w-[calc(100vw-2rem)] gap-5 sm:max-w-full"
       data-testid="client-approval-detail"
       dir="rtl"
       id="approval"
     >
       <div className="grid gap-2">
         <h2 className="text-lg font-semibold">بانتظار موافقتي</h2>
-        <p className="text-xl font-semibold">
+        <p className="break-words text-xl font-semibold">
           {detail.approvalItem.displayName}
         </p>
         <dl className="grid gap-2 text-sm text-muted sm:grid-cols-3">
@@ -104,10 +104,10 @@ export function ClientDeliverableDetail({
       />
 
       {detail.content ? (
-        <section aria-label="محتوى المخرج" className="grid gap-3 rounded-lg border border-border bg-surface p-4">
+        <section aria-label="محتوى المخرج" className="grid min-w-0 gap-3 rounded-lg border border-border bg-surface p-4">
           <h3 className="text-base font-semibold">المحتوى والنسخة</h3>
-          {detail.content.caption ? <p className="text-sm leading-7">{detail.content.caption}</p> : null}
-          {detail.content.body ? <p className="whitespace-pre-wrap text-sm leading-7">{detail.content.body}</p> : null}
+          {detail.content.caption ? <p className="break-words text-sm leading-7">{detail.content.caption}</p> : null}
+          {detail.content.body ? <p className="whitespace-pre-wrap break-words text-sm leading-7">{detail.content.body}</p> : null}
           <dl className="grid gap-2 text-xs text-muted sm:grid-cols-2">
             {detail.content.channel ? <div><dt className="font-semibold text-foreground">القناة</dt><dd>{detail.content.channel}</dd></div> : null}
             {detail.content.format ? <div><dt className="font-semibold text-foreground">الصيغة</dt><dd>{detail.content.format}</dd></div> : null}
@@ -123,11 +123,11 @@ export function ClientDeliverableDetail({
           <ul className="grid gap-2" data-testid="client-files">
             {detail.files.map((file) => (
               <li
-                className="rounded-md bg-surface px-3 py-2"
+                className="min-w-0 rounded-md bg-surface px-3 py-2"
                 data-file-visibility={file.visibility}
                 key={file.id}
               >
-                <p className="text-sm font-semibold">{file.label}</p>
+                <p className="break-words text-sm font-semibold">{file.label}</p>
                 <p className="text-xs text-muted">
                   {visibilityLabels[file.visibility]} · نسخة {file.versionNumber}
                 </p>
@@ -150,8 +150,8 @@ export function ClientDeliverableDetail({
         {detail.comments.length > 0 ? (
           <ul className="grid gap-2">
             {detail.comments.map((comment) => (
-              <li className="rounded-md bg-surface px-3 py-2" key={comment.id}>
-                <p className="text-sm leading-6">{comment.body}</p>
+              <li className="min-w-0 rounded-md bg-surface px-3 py-2" key={comment.id}>
+                <p className="break-words text-sm leading-6">{comment.body}</p>
                 <p className="mt-1 text-xs text-muted">
                   {comment.authorName} · {formatDate(comment.createdAt)}
                 </p>

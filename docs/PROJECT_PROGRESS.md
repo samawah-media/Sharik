@@ -1,10 +1,10 @@
 # Project Progress
 
-## Spec 015 Product Experience Rescue — 2026-07-13
+## Spec 015 Product Experience Rescue — 2026-07-14
 
-The owner-authorized rescue is continuing inside Spec 015 only. X006 is closed on exact-HEAD PR #37 quality run `29263587871` attempt 2 for commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`; the run passed npm ci, lint, typecheck, unit, integration, Supabase start/reset, RLS, component, fixture E2E, persistent E2E, secret scan, and build. The temporary visual harness was abandoned and replaced with a repository Playwright visual QA spec; local synthetic visual QA passes across desktop, mobile, and Arabic RTL with direct screenshot inspection, and CI fixture E2E now carries the visual checks. Hosted UAT Playwright tooling fails closed unless a secure local env provides an explicit hostname allowlist and non-Production target category. X007, H008-H010, UAT migration/import, rollback/no-op evidence, T032, and Production acceptance remain open/not granted.
+The owner-authorized rescue is continuing inside Spec 015 only. X006 is closed on exact-HEAD PR #37 quality run `29263587871` attempt 2 for commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`. X007 Checkpoints 1-3 are locally green after task/quality idempotency hardening: clean local reset, lint, typecheck, unit 50/179, integration 28/112, component 18/57, RLS simulator 8/24, pgTAP 6 files / 329 tests, fixture E2E 123 passed / 6 configured skips, persistent E2E 3/3, secret scan, diff check, build, and local workbook apply/replay/rollback all passed. Hosted UAT Playwright tooling still fails closed unless a secure local env provides an explicit hostname allowlist and non-Production target category. H008-H010, hosted UAT migration/import/deploy/persona workflow, T032, and Production acceptance remain open/not granted.
 
-Last updated: 2026-07-13
+Last updated: 2026-07-14
 
 ## Spec 015 Hosted Team UAT Amendment - 2026-07-12
 

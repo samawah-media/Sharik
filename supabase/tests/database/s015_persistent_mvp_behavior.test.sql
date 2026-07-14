@@ -1032,7 +1032,31 @@ select is(
      and title = 'كتابة المقال'),
   1, 'task row exists after creation'
 );
+select is(
+  (select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    null, 'كتابة المقال', 'وصف المهمة', 'todo', 'high', null, null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-create-writer-1')),
+  (select id from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000504'
+     and title = 'كتابة المقال'),
+  'same-payload task create replay returns original task id'
+);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000504'
+     and title = 'كتابة المقال'),
+  1, 'same-payload task create replay does not duplicate task'
+);
 reset role;
+select is(
+  (select count(*)::integer from public.audit_events
+   where action = 'DeliverableTaskCreated'
+     and reason = 'upsert_deliverable_task'
+     and actor_user_id = '21000000-0000-4000-8000-000000000203'
+     and target_id = '21000000-0000-4000-8000-000000000504'),
+  1, 'same-payload task create replay does not duplicate audit rows'
+);
 
 -- Task creation by unassigned writer (negative).
 set local role authenticated;
@@ -1077,7 +1101,26 @@ select is(
      and title = 'كتابة المقال'),
   'done', 'task status updated to done'
 );
+select is(
+  (select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    (select id from public.deliverable_tasks where deliverable_id = '21000000-0000-4000-8000-000000000504' and title = 'كتابة المقال' limit 1),
+    'كتابة المقال', 'وصف المهمة', 'done', 'high', null, null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-update-writer-1')),
+  (select id from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000504'
+     and title = 'كتابة المقال'),
+  'same-payload task update replay returns original task id'
+);
 reset role;
+select is(
+  (select count(*)::integer from public.audit_events
+   where action = 'DeliverableTaskUpdated'
+     and reason = 'upsert_deliverable_task'
+     and actor_user_id = '21000000-0000-4000-8000-000000000203'
+     and target_id = '21000000-0000-4000-8000-000000000504'),
+  1, 'same-payload task update replay does not duplicate audit rows'
+);
 
 -- Task idempotent replay returns same task without duplication.
 set local role authenticated;
@@ -1088,6 +1131,16 @@ select lives_ok(
     null, 'مهمة متكررة', '', 'todo', 'normal', null, null, 0,
     gen_random_uuid(), gen_random_uuid(), 'task-idempotent-1')$$,
   'first task creation succeeds'
+);
+select is(
+  (select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    null, 'مهمة متكررة', '', 'todo', 'normal', null, null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-idempotent-1')),
+  (select id from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000504'
+     and title = 'مهمة متكررة'),
+  'same-payload idempotent task create returns original generated id'
 );
 select throws_ok(
   $$select public.s015_upsert_deliverable_task(
@@ -1102,6 +1155,27 @@ select is(
    where deliverable_id = '21000000-0000-4000-8000-000000000504'
      and title in ('مهمة متكررة', 'مهمة مختلفة')),
   1, 'idempotent replay did not duplicate'
+);
+reset role;
+select is(
+  (select count(*)::integer from public.audit_events
+   where action = 'DeliverableTaskCreated'
+     and reason = 'upsert_deliverable_task'
+     and actor_user_id = '21000000-0000-4000-8000-000000000203'
+     and target_id = '21000000-0000-4000-8000-000000000504'),
+  2, 'idempotent task replay/conflict does not duplicate audit rows'
+);
+
+-- Same-tenant Client B scope remains denied for task mutation.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000208', true);
+select throws_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    null, 'محاولة عميل آخر', '', 'todo', 'normal', null, null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-client-b-cross-scope-1')$$,
+  '42501', 'task command denied',
+  'same-tenant Client B cannot mutate Client A tasks'
 );
 reset role;
 
@@ -1133,6 +1207,32 @@ select lives_ok(
     '21000000-0000-4000-8000-000000000630', null, 'مراجعة المحتوى', 'pending', '', 0,
     gen_random_uuid(), gen_random_uuid(), 'quality-create-mgmt-1')$$,
   'management creates a quality check'
+);
+select is(
+  (select public.s015_upsert_quality_check(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000530',
+    '21000000-0000-4000-8000-000000000630', null, 'مراجعة المحتوى', 'pending', '', 0,
+    gen_random_uuid(), gen_random_uuid(), 'quality-create-mgmt-1')),
+  (select result_resource_id from public.mvp_command_requests where idempotency_key = 'quality-create-mgmt-1'),
+  'same-payload quality create replay returns original check id'
+);
+select throws_ok(
+  $$select public.s015_upsert_quality_check(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000530',
+    '21000000-0000-4000-8000-000000000630', null, 'مراجعة مختلفة', 'pending', '', 0,
+    gen_random_uuid(), gen_random_uuid(), 'quality-create-mgmt-1')$$,
+  'P0001', 'idempotency conflict',
+  'different-payload quality replay conflicts'
+);
+select is(
+  (select count(*)::integer from public.deliverable_quality_checks
+   where version_id = '21000000-0000-4000-8000-000000000630'),
+  1, 'quality replay/conflict does not duplicate checks'
+);
+select is(
+  (select count(*)::integer from public.audit_events
+   where id = (select audit_event_id from public.mvp_command_requests where idempotency_key = 'quality-create-mgmt-1')),
+  1, 'quality replay/conflict does not duplicate audit rows'
 );
 reset role;
 

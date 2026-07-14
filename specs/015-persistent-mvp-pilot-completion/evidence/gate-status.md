@@ -27,7 +27,8 @@
 | Preview deployment | green for Preview build and public UAT entry | Preview deployment built successfully and is Ready. Preview env contains the required app and public Supabase configuration; the public UAT alias returns the Arabic sign-in shell, signs in available valid UAT personas, has zero observed browser console errors for those personas, and shows no service-role marker or internal secret leakage. Production remains untouched. |
 | Hosted workflow/UX UAT | open | H008 remains open. Hosted Playwright tooling is present and fails closed without an explicit secure-env hostname allowlist and non-Production target category. X006 exact-HEAD CI, UAT migrations/imports, Preview update, and direct persona evidence are still required. |
 | T032 hosted evidence | pending | T032 remains open. Rollback boundary and migration/seed/deploy/public-entry/access evidence exist; workflow and final rollback/no-op evidence remain pending. |
-| Glass/Hadna workbook importer dry-run | blocked | Checkpoint 2 stopped before mutation because the repository importer cannot resolve `@oai/artifact-tool` from the local artifact runtime. Workbook is present and ignored; no workbook content or hosted data was printed or mutated. |
+| Glass/Hadna workbook importer dry-run | green locally | Process-only Codex runtime configuration resolved the previous runtime-path blocker. Importer `--dry-run` passed with category-only counts: deliverables 16, content deliverables 15, coordination deliverables 1, versions 16, tasks 7, approval decisions 0, file assets 0. Workbook content and paths remain unprinted/uncommitted. |
+| Local import apply/rollback validation | green locally | Clean local Supabase was available after Docker recovery. Repository importer local apply/replay/rollback passed with category-only counts: first apply 16 deliverables / 16 versions / 7 tasks; same-run replay unchanged; rollback dry-run 16 / 16 / 7; rollback 16 / 16 / 7; imported remaining 0; unrelated client scope stable. No hosted mutation occurred. |
 
 ## Product Experience Rescue amendment status (2026-07-13)
 
@@ -39,7 +40,13 @@
 | Local UX rescue verification | prior slice CI green / X006 open | CI run `29239615839` passed lint, secret scan, build, fixture E2E 108, and DB/RLS 228/228 for migrations 202607130001/002. Persistent browser E2E and the full matrix have not rerun after the latest X006 changes. |
 | Hosted team workflow | open | H008-H010 remain open; no claim of hosted PASS is made from local evidence. |
 | Client E2E navigation regression | green locally | Initial duplicate-landmark failure was fixed; affected client/accessibility tests pass across desktop/mobile/RTL with configured skips unchanged. |
-| X007 Checkpoint 1 product gaps | green locally / DB-hosted pending | Team task mutation, management quality mutation, quality-gated internal approval, lazy drawer detail loading, drawer focus containment, `/client/files`, and honest brand/content fallback behavior are implemented locally. Local lint, typecheck, unit, component, and build pass; new pgTAP coverage is committed but awaits DB execution in Checkpoint 3. Hosted persona workflow remains H008. |
+| X007 Checkpoint 1 product gaps | green locally / hosted pending | Team task mutation, management quality mutation, quality-gated internal approval, lazy drawer detail loading, drawer focus containment, `/client/files`, and honest brand/content fallback behavior are implemented locally. Checkpoint 3 DB and browser matrix passed, including pgTAP 6 files / 329 tests. Hosted persona workflow remains H008. |
+
+## 2026-07-14 X007 Checkpoint 3 local matrix
+- Clean local reset applied all migrations through `202607140002_s015_task_quality_idempotency_hardening.sql`.
+- Local matrix passed: lint, typecheck, unit 50/179, integration 28/112, component 18/57, RLS simulator 8/24, pgTAP 6 files / 329 tests, fixture E2E 123 passed / 6 configured skips, persistent E2E 3/3, secret scan, diff check, and build.
+- Visual QA is included in fixture E2E across desktop, mobile, and RTL. A mobile hydration wait was increased after a timeout-only failure; focused mobile visual QA and the full fixture suite passed afterward.
+- Hosted H008/H009/H010/T032 remain open. No hosted mutation, Production action, PR merge, or workbook tracking occurred.
 
 Continuation evidence correction: CI run `29239615839` is valid database evidence for migrations 202607130001/002 (RLS 228/228) and fixture evidence (E2E 108). Later X006 closure is instead backed by exact-HEAD PR #37 quality run `29263587871` attempt 2 for commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`. X007, H008-H010, and T032 remain open.
 

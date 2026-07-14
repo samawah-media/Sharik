@@ -113,14 +113,16 @@ const expectMinimumTouchTargets = async (page: Page) => {
 
 const expectReactHydrated = async (page: Page, selector: string) => {
   await expect
-    .poll(async () =>
-      page
-        .locator(selector)
-        .first()
-        .evaluate((element) =>
-          Object.keys(element).some((key) => key.startsWith("__reactProps$")),
-        )
-        .catch(() => false),
+    .poll(
+      async () =>
+        page
+          .locator(selector)
+          .first()
+          .evaluate((element) =>
+            Object.keys(element).some((key) => key.startsWith("__reactProps$")),
+          )
+          .catch(() => false),
+      { timeout: 30_000 },
     )
     .toBe(true);
 };

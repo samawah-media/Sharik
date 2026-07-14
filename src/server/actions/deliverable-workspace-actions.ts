@@ -9,6 +9,9 @@ import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import {
   versionContentInputSchema,
   workspaceCommentInputSchema,
+  deliverableTaskInputSchema,
+  deleteTaskInputSchema,
+  qualityCheckInputSchema,
 } from "@/modules/deliverables/workspace-inputs";
 import { updateDeliverableStatusViaRpc } from "./deliverable-write-rpc";
 
@@ -174,4 +177,73 @@ export async function createWorkspaceFileDownload(fileId: string) {
     return { ok: false as const, reason: "denied" as const };
   }
   return { ok: true as const, url: signed.data.signedUrl };
+}
+
+export async function upsertDeliverableTask(
+  input: z.input<typeof deliverableTaskInputSchema>,
+) {
+  const parsed = deliverableTaskInputSchema.safeParse(input);
+  if (!parsed.success) return { ok: false as const, reason: "invalid_input" as const };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("s015_upsert_deliverable_task", {
+    target_client_id: parsed.data.clientId,
+    target_deliverable_id: parsed.data.deliverableId,
+    target_task_id: parsed.data.taskId,
+    target_title: parsed.data.title,
+    target_description: parsed.data.description ?? "",
+    target_status: parsed.data.status,
+    target_priority: parsed.data.priority,
+    target_assignee_user_id: parsed.data.assigneeUserId ?? null,
+    target_due_date: parsed.data.dueDate ?? null,
+    target_sort_order: parsed.data.sortOrder ?? 0,
+    request_id: crypto.randomUUID(),
+    audit_event_id: crypto.randomUUID(),
+    request_idempotency_key: parsed.data.idempotencyKey,
+  });
+  if (error) return { ok: false as const, reason: "denied" as const };
+  revalidatePath(`/clients/${parsed.data.clientId}/deliverables/board`);
+  return { ok: true as const };
+}
+
+export async function deleteDeliverableTask(
+  input: z.input<typeof deleteTaskInputSchema>,
+) {
+  const parsed = deleteTaskInputSchema.safeParse(input);
+  if (!parsed.success) return { ok: false as const, reason: "invalid_input" as const };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("s015_delete_deliverable_task", {
+    target_client_id: parsed.data.clientId,
+    target_deliverable_id: parsed.data.deliverableId,
+    target_task_id: parsed.data.taskId,
+    request_id: crypto.randomUUID(),
+    audit_event_id: crypto.randomUUID(),
+    request_idempotency_key: parsed.data.idempotencyKey,
+  });
+  if (error) return { ok: false as const, reason: "denied" as const };
+  revalidatePath(`/clients/${parsed.data.clientId}/deliverables/board`);
+  return { ok: true as const };
+}
+
+export async function upsertQualityCheck(
+  input: z.input<typeof qualityCheckInputSchema>,
+) {
+  const parsed = qualityCheckInputSchema.safeParse(input);
+  if (!parsed.success) return { ok: false as const, reason: "invalid_input" as const };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("s015_upsert_quality_check", {
+    target_client_id: parsed.data.clientId,
+    target_deliverable_id: parsed.data.deliverableId,
+    target_version_id: parsed.data.versionId,
+    target_check_id: parsed.data.checkId,
+    target_label: parsed.data.label,
+    target_status: parsed.data.status,
+    target_note: parsed.data.note ?? "",
+    target_sort_order: parsed.data.sortOrder ?? 0,
+    request_id: crypto.randomUUID(),
+    audit_event_id: crypto.randomUUID(),
+    request_idempotency_key: parsed.data.idempotencyKey,
+  });
+  if (error) return { ok: false as const, reason: "denied" as const };
+  revalidatePath(`/clients/${parsed.data.clientId}/deliverables/board`);
+  return { ok: true as const };
 }

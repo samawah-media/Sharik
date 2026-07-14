@@ -1015,5 +1015,174 @@ select results_eq(
 select is((select count(*)::integer from public.deliverables where import_run_id = 'pgtap-import-001'), 0, 'rollback removes only the imported deliverable');
 reset role;
 
+-- X007 Checkpoint 1A: team execution task mutation commands.
+-- Task creation by assigned writer (positive).
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select lives_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    null, 'كتابة المقال', 'وصف المهمة', 'todo', 'high', null, null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-create-writer-1')$$,
+  'assigned writer creates a task'
+);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000504'
+     and title = 'كتابة المقال'),
+  1, 'task row exists after creation'
+);
+reset role;
+
+-- Task creation by unassigned writer (negative).
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000205', true);
+select throws_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000506',
+    null, 'مهمة غير مصرح بها', '', 'todo', 'normal', null, null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-create-unassigned-1')$$,
+  '42501', 'task command denied',
+  'unassigned writer cannot create tasks'
+);
+reset role;
+
+-- Task creation by client viewer (negative).
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202', true);
+select throws_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    null, 'مهمة عميل', '', 'todo', 'normal', null, null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-create-client-1')$$,
+  '42501', 'task command denied',
+  'client viewer cannot create tasks'
+);
+reset role;
+
+-- Task status update by assigned writer (positive).
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select lives_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    (select id from public.deliverable_tasks where deliverable_id = '21000000-0000-4000-8000-000000000504' and title = 'كتابة المقال' limit 1),
+    'كتابة المقال', 'وصف المهمة', 'done', 'high', null, null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-update-writer-1')$$,
+  'assigned writer updates task status'
+);
+select is(
+  (select status from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000504'
+     and title = 'كتابة المقال'),
+  'done', 'task status updated to done'
+);
+reset role;
+
+-- Task idempotent replay returns same task without duplication.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select lives_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    null, 'مهمة متكررة', '', 'todo', 'normal', null, null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-idempotent-1')$$,
+  'first task creation succeeds'
+);
+select throws_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    null, 'مهمة مختلفة', '', 'todo', 'normal', null, null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-idempotent-1')$$,
+  'P0001', 'idempotency conflict',
+  'replay with different payload conflicts'
+);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000504'
+     and title in ('مهمة متكررة', 'مهمة مختلفة')),
+  1, 'idempotent replay did not duplicate'
+);
+reset role;
+
+-- X007 Checkpoint 1B: quality checklist mutation and gate.
+-- Fresh deliverable for quality gate test.
+insert into public.deliverables (
+  id, tenant_id, client_id, name, type, status, progress_percentage,
+  idempotency_key, requires_internal_approval, requires_client_approval
+) values (
+  '21000000-0000-4000-8000-000000000530', '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301', 'Quality gate item', 'post',
+  'ready_for_internal_review', 50, 's015-quality-gate', true, true
+);
+insert into public.deliverable_versions (
+  id, tenant_id, client_id, deliverable_id, version_number, status
+) values (
+  '21000000-0000-4000-8000-000000000630', '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000530', 1, 'internal_only'
+);
+update public.deliverables set current_version_id = '21000000-0000-4000-8000-000000000630'
+where id = '21000000-0000-4000-8000-000000000530';
+
+-- Quality check creation by management (positive).
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select lives_ok(
+  $$select public.s015_upsert_quality_check(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000530',
+    '21000000-0000-4000-8000-000000000630', null, 'مراجعة المحتوى', 'pending', '', 0,
+    gen_random_uuid(), gen_random_uuid(), 'quality-create-mgmt-1')$$,
+  'management creates a quality check'
+);
+reset role;
+
+-- Quality check creation by writer (negative).
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select throws_ok(
+  $$select public.s015_upsert_quality_check(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000530',
+    '21000000-0000-4000-8000-000000000630', null, 'فحص غير مصرح', 'pending', '', 0,
+    gen_random_uuid(), gen_random_uuid(), 'quality-create-writer-1')$$,
+  '42501', 'quality command denied',
+  'writer cannot create quality checks'
+);
+reset role;
+
+-- Quality gate blocks approval when a check is pending.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select throws_ok(
+  $$select * from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000530',
+    '21000000-0000-4000-8000-000000000630', 'approve_internal', null, null,
+    gen_random_uuid(), gen_random_uuid(), 'quality-gate-block-1')$$,
+  'P0001', 'quality checklist not complete',
+  'internal approval blocked while quality check is pending'
+);
+reset role;
+
+-- Quality gate allows approval after all checks pass.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select lives_ok(
+  $$select public.s015_upsert_quality_check(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000530',
+    '21000000-0000-4000-8000-000000000630',
+    (select id from public.deliverable_quality_checks where version_id = '21000000-0000-4000-8000-000000000630' limit 1),
+    'مراجعة المحتوى', 'passed', 'مطابق', 0,
+    gen_random_uuid(), gen_random_uuid(), 'quality-pass-mgmt-1')$$,
+  'management passes the quality check'
+);
+select results_eq(
+  $$select deliverable_status from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000530',
+    '21000000-0000-4000-8000-000000000630', 'approve_internal', null, null,
+    gen_random_uuid(), gen_random_uuid(), 'quality-gate-pass-1')$$,
+  $$values ('internally_approved'::text)$$,
+  'internal approval succeeds after quality gate passes'
+);
+reset role;
+
 select * from finish();
 rollback;

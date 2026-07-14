@@ -6,7 +6,7 @@ import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-
 import type { DeliverableWorkspace } from "@/modules/deliverables/deliverable-workspace";
 import { Badge } from "@/ui/core/badge";
 import { buttonStyles } from "@/ui/core/button";
-import { VersionContentForm, WorkspaceCommentForm } from "./workspace-forms";
+import { VersionContentForm, WorkspaceCommentForm, TaskForm, TaskStatusControl, QualityCheckForm, QualityCheckStatusControl } from "./workspace-forms";
 import { WorkspaceFileDownload, WorkspaceFilePreview, WorkspaceFileUpload } from "./workspace-files";
 import { DeliverableApprovalWorkflowControl } from "@/ui/management/deliverable-actions";
 
@@ -186,7 +186,8 @@ export function UniversalDeliverableDrawer({
 
                 <section aria-labelledby="drawer-execution" className="grid gap-3">
                   <h3 className="text-base font-semibold" id="drawer-execution">مهام التنفيذ</h3>
-                  {workspace?.tasks.length ? <ul className="grid gap-2">{workspace.tasks.map((task) => <li className="rounded-lg border border-border bg-background p-3" key={task.id}><div className="flex items-start justify-between gap-3"><p className="font-semibold">{task.title}</p><Badge tone={task.status === "done" ? "success" : "muted"}>{task.status}</Badge></div><p className="mt-1 text-xs text-muted">{task.assignee?.displayName ?? "غير مسند"}{task.dueDate ? ` · ${task.dueDate}` : ""}</p></li>)}</ul> : <EmptySection>لا توجد مهام تنفيذ مضافة لهذا المخرج.</EmptySection>}
+                  {workspace?.tasks.length ? <ul className="grid gap-2">{workspace.tasks.map((task) => <li className="rounded-lg border border-border bg-background p-3" key={task.id}><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="font-semibold">{task.title}</p><p className="mt-1 text-xs text-muted">{task.assignee?.displayName ?? "غير مسند"}{task.dueDate ? ` · ${task.dueDate}` : ""}</p></div><TaskStatusControl deliverable={deliverable} task={task} /></div></li>)}</ul> : <EmptySection>لا توجد مهام تنفيذ مضافة لهذا المخرج.</EmptySection>}
+                  <TaskForm deliverable={deliverable} />
                 </section>
 
                 <section aria-labelledby="drawer-files" className="grid gap-3">
@@ -211,7 +212,8 @@ export function UniversalDeliverableDrawer({
 
                 <section aria-labelledby="drawer-quality" className="grid gap-3">
                   <h3 className="text-base font-semibold" id="drawer-quality">قائمة الجودة الداخلية</h3>
-                  {workspace?.qualityChecks.length ? <ul className="grid gap-2">{workspace.qualityChecks.map((check) => <li className="flex min-h-11 items-center justify-between gap-3 rounded-lg bg-background px-3 py-2" key={check.id}><span className="text-sm">{check.label}</span><Badge tone={check.status === "passed" ? "success" : "muted"}>{check.status}</Badge></li>)}</ul> : <EmptySection>لم تُضف عناصر جودة للنسخة الحالية.</EmptySection>}
+                  {workspace?.qualityChecks.length ? <ul className="grid gap-2">{workspace.qualityChecks.map((check) => <li className="flex min-h-11 items-center justify-between gap-3 rounded-lg bg-background px-3 py-2" key={check.id}><span className="text-sm">{check.label}</span>{canPublishClientComment && workspace.currentVersionId ? <QualityCheckStatusControl deliverable={deliverable} versionId={check.versionId} check={check} /> : <Badge tone={check.status === "passed" ? "success" : "muted"}>{check.status}</Badge>}</li>)}</ul> : <EmptySection>لم تُضف عناصر جودة للنسخة الحالية.</EmptySection>}
+                  {canPublishClientComment ? <QualityCheckForm deliverable={deliverable} versionId={workspace?.currentVersionId} /> : null}
                 </section>
 
                 <section aria-labelledby="drawer-activity" className="grid gap-3">

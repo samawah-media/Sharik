@@ -12,15 +12,21 @@ import type { DeliverableVersionWorkspace } from "@/modules/deliverables/deliver
 import {
   versionContentInputSchema,
   workspaceCommentInputSchema,
+  deliverableTaskInputSchema,
+  qualityCheckInputSchema,
 } from "@/modules/deliverables/workspace-inputs";
 import {
   addWorkspaceComment,
   saveOrSubmitVersionContent,
+  upsertDeliverableTask,
+  upsertQualityCheck,
 } from "@/server/actions/deliverable-workspace-actions";
 import { Button } from "@/ui/core/button";
 
 type VersionValues = z.input<typeof versionContentInputSchema>;
 type CommentValues = z.input<typeof workspaceCommentInputSchema>;
+type TaskValues = z.input<typeof deliverableTaskInputSchema>;
+type QualityValues = z.input<typeof qualityCheckInputSchema>;
 
 export function VersionContentForm({
   deliverable,
@@ -175,5 +181,189 @@ export function ClientWorkspaceCommentForm({
       currentVersionId={versionId}
       target={{ clientId, id: deliverableId }}
     />
+  );
+}
+
+export function TaskForm({
+  deliverable,
+}: {
+  deliverable: DeliverableSafeSummary;
+}) {
+  const router = useRouter();
+  const [feedback, setFeedback] = useState<string>();
+  const form = useForm<TaskValues>({
+    resolver: zodResolver(deliverableTaskInputSchema),
+    defaultValues: {
+      clientId: deliverable.clientId,
+      deliverableId: deliverable.id,
+      taskId: null,
+      title: "",
+      description: "",
+      status: "todo",
+      priority: "normal",
+      assigneeUserId: null,
+      dueDate: null,
+      sortOrder: 0,
+      idempotencyKey: crypto.randomUUID(),
+    },
+  });
+
+  const submit = form.handleSubmit(async (values) => {
+    setFeedback(undefined);
+    const result = await upsertDeliverableTask({
+      ...values,
+      idempotencyKey: crypto.randomUUID(),
+    });
+    setFeedback(result.ok ? "تمت إضافة المهمة." : "تعذر حفظ المهمة. راجع الصلاحية والحالة.");
+    if (result.ok) {
+      form.reset({ ...values, title: "", description: "" });
+      router.refresh();
+    }
+  });
+
+  return (
+    <form className="grid gap-3 rounded-xl border border-border bg-background p-4" onSubmit={submit}>
+      <label className="grid gap-1 text-sm font-semibold">عنوان المهمة<input className="min-h-11 rounded-lg border border-border bg-surface px-3" {...form.register("title")} /></label>
+      <label className="grid gap-1 text-sm font-semibold">الوصف<textarea className="min-h-20 rounded-lg border border-border bg-surface p-3" {...form.register("description")} /></label>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="grid gap-1 text-sm font-semibold">الأولوية<select className="min-h-11 rounded-lg border border-border bg-surface px-3" {...form.register("priority")}><option value="normal">عادية</option><option value="low">منخفضة</option><option value="high">عالية</option><option value="urgent">عاجلة</option></select></label>
+        <label className="grid gap-1 text-sm font-semibold">تاريخ الاستحقاق<input className="min-h-11 rounded-lg border border-border bg-surface px-3" type="date" {...form.register("dueDate")} /></label>
+      </div>
+      <input type="hidden" value="todo" {...form.register("status")} />
+      {feedback ? <p aria-live="polite" className="text-sm text-muted">{feedback}</p> : null}
+      <Button disabled={form.formState.isSubmitting} type="submit" variant="secondary">إضافة مهمة</Button>
+    </form>
+  );
+}
+
+export function TaskStatusControl({
+  deliverable,
+  task,
+}: {
+  deliverable: DeliverableSafeSummary;
+  task: { id: string; title: string; status: string };
+}) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const change = async (status: string) => {
+    setBusy(true);
+    const result = await upsertDeliverableTask({
+      clientId: deliverable.clientId,
+      deliverableId: deliverable.id,
+      taskId: task.id,
+      title: task.title,
+      status: status as "todo" | "in_progress" | "done" | "cancelled",
+      priority: "normal",
+      idempotencyKey: crypto.randomUUID(),
+    });
+    setBusy(false);
+    if (result.ok) router.refresh();
+  };
+  return (
+    <select
+      aria-label={`حالة المهمة: ${task.title}`}
+      className="min-h-11 rounded-lg border border-border bg-surface px-2 text-xs"
+      defaultValue={task.status}
+      disabled={busy}
+      onChange={(event) => change(event.target.value)}
+    >
+      <option value="todo">مجدول</option>
+      <option value="in_progress">قيد التنفيذ</option>
+      <option value="done">مكتمل</option>
+      <option value="cancelled">ملغي</option>
+    </select>
+  );
+}
+
+export function QualityCheckForm({
+  deliverable,
+  versionId,
+}: {
+  deliverable: DeliverableSafeSummary;
+  versionId?: string;
+}) {
+  const router = useRouter();
+  const [feedback, setFeedback] = useState<string>();
+  const form = useForm<QualityValues>({
+    resolver: zodResolver(qualityCheckInputSchema),
+    defaultValues: {
+      clientId: deliverable.clientId,
+      deliverableId: deliverable.id,
+      versionId: versionId ?? "",
+      checkId: null,
+      label: "",
+      status: "pending",
+      note: "",
+      sortOrder: 0,
+      idempotencyKey: crypto.randomUUID(),
+    },
+  });
+
+  if (!versionId) return <p className="text-sm text-muted">احفظ نسخة أولًا لإضافة عناصر الجودة.</p>;
+
+  const submit = form.handleSubmit(async (values) => {
+    setFeedback(undefined);
+    const result = await upsertQualityCheck({
+      ...values,
+      idempotencyKey: crypto.randomUUID(),
+    });
+    setFeedback(result.ok ? "تم حفظ عنصر الجودة." : "تعذر حفظ عنصر الجودة. راجع الصلاحية.");
+    if (result.ok) {
+      form.reset({ ...values, label: "", note: "" });
+      router.refresh();
+    }
+  });
+
+  return (
+    <form className="grid gap-3 rounded-xl border border-border bg-background p-4" onSubmit={submit}>
+      <label className="grid gap-1 text-sm font-semibold">عنصر الجودة<input className="min-h-11 rounded-lg border border-border bg-surface px-3" {...form.register("label")} /></label>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="grid gap-1 text-sm font-semibold">الحالة<select className="min-h-11 rounded-lg border border-border bg-surface px-3" {...form.register("status")}><option value="pending">بانتظار المراجعة</option><option value="passed">مطابق</option><option value="changes_required">يحتاج تعديل</option><option value="not_applicable">غير مطبق</option></select></label>
+        <label className="grid gap-1 text-sm font-semibold">ملاحظة<input className="min-h-11 rounded-lg border border-border bg-surface px-3" {...form.register("note")} /></label>
+      </div>
+      {feedback ? <p aria-live="polite" className="text-sm text-muted">{feedback}</p> : null}
+      <Button disabled={form.formState.isSubmitting} type="submit" variant="secondary">إضافة عنصر جودة</Button>
+    </form>
+  );
+}
+
+export function QualityCheckStatusControl({
+  deliverable,
+  versionId,
+  check,
+}: {
+  deliverable: DeliverableSafeSummary;
+  versionId: string;
+  check: { id: string; label: string; status: string };
+}) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const change = async (status: string) => {
+    setBusy(true);
+    const result = await upsertQualityCheck({
+      clientId: deliverable.clientId,
+      deliverableId: deliverable.id,
+      versionId,
+      checkId: check.id,
+      label: check.label,
+      status: status as "pending" | "passed" | "changes_required" | "not_applicable",
+      idempotencyKey: crypto.randomUUID(),
+    });
+    setBusy(false);
+    if (result.ok) router.refresh();
+  };
+  return (
+    <select
+      aria-label={`حالة الجودة: ${check.label}`}
+      className="min-h-11 rounded-lg border border-border bg-surface px-2 text-xs"
+      defaultValue={check.status}
+      disabled={busy}
+      onChange={(event) => change(event.target.value)}
+    >
+      <option value="pending">بانتظار</option>
+      <option value="passed">مطابق</option>
+      <option value="changes_required">تعديل</option>
+      <option value="not_applicable">غير مطبق</option>
+    </select>
   );
 }

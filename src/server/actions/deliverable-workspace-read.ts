@@ -109,7 +109,7 @@ export async function listScopedDeliverableWorkspaces({
   const scoped = <T extends { deliverable_id: string }>(rows: T[] | null) =>
     rows ?? [];
 
-  const [versions, tasks, files, comments, quality, approvals, sla, audits] =
+  const [versions, tasks, files, comments, quality, approvals, sla, audits, assigneeRoles] =
     await Promise.all([
       client
         .from("deliverable_versions")
@@ -169,6 +169,14 @@ export async function listScopedDeliverableWorkspaces({
         .in("target_type", ["deliverable", "deliverable_version"])
         .order("created_at", { ascending: false })
         .limit(200),
+      client
+        .from("role_assignments")
+        .select("auth_user_id")
+        .eq("tenant_id", tenantId)
+        .eq("scope_type", "client")
+        .eq("scope_id", clientId)
+        .eq("status", "active")
+        .in("role_key", ["account_manager", "content_writer", "designer", "performance_specialist"]),
     ]);
 
   const required = [versions, tasks, files, comments, quality, approvals, sla];
@@ -183,6 +191,7 @@ export async function listScopedDeliverableWorkspaces({
         ...(quality.data ?? []).map((row) => row.checked_by),
         ...(approvals.data ?? []).map((row) => row.actor_user_id),
         ...(audits.data ?? []).map((row) => row.actor_user_id),
+        ...(assigneeRoles.data ?? []).map((row) => row.auth_user_id),
       ].filter((id): id is string => Boolean(id)),
     ),
   );
@@ -255,6 +264,9 @@ export async function listScopedDeliverableWorkspaces({
       const workspace: DeliverableWorkspace = {
         deliverableId: deliverable.id,
         currentVersionId: deliverable.currentVersionId,
+        eligibleAssignees: (assigneeRoles.data ?? [])
+          .map((row) => member(directory, row.auth_user_id))
+          .filter((m): m is NonNullable<typeof m> => Boolean(m)),
         versions: versionRows.map((row) => ({
           id: row.id,
           versionNumber: row.version_number,

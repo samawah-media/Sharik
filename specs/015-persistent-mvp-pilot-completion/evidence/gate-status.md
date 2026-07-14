@@ -46,7 +46,8 @@
 - Clean local reset applied all migrations through `202607140002_s015_task_quality_idempotency_hardening.sql`.
 - Local matrix passed: lint, typecheck, unit 50/179, integration 28/112, component 18/57, RLS simulator 8/24, pgTAP 6 files / 329 tests, fixture E2E 123 passed / 6 configured skips, persistent E2E 3/3, secret scan, diff check, and build.
 - Visual QA is included in fixture E2E across desktop, mobile, and RTL. A mobile hydration wait was increased after a timeout-only failure; focused mobile visual QA and the full fixture suite passed afterward.
-- Exact-HEAD PR quality run `29324709845` later failed only on persistent mobile client approval detail width. The client detail surface was viewport-bounded and long-text wrapping was hardened; focused persistent mobile smoke and full persistent E2E 3/3 passed locally afterward. A new exact-HEAD CI run is pending after push.
+- Exact-HEAD PR quality run `29324709845` failed only on persistent mobile client approval detail width; the surface was fixed and exact-HEAD PR quality run `29329914612` passed for commit `f1690dc`.
+- A later corrective review found P1 gaps in task read isolation and assignee validation; a corrective migration `202607140003` and expanded pgTAP coverage were added and are pending re-verification.
 - Hosted H008/H009/H010/T032 remain open. No hosted mutation, Production action, PR merge, or workbook tracking occurred.
 
 Continuation evidence correction: CI run `29239615839` is valid database evidence for migrations 202607130001/002 (RLS 228/228) and fixture evidence (E2E 108). Later X006 closure is instead backed by exact-HEAD PR #37 quality run `29263587871` attempt 2 for commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`. X007, H008-H010, and T032 remain open.

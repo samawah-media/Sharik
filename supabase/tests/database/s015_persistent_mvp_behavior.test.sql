@@ -1284,5 +1284,133 @@ select results_eq(
 );
 reset role;
 
+-- X007 corrective: task read isolation — unassigned internal role cannot read tasks.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000205', true);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000504'),
+  0, 'unassigned same-client writer cannot read tasks on a deliverable they do not own or contribute to'
+);
+reset role;
+
+-- X007 corrective: task read isolation — same-tenant Client B cannot read Client A tasks.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000208', true);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000504'),
+  0, 'same-tenant Client B viewer cannot read Client A tasks'
+);
+reset role;
+
+-- X007 corrective: task read isolation — Tenant B cannot read Tenant A tasks.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '22000000-0000-4000-8000-000000000201', true);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000504'),
+  0, 'Tenant B cannot read Tenant A tasks'
+);
+reset role;
+
+-- X007 corrective: task read isolation — assigned writer CAN read tasks.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000504'
+     and title in ('كتابة المقال', 'مهمة متكررة')),
+  2, 'assigned deliverable owner can read their tasks'
+);
+reset role;
+
+-- X007 corrective: invalid assignee rejected — client persona cannot be assigned.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select throws_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    null, 'مهمة بإسناد خاطئ', '', 'todo', 'normal',
+    '21000000-0000-4000-8000-000000000206', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-invalid-assignee-client-1')$$,
+  '42501', 'invalid assignee',
+  'client approver cannot be assigned as a task assignee'
+);
+reset role;
+
+-- X007 corrective: invalid assignee rejected — wrong-tenant user.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select throws_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    null, 'مهمة بإسناد خاطئ', '', 'todo', 'normal',
+    '22000000-0000-4000-8000-000000000201', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-invalid-assignee-tenant-b-1')$$,
+  '42501', 'invalid assignee',
+  'wrong-tenant user cannot be assigned as a task assignee'
+);
+reset role;
+
+-- X007 corrective: valid assignee accepted — same-client internal member.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select lives_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    null, 'مهمة بإسناد صحيح', '', 'todo', 'normal',
+    '21000000-0000-4000-8000-000000000204', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-valid-assignee-1')$$,
+  'same-client internal member can be assigned'
+);
+reset role;
+
+-- X007 corrective: zero-row delete rejected — non-existent task.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select throws_ok(
+  $$select public.s015_delete_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    'ffffffff-ffff-4fff-8fff-ffffffffffff',
+    gen_random_uuid(), gen_random_uuid(), 'task-delete-notfound-1')$$,
+  '42501', 'task not found in scope',
+  'deleting a non-existent task is rejected before audit'
+);
+reset role;
+
+-- X007 corrective: zero-row delete rejected — no audit recorded for denied delete.
+select is(
+  (select count(*)::integer from public.audit_events
+   where reason = 'delete_deliverable_task'
+     and target_id = '21000000-0000-4000-8000-000000000504'
+     and action = 'DeliverableTaskDeleted'),
+  0, 'rejected delete does not record audit'
+);
+
+-- X007 corrective: quality check revert to pending clears checked_by/checked_at.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select lives_ok(
+  $$select public.s015_upsert_quality_check(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000530',
+    '21000000-0000-4000-8000-000000000630',
+    (select id from public.deliverable_quality_checks where version_id = '21000000-0000-4000-8000-000000000630' limit 1),
+    'مراجعة المحتوى', 'pending', 'إعادة للمراجعة', 0,
+    gen_random_uuid(), gen_random_uuid(), 'quality-revert-pending-1')$$,
+  'management reverts quality check to pending'
+);
+reset role;
+select is(
+  (select checked_by is null from public.deliverable_quality_checks
+   where version_id = '21000000-0000-4000-8000-000000000630'),
+  true, 'quality revert to pending clears checked_by'
+);
+select is(
+  (select checked_at is null from public.deliverable_quality_checks
+   where version_id = '21000000-0000-4000-8000-000000000630'),
+  true, 'quality revert to pending clears checked_at'
+);
+
 select * from finish();
 rollback;

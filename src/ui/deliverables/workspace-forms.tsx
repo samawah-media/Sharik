@@ -8,7 +8,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
-import type { DeliverableVersionWorkspace } from "@/modules/deliverables/deliverable-workspace";
+import type { DeliverableVersionWorkspace, DeliverableWorkspace } from "@/modules/deliverables/deliverable-workspace";
 import {
   versionContentInputSchema,
   workspaceCommentInputSchema,
@@ -186,9 +186,11 @@ export function ClientWorkspaceCommentForm({
 
 export function TaskForm({
   deliverable,
+  eligibleAssignees,
   onMutated,
 }: {
   deliverable: DeliverableSafeSummary;
+  eligibleAssignees?: DeliverableWorkspace["eligibleAssignees"];
   onMutated?: () => void;
 }) {
   const router = useRouter();
@@ -233,6 +235,16 @@ export function TaskForm({
         <label className="grid gap-1 text-sm font-semibold">تاريخ الاستحقاق<input className="min-h-11 rounded-lg border border-border bg-surface px-3" type="date" {...form.register("dueDate")} /></label>
       </div>
       <input type="hidden" value="todo" {...form.register("status")} />
+      {eligibleAssignees && eligibleAssignees.length > 0 ? (
+        <label className="grid gap-1 text-sm font-semibold">المسند إليه
+          <select className="min-h-11 rounded-lg border border-border bg-surface px-3" {...form.register("assigneeUserId")}>
+            <option value="">بدون إسناد</option>
+            {eligibleAssignees.map((m) => (
+              <option key={m.userId} value={m.userId}>{m.displayName}</option>
+            ))}
+          </select>
+        </label>
+      ) : null}
       {feedback ? <p aria-live="polite" className="text-sm text-muted">{feedback}</p> : null}
       <Button disabled={form.formState.isSubmitting} type="submit" variant="secondary">إضافة مهمة</Button>
     </form>

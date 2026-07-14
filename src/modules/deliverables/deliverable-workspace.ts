@@ -79,6 +79,7 @@ export type DeliverableWorkspace = {
   comments: DeliverableCommentWorkspace[];
   qualityChecks: DeliverableQualityWorkspace[];
   activity: DeliverableActivityWorkspace[];
+  eligibleAssignees: MemberDisplay[];
   counts: {
     versions: number;
     tasks: number;

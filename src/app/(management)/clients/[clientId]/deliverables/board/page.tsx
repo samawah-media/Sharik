@@ -1,7 +1,7 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { listScopedDeliverables } from "@/server/actions/deliverable-read";
-import { listScopedDeliverableWorkspaces } from "@/server/actions/deliverable-workspace-read";
+import { listScopedDeliverableWorkspaceSummaries } from "@/server/actions/deliverable-workspace-read";
 import {
   submitDeliverableVersionAction,
   updateDeliverableStatusAction,
@@ -124,7 +124,7 @@ export default async function ClientDeliverablesBoardPage({
             deliverable.contributorUserIds.includes(runtime.actor.userId),
         );
   const displayClientName = formatMvpClientName(client.name);
-  const workspaces = await listScopedDeliverableWorkspaces({
+  const workspaces = await listScopedDeliverableWorkspaceSummaries({
     tenantId: client.tenantId,
     clientId: client.id,
     deliverables: visibleDeliverables.map((deliverable) => ({

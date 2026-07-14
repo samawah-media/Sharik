@@ -186,8 +186,10 @@ export function ClientWorkspaceCommentForm({
 
 export function TaskForm({
   deliverable,
+  onMutated,
 }: {
   deliverable: DeliverableSafeSummary;
+  onMutated?: () => void;
 }) {
   const router = useRouter();
   const [feedback, setFeedback] = useState<string>();
@@ -217,6 +219,7 @@ export function TaskForm({
     setFeedback(result.ok ? "تمت إضافة المهمة." : "تعذر حفظ المهمة. راجع الصلاحية والحالة.");
     if (result.ok) {
       form.reset({ ...values, title: "", description: "" });
+      onMutated?.();
       router.refresh();
     }
   });
@@ -239,9 +242,11 @@ export function TaskForm({
 export function TaskStatusControl({
   deliverable,
   task,
+  onMutated,
 }: {
   deliverable: DeliverableSafeSummary;
   task: { id: string; title: string; status: string };
+  onMutated?: () => void;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -257,7 +262,10 @@ export function TaskStatusControl({
       idempotencyKey: crypto.randomUUID(),
     });
     setBusy(false);
-    if (result.ok) router.refresh();
+    if (result.ok) {
+      onMutated?.();
+      router.refresh();
+    }
   };
   return (
     <select
@@ -278,9 +286,11 @@ export function TaskStatusControl({
 export function QualityCheckForm({
   deliverable,
   versionId,
+  onMutated,
 }: {
   deliverable: DeliverableSafeSummary;
   versionId?: string;
+  onMutated?: () => void;
 }) {
   const router = useRouter();
   const [feedback, setFeedback] = useState<string>();
@@ -310,6 +320,7 @@ export function QualityCheckForm({
     setFeedback(result.ok ? "تم حفظ عنصر الجودة." : "تعذر حفظ عنصر الجودة. راجع الصلاحية.");
     if (result.ok) {
       form.reset({ ...values, label: "", note: "" });
+      onMutated?.();
       router.refresh();
     }
   });
@@ -331,10 +342,12 @@ export function QualityCheckStatusControl({
   deliverable,
   versionId,
   check,
+  onMutated,
 }: {
   deliverable: DeliverableSafeSummary;
   versionId: string;
   check: { id: string; label: string; status: string };
+  onMutated?: () => void;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -350,7 +363,10 @@ export function QualityCheckStatusControl({
       idempotencyKey: crypto.randomUUID(),
     });
     setBusy(false);
-    if (result.ok) router.refresh();
+    if (result.ok) {
+      onMutated?.();
+      router.refresh();
+    }
   };
   return (
     <select

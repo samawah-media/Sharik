@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
-import type { DeliverableWorkspace } from "@/modules/deliverables/deliverable-workspace";
+import type { DeliverableWorkspaceSummary } from "@/modules/deliverables/deliverable-workspace";
 import { deriveSlaStatus } from "@/modules/sla/sla-policy";
 import { UniversalDeliverableDrawer } from "@/ui/deliverables/universal-deliverable-drawer";
 import { Badge } from "@/ui/core/badge";
@@ -20,7 +20,7 @@ export function TeamWorkspace({
 }: {
   deliverables: DeliverableSafeSummary[];
   clientNames: Record<string, string>;
-  workspaces: Record<string, DeliverableWorkspace>;
+  workspaces: Record<string, DeliverableWorkspaceSummary>;
   statusAction?: Action;
   approvalAction?: Action;
   now: string;
@@ -76,7 +76,7 @@ export function TeamWorkspace({
       ) : (
         <div className="grid gap-3" data-testid="team-work-list">
           {filtered.map((deliverable) => {
-            const workspace = workspaces[deliverable.id];
+            const summary = workspaces[deliverable.id];
             const slaStatus = deriveSlaStatus({
               status: deliverable.status,
               now,
@@ -92,9 +92,9 @@ export function TeamWorkspace({
                   <h2 className="mt-1 break-words text-base font-semibold">{deliverable.name}</h2>
                   <div className="mt-2 flex flex-wrap gap-2"><Badge tone="neutral">{deliverable.type}</Badge><Badge tone="muted">{deliverable.status}</Badge><Badge tone={slaStatus === "overdue" ? "danger" : slaStatus === "at_risk" ? "warning" : "accent"}>{slaStatus}</Badge><Badge tone="muted">{deliverable.priority}</Badge></div>
                   <p className="mt-2 text-xs text-muted">المسؤول: {deliverable.ownerDisplay?.displayName ?? "فريق سماوة"} · الموعد: {deliverable.internalDueDate ?? deliverable.finalDueDate ?? "غير محدد"}</p>
-                  <p className="mt-1 text-xs text-muted">{workspace?.counts.versions ?? 0} نسخ · {workspace?.counts.tasks ?? 0} مهام · {workspace?.counts.files ?? 0} ملفات · {workspace?.counts.comments ?? 0} تعليقات</p>
+                  <p className="mt-1 text-xs text-muted">{summary?.counts.versions ?? 0} نسخ · {summary?.counts.tasks ?? 0} مهام · {summary?.counts.files ?? 0} ملفات · {summary?.counts.comments ?? 0} تعليقات</p>
                 </div>
-                <UniversalDeliverableDrawer approvalAction={approvalAction} canPublishClientComment={Boolean(approvalAction)} deliverable={deliverable} workspace={workspace} />
+                <UniversalDeliverableDrawer approvalAction={approvalAction} canPublishClientComment={Boolean(approvalAction)} deliverable={deliverable} summary={summary} />
               </article>
             );
           })}

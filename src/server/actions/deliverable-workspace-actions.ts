@@ -13,6 +13,7 @@ import {
   deleteTaskInputSchema,
   qualityCheckInputSchema,
 } from "@/modules/deliverables/workspace-inputs";
+import { listScopedDeliverableWorkspaces } from "./deliverable-workspace-read";
 import { updateDeliverableStatusViaRpc } from "./deliverable-write-rpc";
 
 const boardMoveSchema = z.object({
@@ -246,4 +247,41 @@ export async function upsertQualityCheck(
   if (error) return { ok: false as const, reason: "denied" as const };
   revalidatePath(`/clients/${parsed.data.clientId}/deliverables/board`);
   return { ok: true as const };
+}
+
+const fetchWorkspaceSchema = z.object({
+  clientId: z.string().uuid(),
+  deliverableId: z.string().uuid(),
+  currentVersionId: z.string().uuid().nullable().optional(),
+});
+
+export async function fetchDeliverableWorkspace(
+  input: z.input<typeof fetchWorkspaceSchema>,
+) {
+  const parsed = fetchWorkspaceSchema.safeParse(input);
+  if (!parsed.success) return { ok: false as const, reason: "invalid_input" as const };
+  const supabase = await createSupabaseServerClient();
+  const runtime = await resolveRuntimeContext(supabase);
+  if (!runtime.ok) return { ok: false as const, reason: "denied" as const };
+  const scopedClient = runtime.clients.find(
+    (client) =>
+      client.id === parsed.data.clientId &&
+      client.tenantId === runtime.actor.tenantId &&
+      client.status === "active",
+  );
+  if (!scopedClient) return { ok: false as const, reason: "denied" as const };
+  const workspaces = await listScopedDeliverableWorkspaces({
+    tenantId: scopedClient.tenantId,
+    clientId: scopedClient.id,
+    deliverables: [
+      {
+        id: parsed.data.deliverableId,
+        currentVersionId: parsed.data.currentVersionId ?? undefined,
+      },
+    ],
+    supabase,
+  });
+  const workspace = workspaces[parsed.data.deliverableId];
+  if (!workspace) return { ok: false as const, reason: "denied" as const };
+  return { ok: true as const, workspace };
 }

@@ -17,7 +17,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import { useState } from "react";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
-import type { DeliverableWorkspace } from "@/modules/deliverables/deliverable-workspace";
+import type { DeliverableWorkspaceSummary } from "@/modules/deliverables/deliverable-workspace";
 import {
   activeKanbanStatuses,
   canChangeDeliverableStatus,
@@ -267,7 +267,7 @@ function DeliverableCard({
   action,
   approvalAction,
   versionAction,
-  workspace,
+  summary,
   canPublishClientComment,
   now,
 }: {
@@ -275,7 +275,7 @@ function DeliverableCard({
   action?: StatusUpdateAction;
   approvalAction?: StatusUpdateAction;
   versionAction?: StatusUpdateAction;
-  workspace?: DeliverableWorkspace;
+  summary?: DeliverableWorkspaceSummary;
   canPublishClientComment: boolean;
   now: string;
 }) {
@@ -359,7 +359,7 @@ function DeliverableCard({
           approvalAction={approvalAction}
           canPublishClientComment={canPublishClientComment}
           deliverable={deliverable}
-          workspace={workspace}
+          summary={summary}
         />
       </div>
       <DeliverableVersionSubmissionControl
@@ -466,7 +466,7 @@ export function DeliverableBoard({
   action?: StatusUpdateAction;
   approvalAction?: StatusUpdateAction;
   versionAction?: StatusUpdateAction;
-  workspaces?: Record<string, DeliverableWorkspace>;
+  workspaces?: Record<string, DeliverableWorkspaceSummary>;
   now?: string;
 }) {
   const [items, setItems] = useState(deliverables);
@@ -583,7 +583,7 @@ export function DeliverableBoard({
                       versionAction={versionAction}
                       deliverable={deliverable}
                       now={now}
-                      workspace={workspaces[deliverable.id]}
+                      summary={workspaces[deliverable.id]}
                     />
                     </DraggableDeliverableCard>
                   ))

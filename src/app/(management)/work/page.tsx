@@ -1,7 +1,7 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { listScopedDeliverables } from "@/server/actions/deliverable-read";
-import { listScopedDeliverableWorkspaces } from "@/server/actions/deliverable-workspace-read";
+import { listScopedDeliverableWorkspaceSummaries } from "@/server/actions/deliverable-workspace-read";
 import { updateDeliverableStatusAction } from "@/server/actions/deliverable-status";
 import { resolveRouteRuntime } from "@/server/navigation/route-guards";
 import { PageHeader } from "@/ui/layout/page-header";
@@ -52,7 +52,7 @@ export default async function AssignedWorkPage({
   const workspaceEntries = await Promise.all(
     runtime.clients.map(async (client) => {
       const scoped = deliverables.filter((item) => item.clientId === client.id);
-      return listScopedDeliverableWorkspaces({
+      return listScopedDeliverableWorkspaceSummaries({
         tenantId: client.tenantId,
         clientId: client.id,
         deliverables: scoped.map((item) => ({ id: item.id, currentVersionId: item.currentVersionId })),

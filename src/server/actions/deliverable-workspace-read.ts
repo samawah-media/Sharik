@@ -7,6 +7,7 @@ import {
 import type {
   DeliverableActivityWorkspace,
   DeliverableWorkspace,
+  DeliverableWorkspaceSummary,
 } from "@/modules/deliverables/deliverable-workspace";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -14,6 +15,71 @@ type ScopedDeliverable = { id: string; currentVersionId?: string };
 
 const member = (directory: MemberDirectory, id?: string | null) =>
   id ? directory[id] : undefined;
+
+export async function listScopedDeliverableWorkspaceSummaries({
+  tenantId,
+  clientId,
+  deliverables,
+  supabase,
+}: {
+  tenantId: string;
+  clientId: string;
+  deliverables: ScopedDeliverable[];
+  supabase?: SupabaseClient;
+}): Promise<Record<string, DeliverableWorkspaceSummary>> {
+  if (deliverables.length === 0) return {};
+
+  const client = supabase ?? (await createSupabaseServerClient());
+  const deliverableIds = deliverables.map((deliverable) => deliverable.id);
+
+  const [versions, tasks, files, comments] = await Promise.all([
+    client
+      .from("deliverable_versions")
+      .select("deliverable_id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .in("deliverable_id", deliverableIds),
+    client
+      .from("deliverable_tasks")
+      .select("deliverable_id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .in("deliverable_id", deliverableIds),
+    client
+      .from("file_assets")
+      .select("deliverable_id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .in("deliverable_id", deliverableIds)
+      .eq("upload_state", "ready"),
+    client
+      .from("comments")
+      .select("deliverable_id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .in("deliverable_id", deliverableIds),
+  ]);
+
+  const countFor = (result: { count: number | null } | null, deliverableId: string) => {
+    return result?.count ?? 0;
+  };
+
+  return Object.fromEntries(
+    deliverables.map((deliverable) => [
+      deliverable.id,
+      {
+        deliverableId: deliverable.id,
+        currentVersionId: deliverable.currentVersionId,
+        counts: {
+          versions: countFor(versions, deliverable.id),
+          tasks: countFor(tasks, deliverable.id),
+          files: countFor(files, deliverable.id),
+          comments: countFor(comments, deliverable.id),
+        },
+      },
+    ]),
+  );
+}
 
 export async function listScopedDeliverableWorkspaces({
   tenantId,

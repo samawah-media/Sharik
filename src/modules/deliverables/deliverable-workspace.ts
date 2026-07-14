@@ -83,3 +83,14 @@ export type DeliverableWorkspace = {
     comments: number;
   };
 };
+
+export type DeliverableWorkspaceSummary = {
+  deliverableId: string;
+  currentVersionId?: string;
+  counts: {
+    versions: number;
+    tasks: number;
+    files: number;
+    comments: number;
+  };
+};

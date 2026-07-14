@@ -75,11 +75,10 @@ Stop before mutation or stop immediately during execution if Production is detec
 
 ### Hosted completion states
 
-Use only one hosted final state:
+Use only one hosted final state, matching the canonical rescue prompt vocabulary:
 
-- `HOSTED_TEAM_UAT_PASS`
-- `HOSTED_TEAM_UAT_READY_AWAITING_TEAM_ACCESS`
-- `HOSTED_TEAM_UAT_BLOCKED`
+- `HOSTED_TEAM_UAT_READY` — only when H008, H009, H010, T032, and X007 are all genuinely closed by direct hosted evidence.
+- `HOSTED_TEAM_UAT_BLOCKED` — for every other incomplete or failed mandatory gate, including missing approved team access.
 
 Do not use Production ready, Production accepted, customer accepted, or live release for this amendment.
 

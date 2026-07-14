@@ -70,6 +70,7 @@ Hosted amendment note: H001-H007 have completed under owner authorization. Hoste
   - [x] X006-G Complete exception-first management and scannable client portal experiences.
   - [x] X006-H Execute DESIGN.md RTL/mobile/keyboard/reduced-motion/state visual QA and close all local gates.
 - [ ] X007 Execute generic run-ID-scoped Glass/Hadna import, hosted persona UAT, defect burn-down, rollback/no-op evidence, and H008-H010 handoff.
+  - Execution sequence (subordinate runbook, not a second task source): [X007 Step-by-Step Execution Runbook](evidence/x007-step-by-step-execution-runbook.md).
 
 ## Correction note: persistent browser verification
 

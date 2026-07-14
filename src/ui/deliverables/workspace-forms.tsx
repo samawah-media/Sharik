@@ -245,7 +245,16 @@ export function TaskStatusControl({
   onMutated,
 }: {
   deliverable: DeliverableSafeSummary;
-  task: { id: string; title: string; status: string };
+  task: {
+    id: string;
+    title: string;
+    description?: string;
+    status: string;
+    priority: "low" | "normal" | "high" | "urgent";
+    assigneeUserId?: string;
+    dueDate?: string;
+    sortOrder: number;
+  };
   onMutated?: () => void;
 }) {
   const router = useRouter();
@@ -257,8 +266,12 @@ export function TaskStatusControl({
       deliverableId: deliverable.id,
       taskId: task.id,
       title: task.title,
+      description: task.description,
       status: status as "todo" | "in_progress" | "done" | "cancelled",
-      priority: "normal",
+      priority: task.priority,
+      assigneeUserId: task.assigneeUserId ?? null,
+      dueDate: task.dueDate ?? null,
+      sortOrder: task.sortOrder,
       idempotencyKey: crypto.randomUUID(),
     });
     setBusy(false);
@@ -346,7 +359,13 @@ export function QualityCheckStatusControl({
 }: {
   deliverable: DeliverableSafeSummary;
   versionId: string;
-  check: { id: string; label: string; status: string };
+  check: {
+    id: string;
+    label: string;
+    status: string;
+    note?: string;
+    sortOrder: number;
+  };
   onMutated?: () => void;
 }) {
   const router = useRouter();
@@ -360,6 +379,8 @@ export function QualityCheckStatusControl({
       checkId: check.id,
       label: check.label,
       status: status as "pending" | "passed" | "changes_required" | "not_applicable",
+      note: check.note,
+      sortOrder: check.sortOrder,
       idempotencyKey: crypto.randomUUID(),
     });
     setBusy(false);

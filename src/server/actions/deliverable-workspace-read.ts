@@ -35,34 +35,44 @@ export async function listScopedDeliverableWorkspaceSummaries({
   const [versions, tasks, files, comments] = await Promise.all([
     client
       .from("deliverable_versions")
-      .select("deliverable_id", { count: "exact", head: true })
+      .select("deliverable_id")
       .eq("tenant_id", tenantId)
       .eq("client_id", clientId)
       .in("deliverable_id", deliverableIds),
     client
       .from("deliverable_tasks")
-      .select("deliverable_id", { count: "exact", head: true })
+      .select("deliverable_id")
       .eq("tenant_id", tenantId)
       .eq("client_id", clientId)
       .in("deliverable_id", deliverableIds),
     client
       .from("file_assets")
-      .select("deliverable_id", { count: "exact", head: true })
+      .select("deliverable_id")
       .eq("tenant_id", tenantId)
       .eq("client_id", clientId)
       .in("deliverable_id", deliverableIds)
       .eq("upload_state", "ready"),
     client
       .from("comments")
-      .select("deliverable_id", { count: "exact", head: true })
+      .select("deliverable_id")
       .eq("tenant_id", tenantId)
       .eq("client_id", clientId)
       .in("deliverable_id", deliverableIds),
   ]);
 
-  const countFor = (result: { count: number | null } | null, deliverableId: string) => {
-    return result?.count ?? 0;
+  const countByDeliverable = (
+    rows: { deliverable_id: string }[] | null | undefined,
+  ) => {
+    const counts = new Map<string, number>();
+    for (const row of rows ?? []) {
+      counts.set(row.deliverable_id, (counts.get(row.deliverable_id) ?? 0) + 1);
+    }
+    return counts;
   };
+  const versionCounts = countByDeliverable(versions.data);
+  const taskCounts = countByDeliverable(tasks.data);
+  const fileCounts = countByDeliverable(files.data);
+  const commentCounts = countByDeliverable(comments.data);
 
   return Object.fromEntries(
     deliverables.map((deliverable) => [
@@ -71,10 +81,10 @@ export async function listScopedDeliverableWorkspaceSummaries({
         deliverableId: deliverable.id,
         currentVersionId: deliverable.currentVersionId,
         counts: {
-          versions: countFor(versions, deliverable.id),
-          tasks: countFor(tasks, deliverable.id),
-          files: countFor(files, deliverable.id),
-          comments: countFor(comments, deliverable.id),
+          versions: versionCounts.get(deliverable.id) ?? 0,
+          tasks: taskCounts.get(deliverable.id) ?? 0,
+          files: fileCounts.get(deliverable.id) ?? 0,
+          comments: commentCounts.get(deliverable.id) ?? 0,
         },
       },
     ]),
@@ -266,8 +276,10 @@ export async function listScopedDeliverableWorkspaces({
           description: row.description ?? undefined,
           status: row.status,
           priority: row.priority,
+          assigneeUserId: row.assignee_user_id ?? undefined,
           assignee: member(directory, row.assignee_user_id),
           dueDate: row.due_date ?? undefined,
+          sortOrder: row.sort_order,
         })),
         files: fileRows.map((row) => ({
           id: row.id,
@@ -299,6 +311,7 @@ export async function listScopedDeliverableWorkspaces({
           note: row.note ?? undefined,
           checkedBy: member(directory, row.checked_by),
           checkedAt: row.checked_at ?? undefined,
+          sortOrder: row.sort_order,
         })),
         activity,
         counts: {

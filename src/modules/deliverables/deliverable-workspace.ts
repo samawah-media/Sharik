@@ -21,8 +21,10 @@ export type DeliverableTaskWorkspace = {
   description?: string;
   status: "todo" | "in_progress" | "done" | "cancelled";
   priority: "low" | "normal" | "high" | "urgent";
+  assigneeUserId?: string;
   assignee?: MemberDisplay;
   dueDate?: string;
+  sortOrder: number;
 };
 
 export type DeliverableFileWorkspace = {
@@ -57,6 +59,7 @@ export type DeliverableQualityWorkspace = {
   note?: string;
   checkedBy?: MemberDisplay;
   checkedAt?: string;
+  sortOrder: number;
 };
 
 export type DeliverableActivityWorkspace = {

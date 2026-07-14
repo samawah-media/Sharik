@@ -2,6 +2,55 @@
 -- mutation commands with audited, scoped, idempotent RPCs, plus a quality-gate
 -- enforcement on internal approval.
 
+-- Helper: check if the caller is the deliverable owner. These helpers must
+-- exist before the RLS policies that reference them during clean replay.
+create or replace function public.owner_user_id_is_actor(
+  target_tenant_id uuid,
+  target_deliverable_id uuid
+)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from public.deliverables d
+    where d.id = target_deliverable_id
+      and d.tenant_id = target_tenant_id
+      and d.owner_user_id = auth.uid()
+  );
+$$;
+
+revoke all on function public.owner_user_id_is_actor(uuid, uuid)
+  from public, anon, authenticated;
+grant execute on function public.owner_user_id_is_actor(uuid, uuid)
+  to authenticated;
+
+-- Helper: check if the caller is a contributor.
+create or replace function public.contributor_user_ids_contains_actor(
+  target_tenant_id uuid,
+  target_deliverable_id uuid
+)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from public.deliverables d
+    where d.id = target_deliverable_id
+      and d.tenant_id = target_tenant_id
+      and auth.uid() = any(coalesce(d.contributor_user_ids, array[]::uuid[]))
+  );
+$$;
+
+revoke all on function public.contributor_user_ids_contains_actor(uuid, uuid)
+  from public, anon, authenticated;
+grant execute on function public.contributor_user_ids_contains_actor(uuid, uuid)
+  to authenticated;
+
 -- 1. RLS INSERT/UPDATE/DELETE policies for deliverable_tasks.
 --    Management and assigned team (owner/contributor with client-scoped role)
 --    can create/update tasks. Management can delete. Client roles are excluded.
@@ -21,8 +70,8 @@ create policy s015_deliverable_tasks_insert on public.deliverable_tasks
     )
     or (
       (
-        owner_user_id_is_actor(tenant_id, deliverable_id)
-        or contributor_user_ids_contains_actor(tenant_id, deliverable_id)
+        public.owner_user_id_is_actor(tenant_id, deliverable_id)
+        or public.contributor_user_ids_contains_actor(tenant_id, deliverable_id)
       )
       and public.f001_has_active_role(
         tenant_id,
@@ -47,8 +96,30 @@ create policy s015_deliverable_tasks_update on public.deliverable_tasks
     )
     or (
       (
-        owner_user_id_is_actor(tenant_id, deliverable_id)
-        or contributor_user_ids_contains_actor(tenant_id, deliverable_id)
+        public.owner_user_id_is_actor(tenant_id, deliverable_id)
+        or public.contributor_user_ids_contains_actor(tenant_id, deliverable_id)
+      )
+      and public.f001_has_active_role(
+        tenant_id,
+        array['account_manager','content_writer','designer','performance_specialist'],
+        'client', client_id
+      )
+    )
+  ) with check (
+    public.f001_has_active_role(
+      tenant_id,
+      array['tenant_owner','tenant_administrator','project_manager','marketing_manager'],
+      'tenant', tenant_id
+    )
+    or public.f001_has_active_role(
+      tenant_id,
+      array['tenant_owner','tenant_administrator','project_manager','marketing_manager'],
+      'client', client_id
+    )
+    or (
+      (
+        public.owner_user_id_is_actor(tenant_id, deliverable_id)
+        or public.contributor_user_ids_contains_actor(tenant_id, deliverable_id)
       )
       and public.f001_has_active_role(
         tenant_id,
@@ -104,64 +175,25 @@ create policy s015_deliverable_quality_update on public.deliverable_quality_chec
       array['tenant_owner','tenant_administrator','project_manager','marketing_manager'],
       'client', client_id
     )
+  ) with check (
+    public.f001_has_active_role(
+      tenant_id,
+      array['tenant_owner','tenant_administrator','project_manager','marketing_manager'],
+      'tenant', tenant_id
+    )
+    or public.f001_has_active_role(
+      tenant_id,
+      array['tenant_owner','tenant_administrator','project_manager','marketing_manager'],
+      'client', client_id
+    )
   );
 
--- 3. Grants.
+-- 3. Direct table write grants remain revoked. Mutations must use audited RPCs.
 revoke insert, update, delete on public.deliverable_tasks from public, anon, authenticated;
-grant insert, update, delete on public.deliverable_tasks to authenticated;
 
 revoke insert, update on public.deliverable_quality_checks from public, anon, authenticated;
-grant insert, update on public.deliverable_quality_checks to authenticated;
 
--- 4. Helper: check if the caller is the deliverable owner.
-create or replace function public.owner_user_id_is_actor(
-  target_tenant_id uuid,
-  target_deliverable_id uuid
-)
-returns boolean
-language sql
-security definer
-set search_path = public
-stable
-as $$
-  select exists (
-    select 1 from public.deliverables d
-    where d.id = target_deliverable_id
-      and d.tenant_id = target_tenant_id
-      and d.owner_user_id = auth.uid()
-  );
-$$;
-
-revoke all on function public.owner_user_id_is_actor(uuid, uuid)
-  from public, anon, authenticated;
-grant execute on function public.owner_user_id_is_actor(uuid, uuid)
-  to authenticated;
-
--- 5. Helper: check if the caller is a contributor.
-create or replace function public.contributor_user_ids_contains_actor(
-  target_tenant_id uuid,
-  target_deliverable_id uuid
-)
-returns boolean
-language sql
-security definer
-set search_path = public
-stable
-as $$
-  select exists (
-    select 1 from public.deliverables d
-    where d.id = target_deliverable_id
-      and d.tenant_id = target_tenant_id
-      and auth.uid() = any(coalesce(d.contributor_user_ids, array[]::uuid[]))
-  );
-$$;
-
-revoke all on function public.contributor_user_ids_contains_actor(uuid, uuid)
-  from public, anon, authenticated;
-grant execute on function public.contributor_user_ids_contains_actor(uuid, uuid)
-  to authenticated;
-
--- 6. Helper: quality gate passed for a version.
+-- 4. Helper: quality gate passed for a version.
 create or replace function private.s015_quality_gate_passed(
   target_tenant_id uuid,
   target_client_id uuid,

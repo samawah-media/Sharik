@@ -27,6 +27,7 @@
 | Preview deployment | green for Preview build and public UAT entry | Preview deployment built successfully and is Ready. Preview env contains the required app and public Supabase configuration; the public UAT alias returns the Arabic sign-in shell, signs in available valid UAT personas, has zero observed browser console errors for those personas, and shows no service-role marker or internal secret leakage. Production remains untouched. |
 | Hosted workflow/UX UAT | open | H008 remains open. Hosted Playwright tooling is present and fails closed without an explicit secure-env hostname allowlist and non-Production target category. X006 exact-HEAD CI, UAT migrations/imports, Preview update, and direct persona evidence are still required. |
 | T032 hosted evidence | pending | T032 remains open. Rollback boundary and migration/seed/deploy/public-entry/access evidence exist; workflow and final rollback/no-op evidence remain pending. |
+| Glass/Hadna workbook importer dry-run | blocked | Checkpoint 2 stopped before mutation because the repository importer cannot resolve `@oai/artifact-tool` from the local artifact runtime. Workbook is present and ignored; no workbook content or hosted data was printed or mutated. |
 
 ## Product Experience Rescue amendment status (2026-07-13)
 

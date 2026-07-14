@@ -38,6 +38,7 @@
 | Local UX rescue verification | prior slice CI green / X006 open | CI run `29239615839` passed lint, secret scan, build, fixture E2E 108, and DB/RLS 228/228 for migrations 202607130001/002. Persistent browser E2E and the full matrix have not rerun after the latest X006 changes. |
 | Hosted team workflow | open | H008-H010 remain open; no claim of hosted PASS is made from local evidence. |
 | Client E2E navigation regression | green locally | Initial duplicate-landmark failure was fixed; affected client/accessibility tests pass across desktop/mobile/RTL with configured skips unchanged. |
+| X007 Checkpoint 1 product gaps | green locally / DB-hosted pending | Team task mutation, management quality mutation, quality-gated internal approval, lazy drawer detail loading, drawer focus containment, `/client/files`, and honest brand/content fallback behavior are implemented locally. Local lint, typecheck, unit, component, and build pass; new pgTAP coverage is committed but awaits DB execution in Checkpoint 3. Hosted persona workflow remains H008. |
 
 Continuation evidence correction: CI run `29239615839` is valid database evidence for migrations 202607130001/002 (RLS 228/228) and fixture evidence (E2E 108). Later X006 closure is instead backed by exact-HEAD PR #37 quality run `29263587871` attempt 2 for commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`. X007, H008-H010, and T032 remain open.
 

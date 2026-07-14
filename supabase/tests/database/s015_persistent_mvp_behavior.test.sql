@@ -1353,16 +1353,16 @@ select throws_ok(
 );
 reset role;
 
--- X007 corrective: valid assignee accepted — same-client internal member.
+-- X007 corrective: valid assignee accepted — management assigns to same-client internal member.
 set local role authenticated;
-select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
 select lives_ok(
   $$select public.s015_upsert_deliverable_task(
     '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
     null, 'مهمة بإسناد صحيح', '', 'todo', 'normal',
     '21000000-0000-4000-8000-000000000204', null, 0,
     gen_random_uuid(), gen_random_uuid(), 'task-valid-assignee-1')$$,
-  'same-client internal member can be assigned'
+  'management can assign to same-client internal member'
 );
 reset role;
 
@@ -1411,6 +1411,207 @@ select is(
    where version_id = '21000000-0000-4000-8000-000000000630'),
   true, 'quality revert to pending clears checked_at'
 );
+
+-- X007 corrective: quality re-review records new reviewer and timestamp.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select lives_ok(
+  $$select public.s015_upsert_quality_check(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000530',
+    '21000000-0000-4000-8000-000000000630',
+    (select id from public.deliverable_quality_checks where version_id = '21000000-0000-4000-8000-000000000630' limit 1),
+    'مراجعة المحتوى', 'passed', 'مطابق بعد إعادة المراجعة', 0,
+    gen_random_uuid(), gen_random_uuid(), 'quality-rereview-passed-1')$$,
+  'management re-reviews quality check after revert'
+);
+reset role;
+select is(
+  (select checked_by = '21000000-0000-4000-8000-000000000207'
+   from public.deliverable_quality_checks
+   where version_id = '21000000-0000-4000-8000-000000000630'),
+  true, 'quality re-review records new checked_by'
+);
+select is(
+  (select checked_at is not null
+   from public.deliverable_quality_checks
+   where version_id = '21000000-0000-4000-8000-000000000630'),
+  true, 'quality re-review records new checked_at'
+);
+
+-- X007 corrective: Client A viewer denied task read.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202', true);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000504'),
+  0, 'Client A viewer cannot read internal tasks'
+);
+reset role;
+
+-- X007 corrective: Client A approver denied task read.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000206', true);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000504'),
+  0, 'Client A approver cannot read internal tasks'
+);
+reset role;
+
+-- X007 corrective: inactive membership denied task read.
+-- User 205 is content_writer on Client A but NOT owner/contributor/assignee/creator
+-- of deliverable 504's tasks, so they were already denied above.
+-- Now test with a disabled membership explicitly.
+update public.tenant_memberships set status = 'disabled'
+where id = '21000000-0000-4000-8000-000000000105';
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000205', true);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000504'),
+  0, 'disabled-membership user cannot read tasks even if previously eligible'
+);
+reset role;
+update public.tenant_memberships set status = 'active'
+where id = '21000000-0000-4000-8000-000000000105';
+
+-- X007 corrective: team member cannot assign task to another user.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select throws_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    null, 'مهمة بإسناد لمستخدم آخر', '', 'todo', 'normal',
+    '21000000-0000-4000-8000-000000000204', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-team-assign-other-1')$$,
+  '42501', 'assignee authority denied',
+  'team member cannot assign task to another user'
+);
+reset role;
+
+-- X007 corrective: no task/audit/idempotency row created on rejected assignment.
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where title = 'مهمة بإسناد لمستخدم آخر'),
+  0, 'rejected assignment creates no task row'
+);
+select is(
+  (select count(*)::integer from public.audit_events
+   where reason = 'upsert_deliverable_task'
+     and action = 'DeliverableTaskCreated'
+     and actor_user_id = '21000000-0000-4000-8000-000000000203'
+     and target_id = '21000000-0000-4000-8000-000000000504'
+     and occurred_at > now() - interval '5 minutes'),
+  2, 'rejected assignment creates no new audit row (only prior 2 successful creates)'
+);
+select is(
+  (select count(*)::integer from public.mvp_command_requests
+   where idempotency_key = 'task-team-assign-other-1'),
+  0, 'rejected assignment creates no idempotency row'
+);
+
+-- X007 corrective: team member can assign to self.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select lives_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    null, 'مهمة مسندة لنفسي', '', 'todo', 'normal',
+    '21000000-0000-4000-8000-000000000203', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-team-assign-self-1')$$,
+  'team member can assign task to self'
+);
+reset role;
+
+-- X007 corrective: team member can create unassigned task.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select lives_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    null, 'مهمة غير مسندة', '', 'todo', 'normal',
+    null, null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-team-unassign-1')$$,
+  'team member can create unassigned task'
+);
+reset role;
+
+-- X007 corrective: management can assign to any eligible member.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select lives_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    null, 'مهمة بإسناد إداري', '', 'todo', 'normal',
+    '21000000-0000-4000-8000-000000000204', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-mgmt-assign-1')$$,
+  'management can assign task to any eligible member'
+);
+reset role;
+
+-- X007 corrective: different-payload delete replay conflict.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select lives_ok(
+  $$select public.s015_delete_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    (select result_resource_id from public.mvp_command_requests where idempotency_key = 'task-team-assign-self-1'),
+    gen_random_uuid(), gen_random_uuid(), 'task-delete-conflict-1')$$,
+  'first delete succeeds'
+);
+select throws_ok(
+  $$select public.s015_delete_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    (select result_resource_id from public.mvp_command_requests where idempotency_key = 'task-team-unassign-1'),
+    gen_random_uuid(), gen_random_uuid(), 'task-delete-conflict-1')$$,
+  'P0001', 'idempotency conflict',
+  'different-payload delete replay conflicts'
+);
+reset role;
+
+-- X007 corrective: same-payload delete replay returns original without duplicate audit.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select lives_ok(
+  $$select public.s015_delete_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    (select result_resource_id from public.mvp_command_requests where idempotency_key = 'task-team-unassign-1'),
+    gen_random_uuid(), gen_random_uuid(), 'task-delete-replay-1')$$,
+  'first delete of second task succeeds'
+);
+select lives_ok(
+  $$select public.s015_delete_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    (select result_resource_id from public.mvp_command_requests where idempotency_key = 'task-team-unassign-1'),
+    gen_random_uuid(), gen_random_uuid(), 'task-delete-replay-1')$$,
+  'same-payload delete replay succeeds'
+);
+reset role;
+select is(
+  (select count(*)::integer from public.mvp_command_requests
+   where idempotency_key = 'task-delete-replay-1'),
+  1, 'same-payload delete replay does not duplicate idempotency'
+);
+
+-- X007 corrective: unauthorized role denied delete.
+-- Save task ID as management first, then switch to writer for the denial test.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+create temp table if not exists tmp_delete_test_task (task_id uuid);
+insert into tmp_delete_test_task
+select result_resource_id from public.mvp_command_requests where idempotency_key = 'task-valid-assignee-1';
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select throws_ok(
+  $$select public.s015_delete_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    (select task_id from tmp_delete_test_task limit 1),
+    gen_random_uuid(), gen_random_uuid(), 'task-delete-unauthorized-1')$$,
+  '42501', 'task delete denied',
+  'writer cannot delete tasks'
+);
+reset role;
 
 select * from finish();
 rollback;

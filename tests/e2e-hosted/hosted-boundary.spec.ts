@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("hosted UAT refuses local fixture impersonation", async ({ page }) => {
-  await page.goto("/client/pending?as=client_approver_a", {
+  await page.goto("/sign-in?as=client_approver_a", {
     waitUntil: "domcontentloaded",
   });
 

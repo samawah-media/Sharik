@@ -1724,3 +1724,10 @@ Boundary:
 - The temporary visual harness was removed after a pre-navigation Windows Playwright ESM loading failure; repository Playwright visual QA replaced it and is covered by the exact-HEAD CI fixture E2E run.
 - No hosted persona PASS is claimed.
 - X007 and H008-H010 remain open. No UAT migration/import, rollback/no-op rehearsal, Production action, external client invitation, public signup, PR merge, or workbook tracking occurred in this continuation.
+
+## Spec 015 X007 Checkpoint 4 resume - 2026-07-15
+
+- Hosted runner guard metadata was supplied process-locally and listed 27 Preview/UAT checks.
+- Public shell boundary checks passed 6/6 across desktop, mobile, and RTL: fixture impersonation was refused and no browser-side service-role credential leakage was detected.
+- Hosted persona smoke remains blocked before H008 because the configured UAT entry returns 404 for the required Spec 015 role routes after sign-in; direct latest Preview exploration stayed Preview-only but timed out during persona smoke.
+- No migration, import, alias, deployment, Production setting, PR merge, external invitation, public signup, or workbook tracking occurred in this continuation.

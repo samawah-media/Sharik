@@ -39,7 +39,7 @@ Hosted UAT execution, deployment/promotion, team access, real customer data, soc
 
 ## Owner-Authorized Hosted Team UAT Amendment
 
-Status: OWNER AUTHORIZED / X007 CHECKPOINT 4 BLOCKED AT PREVIEW ACCESS.
+Status: OWNER AUTHORIZED / X007 CHECKPOINT 4 BLOCKED AT PREVIEW/UAT ROUTING.
 
 This amendment extends Spec 015 only. It does not create Spec 016, does not invalidate the completed local acceptance evidence, and does not convert local MVP acceptance into hosted or Production acceptance.
 

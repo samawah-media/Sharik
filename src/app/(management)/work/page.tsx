@@ -6,7 +6,10 @@ import { updateDeliverableStatusAction } from "@/server/actions/deliverable-stat
 import { resolveRouteRuntime } from "@/server/navigation/route-guards";
 import { PageHeader } from "@/ui/layout/page-header";
 import { TeamWorkspace } from "@/ui/management/team-workspace";
-import { AccessDeniedState, SessionExpiredState } from "@/ui/shared/access-states";
+import {
+  AccessDeniedState,
+  SessionExpiredState,
+} from "@/ui/shared/access-states";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +21,12 @@ export default async function AssignedWorkPage({
   const query = await searchParams;
   const runtime = await resolveRouteRuntime(query?.as);
   if (!runtime.ok) {
-    return runtime.reason === "auth_required" || runtime.reason === "session_expired"
-      ? <SessionExpiredState />
-      : <AccessDeniedState returnHref="/sign-in" />;
+    return runtime.reason === "auth_required" ||
+      runtime.reason === "session_expired" ? (
+      <SessionExpiredState />
+    ) : (
+      <AccessDeniedState returnHref="/sign-in" />
+    );
   }
 
   const clientResults = await Promise.all(
@@ -53,6 +59,14 @@ export default async function AssignedWorkPage({
                 tenantId: deliverable.tenantId,
                 clientId: deliverable.clientId,
               },
+            }).allowed ||
+            evaluatePermission({
+              actor: runtime.actor,
+              permission: PERMISSIONS.DELIVERABLE_VERSION_SUBMIT,
+              resource: {
+                tenantId: deliverable.tenantId,
+                clientId: deliverable.clientId,
+              },
             }).allowed,
         )
       : [],
@@ -63,23 +77,41 @@ export default async function AssignedWorkPage({
       return listScopedDeliverableWorkspaceSummaries({
         tenantId: client.tenantId,
         clientId: client.id,
-        deliverables: scoped.map((item) => ({ id: item.id, currentVersionId: item.currentVersionId })),
+        deliverables: scoped.map((item) => ({
+          id: item.id,
+          currentVersionId: item.currentVersionId,
+        })),
       });
     }),
   );
-  const canUpdate = runtime.clients.some((client) =>
-    evaluatePermission({ actor: runtime.actor, permission: PERMISSIONS.DELIVERABLE_STATUS_UPDATE, resource: { tenantId: client.tenantId, clientId: client.id } }).allowed,
+  const canUpdate = runtime.clients.some(
+    (client) =>
+      evaluatePermission({
+        actor: runtime.actor,
+        permission: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
+        resource: { tenantId: client.tenantId, clientId: client.id },
+      }).allowed,
   );
-  const canApprove = runtime.clients.some((client) =>
-    evaluatePermission({ actor: runtime.actor, permission: PERMISSIONS.DELIVERABLE_INTERNAL_APPROVE, resource: { tenantId: client.tenantId, clientId: client.id } }).allowed,
+  const canApprove = runtime.clients.some(
+    (client) =>
+      evaluatePermission({
+        actor: runtime.actor,
+        permission: PERMISSIONS.DELIVERABLE_INTERNAL_APPROVE,
+        resource: { tenantId: client.tenantId, clientId: client.id },
+      }).allowed,
   );
 
   return (
     <main className="grid gap-5" dir="rtl">
-      <PageHeader title="مهامي" description="العمل المسند إليك من جميع العملاء المصرح بهم، من مصدر دائم واحد للقائمة واللوحة." />
+      <PageHeader
+        title="مهامي"
+        description="العمل المسند إليك من جميع العملاء المصرح بهم، من مصدر دائم واحد للقائمة واللوحة."
+      />
       <TeamWorkspace
         approvalAction={canApprove ? updateDeliverableStatusAction : undefined}
-        clientNames={Object.fromEntries(runtime.clients.map((client) => [client.id, client.name]))}
+        clientNames={Object.fromEntries(
+          runtime.clients.map((client) => [client.id, client.name]),
+        )}
         deliverables={deliverables}
         now={new Date().toISOString()}
         statusAction={canUpdate ? updateDeliverableStatusAction : undefined}

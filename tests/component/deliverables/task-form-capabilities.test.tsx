@@ -41,7 +41,9 @@ const baseDeliverable: DeliverableSafeSummary = {
   approvedExtra: false,
   revision: 1,
   currentVersionId: undefined,
-} as DeliverableSafeSummary;
+  createdAt: "2026-07-15T00:00:00.000Z",
+  updatedAt: "2026-07-15T00:00:00.000Z",
+};
 
 const managementCaps = {
   canCreateTask: true,
@@ -119,6 +121,17 @@ describe("TaskForm capabilities", () => {
         eligibleAssignees={assignees}
         taskCapabilities={noCreateCaps}
       />,
+    );
+    expect(
+      screen.getByText("ليست لديك صلاحية لإضافة مهام على هذا المخرج."),
+    ).toBeTruthy();
+    expect(screen.queryByText("عنوان المهمة")).toBeNull();
+    expect(screen.queryByText("إضافة مهمة")).toBeNull();
+  });
+
+  it("fails closed while task capabilities are unavailable", () => {
+    render(
+      <TaskForm deliverable={baseDeliverable} eligibleAssignees={assignees} />,
     );
     expect(screen.queryByText("عنوان المهمة")).toBeNull();
     expect(screen.queryByText("إضافة مهمة")).toBeNull();

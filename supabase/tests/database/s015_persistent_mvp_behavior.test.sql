@@ -1760,6 +1760,12 @@ select is(
   0, 'denied contributor reassign creates no new audit row'
 );
 
+-- The next assignee must be task-only so the status-only authority tier is
+-- exercised independently from the broader contributor tier.
+update public.deliverables
+set contributor_user_ids = array[]::uuid[]
+where id = '21000000-0000-4000-8000-000000000542';
+
 -- 3.7 Same-payload replay returns original task.
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000205', true);
@@ -1956,6 +1962,16 @@ select is(
    where deliverable_id = '21000000-0000-4000-8000-000000000542'),
   0, 'inactive member cannot read tasks even if previously assignee'
 );
+select throws_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000000542',
+    gen_random_uuid(), 'محاولة عضو معطل', '', 'done', 'normal',
+    '21000000-0000-4000-8000-000000000205', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-inactive-assignee-denied-1')$$,
+  '42501', 'task command denied',
+  'inactive former assignee cannot invoke the task command'
+);
 reset role;
 update public.tenant_memberships set status = 'active'
 where id = '21000000-0000-4000-8000-000000000105';
@@ -1972,6 +1988,40 @@ select throws_ok(
     gen_random_uuid(), gen_random_uuid(), 'task-correct-assignee-status-1')$$,
   'P0001', 'idempotency conflict',
   'different-payload replay on assignee update conflicts'
+);
+reset role;
+
+-- 3.20 Eligible-assignee directory is management-only and active-member-only.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select is(
+  (select count(*)::integer from public.s015_list_task_eligible_assignees(
+    '21000000-0000-4000-8000-000000000001',
+    '21000000-0000-4000-8000-000000000301'
+  )),
+  4, 'tenant management lists active eligible task assignees in Client A'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select is(
+  (select count(*)::integer from public.s015_list_task_eligible_assignees(
+    '21000000-0000-4000-8000-000000000001',
+    '21000000-0000-4000-8000-000000000301'
+  )),
+  0, 'team member cannot list colleague assignment directory'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202', true);
+select is(
+  (select count(*)::integer from public.s015_list_task_eligible_assignees(
+    '21000000-0000-4000-8000-000000000001',
+    '21000000-0000-4000-8000-000000000301'
+  )),
+  0, 'client persona cannot list internal task assignees'
 );
 reset role;
 

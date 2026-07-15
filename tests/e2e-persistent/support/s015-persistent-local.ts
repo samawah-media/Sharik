@@ -19,7 +19,7 @@ type ActorKey =
   | "sameTenantOtherClient"
   | "otherTenantAdmin";
 
-type Actor = {
+export type PersistentActor = {
   id: string;
   email: string;
   password: string;
@@ -28,7 +28,7 @@ type Actor = {
 export type PersistentSeed = {
   supabaseUrl: string;
   publishableKey: string;
-  actors: Record<ActorKey, Actor>;
+  actors: Record<ActorKey, PersistentActor>;
   tenantA: string;
   tenantB: string;
   clientA: string;
@@ -87,7 +87,7 @@ const ids = {
   tenantBDeliverableId: uuidB("000000000520"),
 };
 
-const actors: Record<ActorKey, Actor> = {
+const actors: Record<ActorKey, PersistentActor> = {
   tenantAdmin: {
     id: uuid("000000000207"),
     email: `s015-persistent-admin-${runId}@hadna.example.test`,
@@ -231,7 +231,9 @@ export const loadPersistentLocalEnv = (): {
         process.env.SUPABASE_SERVICE_ROLE_KEY);
 
   if (!supabaseUrl || !publishableKey || !serviceRoleKey) {
-    throw new Error("Persistent E2E requires local Supabase public and service keys.");
+    throw new Error(
+      "Persistent E2E requires local Supabase public and service keys.",
+    );
   }
   assertLocalSupabaseUrl(supabaseUrl);
 
@@ -264,7 +266,10 @@ const isLocalSupabaseUrl = (value?: string) => {
   );
 };
 
-const expectNoError = <T>(result: { data: T; error: unknown }, label: string): T => {
+const expectNoError = <T>(
+  result: { data: T; error: unknown },
+  label: string,
+): T => {
   if (result.error) {
     const error = result.error as { code?: string; message?: string };
     throw new Error(
@@ -291,7 +296,13 @@ const membershipRows = [
 ] as const;
 
 const roleRows = [
-  ["000000000401", "tenantAdmin", "tenant_administrator", "tenant", ids.tenantA],
+  [
+    "000000000401",
+    "tenantAdmin",
+    "tenant_administrator",
+    "tenant",
+    ids.tenantA,
+  ],
   ["000000000402", "accountManager", "account_manager", "client", ids.clientA],
   ["000000000403", "assignedWriter", "content_writer", "client", ids.clientA],
   ["000000000404", "assignedDesigner", "designer", "client", ids.clientA],
@@ -299,8 +310,20 @@ const roleRows = [
   ["000000000408", "unassignedDesigner", "designer", "client", ids.clientA],
   ["000000000406", "clientViewer", "client_viewer", "client", ids.clientA],
   ["000000000407", "clientApprover", "client_approver", "client", ids.clientA],
-  ["000000000409", "sameTenantOtherClient", "client_viewer", "client", ids.clientB],
-  ["000000000410", "otherTenantAdmin", "tenant_administrator", "tenant", ids.tenantB],
+  [
+    "000000000409",
+    "sameTenantOtherClient",
+    "client_viewer",
+    "client",
+    ids.clientB,
+  ],
+  [
+    "000000000410",
+    "otherTenantAdmin",
+    "tenant_administrator",
+    "tenant",
+    ids.tenantB,
+  ],
 ] as const;
 
 const createServiceClient = () => {
@@ -441,8 +464,13 @@ const createSyntheticAuthUsers = async (client: SupabaseClient) => {
       user_metadata: { synthetic: "s015-persistent-e2e" },
     });
 
-    if (result.error && !result.error.message.toLowerCase().includes("already")) {
-      throw new Error(`Synthetic auth user setup failed: ${result.error.message}`);
+    if (
+      result.error &&
+      !result.error.message.toLowerCase().includes("already")
+    ) {
+      throw new Error(
+        `Synthetic auth user setup failed: ${result.error.message}`,
+      );
     }
 
     if (result.data.user?.id) {
@@ -543,6 +571,48 @@ const seedIdentityRows = async (client: SupabaseClient) => {
       })),
     ),
     "role assignment seed",
+  );
+
+  expectNoError(
+    await client.from("member_profiles").upsert([
+      {
+        tenant_id: ids.tenantA,
+        user_id: actors.tenantAdmin.id,
+        display_name: "مدير سماوة التجريبي",
+        role_label: "إدارة",
+      },
+      {
+        tenant_id: ids.tenantA,
+        user_id: actors.accountManager.id,
+        display_name: "مدير الحساب التجريبي",
+        role_label: "مدير حساب",
+      },
+      {
+        tenant_id: ids.tenantA,
+        user_id: actors.assignedWriter.id,
+        display_name: "كاتب المحتوى المسند",
+        role_label: "كاتب محتوى",
+      },
+      {
+        tenant_id: ids.tenantA,
+        user_id: actors.assignedDesigner.id,
+        display_name: "المصمم المسند",
+        role_label: "مصمم",
+      },
+      {
+        tenant_id: ids.tenantA,
+        user_id: actors.unassignedWriter.id,
+        display_name: "كاتب المهمة التجريبية",
+        role_label: "كاتب محتوى",
+      },
+      {
+        tenant_id: ids.tenantA,
+        user_id: actors.unassignedDesigner.id,
+        display_name: "المصمم غير المسند",
+        role_label: "مصمم",
+      },
+    ]),
+    "member profile seed",
   );
 };
 
@@ -798,11 +868,42 @@ export const resetLocalDatabase = () => {
       : spawnSync(command, args, options);
 
   if (result.status !== 0) {
-    throw new Error("Local Supabase reset failed during persistent E2E cleanup.");
+    throw new Error(
+      "Local Supabase reset failed during persistent E2E cleanup.",
+    );
   }
 };
 
-export const signInViaUi = async (page: Page, actor: Actor) => {
+export const resetLocalDatabaseIfLifecycleSeeded = async () => {
+  const { client } = createServiceClient();
+  const existingSeed = await client
+    .from("package_ledger_entries")
+    .select("id", { count: "exact", head: true })
+    .eq("id", ids.reservationLedgerId);
+  expectNoError(existingSeed, "persistent lifecycle isolation check");
+  if ((existingSeed.count ?? 0) > 0) resetLocalDatabase();
+};
+
+export const createPersistentActorClient = async ({
+  seed,
+  actor,
+}: {
+  seed: PersistentSeed;
+  actor: PersistentActor;
+}) => {
+  const client = createClient(seed.supabaseUrl, seed.publishableKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const { error } = await client.auth.signInWithPassword({
+    email: actor.email,
+    password: actor.password,
+  });
+  if (error)
+    throw new Error(`Persistent actor sign-in failed: ${error.message}`);
+  return client;
+};
+
+export const signInViaUi = async (page: Page, actor: PersistentActor) => {
   await page.context().clearCookies();
   await page.goto("/sign-in", { waitUntil: "domcontentloaded" });
   const form = page.locator("form").filter({

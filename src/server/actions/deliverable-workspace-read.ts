@@ -31,45 +31,86 @@ const TEAM_ROLES = [
   "performance_specialist",
 ] as const;
 
-async function resolveActorTaskCapabilities(
-  supabase: SupabaseClient,
-  tenantId: string,
-  clientId: string,
-  actorUserId: string,
-  deliverableOwnerUserId?: string | null,
-  deliverableContributorIds?: string[] | null,
-): Promise<TaskCapabilities> {
-  const { data: roles } = await supabase
-    .from("role_assignments")
-    .select("role_key, scope_type, scope_id, status, membership_id")
-    .eq("tenant_id", tenantId)
-    .eq("status", "active");
+type ActorTaskAuthority = { isManagement: boolean; isTeam: boolean };
 
-  const activeRoles = roles ?? [];
+const NO_TASK_AUTHORITY: ActorTaskAuthority = {
+  isManagement: false,
+  isTeam: false,
+};
+
+async function resolveActorTaskAuthority({
+  supabase,
+  tenantId,
+  clientId,
+  actorUserId,
+}: {
+  supabase: SupabaseClient;
+  tenantId: string;
+  clientId: string;
+  actorUserId: string;
+}): Promise<ActorTaskAuthority> {
+  const membershipResponse = await supabase
+    .from("tenant_memberships")
+    .select("id")
+    .eq("tenant_id", tenantId)
+    .eq("auth_user_id", actorUserId)
+    .eq("status", "active");
+  const membershipIds = (membershipResponse.data ?? []).map((row) => row.id);
+  if (membershipResponse.error || membershipIds.length === 0) {
+    return NO_TASK_AUTHORITY;
+  }
+
+  const roleResponse = await supabase
+    .from("role_assignments")
+    .select("role_key, scope_type, scope_id")
+    .eq("tenant_id", tenantId)
+    .eq("status", "active")
+    .in("membership_id", membershipIds);
+  if (roleResponse.error) return NO_TASK_AUTHORITY;
+
+  const activeRoles = roleResponse.data ?? [];
   const isManagement = activeRoles.some(
-    (r) =>
-      MANAGEMENT_ROLES.includes(r.role_key as (typeof MANAGEMENT_ROLES)[number]) &&
-      ((r.scope_type === "tenant" && r.scope_id === tenantId) ||
-        (r.scope_type === "client" && r.scope_id === clientId)),
+    (role) =>
+      MANAGEMENT_ROLES.includes(
+        role.role_key as (typeof MANAGEMENT_ROLES)[number],
+      ) &&
+      ((role.scope_type === "tenant" && role.scope_id === tenantId) ||
+        (role.scope_type === "client" && role.scope_id === clientId)),
   );
   const isTeam = activeRoles.some(
-    (r) =>
-      TEAM_ROLES.includes(r.role_key as (typeof TEAM_ROLES)[number]) &&
-      r.scope_type === "client" &&
-      r.scope_id === clientId,
+    (role) =>
+      TEAM_ROLES.includes(role.role_key as (typeof TEAM_ROLES)[number]) &&
+      role.scope_type === "client" &&
+      role.scope_id === clientId,
   );
+
+  return { isManagement, isTeam };
+}
+
+function taskCapabilitiesForDeliverable({
+  authority,
+  actorUserId,
+  deliverableOwnerUserId,
+  deliverableContributorIds,
+}: {
+  authority: ActorTaskAuthority;
+  actorUserId: string;
+  deliverableOwnerUserId?: string | null;
+  deliverableContributorIds?: string[] | null;
+}): TaskCapabilities {
   const isOwnerOrContributor =
     (deliverableOwnerUserId === actorUserId ||
       (deliverableContributorIds ?? []).includes(actorUserId)) &&
-    isTeam;
+    authority.isTeam;
 
   return {
-    canCreateTask: isManagement || isOwnerOrContributor,
-    canAssignOthers: isManagement,
-    canReassignTask: isManagement,
-    canUpdateOwnTaskStatus: isManagement || isOwnerOrContributor || isTeam,
-    canDeleteTask: isManagement,
-    canEditTaskFields: isManagement || isOwnerOrContributor,
+    canCreateTask: authority.isManagement || isOwnerOrContributor,
+    canAssignOthers: authority.isManagement,
+    canReassignTask: authority.isManagement,
+    canUpdateOwnTaskStatus:
+      authority.isManagement || isOwnerOrContributor || authority.isTeam,
+    canDeleteTask: authority.isManagement,
+    canEditTaskFields: authority.isManagement || isOwnerOrContributor,
   };
 }
 
@@ -167,88 +208,136 @@ export async function listScopedDeliverableWorkspaces({
   const deliverableIds = deliverables.map((deliverable) => deliverable.id);
   const scoped = <T extends { deliverable_id: string }>(rows: T[] | null) =>
     rows ?? [];
+  const actorTaskAuthority = actorUserId
+    ? await resolveActorTaskAuthority({
+        supabase: client,
+        tenantId,
+        clientId,
+        actorUserId,
+      })
+    : NO_TASK_AUTHORITY;
 
-  const [versions, tasks, files, comments, quality, approvals, sla, audits, assigneeRoles, deliverableRows] =
-    await Promise.all([
-      client
-        .from("deliverable_versions")
-        .select("id, deliverable_id, version_number, status, submitted_by, submitted_at, brief, content_body, caption, channel, format, objective, kpi, source_reference")
-        .eq("tenant_id", tenantId)
-        .eq("client_id", clientId)
-        .in("deliverable_id", deliverableIds)
-        .order("version_number", { ascending: false }),
-      client
-        .from("deliverable_tasks")
-        .select("id, deliverable_id, version_id, title, description, status, priority, assignee_user_id, due_date, sort_order")
-        .eq("tenant_id", tenantId)
-        .eq("client_id", clientId)
-        .in("deliverable_id", deliverableIds)
-        .order("sort_order", { ascending: true }),
-      client
-        .from("file_assets")
-        .select("id, deliverable_id, version_id, file_name, file_type, file_size, visibility, version_number, is_final, created_at")
-        .eq("tenant_id", tenantId)
-        .eq("client_id", clientId)
-        .in("deliverable_id", deliverableIds)
-        .eq("upload_state", "ready")
-        .order("created_at", { ascending: false }),
-      client
-        .from("comments")
-        .select("id, deliverable_id, version_id, author_user_id, comment_type, visibility, body, body_format, body_json, created_at")
-        .eq("tenant_id", tenantId)
-        .eq("client_id", clientId)
-        .in("deliverable_id", deliverableIds)
-        .order("created_at", { ascending: true }),
-      client
-        .from("deliverable_quality_checks")
-        .select("id, deliverable_id, version_id, label, status, note, checked_by, checked_at, sort_order")
-        .eq("tenant_id", tenantId)
-        .eq("client_id", clientId)
-        .in("deliverable_id", deliverableIds)
-        .order("sort_order", { ascending: true }),
-      client
-        .from("approval_decisions")
-        .select("id, deliverable_id, version_id, approval_kind, decision, actor_user_id, decided_at")
-        .eq("tenant_id", tenantId)
-        .eq("client_id", clientId)
-        .in("deliverable_id", deliverableIds)
-        .order("decided_at", { ascending: false }),
-      client
-        .from("sla_timeline_segments")
-        .select("id, deliverable_id, kind, reason, started_at")
-        .eq("tenant_id", tenantId)
-        .eq("client_id", clientId)
-        .in("deliverable_id", deliverableIds)
-        .order("started_at", { ascending: false }),
-      client
-        .from("audit_events")
-        .select("id, target_id, action, actor_user_id, created_at")
-        .eq("tenant_id", tenantId)
-        .eq("client_id", clientId)
-        .in("target_type", ["deliverable", "deliverable_version"])
-        .order("created_at", { ascending: false })
-        .limit(200),
-      client
-        .from("role_assignments")
-        .select("auth_user_id, membership_id")
-        .eq("tenant_id", tenantId)
-        .eq("scope_type", "client")
-        .eq("scope_id", clientId)
-        .eq("status", "active")
-        .in("role_key", ["account_manager", "content_writer", "designer", "performance_specialist"]),
-      client
-        .from("deliverables")
-        .select("id, owner_user_id, contributor_user_ids")
-        .eq("tenant_id", tenantId)
-        .eq("client_id", clientId)
-        .in("id", deliverableIds),
-    ]);
+  const [
+    versions,
+    tasks,
+    files,
+    comments,
+    quality,
+    approvals,
+    sla,
+    audits,
+    eligibleAssignees,
+    deliverableRows,
+  ] = await Promise.all([
+    client
+      .from("deliverable_versions")
+      .select(
+        "id, deliverable_id, version_number, status, submitted_by, submitted_at, brief, content_body, caption, channel, format, objective, kpi, source_reference",
+      )
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .in("deliverable_id", deliverableIds)
+      .order("version_number", { ascending: false }),
+    client
+      .from("deliverable_tasks")
+      .select(
+        "id, deliverable_id, version_id, title, description, status, priority, assignee_user_id, due_date, sort_order",
+      )
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .in("deliverable_id", deliverableIds)
+      .order("sort_order", { ascending: true }),
+    client
+      .from("file_assets")
+      .select(
+        "id, deliverable_id, version_id, file_name, file_type, file_size, visibility, version_number, is_final, created_at",
+      )
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .in("deliverable_id", deliverableIds)
+      .eq("upload_state", "ready")
+      .order("created_at", { ascending: false }),
+    client
+      .from("comments")
+      .select(
+        "id, deliverable_id, version_id, author_user_id, comment_type, visibility, body, body_format, body_json, created_at",
+      )
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .in("deliverable_id", deliverableIds)
+      .order("created_at", { ascending: true }),
+    client
+      .from("deliverable_quality_checks")
+      .select(
+        "id, deliverable_id, version_id, label, status, note, checked_by, checked_at, sort_order",
+      )
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .in("deliverable_id", deliverableIds)
+      .order("sort_order", { ascending: true }),
+    client
+      .from("approval_decisions")
+      .select(
+        "id, deliverable_id, version_id, approval_kind, decision, actor_user_id, decided_at",
+      )
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .in("deliverable_id", deliverableIds)
+      .order("decided_at", { ascending: false }),
+    client
+      .from("sla_timeline_segments")
+      .select("id, deliverable_id, kind, reason, started_at")
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .in("deliverable_id", deliverableIds)
+      .order("started_at", { ascending: false }),
+    client
+      .from("audit_events")
+      .select("id, target_id, action, actor_user_id, created_at")
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .in("target_type", ["deliverable", "deliverable_version"])
+      .order("created_at", { ascending: false })
+      .limit(200),
+    actorTaskAuthority.isManagement
+      ? client.rpc("s015_list_task_eligible_assignees", {
+          target_tenant_id: tenantId,
+          target_client_id: clientId,
+        })
+      : Promise.resolve({
+          data: [] as Array<{ user_id: string }>,
+          error: null,
+        }),
+    client
+      .from("deliverables")
+      .select("id, owner_user_id, contributor_user_ids")
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .in("id", deliverableIds),
+  ]);
 
-  const required = [versions, tasks, files, comments, quality, approvals, sla, deliverableRows];
+  const required = [
+    versions,
+    tasks,
+    files,
+    comments,
+    quality,
+    approvals,
+    sla,
+    eligibleAssignees,
+    deliverableRows,
+  ];
   if (required.some((result) => result.error)) return {};
 
-  const deliverableMap = new Map<string, { ownerUserId?: string | null; contributorIds?: string[] | null }>();
-  for (const row of (deliverableRows.data ?? []) as Array<{ id: string; owner_user_id?: string | null; contributor_user_ids?: string[] | null }>) {
+  const deliverableMap = new Map<
+    string,
+    { ownerUserId?: string | null; contributorIds?: string[] | null }
+  >();
+  for (const row of (deliverableRows.data ?? []) as Array<{
+    id: string;
+    owner_user_id?: string | null;
+    contributor_user_ids?: string[] | null;
+  }>) {
     deliverableMap.set(row.id, {
       ownerUserId: row.owner_user_id,
       contributorIds: row.contributor_user_ids,
@@ -264,7 +353,9 @@ export async function listScopedDeliverableWorkspaces({
         ...(quality.data ?? []).map((row) => row.checked_by),
         ...(approvals.data ?? []).map((row) => row.actor_user_id),
         ...(audits.data ?? []).map((row) => row.actor_user_id),
-        ...((assigneeRoles.data ?? []) as Array<{ auth_user_id?: string | null }>).map((row) => row.auth_user_id),
+        ...(
+          (eligibleAssignees.data ?? []) as Array<{ user_id?: string | null }>
+        ).map((row) => row.user_id),
       ].filter((id): id is string => Boolean(id)),
     ),
   );
@@ -275,11 +366,12 @@ export async function listScopedDeliverableWorkspaces({
         .eq("tenant_id", tenantId)
         .in("user_id", memberIds)
     : { data: [], error: null };
+  if (profileResult.error) return {};
   const directory = createMemberDirectory(profileResult.data ?? []);
 
   const assigneeMembershipIds = new Set(
-    ((assigneeRoles.data ?? []) as Array<{ auth_user_id?: string | null }>)
-      .map((row) => row.auth_user_id)
+    ((eligibleAssignees.data ?? []) as Array<{ user_id?: string | null }>)
+      .map((row) => row.user_id)
       .filter((id): id is string => Boolean(id)),
   );
   const dedupedAssignees = Array.from(assigneeMembershipIds)
@@ -312,14 +404,12 @@ export async function listScopedDeliverableWorkspaces({
 
       const deliverableMeta = deliverableMap.get(deliverable.id);
       const capabilities = actorUserId
-        ? await resolveActorTaskCapabilities(
-            client,
-            tenantId,
-            clientId,
+        ? taskCapabilitiesForDeliverable({
+            authority: actorTaskAuthority,
             actorUserId,
-            deliverableMeta?.ownerUserId,
-            deliverableMeta?.contributorIds,
-          )
+            deliverableOwnerUserId: deliverableMeta?.ownerUserId,
+            deliverableContributorIds: deliverableMeta?.contributorIds,
+          })
         : {
             canCreateTask: false,
             canAssignOthers: false,
@@ -364,6 +454,7 @@ export async function listScopedDeliverableWorkspaces({
 
       const workspace: DeliverableWorkspace = {
         deliverableId: deliverable.id,
+        currentActorUserId: actorUserId,
         currentVersionId: deliverable.currentVersionId,
         eligibleAssignees: capabilities.canAssignOthers ? dedupedAssignees : [],
         taskCapabilities: capabilities,

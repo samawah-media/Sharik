@@ -81,6 +81,7 @@ export type TaskCapabilities = {
 
 export type DeliverableWorkspace = {
   deliverableId: string;
+  currentActorUserId?: string;
   currentVersionId?: string;
   versions: DeliverableVersionWorkspace[];
   tasks: DeliverableTaskWorkspace[];
@@ -97,6 +98,24 @@ export type DeliverableWorkspace = {
     comments: number;
   };
 };
+
+export function canUpdateTaskStatus(
+  workspace: Pick<
+    DeliverableWorkspace,
+    "currentActorUserId" | "taskCapabilities"
+  >,
+  task: Pick<DeliverableTaskWorkspace, "assigneeUserId">,
+) {
+  const canEditTask =
+    workspace.taskCapabilities.canEditTaskFields ||
+    workspace.taskCapabilities.canReassignTask;
+
+  return (
+    canEditTask ||
+    (workspace.taskCapabilities.canUpdateOwnTaskStatus &&
+      task.assigneeUserId === workspace.currentActorUserId)
+  );
+}
 
 export type DeliverableWorkspaceSummary = {
   deliverableId: string;

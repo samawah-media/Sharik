@@ -1,10 +1,14 @@
 # Project Progress
 
-## Spec 015 Product Experience Rescue — 2026-07-14
+## Spec 015 X007 Corrective Slice 3 — 2026-07-15
 
-The owner-authorized rescue is continuing inside Spec 015 only. X006 is closed on exact-HEAD PR #37 quality run `29263587871` attempt 2 for commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`. X007 Checkpoints 1-3 are locally green after two corrective slices: (1) task/quality idempotency hardening, task read isolation, assignee validation, zero-row delete guard, and quality-check metadata clearing; (2) team-member assignee authority restriction and expanded negative pgTAP. Clean local reset, lint, typecheck, unit 50/179, integration 28/112, component 18/57, RLS simulator 8/24, pgTAP 6 files / 359+ tests, fixture E2E 123 passed / 6 configured skips, persistent E2E 3/3, secret scan, diff check, build, and local workbook apply/replay/rollback all passed. Exact-HEAD CI run `29334543580` passed for commit `efa307e` after corrective slice 1; corrective slice 2 exact-HEAD CI is pending after push. Hosted UAT Playwright tooling still fails closed unless a secure local env provides an explicit hostname allowlist and non-Production target category. H008-H010, hosted UAT migration/import/deploy/persona workflow, T032, and Production acceptance remain open/not granted.
+Checkpoint 1A was reopened for a third corrective slice to make the task assignment journey coherent from PostgreSQL/RLS to «مهامي», the universal drawer, and persistent browser E2E. Five new defects were registered and addressed: S015-P1-044 (`created_by` permanent task-read grant removed), S015-P1-045 (undifferentiated update authority restructured to management/owner-contributor/assignee tiers), S015-P1-046 (deliverable discoverability for task-only assignees via narrowed RLS + `/work` and board page fixes), S015-P1-047 (explicit server capabilities replace implicit UI inference, eligible-assignee list gated to management, empty-string-to-null), and S015-P2-048 (active-role-to-active-membership linkage in assignee validation).
 
-Last updated: 2026-07-14
+Additive migration `202607140005_s015_task_assignment_authority_correction.sql` is additive only; no prior migration is modified. The canonical assignment model is now: management (tenant or client scoped) can create/assign/reassign/unassign/edit/delete within scope; owner/contributor can create (self/null assignee only) and edit all fields except assignee; task assignee can update status only with all protected fields preserved server-side; `created_by` is not a permanent read grant; client personas see zero tasks/counts/assignees. Server-derived capabilities (`canCreateTask`, `canAssignOthers`, `canReassignTask`, `canUpdateOwnTaskStatus`) flow from active roles to the workspace read model and the UI.
+
+Local verification: typecheck PASS, unit 50/179 PASS, integration 28/112 PASS, component 19 files including 7 new TaskForm capability tests PASS (1 pre-existing client-pending-inbox flaky failure unrelated), secret scan PASS. Docker-backed verification (db reset, pgTAP, persistent E2E, build) deferred to exact-HEAD CI. Checkpoint 1A is BLOCKED while P1 defects are open pending exact-HEAD CI. H008-H010, T032, hosted UAT, and Production acceptance remain open/not granted.
+
+Last updated: 2026-07-15
 
 ## Spec 015 Hosted Team UAT Amendment - 2026-07-12
 

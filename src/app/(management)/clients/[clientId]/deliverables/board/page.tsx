@@ -121,7 +121,12 @@ export default async function ClientDeliverablesBoardPage({
       : deliverableList.deliverables.filter(
           (deliverable) =>
             deliverable.ownerUserId === runtime.actor.userId ||
-            deliverable.contributorUserIds.includes(runtime.actor.userId),
+            deliverable.contributorUserIds.includes(runtime.actor.userId) ||
+            evaluatePermission({
+              actor: runtime.actor,
+              permission: PERMISSIONS.DELIVERABLE_VERSION_SUBMIT,
+              resource: { tenantId: client.tenantId, clientId: client.id },
+            }).allowed,
         );
   const displayClientName = formatMvpClientName(client.name);
   const workspaces = await listScopedDeliverableWorkspaceSummaries({

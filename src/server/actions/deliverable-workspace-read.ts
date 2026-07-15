@@ -8,6 +8,7 @@ import type {
   DeliverableActivityWorkspace,
   DeliverableWorkspace,
   DeliverableWorkspaceSummary,
+  TaskCapabilities,
 } from "@/modules/deliverables/deliverable-workspace";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -15,6 +16,62 @@ type ScopedDeliverable = { id: string; currentVersionId?: string };
 
 const member = (directory: MemberDirectory, id?: string | null) =>
   id ? directory[id] : undefined;
+
+const MANAGEMENT_ROLES = [
+  "tenant_owner",
+  "tenant_administrator",
+  "project_manager",
+  "marketing_manager",
+] as const;
+
+const TEAM_ROLES = [
+  "account_manager",
+  "content_writer",
+  "designer",
+  "performance_specialist",
+] as const;
+
+async function resolveActorTaskCapabilities(
+  supabase: SupabaseClient,
+  tenantId: string,
+  clientId: string,
+  actorUserId: string,
+  deliverableOwnerUserId?: string | null,
+  deliverableContributorIds?: string[] | null,
+): Promise<TaskCapabilities> {
+  const { data: roles } = await supabase
+    .from("role_assignments")
+    .select("role_key, scope_type, scope_id, status, membership_id")
+    .eq("tenant_id", tenantId)
+    .eq("status", "active");
+
+  const activeRoles = roles ?? [];
+  const isManagement = activeRoles.some(
+    (r) =>
+      MANAGEMENT_ROLES.includes(r.role_key as (typeof MANAGEMENT_ROLES)[number]) &&
+      ((r.scope_type === "tenant" && r.scope_id === tenantId) ||
+        (r.scope_type === "client" && r.scope_id === clientId)),
+  );
+  const isTeam = activeRoles.some(
+    (r) =>
+      TEAM_ROLES.includes(r.role_key as (typeof TEAM_ROLES)[number]) &&
+      r.scope_type === "client" &&
+      r.scope_id === clientId,
+  );
+  const isOwnerOrContributor =
+    (deliverableOwnerUserId === actorUserId ||
+      (deliverableContributorIds ?? []).includes(actorUserId)) &&
+    isTeam;
+
+  return {
+    canCreateTask: isManagement || isOwnerOrContributor,
+    canAssignOthers: isManagement,
+    canReassignTask: isManagement,
+    canUpdateOwnTaskStatus: isManagement || isOwnerOrContributor || isTeam,
+    canDeleteTask: isManagement,
+    canEditTaskFields: isManagement || isOwnerOrContributor,
+  };
+}
 
 export async function listScopedDeliverableWorkspaceSummaries({
   tenantId,
@@ -96,11 +153,13 @@ export async function listScopedDeliverableWorkspaces({
   clientId,
   deliverables,
   supabase,
+  actorUserId,
 }: {
   tenantId: string;
   clientId: string;
   deliverables: ScopedDeliverable[];
   supabase?: SupabaseClient;
+  actorUserId?: string;
 }): Promise<Record<string, DeliverableWorkspace>> {
   if (deliverables.length === 0) return {};
 
@@ -109,7 +168,7 @@ export async function listScopedDeliverableWorkspaces({
   const scoped = <T extends { deliverable_id: string }>(rows: T[] | null) =>
     rows ?? [];
 
-  const [versions, tasks, files, comments, quality, approvals, sla, audits, assigneeRoles] =
+  const [versions, tasks, files, comments, quality, approvals, sla, audits, assigneeRoles, deliverableRows] =
     await Promise.all([
       client
         .from("deliverable_versions")
@@ -171,16 +230,30 @@ export async function listScopedDeliverableWorkspaces({
         .limit(200),
       client
         .from("role_assignments")
-        .select("auth_user_id")
+        .select("auth_user_id, membership_id")
         .eq("tenant_id", tenantId)
         .eq("scope_type", "client")
         .eq("scope_id", clientId)
         .eq("status", "active")
         .in("role_key", ["account_manager", "content_writer", "designer", "performance_specialist"]),
+      client
+        .from("deliverables")
+        .select("id, owner_user_id, contributor_user_ids")
+        .eq("tenant_id", tenantId)
+        .eq("client_id", clientId)
+        .in("id", deliverableIds),
     ]);
 
-  const required = [versions, tasks, files, comments, quality, approvals, sla];
+  const required = [versions, tasks, files, comments, quality, approvals, sla, deliverableRows];
   if (required.some((result) => result.error)) return {};
+
+  const deliverableMap = new Map<string, { ownerUserId?: string | null; contributorIds?: string[] | null }>();
+  for (const row of (deliverableRows.data ?? []) as Array<{ id: string; owner_user_id?: string | null; contributor_user_ids?: string[] | null }>) {
+    deliverableMap.set(row.id, {
+      ownerUserId: row.owner_user_id,
+      contributorIds: row.contributor_user_ids,
+    });
+  }
 
   const memberIds = Array.from(
     new Set(
@@ -191,7 +264,7 @@ export async function listScopedDeliverableWorkspaces({
         ...(quality.data ?? []).map((row) => row.checked_by),
         ...(approvals.data ?? []).map((row) => row.actor_user_id),
         ...(audits.data ?? []).map((row) => row.actor_user_id),
-        ...(assigneeRoles.data ?? []).map((row) => row.auth_user_id),
+        ...((assigneeRoles.data ?? []) as Array<{ auth_user_id?: string | null }>).map((row) => row.auth_user_id),
       ].filter((id): id is string => Boolean(id)),
     ),
   );
@@ -204,8 +277,17 @@ export async function listScopedDeliverableWorkspaces({
     : { data: [], error: null };
   const directory = createMemberDirectory(profileResult.data ?? []);
 
-  return Object.fromEntries(
-    deliverables.map((deliverable) => {
+  const assigneeMembershipIds = new Set(
+    ((assigneeRoles.data ?? []) as Array<{ auth_user_id?: string | null }>)
+      .map((row) => row.auth_user_id)
+      .filter((id): id is string => Boolean(id)),
+  );
+  const dedupedAssignees = Array.from(assigneeMembershipIds)
+    .map((id) => directory[id])
+    .filter((m): m is NonNullable<typeof m> => Boolean(m));
+
+  const entries = await Promise.all(
+    deliverables.map(async (deliverable) => {
       const versionRows = scoped(versions.data).filter(
         (row) => row.deliverable_id === deliverable.id,
       );
@@ -227,6 +309,25 @@ export async function listScopedDeliverableWorkspaces({
       const slaRows = scoped(sla.data).filter(
         (row) => row.deliverable_id === deliverable.id,
       );
+
+      const deliverableMeta = deliverableMap.get(deliverable.id);
+      const capabilities = actorUserId
+        ? await resolveActorTaskCapabilities(
+            client,
+            tenantId,
+            clientId,
+            actorUserId,
+            deliverableMeta?.ownerUserId,
+            deliverableMeta?.contributorIds,
+          )
+        : {
+            canCreateTask: false,
+            canAssignOthers: false,
+            canReassignTask: false,
+            canUpdateOwnTaskStatus: false,
+            canDeleteTask: false,
+            canEditTaskFields: false,
+          };
 
       const activity: DeliverableActivityWorkspace[] = [
         ...versionRows.map((row) => ({
@@ -264,9 +365,8 @@ export async function listScopedDeliverableWorkspaces({
       const workspace: DeliverableWorkspace = {
         deliverableId: deliverable.id,
         currentVersionId: deliverable.currentVersionId,
-        eligibleAssignees: (assigneeRoles.data ?? [])
-          .map((row) => member(directory, row.auth_user_id))
-          .filter((m): m is NonNullable<typeof m> => Boolean(m)),
+        eligibleAssignees: capabilities.canAssignOthers ? dedupedAssignees : [],
+        taskCapabilities: capabilities,
         versions: versionRows.map((row) => ({
           id: row.id,
           versionNumber: row.version_number,
@@ -333,7 +433,8 @@ export async function listScopedDeliverableWorkspaces({
           comments: commentRows.length,
         },
       };
-      return [deliverable.id, workspace];
+      return [deliverable.id, workspace] as const;
     }),
   );
+  return Object.fromEntries(entries);
 }

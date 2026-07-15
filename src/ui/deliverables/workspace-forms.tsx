@@ -187,30 +187,64 @@ export function ClientWorkspaceCommentForm({
 export function TaskForm({
   deliverable,
   eligibleAssignees,
+  taskCapabilities,
+  editingTask,
   onMutated,
 }: {
   deliverable: DeliverableSafeSummary;
   eligibleAssignees?: DeliverableWorkspace["eligibleAssignees"];
+  taskCapabilities?: DeliverableWorkspace["taskCapabilities"];
+  editingTask?: {
+    id: string;
+    title: string;
+    description?: string;
+    status: string;
+    priority: string;
+    assigneeUserId?: string;
+    dueDate?: string;
+    sortOrder: number;
+  };
   onMutated?: () => void;
 }) {
   const router = useRouter();
   const [feedback, setFeedback] = useState<string>();
+  const canCreate = taskCapabilities?.canCreateTask ?? true;
+  const canAssignOthers = taskCapabilities?.canAssignOthers ?? false;
+  const showAssignee = canAssignOthers && eligibleAssignees && eligibleAssignees.length > 0;
   const form = useForm<TaskValues>({
     resolver: zodResolver(deliverableTaskInputSchema),
-    defaultValues: {
-      clientId: deliverable.clientId,
-      deliverableId: deliverable.id,
-      taskId: null,
-      title: "",
-      description: "",
-      status: "todo",
-      priority: "normal",
-      assigneeUserId: null,
-      dueDate: null,
-      sortOrder: 0,
-      idempotencyKey: crypto.randomUUID(),
-    },
+    defaultValues: editingTask
+      ? {
+          clientId: deliverable.clientId,
+          deliverableId: deliverable.id,
+          taskId: editingTask.id,
+          title: editingTask.title,
+          description: editingTask.description ?? "",
+          status: editingTask.status as "todo" | "in_progress" | "done" | "cancelled",
+          priority: editingTask.priority as "low" | "normal" | "high" | "urgent",
+          assigneeUserId: editingTask.assigneeUserId ?? null,
+          dueDate: editingTask.dueDate ?? null,
+          sortOrder: editingTask.sortOrder,
+          idempotencyKey: crypto.randomUUID(),
+        }
+      : {
+          clientId: deliverable.clientId,
+          deliverableId: deliverable.id,
+          taskId: null,
+          title: "",
+          description: "",
+          status: "todo",
+          priority: "normal",
+          assigneeUserId: null,
+          dueDate: null,
+          sortOrder: 0,
+          idempotencyKey: crypto.randomUUID(),
+        },
   });
+
+  if (!canCreate) {
+    return <p className="text-sm text-muted">ليست لديك صلاحية لإضافة مهام على هذا المخرج.</p>;
+  }
 
   const submit = form.handleSubmit(async (values) => {
     setFeedback(undefined);
@@ -218,9 +252,9 @@ export function TaskForm({
       ...values,
       idempotencyKey: crypto.randomUUID(),
     });
-    setFeedback(result.ok ? "تمت إضافة المهمة." : "تعذر حفظ المهمة. راجع الصلاحية والحالة.");
+    setFeedback(result.ok ? (editingTask ? "تم تحديث المهمة." : "تمت إضافة المهمة.") : "تعذر حفظ المهمة. راجع الصلاحية والحالة.");
     if (result.ok) {
-      form.reset({ ...values, title: "", description: "" });
+      if (!editingTask) form.reset({ ...values, title: "", description: "" });
       onMutated?.();
       router.refresh();
     }
@@ -229,24 +263,26 @@ export function TaskForm({
   return (
     <form className="grid gap-3 rounded-xl border border-border bg-background p-4" onSubmit={submit}>
       <label className="grid gap-1 text-sm font-semibold">عنوان المهمة<input className="min-h-11 rounded-lg border border-border bg-surface px-3" {...form.register("title")} /></label>
-      <label className="grid gap-1 text-sm font-semibold">الوصف<textarea className="min-h-20 rounded-lg border border-border bg-surface p-3" {...form.register("description")} /></label>
+      {taskCapabilities?.canEditTaskFields !== false && (
+        <label className="grid gap-1 text-sm font-semibold">الوصف<textarea className="min-h-20 rounded-lg border border-border bg-surface p-3" {...form.register("description")} /></label>
+      )}
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1 text-sm font-semibold">الأولوية<select className="min-h-11 rounded-lg border border-border bg-surface px-3" {...form.register("priority")}><option value="normal">عادية</option><option value="low">منخفضة</option><option value="high">عالية</option><option value="urgent">عاجلة</option></select></label>
         <label className="grid gap-1 text-sm font-semibold">تاريخ الاستحقاق<input className="min-h-11 rounded-lg border border-border bg-surface px-3" type="date" {...form.register("dueDate")} /></label>
       </div>
-      <input type="hidden" value="todo" {...form.register("status")} />
-      {eligibleAssignees && eligibleAssignees.length > 0 ? (
+      <input type="hidden" value={editingTask?.status ?? "todo"} {...form.register("status")} />
+      {showAssignee ? (
         <label className="grid gap-1 text-sm font-semibold">المسند إليه
           <select className="min-h-11 rounded-lg border border-border bg-surface px-3" {...form.register("assigneeUserId")}>
             <option value="">بدون إسناد</option>
-            {eligibleAssignees.map((m) => (
+            {eligibleAssignees!.map((m) => (
               <option key={m.userId} value={m.userId}>{m.displayName}</option>
             ))}
           </select>
         </label>
       ) : null}
       {feedback ? <p aria-live="polite" className="text-sm text-muted">{feedback}</p> : null}
-      <Button disabled={form.formState.isSubmitting} type="submit" variant="secondary">إضافة مهمة</Button>
+      <Button disabled={form.formState.isSubmitting} type="submit" variant="secondary">{editingTask ? "حفظ التعديلات" : "إضافة مهمة"}</Button>
     </form>
   );
 }

@@ -186,6 +186,7 @@ export async function upsertDeliverableTask(
   const parsed = deliverableTaskInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, reason: "invalid_input" as const };
   const supabase = await createSupabaseServerClient();
+  const trimmedAssignee = parsed.data.assigneeUserId?.trim();
   const { error } = await supabase.rpc("s015_upsert_deliverable_task", {
     target_client_id: parsed.data.clientId,
     target_deliverable_id: parsed.data.deliverableId,
@@ -194,8 +195,8 @@ export async function upsertDeliverableTask(
     target_description: parsed.data.description ?? "",
     target_status: parsed.data.status,
     target_priority: parsed.data.priority,
-    target_assignee_user_id: parsed.data.assigneeUserId ?? null,
-    target_due_date: parsed.data.dueDate ?? null,
+    target_assignee_user_id: trimmedAssignee ? trimmedAssignee : null,
+    target_due_date: parsed.data.dueDate?.trim() ? parsed.data.dueDate : null,
     target_sort_order: parsed.data.sortOrder ?? 0,
     request_id: crypto.randomUUID(),
     audit_event_id: crypto.randomUUID(),
@@ -280,6 +281,7 @@ export async function fetchDeliverableWorkspace(
       },
     ],
     supabase,
+    actorUserId: runtime.actor.userId,
   });
   const workspace = workspaces[parsed.data.deliverableId];
   if (!workspace) return { ok: false as const, reason: "denied" as const };

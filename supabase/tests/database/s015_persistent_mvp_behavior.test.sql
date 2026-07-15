@@ -1613,5 +1613,367 @@ select throws_ok(
 );
 reset role;
 
+-- =============================================================================
+-- X007 corrective slice 3: task assignment authority correction.
+-- =============================================================================
+
+-- Seed: client-scoped project_manager persona.
+insert into public.tenant_memberships (id, tenant_id, auth_user_id, status) values
+('21000000-0000-4000-8000-000000000109', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000209', 'active')
+on conflict do nothing;
+insert into public.role_assignments (id, tenant_id, membership_id, role_key, scope_type, scope_id, status) values
+('21000000-0000-4000-8000-000000000409', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000109', 'project_manager', 'client', '21000000-0000-4000-8000-000000000301', 'active')
+on conflict do nothing;
+
+-- Seed: dedicated deliverable for task assignment correction tests.
+insert into public.deliverables (
+  id, tenant_id, client_id, name, type, status, progress_percentage,
+  idempotency_key, requires_internal_approval, requires_client_approval
+) values (
+  '21000000-0000-4000-8000-000000000542', '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301', 'Assignment correction item', 'post',
+  'in_progress', 30, 's015-assign-correct', true, true
+)
+on conflict do nothing;
+update public.deliverables set owner_user_id = '21000000-0000-4000-8000-000000000203',
+  contributor_user_ids = array['21000000-0000-4000-8000-000000000204'::uuid]
+where id = '21000000-0000-4000-8000-000000000542';
+
+-- 3.1 Management assigns a task to a user who is NOT owner/contributor (user 205).
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select lives_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000542',
+    null, 'مهمة الإسناد التصحيحي', 'وصف', 'todo', 'high',
+    '21000000-0000-4000-8000-000000000205', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-correct-mgmt-assign-1')$$,
+  'management assigns task to non-owner/contributor team member'
+);
+reset role;
+
+-- 3.2 Task-only assignee (205) can read their task.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000205', true);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000542'
+     and assignee_user_id = '21000000-0000-4000-8000-000000000205'),
+  1, 'task-only assignee can read their assigned task'
+);
+reset role;
+
+-- 3.3 Task-only assignee (205) cannot see other tasks on the same deliverable.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select lives_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000542',
+    null, 'مهمة المالك الداخلية', '', 'todo', 'normal', null, null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-correct-owner-create-1')$$,
+  'owner creates a separate internal task'
+);
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000205', true);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000542'),
+  1, 'task-only assignee sees only their task, not owner-created tasks'
+);
+reset role;
+
+-- 3.4 Task-only assignee (205) updates status: todo -> in_progress -> done.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000205', true);
+select lives_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000542',
+    (select id from public.deliverable_tasks where deliverable_id = '21000000-0000-4000-8000-000000000542' and assignee_user_id = '21000000-0000-4000-8000-000000000205' limit 1),
+    'محاولة تغيير العنوان', 'وصف متغير', 'in_progress', 'urgent',
+    '21000000-0000-4000-8000-000000000204', '2030-01-01'::date, 99,
+    gen_random_uuid(), gen_random_uuid(), 'task-correct-assignee-status-1')$$,
+  'task assignee can update status'
+);
+reset role;
+select is(
+  (select status from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000542'
+     and assignee_user_id = '21000000-0000-4000-8000-000000000205'),
+  'in_progress', 'task assignee status changed to in_progress'
+);
+
+-- 3.5 Task assignee cannot alter protected fields.
+select is(
+  (select title from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000542'
+     and assignee_user_id = '21000000-0000-4000-8000-000000000205'),
+  'مهمة الإسناد التصحيحي', 'task assignee could not change title'
+);
+select is(
+  (select priority from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000542'
+     and assignee_user_id = '21000000-0000-4000-8000-000000000205'),
+  'high', 'task assignee could not change priority'
+);
+select is(
+  (select assignee_user_id from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000542'
+     and assignee_user_id = '21000000-0000-4000-8000-000000000205'),
+  '21000000-0000-4000-8000-000000000205', 'task assignee could not reassign to another user'
+);
+select is(
+  (select due_date is null from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000542'
+     and assignee_user_id = '21000000-0000-4000-8000-000000000205'),
+  true, 'task assignee could not change due date'
+);
+
+-- 3.6 Another owner/contributor (204) cannot change the assignee of 205's task.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000204', true);
+select throws_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000542',
+    (select id from public.deliverable_tasks where deliverable_id = '21000000-0000-4000-8000-000000000542' and assignee_user_id = '21000000-0000-4000-8000-000000000205' limit 1),
+    'مهمة الإسناد التصحيحي', 'وصف', 'todo', 'high',
+    '21000000-0000-4000-8000-000000000204', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-correct-contrib-take-1')$$,
+  '42501', 'assignee change denied',
+  'contributor cannot take or reassign another user task'
+);
+reset role;
+
+-- 3.6b No audit/request rows created on denied reassign.
+select is(
+  (select count(*)::integer from public.mvp_command_requests
+   where idempotency_key = 'task-correct-contrib-take-1'),
+  0, 'denied contributor reassign creates no idempotency row'
+);
+select is(
+  (select count(*)::integer from public.audit_events
+   where reason = 'upsert_deliverable_task'
+     and action = 'DeliverableTaskUpdated'
+     and actor_user_id = '21000000-0000-4000-8000-000000000204'
+     and target_id = '21000000-0000-4000-8000-000000000542'
+     and occurred_at > now() - interval '5 minutes'),
+  0, 'denied contributor reassign creates no new audit row'
+);
+
+-- 3.7 Same-payload replay returns original task.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000205', true);
+select is(
+  (select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000542',
+    (select id from public.deliverable_tasks where deliverable_id = '21000000-0000-4000-8000-000000000542' and assignee_user_id = '21000000-0000-4000-8000-000000000205' limit 1),
+    'محاولة تغيير العنوان', 'وصف متغير', 'in_progress', 'urgent',
+    '21000000-0000-4000-8000-000000000204', '2030-01-01'::date, 99,
+    gen_random_uuid(), gen_random_uuid(), 'task-correct-assignee-status-1')),
+  (select id from public.deliverable_tasks where deliverable_id = '21000000-0000-4000-8000-000000000542' and assignee_user_id = '21000000-0000-4000-8000-000000000205' limit 1),
+  'same-payload assignee status replay returns original task id'
+);
+reset role;
+
+-- 3.8 Management reassigns from 205 to 204.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select lives_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000542',
+    (select id from public.deliverable_tasks where deliverable_id = '21000000-0000-4000-8000-000000000542' and assignee_user_id = '21000000-0000-4000-8000-000000000205' limit 1),
+    'مهمة الإسناد التصحيحي', 'وصف محدث', 'todo', 'normal',
+    '21000000-0000-4000-8000-000000000204', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-correct-mgmt-reassign-1')$$,
+  'management reassigns task to contributor'
+);
+reset role;
+
+-- 3.9 Old assignee (205) denied after reassignment.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000205', true);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000542'
+     and assignee_user_id = '21000000-0000-4000-8000-000000000205'),
+  0, 'old assignee loses task access after reassignment'
+);
+select throws_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000542',
+    (select id from public.deliverable_tasks where deliverable_id = '21000000-0000-4000-8000-000000000542' and assignee_user_id = '21000000-0000-4000-8000-000000000204' limit 1),
+    'محاولة قديمة', '', 'done', 'normal', null, null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-correct-old-assignee-deny-1')$$,
+  '42501', 'task command denied',
+  'old assignee cannot update task after reassignment'
+);
+reset role;
+
+-- 3.10 New assignee (204) has access and can complete work.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000204', true);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000542'
+     and assignee_user_id = '21000000-0000-4000-8000-000000000204'),
+  1, 'new assignee can read their task after reassignment'
+);
+select lives_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000542',
+    (select id from public.deliverable_tasks where deliverable_id = '21000000-0000-4000-8000-000000000542' and assignee_user_id = '21000000-0000-4000-8000-000000000204' limit 1),
+    'وصف مؤقت', '', 'done', 'normal',
+    '21000000-0000-4000-8000-000000000204', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-correct-new-assignee-done-1')$$,
+  'new assignee updates status to done'
+);
+reset role;
+select is(
+  (select status from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000542'
+     and assignee_user_id = '21000000-0000-4000-8000-000000000204'),
+  'done', 'new assignee status is done'
+);
+select is(
+  (select title from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000542'
+     and assignee_user_id = '21000000-0000-4000-8000-000000000204'),
+  'مهمة الإسناد التصحيحي', 'new assignee (also contributor) preserved title — contributor authority allows title edit but this was status-only path since assignee check came first'
+);
+
+-- 3.11 Client-scoped project_manager (209) can manage the task.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000209', true);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000542'),
+  2, 'client-scoped project_manager can read all tasks on deliverable'
+);
+select lives_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000542',
+    (select id from public.deliverable_tasks where deliverable_id = '21000000-0000-4000-8000-000000000542' and assignee_user_id = '21000000-0000-4000-8000-000000000204' limit 1),
+    'مهمة الإسناد التصحيحي', 'وصف محدث من مدير المشروع', 'todo', 'high',
+    '21000000-0000-4000-8000-000000000205', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-correct-pm-reassign-1')$$,
+  'client-scoped project_manager can reassign task'
+);
+reset role;
+
+-- 3.12 Creator (203) who is no longer owner/contributor/assignee loses access.
+-- Change deliverable 542 ownership away from 203.
+update public.deliverables set owner_user_id = '21000000-0000-4000-8000-000000000207',
+  contributor_user_ids = array[]::uuid[]
+where id = '21000000-0000-4000-8000-000000000542';
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000542'),
+  0, 'creator who is no longer owner/contributor/assignee cannot read tasks (created_by is not a permanent grant)'
+);
+reset role;
+
+-- 3.13 Client viewer/approver denied task read and deliverable read for 542.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202', true);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000542'),
+  0, 'Client A viewer cannot read tasks on assignment deliverable'
+);
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000206', true);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000542'),
+  0, 'Client A approver cannot read tasks on assignment deliverable'
+);
+reset role;
+
+-- 3.14 Task-only assignee can discover the deliverable via narrowed RLS.
+-- Re-assign to 205 so they have task-scoped deliverable access.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select lives_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000542',
+    (select id from public.deliverable_tasks where deliverable_id = '21000000-0000-4000-8000-000000000542' and assignee_user_id = '21000000-0000-4000-8000-000000000205' limit 1),
+    'مهمة الإسناد التصحيحي', 'وصف محدث', 'todo', 'high',
+    '21000000-0000-4000-8000-000000000205', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-correct-mgmt-reassign-back-1')$$,
+  'management reassigns task back to original user for discoverability test'
+);
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000205', true);
+select is(
+  (select count(*)::integer from public.deliverables
+   where id = '21000000-0000-4000-8000-000000000542'),
+  1, 'task-only assignee can discover assigned deliverable via RLS'
+);
+reset role;
+
+-- 3.15 Team member without assignment cannot see deliverable 542.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000201', true);
+select is(
+  (select count(*)::integer from public.deliverables
+   where id = '21000000-0000-4000-8000-000000000542'),
+  0, 'account_manager without owner/contributor/assignee relationship cannot see deliverable'
+);
+reset role;
+
+-- 3.16 Same-tenant Client B denied deliverable 542 read.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000208', true);
+select is(
+  (select count(*)::integer from public.deliverables
+   where id = '21000000-0000-4000-8000-000000000542'),
+  0, 'same-tenant Client B cannot see Client A assignment deliverable'
+);
+reset role;
+
+-- 3.17 Tenant B denied deliverable 542 read.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '22000000-0000-4000-8000-000000000201', true);
+select is(
+  (select count(*)::integer from public.deliverables
+   where id = '21000000-0000-4000-8000-000000000542'),
+  0, 'Tenant B cannot see Tenant A assignment deliverable'
+);
+reset role;
+
+-- 3.18 Inactive member denied task read.
+update public.tenant_memberships set status = 'disabled'
+where id = '21000000-0000-4000-8000-000000000105';
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000205', true);
+select is(
+  (select count(*)::integer from public.deliverable_tasks
+   where deliverable_id = '21000000-0000-4000-8000-000000000542'),
+  0, 'inactive member cannot read tasks even if previously assignee'
+);
+reset role;
+update public.tenant_memberships set status = 'active'
+where id = '21000000-0000-4000-8000-000000000105';
+
+-- 3.19 Different-payload conflict on assignee update.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000205', true);
+select throws_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000542',
+    (select id from public.deliverable_tasks where deliverable_id = '21000000-0000-4000-8000-000000000542' and assignee_user_id = '21000000-0000-4000-8000-000000000205' limit 1),
+    'مهمة الإسناد التصحيحي', 'وصف', 'done', 'high',
+    '21000000-0000-4000-8000-000000000205', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 'task-correct-assignee-status-1')$$,
+  'P0001', 'idempotency conflict',
+  'different-payload replay on assignee update conflicts'
+);
+reset role;
+
 select * from finish();
 rollback;

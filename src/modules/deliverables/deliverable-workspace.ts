@@ -70,6 +70,15 @@ export type DeliverableActivityWorkspace = {
   actor?: MemberDisplay;
 };
 
+export type TaskCapabilities = {
+  canCreateTask: boolean;
+  canAssignOthers: boolean;
+  canReassignTask: boolean;
+  canUpdateOwnTaskStatus: boolean;
+  canDeleteTask: boolean;
+  canEditTaskFields: boolean;
+};
+
 export type DeliverableWorkspace = {
   deliverableId: string;
   currentVersionId?: string;
@@ -80,6 +89,7 @@ export type DeliverableWorkspace = {
   qualityChecks: DeliverableQualityWorkspace[];
   activity: DeliverableActivityWorkspace[];
   eligibleAssignees: MemberDisplay[];
+  taskCapabilities: TaskCapabilities;
   counts: {
     versions: number;
     tasks: number;

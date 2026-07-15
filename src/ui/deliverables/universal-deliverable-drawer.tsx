@@ -270,8 +270,8 @@ export function UniversalDeliverableDrawer({
 
                   <section aria-labelledby="drawer-execution" className="grid gap-3">
                     <h3 className="text-base font-semibold" id="drawer-execution">مهام التنفيذ</h3>
-                    {workspace?.tasks.length ? <ul className="grid gap-2">{workspace.tasks.map((task) => <li className="rounded-lg border border-border bg-background p-3" key={task.id}><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="font-semibold">{task.title}</p><p className="mt-1 text-xs text-muted">{task.assignee?.displayName ?? "غير مسند"}{task.dueDate ? ` · ${task.dueDate}` : ""}</p></div><TaskStatusControl deliverable={deliverable} task={task} onMutated={handleMutated} /></div></li>)}</ul> : <EmptySection>لا توجد مهام تنفيذ مضافة لهذا المخرج.</EmptySection>}
-                    <TaskForm deliverable={deliverable} eligibleAssignees={workspace?.eligibleAssignees} onMutated={handleMutated} />
+                    {workspace?.tasks.length ? <ul className="grid gap-2">{workspace.tasks.map((task) => <li className="rounded-lg border border-border bg-background p-3" key={task.id}><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="font-semibold">{task.title}</p><p className="mt-1 text-xs text-muted">{task.assignee?.displayName ?? "غير مسند"}{task.dueDate ? ` · ${task.dueDate}` : ""}</p></div>{(workspace.taskCapabilities.canUpdateOwnTaskStatus || workspace.taskCapabilities.canEditTaskFields) ? <TaskStatusControl deliverable={deliverable} task={task} onMutated={handleMutated} /> : <Badge tone="muted">{task.status}</Badge>}</div></li>)}</ul> : <EmptySection>لا توجد مهام تنفيذ مضافة لهذا المخرج.</EmptySection>}
+                    <TaskForm deliverable={deliverable} eligibleAssignees={workspace?.eligibleAssignees} taskCapabilities={workspace?.taskCapabilities} onMutated={handleMutated} />
                   </section>
 
                   <section aria-labelledby="drawer-files" className="grid gap-3">

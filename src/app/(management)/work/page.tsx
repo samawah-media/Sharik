@@ -45,6 +45,14 @@ export default async function AssignedWorkPage({
                 tenantId: deliverable.tenantId,
                 clientId: deliverable.clientId,
               },
+            }).allowed ||
+            evaluatePermission({
+              actor: runtime.actor,
+              permission: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
+              resource: {
+                tenantId: deliverable.tenantId,
+                clientId: deliverable.clientId,
+              },
             }).allowed,
         )
       : [],

@@ -3,15 +3,26 @@
 | Gate | Status | Reason |
 |---|---|---|
 | Baseline integrity | green | Corrected locally and committed before this continuation. |
-| Persistent schema/RLS | green locally / exact-HEAD CI pending | Additive migration `202607150001` replayed from a clean reset and pgTAP passed 6 files / 404 tests, including non-recursive RLS, active-role task mutation, eligible-assignee scope, and direct-helper denials. Exact-HEAD PR CI remains required for closure. |
+| Persistent schema/RLS | green | Additive migration `202607150001` replayed from a clean reset in PR #37 quality run `29404575276` for head SHA `98a6e6745cf5e6c13e76e672a44883ec0bd51201`; pgTAP passed 6 files / 404 tests, including non-recursive RLS, active-role task mutation, eligible-assignee scope, and direct-helper denials. |
 | Persistent workflow | green | Internal review, internal approval, client submission, client decision, delivery, closure, exact-version binding, audit, SLA, ledger, idempotency, terminal-state, and rollback paths are covered by local DB-backed tests. |
 | Fixture boundary | green | Production routes use scoped persistent reads outside local/test actor-fixture mode; persistent read failures do not silently instantiate fixture repositories. `APP_ENV=test-persistent` is denied by the fixture predicate and verified by the persistent E2E helper. |
 | Role and secrecy boundary | green for X006 | PR #37 quality run `29263587871` attempt 2 passed exact commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`, including Supabase start/reset, RLS, fixture E2E, persistent E2E, and secret scan. |
 | RTL/mobile/keyboard UX | green for X006 / hosted pending | Repository Playwright visual QA `tests/e2e/visual-qa.spec.ts` passed locally across desktop, mobile, and Arabic RTL with direct screenshot inspection; the same visual checks are included in CI fixture E2E for exact commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`. |
-| Persistent browser E2E | green locally / exact-HEAD CI pending | Original lifecycle and mobile/RTL smokes passed locally. The replacement real-Auth assignment journey also passed after deterministic seed isolation and hydration hardening, covering management create/reassign, assignee status updates, old-assignee denial, and unrelated/client persona secrecy. |
-| Local MVP acceptance | blocked on exact-HEAD Checkpoint 1A CI | Local lint, typecheck, unit, clean migration replay, pgTAP 404/404, and persistent persona evidence pass. The current corrective commit must pass the complete PR quality matrix before local acceptance is restored. |
+| Persistent browser E2E | green | PR #37 quality run `29404575276` passed the full persistent suite on head SHA `98a6e6745cf5e6c13e76e672a44883ec0bd51201`: original lifecycle, mobile/RTL smokes, and real-Auth assignment journey covering management create/reassign, assignee status updates, old-assignee denial, and unrelated/client persona secrecy. |
+| Local MVP acceptance | green for Checkpoint 1A | Checkpoint 1A is locally accepted for the exact corrective commit after PR #37 quality run `29404575276` passed npm ci, lint, typecheck, unit 182, integration 112, clean Supabase start/reset, RLS simulator 24, pgTAP 6 files / 404 tests, component 65, fixture E2E 123, persistent E2E 4, secret scan, and build; local `git diff --check` also passed. No P0/P1 remains open for Checkpoint 1A. |
 | Hosted UAT | owner authorized / preflight in progress | Owner authorized a controlled Team-Only Hadna Preview/UAT run as an amendment to Spec 015. No hosted PASS is claimed until Draft PR, CI, Preview/UAT target verification, Supabase UAT migration/seed, approved team access, hosted workflow/UX checks, rollback validation, and T032 evidence complete. |
 | Production acceptance | not granted | Outside task boundary. Existing actions are limited to the authorized Draft PR and Preview/UAT target; no Production deployment, promotion, merge, public signup, external-client invitation, or real customer data is authorized. |
+
+## 2026-07-15 Checkpoint 1A exact-HEAD closure
+
+- Branch: `codex/015-persistent-mvp-pilot-completion`.
+- Corrective commit verified: `98a6e6745cf5e6c13e76e672a44883ec0bd51201`.
+- Draft PR: #37, unmerged.
+- CI evidence: GitHub Actions `F-001 Quality` run `29404575276`, job `87316811754`, SUCCESS.
+- Matrix result: npm ci PASS; lint PASS; typecheck PASS; unit 51 files / 182 tests PASS; integration 28 files / 112 tests PASS; clean local Supabase start/reset PASS; RLS simulator 8 files / 24 tests PASS; pgTAP 6 files / 404 tests PASS; component 19 files / 65 tests PASS; fixture E2E 123 PASS; persistent E2E 4 PASS; secret scan PASS; build PASS. Local exact-head `git diff --check` PASS.
+- Mandatory evidence checks pass: persona assertions use real Supabase Auth clients or browser sessions; service-role is limited to synthetic setup/teardown and post-action assertions; no `length >= 0` always-true assertion remains; management task create/assign/edit/reassign is covered; writer/designer task-assignee discovery through `/work` is covered; assignee status mutation is exact-owner-only; old assignee loses task/deliverable access after reassignment; unassigned internal and client personas see no internal tasks; disabled former assignee cannot invoke task mutation; deliverable/task RLS has no recursive-policy failure; eligible-assignee listing is management-only and same-tenant/same-client; internal comments, quality data, and task data remain hidden from clients.
+- Defects S015-P1-049, S015-P1-050, S015-P1-051, S015-P1-052, S015-P1-054, S015-P2-053, S015-P2-055, and S015-P2-056 are reconciled as fixed/CI-verified.
+- X007 hosted work, H008-H010, T032, and Production acceptance remain open and outside this closure.
 
 ## Owner-Authorized Hosted Team UAT gate additions
 

@@ -1,12 +1,22 @@
 # Project Progress
 
+## Spec 015 Checkpoint 1A Exact-HEAD Closure - 2026-07-15
+
+Checkpoint 1A is locally accepted for Draft PR #37 after exact-head verification of `98a6e6745cf5e6c13e76e672a44883ec0bd51201` on branch `codex/015-persistent-mvp-pilot-completion`.
+
+Evidence: GitHub Actions `F-001 Quality` run `29404575276` / job `87316811754` passed npm ci, lint, typecheck, unit `182/182`, integration `112/112`, clean local Supabase start/reset, RLS simulator `24/24`, pgTAP 6 files / 404 tests, component `65/65`, fixture Playwright E2E `123 passed`, persistent Playwright E2E `4 passed`, secret scan, and build. Local exact-head `git diff --check` passed.
+
+Disposition: S015-P1-049, 050, 051, 052, and 054 are fixed and exact-CI verified. S015-P2-053, 055, and 056 are fixed and exact-CI verified. No P0/P1 remains open for Checkpoint 1A.
+
+Boundary: no hosted UAT workflow, H008/H009/H010, workbook import, Preview mutation, Production action, PR merge, Spec 016, parallel plan, or new milestone occurred. X007 hosted work, T032, and Production acceptance remain open/not granted.
+
 ## Spec 015 Checkpoint 1A Independent Review Correction — 2026-07-15
 
-Checkpoint 1A remains blocked after independent review of commit `0641797`. Exact-HEAD GitHub run `29393394677` failed lint, and the assignment test used service-role access for persona/RLS claims. The review also found mutually recursive deliverable/task RLS, actor-unscoped UI capabilities, an eligible-assignee query against a nonexistent column, continued exclusion of task-only writers/designers from `/work`, unwired task edit/reassignment UI, an inactive-former-assignee RPC path, and task status controls that were not tied to the exact actor assignment.
+Checkpoint 1A was blocked after independent review of commit `0641797`. Exact-HEAD GitHub run `29393394677` failed lint, and the assignment test used service-role access for persona/RLS claims. The review also found mutually recursive deliverable/task RLS, actor-unscoped UI capabilities, an eligible-assignee query against a nonexistent column, continued exclusion of task-only writers/designers from `/work`, unwired task edit/reassignment UI, an inactive-former-assignee RPC path, and task status controls that were not tied to the exact actor assignment.
 
 The bounded correction stays inside Spec 015. Additive migration `202607150001_s015_task_assignment_review_corrections.sql` removes policy recursion, gates an active-member eligible-assignee directory to management, revokes direct access to the assignee-validation oracle, and places task mutation behind an active-role wrapper. Server reads now derive capabilities only from the actor's active membership. The drawer exposes task edit/reassignment, exact-assignee status controls and missing capabilities fail closed, and persistent E2E uses real Supabase Auth sessions and browser mutations rather than service-role persona simulation.
 
-Local PASS: full lint, typecheck, unit `182/182`, integration `112/112`, component `65/65`, RLS simulator `24/24`, clean Supabase migration replay, pgTAP `404/404`, secret scan, `git diff --check`, and production build. The original persistent lifecycle plus mobile/RTL smokes passed in the combined run; after correcting test isolation and late-table service-role grants, the real-Auth task create/assign/update/reassign/old-assignee-denial/new-assignee-complete journey passed independently. A fresh full exact-HEAD CI run remains mandatory before closing Checkpoint 1A or restoring local MVP acceptance. No hosted mutation, Production action, PR merge, or workbook tracking occurred.
+Local PASS: full lint, typecheck, unit `182/182`, integration `112/112`, component `65/65`, RLS simulator `24/24`, clean Supabase migration replay, pgTAP `404/404`, secret scan, `git diff --check`, and production build. The original persistent lifecycle plus mobile/RTL smokes passed in the combined run; after correcting test isolation and late-table service-role grants, the real-Auth task create/assign/update/reassign/old-assignee-denial/new-assignee-complete journey passed independently. The later exact-head PR #37 quality run `29404575276` closed this blocker. No hosted mutation, Production action, PR merge, or workbook tracking occurred.
 
 ## Spec 015 X007 Corrective Slice 3 — 2026-07-15
 
@@ -14,7 +24,7 @@ Checkpoint 1A was reopened for a third corrective slice to make the task assignm
 
 Additive migration `202607140005_s015_task_assignment_authority_correction.sql` is additive only; no prior migration is modified. The canonical assignment model is now: management (tenant or client scoped) can create/assign/reassign/unassign/edit/delete within scope; owner/contributor can create (self/null assignee only) and edit all fields except assignee; task assignee can update status only with all protected fields preserved server-side; `created_by` is not a permanent read grant; client personas see zero tasks/counts/assignees. Server-derived capabilities (`canCreateTask`, `canAssignOthers`, `canReassignTask`, `canUpdateOwnTaskStatus`) flow from active roles to the workspace read model and the UI.
 
-Local verification: typecheck PASS, unit 50/179 PASS, integration 28/112 PASS, component 19 files including 7 new TaskForm capability tests PASS (1 pre-existing client-pending-inbox flaky failure unrelated), secret scan PASS. Docker-backed verification (db reset, pgTAP, persistent E2E, build) deferred to exact-HEAD CI. Checkpoint 1A is BLOCKED while P1 defects are open pending exact-HEAD CI. H008-H010, T032, hosted UAT, and Production acceptance remain open/not granted.
+Local verification: typecheck PASS, unit 50/179 PASS, integration 28/112 PASS, component 19 files including 7 new TaskForm capability tests PASS (1 pre-existing client-pending-inbox flaky failure unrelated), secret scan PASS. Docker-backed verification was superseded by the fourth corrective slice and exact-head PR #37 quality run `29404575276`. H008-H010, T032, hosted UAT, and Production acceptance remain open/not granted.
 
 Last updated: 2026-07-15
 

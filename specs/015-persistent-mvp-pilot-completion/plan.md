@@ -31,7 +31,7 @@ audited.
 
 ## Owner-Authorized Hosted Team UAT Amendment
 
-Status: OWNER AUTHORIZED / PREFLIGHT IN PROGRESS.
+Status: OWNER AUTHORIZED / X007 CHECKPOINT 4 BLOCKED AT PREVIEW ACCESS.
 
 This hosted amendment is additive to the accepted local baseline. T001-T019 remain historical local acceptance evidence and must not be edited into hosted PASS evidence.
 

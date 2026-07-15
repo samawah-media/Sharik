@@ -31,7 +31,7 @@ Last updated: 2026-07-15
 ## Spec 015 Hosted Team UAT Amendment - 2026-07-12
 
 - Owner authorized a controlled online Team-Only Hadna UAT amendment to the existing Spec 015 package.
-- Status is `OWNER AUTHORIZED / PREFLIGHT IN PROGRESS`, not PASS.
+- Historical status at this entry was `OWNER AUTHORIZED / PREFLIGHT IN PROGRESS`, not PASS. The current snapshot is `HOSTED ACCESS READY / X007 CHECKPOINT 4 IN PROGRESS`; later migrations and the approved Hadna/Glass import still require current UAT revalidation before hosted lifecycle acceptance.
 - This amendment does not create Spec 016, does not alter the accepted local evidence, and does not grant Production readiness, Production acceptance, customer acceptance, or public release.
 - Safe preflight performed so far: clean worktree confirmed, `origin` fetched, branch/HEAD/merge-base reviewed, and migration inventory review started.
 - Historical note superseded: the pre-push database gate later passed in CI and Draft PR #37/Preview were created. This is not evidence for later X006 migrations or hosted workflow acceptance.

@@ -54,6 +54,7 @@ describe("client pending inbox", () => {
     expect(screen.queryByText("client_a")).not.toBeInTheDocument();
 
     rerender(<ClientPendingInbox canApprove={false} details={[]} />);
+    expect(screen.getByRole("main")).toBeInTheDocument();
     expect(screen.getByText("لا توجد مخرجات بانتظار موافقتك")).toBeInTheDocument();
   });
 });

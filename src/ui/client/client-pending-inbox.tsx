@@ -23,7 +23,11 @@ export function ClientPendingInbox({
       : "";
   });
   if (details.length === 0) {
-    return <EmptyState description="ستظهر هنا النسخ التي اعتمدها فريق سماوة وتحتاج قرارك." title="لا توجد مخرجات بانتظار موافقتك" />;
+    return (
+      <main className="mx-auto grid w-full max-w-5xl gap-5 px-4 py-6 sm:py-8" dir="rtl">
+        <EmptyState description="ستظهر هنا النسخ التي اعتمدها فريق سماوة وتحتاج قرارك." title="لا توجد مخرجات بانتظار موافقتك" />
+      </main>
+    );
   }
 
   const selected =

@@ -42,19 +42,23 @@ test("hosted client viewer is read-only in pending inbox", async ({ page }) => {
   await signInHostedPersona(page, hostedPersona("CLIENT_VIEWER"));
   await page.goto("/client/pending", { waitUntil: "domcontentloaded" });
 
-  await expect(page.getByRole("heading", { name: "بانتظار موافقتي" })).toBeVisible();
+  await expect(page).toHaveURL(/\/client\/pending$/u);
+  await expect(page.getByRole("link", { name: "بانتظار موافقتي" })).toBeVisible();
+  await expect(page.getByRole("main")).toBeVisible();
   await expect(page.getByRole("button", { name: "اعتماد المخرج" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "طلب تعديل" })).toHaveCount(0);
   await expectNoSensitiveLeakage(page);
 });
 
-test("hosted client approver receives approval actions without internal leakage", async ({
+test("hosted client approver reaches pending inbox without internal leakage", async ({
   page,
 }) => {
   await signInHostedPersona(page, hostedPersona("CLIENT_APPROVER"));
   await page.goto("/client/pending", { waitUntil: "domcontentloaded" });
 
-  await expect(page.getByRole("heading", { name: "بانتظار موافقتي" })).toBeVisible();
+  await expect(page).toHaveURL(/\/client\/pending$/u);
+  await expect(page.getByRole("link", { name: "بانتظار موافقتي" })).toBeVisible();
+  await expect(page.getByRole("main")).toBeVisible();
   await expect(page.getByText(/تعليق داخلي|ملاحظة جودة|internal/i)).toHaveCount(0);
   await expectNoSensitiveLeakage(page);
 });

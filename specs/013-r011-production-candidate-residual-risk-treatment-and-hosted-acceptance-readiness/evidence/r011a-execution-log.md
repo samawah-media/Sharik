@@ -173,3 +173,30 @@ The complete `NEXT_AGENT_PROMPT` and `EXPERT_REVIEW_AGENT_PROMPT` are recorded i
 | Scoped R-011A dry-run redaction scan | PASS/REVIEWED | Touched R-011A dry-run docs found 0 URL, 0 email, 0 image-reference, and 80 keyword matches reviewed as safe redaction vocabulary. |
 | Scoped project-progress redaction scan | PASS/REVIEWED | New project-progress dry-run section found 0 URL, 0 email, 0 image-reference, and 3 keyword matches reviewed as safe redaction vocabulary. |
 | Lint/typecheck | NOT RUN | No product code changed in this dry-run docs/evidence update. |
+
+## T032 Later-Package Closure Addendum - 2026-07-16
+
+R-011A T032 is closed by the separately owner-authorized Spec 015 hosted
+Preview/UAT package. This addendum does not reinterpret the earlier R-011A
+dry-run as hosted PASS; it records the later direct evidence that the original
+task required.
+
+- Exact reviewed application head: `3266d6fae0f4792da3ba7ceff4ce3d84b8362924`.
+- Exact-head quality run `29490121433`: PASS for the complete repository
+  matrix, including local Supabase reset, RLS/pgTAP, fixture E2E, persistent
+  E2E, secret scan, and build.
+- Direct hosted boundary/persona smoke: 27/27 PASS across desktop, mobile, and
+  Arabic RTL with seven approved role categories.
+- Direct persistent hosted lifecycle: 1/1 PASS with real UAT Auth sessions,
+  exact-version approvals, stale-version denial, secrecy, SLA, audit, ledger,
+  idempotency, delivery, and terminal-state checks.
+- Rollback/no-op: four failed synthetic runs retired through audited authorized
+  commands; immediate replay performed zero additional mutations.
+- Open P0/P1: 0. Every P2 is fixed or dispositioned in the Spec 015 defect
+  register.
+
+The canonical redacted evidence is
+`specs/015-persistent-mvp-pilot-completion/evidence/hosted-team-uat-final-handoff.md`.
+The resulting state is `HOSTED_TEAM_UAT_READY` for a controlled internal human
+trial only. Production acceptance, merge, public release, and real customer
+data remain outside the authorization.

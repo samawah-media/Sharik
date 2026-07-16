@@ -39,7 +39,7 @@ Hosted UAT execution, deployment/promotion, team access, real customer data, soc
 
 ## Owner-Authorized Hosted Team UAT Amendment
 
-Status: OWNER AUTHORIZED / X007 CHECKPOINT 4 BLOCKED AT PREVIEW/UAT ROUTING.
+Status: `HOSTED_TEAM_UAT_READY` for a controlled internal team trial on Preview/UAT. Production acceptance is not granted.
 
 This amendment extends Spec 015 only. It does not create Spec 016, does not invalidate the completed local acceptance evidence, and does not convert local MVP acceptance into hosted or Production acceptance.
 
@@ -88,4 +88,4 @@ This additive amendment remains inside Spec 015 and is the canonical execution s
 
 Acceptance additions: `/client/pending` is a real role-correct route; home, summary, and pending use one server-side visibility definition; client payloads exclude unsent/unapproved deliverables, internal comments, quality notes, internal files, private activity, and raw IDs; the client shell exposes home, pending, contract/follow-up, profile, and sign-out; team cards never render raw assignee identifiers; Arabic RTL, mobile, keyboard focus, 44px targets, reduced motion, and honest content fallbacks are covered by the shared `DESIGN.md` contract.
 
-The existing persistent version, approval, file, comment, audit, SLA, idempotency, and RLS contracts remain authoritative. The rescue completes the approved UI and storage stack without changing the tenancy model, workflow rules, or Supabase Storage architecture. It includes a generic, idempotent, run-ID-scoped Glass/Hadna UAT import that never commits workbook content or hosted identifiers. H008-H010 remain open until direct hosted persona evidence, defect disposition, rollback/no-op evidence, and redacted handoff are complete. Production remains explicitly out of scope.
+The existing persistent version, approval, file, comment, audit, SLA, idempotency, and RLS contracts remain authoritative. The rescue completes the approved UI and storage stack without changing the tenancy model, workflow rules, or Supabase Storage architecture. It includes a generic, idempotent, run-ID-scoped Glass/Hadna UAT import that never commits workbook content or hosted identifiers. H008-H010 and X007 are closed by direct hosted persona/lifecycle evidence, defect disposition, rollback/no-op evidence, and the redacted hosted handoff. This authorizes the controlled internal human trial only; Production remains explicitly out of scope.

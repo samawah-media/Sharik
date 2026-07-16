@@ -31,7 +31,7 @@ audited.
 
 ## Owner-Authorized Hosted Team UAT Amendment
 
-Status: OWNER AUTHORIZED / X007 CHECKPOINT 4 BLOCKED AT PREVIEW/UAT ROUTING.
+Status: `HOSTED_TEAM_UAT_READY` for controlled internal human trial; Production remains blocked.
 
 This hosted amendment is additive to the accepted local baseline. T001-T019 remain historical local acceptance evidence and must not be edited into hosted PASS evidence.
 
@@ -63,7 +63,7 @@ No hosted mutation may begin until target identity, environment category, data c
 
 ## Product Experience Rescue Amendment
 
-Status: implementation in progress within Spec 015. The rescue closes client navigation/profile discoverability, creates the real multi-item pending-approval route, narrows client visibility to the exact current client-visible version, resolves scoped member display data, removes raw assignee identifiers, and implements the shared Samawah design contract across the universal drawer and role workspaces. The owner has authorized the approved stack dependencies and generic Glass/Hadna UAT import in this same rescue. Migrations remain additive and reviewed before UAT application. X006/X007 and H008-H010 remain open until local persistent verification and hosted persona evidence pass.
+Status: implementation and technical hosted acceptance complete within Spec 015. The rescue closes client navigation/profile discoverability, creates the real multi-item pending-approval route, narrows client visibility to the exact current client-visible version, resolves scoped member display data, removes raw assignee identifiers, and implements the shared Samawah design contract across the universal drawer and role workspaces. The owner-authorized dependencies and generic Glass/Hadna UAT import remain inside this rescue. X006, X007, and H008-H010 are closed by exact-HEAD CI plus direct Preview/UAT evidence. The next activity is the controlled internal human trial, not Production promotion.
 
 Dependency inventory: add only the pinned packages required for React Hook Form,
 dnd-kit, Uppy, Tiptap, and TanStack Query/Table after license/security review.

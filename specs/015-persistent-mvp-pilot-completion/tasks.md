@@ -36,22 +36,22 @@
 
 ## Owner-Authorized Hosted Team UAT Amendment
 
-Status: HOSTED UAT ACCESS READY / WORKFLOW EXECUTION PENDING.
+Status: `HOSTED_TEAM_UAT_READY` for a controlled internal team trial. Production acceptance remains not granted.
 
 The following hosted tasks extend Spec 015 only. They do not reopen or invalidate completed local tasks T001-T019.
 
 - [x] H001 Hosted target and branch preflight: confirm clean worktree, fetch origin, inspect merge base, commit list, full diff/stat, migrations, generated files, secrets, and unrelated historical work.
 - [x] H002 Rollback and stop-condition approval: record deployment, database, access rollback, rollback owner, executor, execution window, stop authority, expected rollback time, and verification steps before hosted mutation.
 - [x] H003 Draft PR and CI: run full local verification, push the safe reviewed branch, create a Draft PR, inspect CI, and fix only in-scope failures. Do not merge.
-- [x] H004 Historical Supabase UAT migration gate: the originally reviewed UAT migration set was applied and verified. Later additive Spec 015 migrations remain UAT-pending and must be inventoried, reviewed, applied, and revalidated under X007 Checkpoint 4 before hosted lifecycle acceptance.
+- [x] H004 Supabase UAT migration gate: the originally reviewed set and later additive Spec 015 migrations were inventoried, reviewed, applied to non-Production UAT, and revalidated before hosted lifecycle acceptance.
 - [x] H005 Synthetic Hadna UAT seed: create minimal idempotent run-ID-scoped Hadna tenant/client/contract/package/deliverable/file metadata records and record category/count-only evidence.
 - [x] H006 Team account/access setup: configure only approved individual Samawah team testers and team-controlled client personas; if approved email mapping is unavailable, stop with `TEAM_ACCESS_INPUT_REQUIRED`. Owner-approved synthetic UAT accounts now cover management, account manager, assigned writer, assigned designer, unassigned internal negative tester, client approver, and client viewer; Auth, membership, and role checks pass for all categories.
-- [x] H007 Vercel Preview deployment: configure Preview/UAT env only, deploy reviewed branch to Preview/UAT, verify Supabase UAT binding, sign-in, Arabic RTL shell, no fixture actor support, non-local `APP_ENV`, no service-role key in client bundles/logs. Preview is Ready, the owner-configured public UAT alias resolves without Deployment Protection, and hosted smoke passes for the available valid personas.
-- [ ] H008 Hosted team workflow UAT: run the online UI journey with actual UAT Auth sessions across management, assigned team, unassigned internal negative, client viewer, and client approver roles.
-- [ ] H009 Defect burn-down and T032 evidence: record defects in the existing register, block on P0/P1, owner-disposition every P2, verify rollback/no-op rehearsal, and record hosted T032 outcome.
-- [ ] H010 Hosted handoff and boundary record: produce final owner-facing result with hosted state, PR/CI/deployment status, redacted target category, seed run ID category/count summary, team access category/count summary, isolation/approval/secrecy/audit/SLA/ledger findings, rollback result, out-of-scope work, and Production boundary.
+- [x] H007 Vercel Preview deployment: configure Preview/UAT env only, deploy the reviewed branch to Preview/UAT, verify Supabase UAT binding, sign-in, Arabic RTL shell, no fixture actor support, non-local `APP_ENV`, and no service-role key in client bundles/logs. The protected UAT alias targets the exact reviewed Preview and owner-distributed protected access passed hosted smoke.
+- [x] H008 Hosted team workflow UAT: real UAT Auth sessions passed for management, account manager, assigned writer/designer, unassigned internal negative, client viewer, and client approver. Hosted route/persona smoke passed 27/27 across desktop, mobile, and RTL; the exact persistent team-to-client lifecycle passed 1/1.
+- [x] H009 Defect burn-down and T032 evidence: all discovered P1/P2 defects are fixed or explicitly dispositioned, no P0/P1 remains open, four failed synthetic lifecycle runs were retired through audited real-Auth commands, immediate replay was a no-op, and R-011A T032 is closed by the bounded hosted evidence.
+- [x] H010 Hosted handoff and boundary record: final redacted owner-facing evidence is recorded in `evidence/hosted-team-uat-final-handoff.md`; Production, merge, public signup, real customer data, and external client invitations remain out of scope.
 
-Hosted amendment note: H001-H007 have completed under owner authorization. Hosted UAT is not PASS until H006, H008, H009, and H010 complete successfully.
+Hosted amendment note: H001-H010 have completed under owner authorization. `HOSTED_TEAM_UAT_READY` means the reviewed Preview/UAT environment is ready for the controlled internal human trial; it is not Production acceptance or proof that the human trial itself has finished.
 
 ## Product Experience Rescue Amendment — same Spec 015
 
@@ -69,14 +69,14 @@ Hosted amendment note: H001-H007 have completed under owner authorization. Hoste
   - [x] X006-F Implement assigned-work List/Board views, filters, five-to-six macro lanes, and governed dnd-kit interaction.
   - [x] X006-G Complete exception-first management and scannable client portal experiences.
   - [x] X006-H Execute DESIGN.md RTL/mobile/keyboard/reduced-motion/state visual QA and close all local gates.
-- [ ] X007 Execute generic run-ID-scoped Glass/Hadna import, hosted persona UAT, defect burn-down, rollback/no-op evidence, and H008-H010 handoff.
+- [x] X007 Execute generic run-ID-scoped Glass/Hadna import, hosted persona UAT, defect burn-down, rollback/no-op evidence, and H008-H010 handoff.
   - Execution sequence (subordinate runbook, not a second task source): [X007 Step-by-Step Execution Runbook](evidence/x007-step-by-step-execution-runbook.md).
 
 ## Correction note: task assignment authority (2026-07-15)
 
 Checkpoint 1A was reopened for a third corrective slice. Five defects (S015-P1-044 through S015-P1-047, S015-P2-048) were registered and addressed by additive migration `202607140005_s015_task_assignment_authority_correction.sql`: (1) `created_by` is no longer a permanent task-read grant; (2) deliverables SELECT RLS is narrowed so team roles see only owner/contributor/task-assignee deliverables while management sees all; (3) `s015_upsert_deliverable_task` restructures update authority into management/owner-contributor/assignee tiers with server-side protected-field preservation; (4) `s015_validate_task_assignee` links active role to active membership; (5) explicit server capabilities replace implicit UI inference. The canonical assignment model is documented in `defect-register.md`. This slice was superseded by the fourth bounded review correction below and remains part of the accepted Checkpoint 1A evidence.
 
-Independent review reopened Checkpoint 1A for a fourth bounded corrective slice. Defects S015-P1-049 through S015-P1-052, S015-P1-054, and S015-P2-053/S015-P2-055/S015-P2-056 cover false service-role persona evidence, mutually recursive deliverable/task RLS, actor-unscoped capability calculation plus an invalid eligible-assignee query, task-only `/work` filtering, inactive-former-assignee RPC access, unwired/fail-open or actor-mismatched task controls, and late-table persistent harness grants. Additive migration `202607150001_s015_task_assignment_review_corrections.sql`, real-Auth persistent browser coverage, management task edit/reassign UI, exact-assignee status controls, and fail-closed capabilities passed the complete exact-HEAD PR #37 quality matrix in run `29404575276` for head SHA `98a6e6745cf5e6c13e76e672a44883ec0bd51201`. Checkpoint 1A is locally accepted with no open P0/P1. X007 hosted work, H008-H010, T032, and Production acceptance remain open.
+Independent review reopened Checkpoint 1A for a fourth bounded corrective slice. Defects S015-P1-049 through S015-P1-052, S015-P1-054, and S015-P2-053/S015-P2-055/S015-P2-056 cover false service-role persona evidence, mutually recursive deliverable/task RLS, actor-unscoped capability calculation plus an invalid eligible-assignee query, task-only `/work` filtering, inactive-former-assignee RPC access, unwired/fail-open or actor-mismatched task controls, and late-table persistent harness grants. Additive migration `202607150001_s015_task_assignment_review_corrections.sql`, real-Auth persistent browser coverage, management task edit/reassign UI, exact-assignee status controls, and fail-closed capabilities passed the complete exact-HEAD PR #37 quality matrix in run `29404575276` for head SHA `98a6e6745cf5e6c13e76e672a44883ec0bd51201`. Checkpoint 1A is locally accepted with no open P0/P1. The later X007 hosted work, H008-H010, and T032 are now closed by `evidence/hosted-team-uat-final-handoff.md`; Production acceptance remains open and outside this task.
 
 ## Correction note: persistent browser verification
 

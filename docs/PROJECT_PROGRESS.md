@@ -1,5 +1,43 @@
 # Project Progress
 
+## Spec 015 hosted technical acceptance - 2026-07-16
+
+Status: `HOSTED_TEAM_UAT_READY` for the controlled internal Samawah human
+trial. This section supersedes the previous Checkpoint 4 route blocker; it does
+not grant Production acceptance.
+
+- Fixed `S015-P1-057` by deploying the exact reviewed head
+  `3266d6fae0f4792da3ba7ceff4ce3d84b8362924` to non-Production Preview/UAT
+  and reassigning only the protected UAT alias. `/work`, `/client/pending`, and
+  `/client/files` are present in the build manifest. Production aliases and
+  environments were untouched.
+- PR #37 remains draft and unmerged. Exact-head quality run `29490121433`
+  passed npm ci, lint, typecheck, unit, integration, Supabase start/reset,
+  RLS/pgTAP, component, fixture E2E, persistent E2E, secret scan, and build.
+- Direct hosted boundary/persona smoke passed 27/27 across desktop, mobile
+  Chromium, and Arabic RTL for seven approved role categories.
+- Direct hosted persistent lifecycle passed 1/1 with real UAT Auth sessions:
+  management assignment, assigned-team work, three versions, internal and
+  client changes/approvals, stale-version denial, SLA pause/resume/completion,
+  final delivery, audit, ledger, idempotency, files/comments secrecy, and
+  terminal-state denial.
+- Latest synthetic lifecycle evidence ended delivered with 3 versions, 1 task,
+  9 comments, 2 files, 3 quality checks, 5 decisions, 5 SLA segments, and 2
+  ledger entries. No active failed lifecycle run remained.
+- Seven scoped UAT member profiles were synchronized. Four earlier failed
+  synthetic runs were retired through audited authorized commands; all ended
+  cancelled with released allocations, and immediate replay was a no-op.
+- The temporary protected-link disclosure found during harness debugging was
+  revoked/regenerated and the setup now emits sanitized errors. No secret,
+  credential, email, workbook content, file content, or hosted URL is recorded
+  in project evidence.
+- H008, H009, H010, X007, and R-011A T032 are closed. Open P0/P1 is 0; every P2
+  is fixed or dispositioned. The canonical redacted handoff is
+  `specs/015-persistent-mvp-pilot-completion/evidence/hosted-team-uat-final-handoff.md`.
+- Next action: run the time-boxed human team trial. Any P0/P1 found there
+  reopens the hosted gate. Merge, Production deployment/promotion, public
+  signup, real customer data, and external client invitations remain blocked.
+
 ## Spec 015 Checkpoint 1A Exact-HEAD Closure - 2026-07-15
 
 Checkpoint 1A is locally accepted for Draft PR #37 after exact-head verification of `98a6e6745cf5e6c13e76e672a44883ec0bd51201` on branch `codex/015-persistent-mvp-pilot-completion`.
@@ -26,7 +64,7 @@ Additive migration `202607140005_s015_task_assignment_authority_correction.sql` 
 
 Local verification: typecheck PASS, unit 50/179 PASS, integration 28/112 PASS, component 19 files including 7 new TaskForm capability tests PASS (1 pre-existing client-pending-inbox flaky failure unrelated), secret scan PASS. Docker-backed verification was superseded by the fourth corrective slice and exact-head PR #37 quality run `29404575276`. H008-H010, T032, hosted UAT, and Production acceptance remain open/not granted.
 
-Last updated: 2026-07-15
+Last updated: 2026-07-16
 
 ## Spec 015 Hosted Team UAT Amendment - 2026-07-12
 

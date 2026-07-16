@@ -31,7 +31,21 @@ export default async function vercelShareGlobalSetup(config: FullConfig) {
   try {
     const context = await browser.newContext();
     const page = await context.newPage();
-    await page.goto(shareUrl.toString(), { waitUntil: "domcontentloaded" });
+    try {
+      await page.goto(shareUrl.toString(), {
+        waitUntil: "commit",
+        timeout: 60_000,
+      });
+      await page.waitForURL(
+        (url) => url.origin === baseUrl.origin,
+        { timeout: 60_000 },
+      );
+      await page.waitForLoadState("domcontentloaded", { timeout: 60_000 });
+    } catch {
+      throw new Error(
+        "Hosted UAT shareable-link navigation failed before protection bypass could be verified.",
+      );
+    }
 
     if (new URL(page.url()).hostname === "vercel.com") {
       throw new Error("Hosted UAT Vercel share URL did not bypass deployment protection.");

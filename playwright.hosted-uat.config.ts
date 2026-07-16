@@ -122,7 +122,9 @@ export default defineConfig({
   retries: 0,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
+    actionTimeout: 60_000,
     baseURL,
+    navigationTimeout: 60_000,
     storageState: vercelShareUrl ? vercelStorageStatePath : undefined,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",

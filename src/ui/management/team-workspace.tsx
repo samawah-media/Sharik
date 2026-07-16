@@ -6,7 +6,13 @@ import type { DeliverableWorkspaceSummary } from "@/modules/deliverables/deliver
 import { deriveSlaStatus } from "@/modules/sla/sla-policy";
 import { UniversalDeliverableDrawer } from "@/ui/deliverables/universal-deliverable-drawer";
 import { Badge } from "@/ui/core/badge";
-import { DeliverableBoard } from "./deliverable-board";
+import {
+  DeliverableBoard,
+  getDeliverableTypeLabel,
+  kanbanStatusLabels,
+  priorityLabels,
+  slaLabels,
+} from "./deliverable-board";
 
 type Action = (formData: FormData) => void | Promise<void>;
 
@@ -90,7 +96,7 @@ export function TeamWorkspace({
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-accent">{clientNames[deliverable.clientId] ?? "عميل مصرح"}</p>
                   <h2 className="mt-1 break-words text-base font-semibold">{deliverable.name}</h2>
-                  <div className="mt-2 flex flex-wrap gap-2"><Badge tone="neutral">{deliverable.type}</Badge><Badge tone="muted">{deliverable.status}</Badge><Badge tone={slaStatus === "overdue" ? "danger" : slaStatus === "at_risk" ? "warning" : "accent"}>{slaStatus}</Badge><Badge tone="muted">{deliverable.priority}</Badge></div>
+                  <div className="mt-2 flex flex-wrap gap-2"><Badge tone="neutral">{getDeliverableTypeLabel(deliverable.type)}</Badge><Badge tone="muted">{kanbanStatusLabels[deliverable.status]}</Badge><Badge tone={slaStatus === "overdue" ? "danger" : slaStatus === "at_risk" ? "warning" : "accent"}>{slaLabels[slaStatus]}</Badge><Badge tone="muted">{priorityLabels[deliverable.priority]}</Badge></div>
                   <p className="mt-2 text-xs text-muted">المسؤول: {deliverable.ownerDisplay?.displayName ?? "فريق سماوة"} · الموعد: {deliverable.internalDueDate ?? deliverable.finalDueDate ?? "غير محدد"}</p>
                   <p className="mt-1 text-xs text-muted">{summary?.counts.versions ?? 0} نسخ · {summary?.counts.tasks ?? 0} مهام · {summary?.counts.files ?? 0} ملفات · {summary?.counts.comments ?? 0} تعليقات</p>
                 </div>

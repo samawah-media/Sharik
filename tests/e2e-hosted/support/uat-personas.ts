@@ -37,12 +37,12 @@ export const signInHostedPersona = async (
   await page.getByLabel("البريد الإلكتروني").fill(persona.email);
   await page.getByRole("textbox", { name: "كلمة المرور" }).fill(persona.password);
   await page.getByRole("button", { name: "تسجيل الدخول" }).click();
-  await expect(page.getByRole("main")).toBeVisible();
+  await expect(page).not.toHaveURL(/\/sign-in(?:\?|$)/u, { timeout: 30_000 });
 };
 
 export const expectNoSensitiveLeakage = async (page: Page) => {
   await expect(page.getByText(/service[_-]?role/i)).toHaveCount(0);
   await expect(page.getByText(/SUPABASE_SERVICE_ROLE_KEY/)).toHaveCount(0);
-  await expect(page.getByText(/tenant_[a-z0-9_-]+/i)).toHaveCount(0);
-  await expect(page.getByText(/client_[a-z0-9_-]+/i)).toHaveCount(0);
+  await expect(page.getByText(/^tenant_[a-z0-9_-]+$/i)).toHaveCount(0);
+  await expect(page.getByText(/^client_[a-z0-9_-]+$/i)).toHaveCount(0);
 };

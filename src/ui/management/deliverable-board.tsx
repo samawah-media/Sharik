@@ -19,11 +19,11 @@ import { useState } from "react";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableWorkspaceSummary } from "@/modules/deliverables/deliverable-workspace";
 import {
-  activeKanbanStatuses,
   canChangeDeliverableStatus,
   genericOperationalStatuses,
   getProgressForDeliverableStatus,
   type ActiveKanbanStatus,
+  type DeliverableLifecycleStatus,
 } from "@/modules/deliverables/deliverable-rules";
 import { deriveSlaStatus, type SlaStatus } from "@/modules/sla/sla-policy";
 import { Badge } from "@/ui/core/badge";
@@ -94,7 +94,7 @@ function DeliverableVersionSubmissionControl({
   );
 }
 
-export const kanbanStatusLabels: Record<ActiveKanbanStatus, string> = {
+export const kanbanStatusLabels: Record<DeliverableLifecycleStatus, string> = {
   not_started: "لم يبدأ",
   in_progress: "قيد التنفيذ",
   ready_for_internal_review: "جاهز للمراجعة الداخلية",
@@ -105,16 +105,18 @@ export const kanbanStatusLabels: Record<ActiveKanbanStatus, string> = {
   client_approved: "معتمد من العميل",
   ready_for_delivery: "جاهز للتسليم",
   delivered: "تم التسليم",
+  cancelled: "ملغي",
+  archived: "مؤرشف",
 };
 
-const priorityLabels = {
+export const priorityLabels = {
   low: "منخفضة",
   normal: "عادية",
   high: "مرتفعة",
   urgent: "عاجلة",
 } as const;
 
-const slaLabels: Record<SlaStatus, string> = {
+export const slaLabels: Record<SlaStatus, string> = {
   on_track: "ضمن المسار",
   at_risk: "معرض للتأخير",
   overdue: "متأخر",
@@ -123,6 +125,21 @@ const slaLabels: Record<SlaStatus, string> = {
   completed: "مكتمل",
   cancelled: "ملغي",
 };
+
+export const deliverableTypeLabels: Record<string, string> = {
+  post: "منشور",
+  reel: "ريلز",
+  story: "ستوري",
+  design: "تصميم",
+  report: "تقرير",
+  video: "فيديو",
+  campaign: "حملة",
+  article: "مقال",
+  marketing_coordination: "تنسيق تسويقي",
+};
+
+export const getDeliverableTypeLabel = (type: string) =>
+  deliverableTypeLabels[type] ?? "مخرج مخصص";
 
 type MacroLane = {
   id: string;
@@ -287,11 +304,7 @@ function DeliverableCard({
     clientDueDate: deliverable.clientDueDate,
     finalDueDate: deliverable.finalDueDate,
   });
-  const statusLabel = activeKanbanStatuses.includes(
-    deliverable.status as ActiveKanbanStatus,
-  )
-    ? kanbanStatusLabels[deliverable.status as ActiveKanbanStatus]
-    : deliverable.status;
+  const statusLabel = kanbanStatusLabels[deliverable.status];
 
   return (
     <article className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md">
@@ -304,7 +317,7 @@ function DeliverableCard({
         </div>
         <div className="flex flex-wrap gap-2">
           <Badge tone="neutral">{statusLabel}</Badge>
-          <Badge tone="muted">{deliverable.type}</Badge>
+          <Badge tone="muted">{getDeliverableTypeLabel(deliverable.type)}</Badge>
           <Badge tone={priorityTone(deliverable.priority)}>
             {priorityLabels[deliverable.priority]}
           </Badge>

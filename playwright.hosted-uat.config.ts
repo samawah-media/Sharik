@@ -47,6 +47,11 @@ const baseURL = required("S015_UAT_BASE_URL");
 const allowedHostname = required("S015_UAT_ALLOWED_HOSTNAME").toLowerCase();
 const targetCategory = required("S015_UAT_TARGET_CATEGORY").toLowerCase();
 const acceptedCategories = new Set(["preview", "uat", "preview-uat"]);
+const vercelShareUrl = process.env.S015_UAT_VERCEL_SHARE_URL;
+const vercelStorageStatePath = path.resolve(
+  process.cwd(),
+  "test-results/s015-vercel-share-state.json",
+);
 
 if (!acceptedCategories.has(targetCategory)) {
   throw new Error("Hosted UAT target category must be preview, uat, or preview-uat.");
@@ -105,6 +110,12 @@ if (
 
 export default defineConfig({
   testDir: "./tests/e2e-hosted",
+  globalSetup: vercelShareUrl
+    ? "./tests/e2e-hosted/support/vercel-share-global-setup.ts"
+    : undefined,
+  globalTeardown: vercelShareUrl
+    ? "./tests/e2e-hosted/support/vercel-share-global-teardown.ts"
+    : undefined,
   fullyParallel: false,
   workers: 1,
   forbidOnly: true,
@@ -112,6 +123,7 @@ export default defineConfig({
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL,
+    storageState: vercelShareUrl ? vercelStorageStatePath : undefined,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },

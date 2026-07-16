@@ -4,7 +4,6 @@ import path from "node:path";
 import {
   createHostedActorClient,
   seedHostedLifecycle,
-  type HostedLifecycleSeed,
 } from "./support/hosted-lifecycle-harness";
 import {
   signInHostedPersona,

@@ -53,9 +53,18 @@ describe("client pending inbox", () => {
     expect(screen.getAllByText("منشور الأسبوع", { exact: true })).toHaveLength(
       1,
     );
+    expect(screen.getByRole("heading", { name: "بانتظار موافقتي" })).toBeInTheDocument();
+    expect(screen.getByText(/اعتمدها أو أرسل ملاحظات التعديل/)).toBeInTheDocument();
   });
 
-  it("keeps a viewer read-only and gives a safe empty state", () => {
+  it("gives the approver an approve-oriented empty state", () => {
+    render(<ClientPendingInbox canApprove details={[]} />);
+    expect(
+      screen.getByRole("heading", { name: "لا توجد مخرجات بانتظار موافقتك" }),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps a viewer read-only with role-aware copy and no approve instruction", () => {
     const { rerender } = render(
       <ClientPendingInbox canApprove={false} details={[detail("d1")]} />,
     );
@@ -63,11 +72,16 @@ describe("client pending inbox", () => {
       screen.queryByRole("button", { name: "اعتماد المخرج" }),
     ).not.toBeInTheDocument();
     expect(screen.queryByText("client_a")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "قيد المراجعة" })).toBeInTheDocument();
+    expect(screen.getByText(/للاطلاع فقط/)).toBeInTheDocument();
+    expect(screen.queryByText(/اعتمدها أو أرسل ملاحظات التعديل/)).not.toBeInTheDocument();
 
     rerender(<ClientPendingInbox canApprove={false} details={[]} />);
     expect(screen.getByRole("main")).toBeInTheDocument();
     expect(
-      screen.getByText("لا توجد مخرجات بانتظار موافقتك"),
+      screen.getByRole("heading", {
+        name: "لا توجد مخرجات قيد المراجعة الآن",
+      }),
     ).toBeInTheDocument();
   });
 });

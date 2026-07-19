@@ -9,6 +9,15 @@ import type {
   DeliverableWorkspaceSummary,
 } from "@/modules/deliverables/deliverable-workspace";
 import { canUpdateTaskStatus } from "@/modules/deliverables/deliverable-workspace";
+import {
+  deliverableStatusLabel,
+  deliverableTypeLabel,
+  fileVisibilityLabel,
+  priorityLabel,
+  qualityCheckStatusLabel,
+  taskStatusLabel,
+  versionStatusLabel,
+} from "@/modules/deliverables/domain-labels";
 import { fetchDeliverableWorkspace } from "@/server/actions/deliverable-workspace-actions";
 import { Badge } from "@/ui/core/badge";
 import { buttonStyles } from "@/ui/core/button";
@@ -89,7 +98,7 @@ function TaskWorkspaceCard({
             task={task}
           />
         ) : (
-          <Badge tone="muted">{task.status}</Badge>
+          <Badge tone="muted">{taskStatusLabel(task.status)}</Badge>
         )}
       </div>
       {canEditTask ? (
@@ -258,8 +267,8 @@ export function UniversalDeliverableDrawer({
                 </h2>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <Badge tone="accent">{deliverable.progressPercentage}%</Badge>
-                  <Badge tone="muted">{deliverable.status}</Badge>
-                  <Badge tone="neutral">{deliverable.type}</Badge>
+                  <Badge tone="muted">{deliverableStatusLabel(deliverable.status)}</Badge>
+                  <Badge tone="neutral">{deliverableTypeLabel(deliverable.type)}</Badge>
                 </div>
               </div>
               <button
@@ -310,7 +319,7 @@ export function UniversalDeliverableDrawer({
                       <div className="rounded-lg bg-background p-3">
                         <dt className="font-semibold">الأولوية</dt>
                         <dd className="mt-1 text-muted">
-                          {deliverable.priority}
+                          {priorityLabel(deliverable.priority)}
                         </dd>
                       </div>
                       <div className="rounded-lg bg-background p-3">
@@ -425,7 +434,7 @@ export function UniversalDeliverableDrawer({
                           >
                             <span>النسخة {version.versionNumber}</span>
                             <span className="text-muted">
-                              {version.status} ·{" "}
+                              {versionStatusLabel(version.status)} ·{" "}
                               {formatDate(version.submittedAt)}
                             </span>
                           </li>
@@ -499,7 +508,7 @@ export function UniversalDeliverableDrawer({
                                 {file.name}
                               </span>
                               <span className="shrink-0 text-xs text-muted">
-                                {file.visibility}
+                                {fileVisibilityLabel(file.visibility)}
                               </span>
                               <WorkspaceFileDownload fileId={file.id} />
                             </div>
@@ -606,7 +615,7 @@ export function UniversalDeliverableDrawer({
                                     : "muted"
                                 }
                               >
-                                {check.status}
+                                {qualityCheckStatusLabel(check.status)}
                               </Badge>
                             )}
                           </li>

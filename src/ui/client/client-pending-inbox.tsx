@@ -13,16 +13,24 @@ export function ClientPendingInbox({
   details: ClientSafeDeliverableDetail[];
   requestChangesAction?: (formData: FormData) => void | Promise<void>;
 }) {
+  const heading = canApprove ? "بانتظار موافقتي" : "قيد المراجعة";
+  const intro = canApprove
+    ? "راجع كل نسخة معتمدة للعميل، ثم اعتمدها أو أرسل ملاحظات التعديل على النسخة نفسها."
+    : "هذا الحساب للاطلاع فقط. تعرض هنا النسخ التي أعدها فريق سماوة بانتظار قرار الجهة المختصة بالاعتماد، ولا يمكنك اعتمادها أو طلب تعديل عليها.";
+  const emptyTitle = canApprove
+    ? "لا توجد مخرجات بانتظار موافقتك"
+    : "لا توجد مخرجات قيد المراجعة الآن";
+  const emptyDescription = canApprove
+    ? "ستظهر هنا النسخ التي اعتمدها فريق سماوة وتحتاج قرارك."
+    : "ستظهر هنا النسخ قيد المراجعة بمجرد أن يعتمدها فريق سماوة للجهة المختصة بالاعتماد.";
+
   if (details.length === 0) {
     return (
       <main
         className="mx-auto grid w-full max-w-5xl gap-5 px-4 py-6 sm:py-8"
         dir="rtl"
       >
-        <EmptyState
-          description="ستظهر هنا النسخ التي اعتمدها فريق سماوة وتحتاج قرارك."
-          title="لا توجد مخرجات بانتظار موافقتك"
-        />
+        <EmptyState description={emptyDescription} title={emptyTitle} />
       </main>
     );
   }
@@ -33,12 +41,11 @@ export function ClientPendingInbox({
       dir="rtl"
     >
       <header className="grid gap-2">
-        <p className="text-sm font-semibold text-accent">قرارات العميل</p>
-        <h1 className="text-2xl font-semibold sm:text-3xl">بانتظار موافقتي</h1>
-        <p className="max-w-2xl text-sm leading-6 text-muted">
-          راجع كل نسخة معتمدة للعميل، ثم اعتمدها أو أرسل ملاحظات التعديل على
-          النسخة نفسها.
+        <p className="text-sm font-semibold text-accent">
+          {canApprove ? "قرارات العميل" : "مراجعات العميل"}
         </p>
+        <h1 className="text-2xl font-semibold sm:text-3xl">{heading}</h1>
+        <p className="max-w-2xl text-sm leading-6 text-muted">{intro}</p>
       </header>
       <div className="grid gap-5" aria-live="polite">
         {details.map((detail) => (

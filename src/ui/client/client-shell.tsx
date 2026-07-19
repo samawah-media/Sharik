@@ -13,8 +13,15 @@ const items = [
   { href: "/client/commercial", label: "العقد والمتابعة", icon: FileText },
 ];
 
-export function ClientShell({ children }: { children: React.ReactNode }) {
+export function ClientShell({
+  canApprove = true,
+  children,
+}: {
+  canApprove?: boolean;
+  children: React.ReactNode;
+}) {
   const pathname = usePathname() ?? "/client";
+  const pendingLabel = canApprove ? "بانتظار موافقتي" : "قيد المراجعة";
 
   return (
     <section className="min-h-screen bg-background text-foreground" dir="rtl" data-product-shell="client">
@@ -27,7 +34,8 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
           <nav aria-label="تنقل بوابة العميل" className="mt-5 flex gap-2 overflow-x-auto lg:grid">
             {items.map(({ href, label, icon: Icon }) => {
               const active = pathname === href || (href !== "/client" && pathname.startsWith(`${href}/`));
-              return <Link key={href} href={href} aria-current={active ? "page" : undefined} className={cn("flex min-h-11 min-w-fit items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold", active ? "bg-accent-soft text-accent" : "text-muted hover:bg-accent-soft/50 hover:text-foreground")}><Icon size={17} aria-hidden="true" />{label}</Link>;
+              const resolvedLabel = href === "/client/pending" ? pendingLabel : label;
+              return <Link key={href} href={href} aria-current={active ? "page" : undefined} className={cn("flex min-h-11 min-w-fit items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold", active ? "bg-accent-soft text-accent" : "text-muted hover:bg-accent-soft/50 hover:text-foreground")}><Icon size={17} aria-hidden="true" />{resolvedLabel}</Link>;
             })}
           </nav>
           <div className="mt-6 rounded-xl border border-border bg-background p-3">

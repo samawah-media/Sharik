@@ -1,4 +1,5 @@
 const hostedLifecyclePrefix = "s015-hosted-lifecycle-";
+const hostedUatPrefix = "s015-hosted-uat-";
 const hostedContractReferencePrefix = "S015-UAT-";
 
 export function isHumanTrialDeliverable(input: {
@@ -19,10 +20,13 @@ export function isHumanTrialDeliverable(input: {
 
   return !(
     markers.includes(hostedLifecyclePrefix) ||
+    markers.includes(hostedUatPrefix) ||
     markers.includes("negative-control") ||
     markers.includes("negative_control") ||
     /\b(alpha|beta)\b/.test(markers) ||
-    markers.includes("s015 persistent")
+    markers.includes("s015 persistent") ||
+    markers.includes("s015 hosted uat synthetic") ||
+    markers.includes("synthetic run-scoped deliverable")
   );
 }
 

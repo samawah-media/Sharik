@@ -42,4 +42,23 @@ describe("human trial visibility", () => {
       }),
     ).toBe(false);
   });
+
+  it("hides the canonical hosted UAT synthetic seed record", () => {
+    expect(
+      isHumanTrialDeliverable({
+        name: "S015 Hosted UAT Synthetic Deliverable",
+        idempotency_key: "s015-hosted-uat-20260712-main",
+      }),
+    ).toBe(false);
+    expect(
+      isHumanTrialDeliverable({
+        import_run_id: "s015-hosted-uat-20260712-main",
+      }),
+    ).toBe(false);
+    expect(
+      isHumanTrialDeliverable({
+        name: "Synthetic run-scoped deliverable for hosted UAT verification.",
+      }),
+    ).toBe(false);
+  });
 });

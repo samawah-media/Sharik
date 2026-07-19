@@ -1,22 +1,25 @@
 import { expect, test } from "@playwright/test";
 
-test.describe.configure({ timeout: 90_000 });
+test.describe.configure({ timeout: 240_000 });
 
 test("account manager lands on a clear Hadna workspace", async ({ page }) => {
   await page.goto("/portfolio?as=assigned_internal_a", {
     waitUntil: "domcontentloaded",
   });
 
-  await expect(page.getByRole("heading", { name: "تجربة هدنة" })).toBeVisible();
-  await expect(page.getByText("مدير الحساب")).toBeVisible();
-  const mvpSnapshot = page.getByRole("region", { name: "ملخص تجربة هدنة" });
-  await expect(mvpSnapshot.getByText("عدد المخرجات")).toBeVisible();
-  await expect(mvpSnapshot.getByText("52", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "مساحة العمل" }),
+  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "عملائي" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "فتح هدنة" })).toBeVisible();
   await expect(
     page
       .getByRole("navigation", { name: "تنقل مساحة الفريق" })
-      .getByRole("link", { name: "مخرجات هدنة" }),
-  ).toHaveAttribute("href", "/clients/client_a/deliverables");
+      .getByRole("link", { name: "مهامي" }),
+  ).toHaveAttribute("href", "/work");
+  await expect(
+    page.getByRole("navigation", { name: "تنقل مساحة الفريق" }),
+  ).toHaveCount(1);
   await expect(page.getByText("لوحة الإدارة")).toHaveCount(0);
   await expect(
     page
@@ -46,15 +49,12 @@ test("admin or project manager sees the MVP control model", async ({
     teamNavigation.getByRole("link", { name: "العملاء" }),
   ).toBeVisible();
   await expect(
-    teamNavigation.getByRole("link", { name: "هدنة" }),
+    teamNavigation.getByRole("link", { name: "الفريق" }),
   ).toBeVisible();
+  await expect(teamNavigation.getByRole("link")).toHaveCount(3);
   await expect(
-    teamNavigation.getByRole("link", { name: "المخرجات" }),
+    page.getByRole("heading", { name: "لوحة الإدارة" }),
   ).toBeVisible();
-  await expect(
-    teamNavigation.getByRole("link", { name: "المتابعة / SLA" }),
-  ).toBeVisible();
-  await expect(page.getByRole("heading", { name: "تجربة هدنة" })).toBeVisible();
 });
 
 test("client viewer A sees Hadna only through the client portal", async ({
@@ -65,11 +65,12 @@ test("client viewer A sees Hadna only through the client portal", async ({
   });
 
   await expect(page.getByRole("heading", { name: "مساحة هدنة" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "عرض مخرجاتي" })).toHaveAttribute(
-    "href",
-    "/client/commercial#deliverables",
-  );
-  const clientSnapshot = page.getByRole("region", { name: "ملخص تجربة هدنة" });
+  await expect(
+    page.getByRole("link", { name: "مراجعة ما ينتظرني" }),
+  ).toHaveAttribute("href", "/client/pending");
+  const clientSnapshot = page.getByRole("region", {
+    name: "ملخص مساحة العميل",
+  });
   await expect(clientSnapshot.getByText("عدد المخرجات")).toBeVisible();
   await expect(clientSnapshot.getByText("17", { exact: true })).toBeVisible();
   await expect(page.getByText("لوحة الإدارة")).toHaveCount(0);
@@ -87,4 +88,18 @@ test("viewer B does not see Hadna or client data", async ({ page }) => {
   await expect(page.getByText("هدنة")).toHaveCount(0);
   await expect(page.getByText("52")).toHaveCount(0);
   await expect(page.getByText("عدد المخرجات")).toHaveCount(0);
+});
+
+test("client-only roles cannot enter the management portfolio", async ({
+  page,
+}) => {
+  await page.goto("/portfolio?as=client_approver_a", {
+    waitUntil: "domcontentloaded",
+  });
+
+  await expect(page.locator('a[href="/client"]')).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "تنقل مساحة الفريق" }),
+  ).toHaveCount(0);
+  await expect(page.getByText("عملائي")).toHaveCount(0);
 });

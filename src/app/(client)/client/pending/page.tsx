@@ -1,6 +1,7 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
 import {
   canUseRouteActorFixtures,
   guardClientDetailRoute,
@@ -10,14 +11,21 @@ import { readPersistentClientApprovalInbox } from "@/server/actions/persistent-c
 import { decidePersistentClientVersion } from "@/server/actions/persistent-client-approval";
 import type { ClientSafeDeliverableDetail } from "@/ui/client/client-deliverable-detail";
 import { ClientPendingInbox } from "@/ui/client/client-pending-inbox";
-import { AccessDeniedState, MembershipDisabledState, NoAssignedClientState, SessionExpiredState } from "@/ui/shared/access-states";
+import {
+  AccessDeniedState,
+  MembershipDisabledState,
+  NoAssignedClientState,
+  SessionExpiredState,
+} from "@/ui/shared/access-states";
+
+export const dynamic = "force-dynamic";
 
 async function submitPendingDecision(formData: FormData) {
   "use server";
   if (canUseRouteActorFixtures()) return;
   const action = String(formData.get("clientApprovalAction") ?? "");
   if (action !== "approve" && action !== "request_changes") return;
-  await decidePersistentClientVersion({
+  const result = await decidePersistentClientVersion({
     supabase: await createSupabaseServerClient(),
     input: {
       clientId: String(formData.get("clientId") ?? ""),
@@ -28,6 +36,10 @@ async function submitPendingDecision(formData: FormData) {
       idempotencyKey: String(formData.get("idempotencyKey") ?? ""),
     },
   });
+  if (result.ok) {
+    revalidatePath("/client");
+    revalidatePath("/client/pending");
+  }
 }
 
 const fixturePendingDetail: ClientSafeDeliverableDetail = {
@@ -55,18 +67,36 @@ export default async function ClientPendingPage({
   searchParams?: Promise<{ as?: string }>;
 }) {
   const params = await searchParams;
-  const runtime = await resolveRouteRuntime(params?.as ?? (canUseRouteActorFixtures() ? "client_viewer_a" : undefined));
+  const runtime = await resolveRouteRuntime(
+    params?.as ?? (canUseRouteActorFixtures() ? "client_viewer_a" : undefined),
+  );
 
   if (!runtime.ok) {
-    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") return <SessionExpiredState />;
-    if (runtime.reason === "membership_disabled") return <MembershipDisabledState returnHref="/sign-in" />;
+    if (
+      runtime.reason === "auth_required" ||
+      runtime.reason === "session_expired"
+    )
+      return <SessionExpiredState />;
+    if (runtime.reason === "membership_disabled")
+      return <MembershipDisabledState returnHref="/sign-in" />;
     return <AccessDeniedState returnHref="/sign-in" />;
   }
 
   const { actor, clients } = runtime;
-  const primaryClient = clients.find((client) => actor.roleAssignments.some((assignment) => assignment.status === "active" && assignment.scopeType === "client" && assignment.scopeId === client.id));
+  const primaryClient = clients.find((client) =>
+    actor.roleAssignments.some(
+      (assignment) =>
+        assignment.status === "active" &&
+        assignment.scopeType === "client" &&
+        assignment.scopeId === client.id,
+    ),
+  );
   if (!primaryClient) return <NoAssignedClientState returnHref="/sign-in" />;
-  if (!guardClientDetailRoute({ actor, clientId: primaryClient.id, clients }).allowed) return <AccessDeniedState />;
+  if (
+    !guardClientDetailRoute({ actor, clientId: primaryClient.id, clients })
+      .allowed
+  )
+    return <AccessDeniedState />;
 
   const canApprove = evaluatePermission({
     actor,
@@ -75,11 +105,14 @@ export default async function ClientPendingPage({
   }).allowed;
 
   const details = canUseRouteActorFixtures()
-    ? (primaryClient.id === "client_a" ? [fixturePendingDetail] : [])
+    ? primaryClient.id === "client_a"
+      ? [fixturePendingDetail]
+      : []
     : await readPersistentClientApprovalInbox({
         supabase: await createSupabaseServerClient(),
         tenantId: primaryClient.tenantId,
         clientId: primaryClient.id,
+        clientName: primaryClient.name,
       });
 
   return (

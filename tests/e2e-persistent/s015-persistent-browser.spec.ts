@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
   expectNoHorizontalOverflow,
+  persistentDeliverableNames,
   seedPersistentLifecycle,
   seedPersistentVersionFiles,
   signInViaUi,
@@ -21,6 +22,33 @@ const boardPath = (seed: PersistentSeed) =>
 const cardFor = (page: Page, name: string) =>
   page.locator("article").filter({ hasText: name });
 
+const expectReactHydrated = async (locator: Locator) => {
+  await expect
+    .poll(
+      async () =>
+        locator
+          .evaluate((element) =>
+            Object.keys(element).some((key) => key.startsWith("__reactProps$")),
+          )
+          .catch(() => false),
+      { timeout: 60_000 },
+    )
+    .toBe(true);
+};
+
+const openDrawer = async (card: Locator) => {
+  const page = card.page();
+  const drawer = page.getByTestId("deliverable-drawer");
+  if (!(await drawer.isVisible())) {
+    const trigger = card.getByRole("button", { name: "فتح مساحة المخرج" });
+    await expectReactHydrated(trigger);
+    await expect(trigger).toBeEnabled();
+    await trigger.click();
+  }
+  await expect(drawer).toBeVisible();
+  return drawer;
+};
+
 const submitVersion = async ({
   card,
   note,
@@ -30,11 +58,13 @@ const submitVersion = async ({
   note: string;
   versionNumber: number;
 }) => {
-  await card.locator('input[name="versionNumber"]').fill(String(versionNumber));
-  await card.locator('textarea[name="reason"]').fill(note);
-  await card
-    .locator('form:has(input[name="versionNumber"]) button[type="submit"]')
-    .click();
+  const drawer = await openDrawer(card);
+  await drawer.locator('input[name="versionNumber"]').fill(String(versionNumber));
+  await drawer.locator('textarea[name="contentBody"]').fill(note);
+  await drawer.getByRole("button", { name: "حفظ وإرسال للمراجعة" }).click();
+  await expect(
+    drawer.getByText("تم إرسال النسخة للمراجعة الداخلية."),
+  ).toBeVisible();
 };
 
 const runManagementStep = async ({
@@ -50,7 +80,8 @@ const runManagementStep = async ({
     | "deliver_after_client_approval";
   reason?: string;
 }) => {
-  const form = card.locator(
+  const drawer = await openDrawer(card);
+  const form = drawer.locator(
     `form:has(input[name="workflowStep"][value="${step}"])`,
   );
   await expect(form).toBeVisible();
@@ -67,7 +98,9 @@ const expectBoardSaved = async (page: Page) => {
 const latestVersion = async (deliverableId: string) => {
   const { data, error } = await seeded.client
     .from("deliverable_versions")
-    .select("id, tenant_id, client_id, deliverable_id, version_number, status, submitted_by")
+    .select(
+      "id, tenant_id, client_id, deliverable_id, version_number, status, submitted_by",
+    )
     .eq("deliverable_id", deliverableId)
     .order("version_number", { ascending: false })
     .limit(1)
@@ -113,20 +146,21 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
 
   await signInViaUi(page, seed.actors.accountManager);
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
-  await expect(cardFor(page, "S015 Persistent Account Assigned")).toBeVisible();
-  await expect(page.getByText("S015 Persistent Client B Hidden")).toHaveCount(0);
+  await expect(cardFor(page, persistentDeliverableNames.account)).toBeVisible();
+  await expect(page.getByText(persistentDeliverableNames.clientB)).toHaveCount(
+    0,
+  );
 
   await signInViaUi(page, seed.actors.assignedDesigner);
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
-  const designerCard = cardFor(page, "S015 Persistent Designer Assigned");
+  const designerCard = cardFor(page, persistentDeliverableNames.designer);
   await expect(designerCard).toBeVisible();
-  await expect(cardFor(page, "S015 Persistent Browser Journey")).toHaveCount(0);
+  await expect(cardFor(page, persistentDeliverableNames.main)).toHaveCount(0);
   await submitVersion({
     card: designerCard,
     versionNumber: 1,
     note: "designer browser draft",
   });
-  await expectBoardSaved(page);
   const designerVersion = await latestVersion(seed.designerDeliverableId);
   expect(designerVersion).toMatchObject({
     tenant_id: seed.tenantA,
@@ -142,33 +176,38 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
   ]) {
     await signInViaUi(page, actor);
     await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
-    await expect(cardFor(page, "S015 Persistent Browser Journey")).toHaveCount(0);
+    await expect(cardFor(page, persistentDeliverableNames.main)).toHaveCount(
+      0,
+    );
     await expect(page.locator('input[name="versionNumber"]')).toHaveCount(0);
   }
 
   await signInViaUi(page, seed.actors.sameTenantOtherClient);
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
-  await expect(cardFor(page, "S015 Persistent Browser Journey")).toHaveCount(0);
+  await expect(cardFor(page, persistentDeliverableNames.main)).toHaveCount(0);
   await expect(page.getByTestId("kanban-board-scroll")).toHaveCount(0);
 
   await signInViaUi(page, seed.actors.otherTenantAdmin);
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
-  await expect(cardFor(page, "S015 Persistent Browser Journey")).toHaveCount(0);
+  await expect(cardFor(page, persistentDeliverableNames.main)).toHaveCount(0);
   await expect(page.getByTestId("kanban-board-scroll")).toHaveCount(0);
 
   await signInViaUi(page, seed.actors.assignedWriter);
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
-  const writerCard = cardFor(page, "S015 Persistent Browser Journey");
+  const writerCard = cardFor(page, persistentDeliverableNames.main);
   await expect(writerCard).toBeVisible();
-  await expect(cardFor(page, "S015 Persistent Designer Assigned")).toHaveCount(0);
-  await expect(cardFor(page, "S015 Persistent Account Assigned")).toHaveCount(0);
-  await expect(cardFor(page, "S015 Persistent Client B Hidden")).toHaveCount(0);
+  await expect(cardFor(page, persistentDeliverableNames.designer)).toHaveCount(
+    0,
+  );
+  await expect(cardFor(page, persistentDeliverableNames.account)).toHaveCount(
+    0,
+  );
+  await expect(cardFor(page, persistentDeliverableNames.clientB)).toHaveCount(0);
   await submitVersion({
     card: writerCard,
     versionNumber: 1,
     note: "first draft",
   });
-  await expectBoardSaved(page);
   const version1 = await latestVersion(seed.mainDeliverableId);
   expect(version1).toMatchObject({
     tenant_id: seed.tenantA,
@@ -184,7 +223,7 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
 
   await signInViaUi(page, seed.actors.tenantAdmin);
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
-  let managementCard = cardFor(page, "S015 Persistent Browser Journey");
+  let managementCard = cardFor(page, persistentDeliverableNames.main);
   await runManagementStep({
     card: managementCard,
     step: "request_internal_changes",
@@ -198,11 +237,10 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
   await signInViaUi(page, seed.actors.assignedWriter);
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
   await submitVersion({
-    card: cardFor(page, "S015 Persistent Browser Journey"),
+    card: cardFor(page, persistentDeliverableNames.main),
     versionNumber: 2,
     note: "replacement draft",
   });
-  await expectBoardSaved(page);
   const version2 = await latestVersion(seed.mainDeliverableId);
   await assertDeliverable(seed.mainDeliverableId, {
     status: "ready_for_internal_review",
@@ -211,9 +249,10 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
 
   await signInViaUi(page, seed.actors.tenantAdmin);
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
-  managementCard = cardFor(page, "S015 Persistent Browser Journey");
+  managementCard = cardFor(page, persistentDeliverableNames.main);
+  const managementDrawer = await openDrawer(managementCard);
   await expect(
-    managementCard.locator(
+    managementDrawer.locator(
       'form:has(input[name="workflowStep"][value="send_to_client"])',
     ),
   ).toHaveCount(0);
@@ -226,7 +265,7 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
   });
 
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
-  managementCard = cardFor(page, "S015 Persistent Browser Journey");
+  managementCard = cardFor(page, persistentDeliverableNames.main);
   await runManagementStep({ card: managementCard, step: "send_to_client" });
   await expectBoardSaved(page);
   await assertDeliverable(seed.mainDeliverableId, {
@@ -242,7 +281,7 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
   expect(afterSend.data?.kind).toBe("paused_waiting_client");
 
   await signInViaUi(page, seed.actors.clientViewer);
-  await page.goto("/client", { waitUntil: "domcontentloaded" });
+  await page.goto("/client/pending", { waitUntil: "domcontentloaded" });
   const viewerDetail = page.getByTestId("client-approval-detail");
   await expect(viewerDetail).toBeVisible();
   await expect(
@@ -251,13 +290,17 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
       .locator('form button[type="submit"]'),
   ).toHaveCount(0);
   await expect(page.getByText("first draft")).toHaveCount(0);
-  await expect(page.getByText("replacement draft")).toHaveCount(0);
-  await expect(page.getByText("S015 Persistent Client B Hidden")).toHaveCount(0);
+  await expect(page.getByText("replacement draft")).toBeVisible();
+  await expect(page.getByText(persistentDeliverableNames.clientB)).toHaveCount(
+    0,
+  );
 
-  const staleContext = await browser.newContext({ baseURL: baseURL ?? undefined });
+  const staleContext = await browser.newContext({
+    baseURL: baseURL ?? undefined,
+  });
   const stalePage = await staleContext.newPage();
   await signInViaUi(stalePage, seed.actors.clientApprover);
-  await stalePage.goto("/client", { waitUntil: "domcontentloaded" });
+  await stalePage.goto("/client/pending", { waitUntil: "domcontentloaded" });
   await expect(stalePage.getByTestId("client-approval-detail")).toBeVisible();
   const staleVersionId = await stalePage
     .locator('input[name="versionId"]')
@@ -266,10 +309,12 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
   expect(staleVersionId).toBe(version2.id);
 
   await signInViaUi(page, seed.actors.clientApprover);
-  await page.goto("/client", { waitUntil: "domcontentloaded" });
+  await page.goto("/client/pending", { waitUntil: "domcontentloaded" });
   await page.locator('textarea[name="reason"]').fill("client requested polish");
   await page
-    .locator('form:has(input[name="clientApprovalAction"][value="request_changes"]) button[type="submit"]')
+    .locator(
+      'form:has(input[name="clientApprovalAction"][value="request_changes"]) button[type="submit"]',
+    )
     .click();
   await expect(page.getByTestId("client-approval-detail")).toHaveCount(0);
   await assertDeliverable(seed.mainDeliverableId, {
@@ -297,21 +342,20 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
   await signInViaUi(page, seed.actors.assignedWriter);
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
   await submitVersion({
-    card: cardFor(page, "S015 Persistent Browser Journey"),
+    card: cardFor(page, persistentDeliverableNames.main),
     versionNumber: 3,
     note: "final replacement",
   });
-  await expectBoardSaved(page);
   const version3 = await latestVersion(seed.mainDeliverableId);
 
   await signInViaUi(page, seed.actors.tenantAdmin);
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
-  managementCard = cardFor(page, "S015 Persistent Browser Journey");
+  managementCard = cardFor(page, persistentDeliverableNames.main);
   await runManagementStep({ card: managementCard, step: "approve_internally" });
   await expectBoardSaved(page);
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
   await runManagementStep({
-    card: cardFor(page, "S015 Persistent Browser Journey"),
+    card: cardFor(page, persistentDeliverableNames.main),
     step: "send_to_client",
   });
   await expectBoardSaved(page);
@@ -321,9 +365,10 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
   });
 
   await stalePage
-    .locator('form:has(input[name="clientApprovalAction"][value="approve"]) button[type="submit"]')
+    .locator(
+      'form:has(input[name="clientApprovalAction"][value="approve"]) button[type="submit"]',
+    )
     .click();
-  await expect(stalePage.getByTestId("client-approval-detail")).toBeVisible();
   const staleDecisionCount = await seeded.client
     .from("approval_decisions")
     .select("id", { count: "exact", head: true })
@@ -334,17 +379,13 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
   await staleContext.close();
 
   await signInViaUi(page, seed.actors.clientApprover);
-  await page.goto("/client", { waitUntil: "domcontentloaded" });
+  await page.goto("/client/pending", { waitUntil: "domcontentloaded" });
   await page
-    .locator('form:has(input[name="clientApprovalAction"][value="approve"]) button[type="submit"]')
+    .locator(
+      'form:has(input[name="clientApprovalAction"][value="approve"]) button[type="submit"]',
+    )
     .click();
-  const approvedDetail = page.getByTestId("client-approval-detail");
-  await expect(approvedDetail).toBeVisible();
-  await expect(
-    approvedDetail
-      .getByTestId("client-approval-actions")
-      .locator('form button[type="submit"]'),
-  ).toHaveCount(0);
+  await expect(page.getByTestId("client-approval-detail")).toHaveCount(0);
   await assertDeliverable(seed.mainDeliverableId, {
     status: "client_approved",
     current_version_id: version3.id,
@@ -358,10 +399,12 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
 
   await signInViaUi(page, seed.actors.tenantAdmin);
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
-  const deliveryButton = cardFor(page, "S015 Persistent Browser Journey")
-    .locator(
-      'form:has(input[name="workflowStep"][value="deliver_after_client_approval"]) button[type="submit"]',
-    );
+  const deliveryDrawer = await openDrawer(
+    cardFor(page, persistentDeliverableNames.main),
+  );
+  const deliveryButton = deliveryDrawer.locator(
+    'form:has(input[name="workflowStep"][value="deliver_after_client_approval"]) button[type="submit"]',
+  );
   await expect(deliveryButton).toBeVisible();
   await deliveryButton.evaluate((button: HTMLButtonElement) => {
     button.click();
@@ -374,7 +417,7 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
   });
 
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
-  const deliveredCard = cardFor(page, "S015 Persistent Browser Journey");
+  const deliveredCard = cardFor(page, persistentDeliverableNames.main);
   await expect(deliveredCard).toBeVisible();
   const reopenOption = deliveredCard.locator('option[value="in_progress"]');
   if ((await reopenOption.count()) > 0) {
@@ -416,10 +459,13 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
   expect(deliveryAssertions[4].data?.kind).toBe("completed");
 
   await signInViaUi(page, seed.actors.clientViewer);
-  await page.goto("/client", { waitUntil: "domcontentloaded" });
-  await expect(page.getByTestId("client-approval-detail")).toBeVisible();
-  await expect(page.locator('[data-file-visibility="final_delivery"]')).toHaveCount(1);
-  await expect(page.locator('[data-file-visibility="internal_only"]')).toHaveCount(0);
+  await page.goto("/client/files", { waitUntil: "domcontentloaded" });
+  await expect(
+    page.locator('[data-file-visibility="final_delivery"]'),
+  ).toHaveCount(1);
+  await expect(
+    page.locator('[data-file-visibility="internal_only"]'),
+  ).toHaveCount(0);
   await expect(page.getByText("final replacement")).toHaveCount(0);
   await expectNoHorizontalOverflow(page);
 });

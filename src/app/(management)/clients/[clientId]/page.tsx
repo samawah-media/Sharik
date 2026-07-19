@@ -10,14 +10,11 @@ import {
   guardClientDetailRoute,
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
-import { Badge } from "@/ui/core/badge";
 import { ButtonLink } from "@/ui/core/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/ui/core/card";
-import { PageHeader } from "@/ui/layout/page-header";
 import {
   buildEmptyMvpStats,
   buildManagementMvpStats,
-  formatMvpClientName,
   HadnaMvpHero,
 } from "@/ui/mvp/hadna-mvp-summary";
 import {
@@ -114,35 +111,13 @@ export default async function ClientDetailPage({
     summary.ok && summary.value.audience === "management"
       ? buildManagementMvpStats(summary.value)
       : buildEmptyMvpStats();
-  const displayClientName = formatMvpClientName(client.name);
-
   return (
     <main className="grid gap-5">
-      <PageHeader
-        description="مسارات التشغيل الأساسية للعميل المسند لك."
-        status={<Badge tone="success">نشط</Badge>}
-        title={displayClientName}
+      <HadnaMvpHero
+        clientName={client.name}
+        roleLabel="مساحة سماوة"
+        stats={stats}
       />
-      <HadnaMvpHero clientName={client.name} roleLabel="مساحة سماوة" stats={stats}>
-        {canViewDeliverables ? (
-          <ButtonLink href={`/clients/${client.id}/deliverables`} variant="primary">
-            عرض المخرجات
-          </ButtonLink>
-        ) : null}
-        {canViewContracts ? (
-          <ButtonLink href={`/clients/${client.id}/contracts`} variant="secondary">
-            عرض الباقة
-          </ButtonLink>
-        ) : null}
-        {canUpdateDeliverableStatus ? (
-          <ButtonLink
-            href={`/clients/${client.id}/deliverables/board`}
-            variant="secondary"
-          >
-            فتح لوحة العمل
-          </ButtonLink>
-        ) : null}
-      </HadnaMvpHero>
       <section
         aria-label="مسارات تجربة العميل"
         className="grid gap-3 md:grid-cols-2 xl:grid-cols-4"

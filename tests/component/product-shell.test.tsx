@@ -8,6 +8,7 @@ import { ProductShell } from "@/ui/layout/product-shell";
 vi.mock("next/navigation", () => ({
   usePathname: () =>
     "/clients/b0060000-0000-4000-8000-000000000301/deliverables/board",
+  useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }),
 }));
 
 afterEach(() => cleanup());
@@ -44,9 +45,7 @@ describe("management product shell", () => {
     ).not.toBeInTheDocument();
     expect(screen.getAllByText("لوحة العمل").length).toBeGreaterThan(0);
     expect(screen.getByRole("heading", { name: "لوحة العمل" })).toBeVisible();
-    expect(
-      screen.getByText("تجربة UAT داخلية ضمن النطاق المصرح"),
-    ).toBeVisible();
+    expect(screen.getByText("حساب الفريق")).toBeVisible();
   });
 
   it("can render account-manager shell navigation without admin-only links", () => {

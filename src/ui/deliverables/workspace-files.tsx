@@ -11,6 +11,7 @@ import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
   createWorkspaceFileDownload,
+  createWorkspaceFilePreview,
   registerWorkspaceFile,
 } from "@/server/actions/deliverable-workspace-actions";
 import { Button } from "@/ui/core/button";
@@ -170,5 +171,62 @@ export function WorkspaceFilePreview({
       {url && !fileType.startsWith("image/") && !fileType.startsWith("video/") && fileType !== "application/pdf" ? <p className="rounded-lg bg-surface p-3 text-sm text-muted">لا توجد معاينة مرئية لهذا النوع. استخدم التنزيل الآمن.</p> : null}
       {feedback ? <p aria-live="polite" className="text-xs text-danger">{feedback}</p> : null}
     </div>
+  );
+}
+
+export function WorkspaceInlineMedia({
+  fileId,
+  fileType,
+  label,
+}: {
+  fileId: string;
+  fileType: string;
+  label: string;
+}) {
+  const [url, setUrl] = useState<string>();
+  const [unavailable, setUnavailable] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void createWorkspaceFilePreview(fileId).then((preview) => {
+      if (!active) return;
+      if (preview.ok) setUrl(preview.url);
+      else setUnavailable(true);
+    });
+    return () => {
+      active = false;
+    };
+  }, [fileId]);
+
+  if (unavailable) {
+    return (
+      <p className="grid min-h-36 place-items-center p-4 text-center text-xs text-muted">
+        تعذرت معاينة الأصل المرئي بأمان.
+      </p>
+    );
+  }
+  if (!url) {
+    return (
+      <div
+        aria-label="جارٍ تحميل المعاينة"
+        className="min-h-36 animate-pulse bg-border/30 motion-reduce:animate-none"
+      />
+    );
+  }
+  if (fileType.startsWith("image/")) {
+    return (
+      // Signed object URLs are short-lived and cannot use the image optimizer.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img alt={label} className="h-full min-h-36 w-full object-cover" src={url} />
+    );
+  }
+  return (
+    <video
+      aria-label={label}
+      className="h-full min-h-36 w-full object-cover"
+      controls
+      preload="metadata"
+      src={url}
+    />
   );
 }

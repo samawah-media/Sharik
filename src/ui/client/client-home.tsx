@@ -15,7 +15,7 @@ type ClientHomeProps = {
 
 export function ClientHome({
   children,
-  clientName = "هدنة",
+  clientName = "العميل",
   stats,
 }: ClientHomeProps) {
   const displayClientName = formatMvpClientName(clientName);
@@ -31,15 +31,15 @@ export function ClientHome({
           مساحة {displayClientName}
         </h1>
         <p className="max-w-2xl text-sm leading-6 text-muted">
-          هذه واجهة هدنة المبسطة. تظهر هنا الباقة والمخرجات المسموحة لك فقط،
-          بدون لوحات الإدارة الداخلية أو عملاء آخرين.
+          هنا تجد ما يحتاج قرارك، وما تم تسليمه، وحالة المخرجات المتفق عليها في
+          مكان واحد واضح.
         </p>
         <div className="flex flex-col gap-2 sm:flex-row">
-          <ButtonLink href="/client/commercial#deliverables" variant="primary">
-            عرض مخرجاتي
+          <ButtonLink href="/client/pending" variant="primary">
+            مراجعة ما ينتظرني
           </ButtonLink>
-          <ButtonLink href="/client/commercial#package" variant="secondary">
-            عرض الباقة
+          <ButtonLink href="/client/files" variant="secondary">
+            فتح الملفات
           </ButtonLink>
         </div>
       </section>
@@ -48,8 +48,8 @@ export function ClientHome({
         <section className="grid gap-3 rounded-lg border border-border p-5">
           <h2 className="text-lg font-semibold">بانتظار موافقتي</h2>
           <p className="text-sm text-muted">
-            لا توجد عناصر بانتظار موافقتك الآن. سيتم تفعيل هذه المساحة لاحقًا
-            لمسار الاعتماد.
+            لا توجد عناصر تحتاج قرارك الآن. سنعرض هنا فقط النسخ التي اعتمدها
+            فريق سماوة وأرسلها لك رسميًا.
           </p>
         </section>
       )}

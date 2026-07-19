@@ -12,6 +12,7 @@ import {
 } from "@/server/navigation/route-guards";
 import { cancelNotStartedDeliverableAction } from "@/server/actions/deliverable-cancellations";
 import { listScopedDeliverables } from "@/server/actions/deliverable-read";
+import { listScopedDeliverableWorkspaceSummaries } from "@/server/actions/deliverable-workspace-read";
 import {
   DeliverableDeniedState,
   DeliverableEmptyState,
@@ -130,6 +131,14 @@ export default async function ClientDeliverablesPage({
       ? buildManagementMvpStats(summary.value)
       : buildMvpStatsFromDeliverables(deliverableList.deliverables);
   const displayClientName = formatMvpClientName(client.name);
+  const workspaces = await listScopedDeliverableWorkspaceSummaries({
+    tenantId: client.tenantId,
+    clientId: client.id,
+    deliverables: deliverableList.deliverables.map((deliverable) => ({
+      id: deliverable.id,
+      currentVersionId: deliverable.currentVersionId,
+    })),
+  });
 
   return (
     <main className="grid gap-5" dir="rtl">
@@ -185,7 +194,9 @@ export default async function ClientDeliverablesPage({
       {deliverableList.deliverables.length > 0 ? (
         <DeliverableList
           cancellationAction={cancelNotStartedDeliverableAction}
+          clientName={displayClientName}
           deliverables={deliverableList.deliverables}
+          workspaces={workspaces}
         />
       ) : (
         <DeliverableEmptyState />

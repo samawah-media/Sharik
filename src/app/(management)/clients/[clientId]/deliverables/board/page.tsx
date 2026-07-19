@@ -3,7 +3,6 @@ import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { listScopedDeliverables } from "@/server/actions/deliverable-read";
 import { listScopedDeliverableWorkspaceSummaries } from "@/server/actions/deliverable-workspace-read";
 import {
-  submitDeliverableVersionAction,
   updateDeliverableStatusAction,
 } from "@/server/actions/deliverable-status";
 import {
@@ -172,13 +171,9 @@ export default async function ClientDeliverablesBoardPage({
           approvalAction={
             canUseApprovalWorkflow ? updateDeliverableStatusAction : undefined
           }
+          clientNames={{ [client.id]: displayClientName }}
           deliverables={visibleDeliverables}
           key={visibleDeliverables.map((deliverable) => `${deliverable.id}:${deliverable.revision}`).join("|")}
-          versionAction={
-            canSubmitDeliverableVersion
-              ? submitDeliverableVersionAction
-              : undefined
-          }
           workspaces={workspaces}
         />
       ) : (

@@ -28,7 +28,7 @@ import {
 } from "@/server/actions/commercial-summary-read";
 import {
   decidePersistentClientVersion,
-  readPersistentClientApprovalDetail,
+  readPersistentClientApprovalInbox,
 } from "@/server/actions/persistent-client-approval";
 import {
   canUseRouteActorFixtures,
@@ -46,6 +46,8 @@ import {
   NoAssignedClientState,
   SessionExpiredState,
 } from "@/ui/shared/access-states";
+
+export const dynamic = "force-dynamic";
 
 const r007ClientPortalDeliverable: DeliverableRecord = {
   id: "r007_visible_deliverable",
@@ -243,6 +245,7 @@ async function submitR007ClientPortalApproval(formData: FormData) {
     });
     if (result.ok) {
       revalidatePath("/client");
+      revalidatePath("/client/pending");
     }
     return;
   }
@@ -287,7 +290,10 @@ export default async function ClientPage({
   );
 
   if (!runtime.ok) {
-    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") {
+    if (
+      runtime.reason === "auth_required" ||
+      runtime.reason === "session_expired"
+    ) {
       return <SessionExpiredState />;
     }
 
@@ -339,13 +345,17 @@ export default async function ClientPage({
     permission: PERMISSIONS.DELIVERABLE_CLIENT_APPROVE,
     resource: { tenantId: primaryClient.tenantId, clientId: primaryClient.id },
   }).allowed;
-  const portalDetail = canUseRouteActorFixtures()
+  const pendingDetails = canUseRouteActorFixtures()
     ? buildR007ClientPortalDetail({ actor, clientId: primaryClient.id })
-    : await readPersistentClientApprovalDetail({
+      ? [buildR007ClientPortalDetail({ actor, clientId: primaryClient.id })!]
+      : []
+    : await readPersistentClientApprovalInbox({
         supabase: await createSupabaseServerClient(),
         tenantId: primaryClient.tenantId,
         clientId: primaryClient.id,
+        clientName: primaryClient.name,
       });
+  const portalDetail = pendingDetails[0];
 
   return (
     <>
@@ -361,7 +371,7 @@ export default async function ClientPage({
               canApprove ? submitR007ClientPortalApproval : undefined
             }
           />
-        ) : null}
+        ) : undefined}
       </ClientHome>
     </>
   );

@@ -2,7 +2,16 @@
 
 ## Spec 015 hosted technical acceptance - 2026-07-16
 
-Status: `HOSTED_TEAM_UAT_READY` for the controlled internal Samawah human
+Status: `HOLD / HOSTED_TEAM_UAT_BLOCKED` after the owner's first human product trial on 2026-07-19. Historical automated hosted checks remain technical evidence only; they do not authorize the team trial.
+
+## Owner human trial rejection and rescue — 2026-07-19
+
+- The owner rejected the Preview as confusing and materially below the approved demo/reference experience.
+- Confirmed blockers include repeated navigation/actions, Glass pages containing Hadna-specific copy, synthetic lifecycle records dominating normal role views, imported content not presented as professional post cards, unassigned representative team work, and no genuine actionable item in the client approver inbox.
+- H008-H010, X007, and R-011A T032 are reopened. Current execution remains inside Spec 015 under X008; no Spec 016 or parallel roadmap is created.
+- The team trial is paused. Production, merge, external client invitation, and public signup remain forbidden.
+
+Historical status before this correction was: `HOSTED_TEAM_UAT_READY` for the controlled internal Samawah human
 trial. This section supersedes the previous Checkpoint 4 route blocker; it does
 not grant Production acceptance.
 

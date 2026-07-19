@@ -120,6 +120,20 @@ export function canUpdateTaskStatus(
 export type DeliverableWorkspaceSummary = {
   deliverableId: string;
   currentVersionId?: string;
+  currentVersion?: Pick<
+    DeliverableVersionWorkspace,
+    | "id"
+    | "versionNumber"
+    | "brief"
+    | "body"
+    | "caption"
+    | "channel"
+    | "format"
+  >;
+  previewFile?: Pick<
+    DeliverableFileWorkspace,
+    "id" | "name" | "fileType"
+  >;
   counts: {
     versions: number;
     tasks: number;

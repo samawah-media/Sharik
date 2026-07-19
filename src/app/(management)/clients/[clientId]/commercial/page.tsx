@@ -12,10 +12,7 @@ import {
 } from "@/server/navigation/route-guards";
 import { ManagementCommercialSummaryCards } from "@/ui/management/commercial-summary";
 import { ButtonLink } from "@/ui/core/button";
-import {
-  buildManagementMvpStats,
-  HadnaMvpHero,
-} from "@/ui/mvp/hadna-mvp-summary";
+import { PageHeader } from "@/ui/layout/page-header";
 import {
   AccessDeniedState,
   ClientUnavailableState,
@@ -34,7 +31,10 @@ export default async function ManagementCommercialSummaryPage({
   const runtime = await resolveRouteRuntime(query?.as);
 
   if (!runtime.ok) {
-    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") {
+    if (
+      runtime.reason === "auth_required" ||
+      runtime.reason === "session_expired"
+    ) {
       return <SessionExpiredState />;
     }
 
@@ -100,24 +100,26 @@ export default async function ManagementCommercialSummaryPage({
 
   return (
     <main className="grid gap-5" dir="rtl">
-      <HadnaMvpHero
-        clientName={client.name}
-        roleLabel="المتابعة / SLA"
-        stats={buildManagementMvpStats(summary.value)}
-      >
-        <ButtonLink href={`/clients/${client.id}/deliverables`} variant="primary">
-          عرض المخرجات
-        </ButtonLink>
-        <ButtonLink href={`/clients/${client.id}/contracts`} variant="secondary">
-          عرض الباقة
-        </ButtonLink>
-        <ButtonLink
-          href={`/clients/${client.id}/deliverables/board`}
-          variant="secondary"
-        >
-          فتح لوحة العمل
-        </ButtonLink>
-      </HadnaMvpHero>
+      <PageHeader
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <ButtonLink
+              href={`/clients/${client.id}/deliverables`}
+              variant="primary"
+            >
+              المخرجات
+            </ButtonLink>
+            <ButtonLink
+              href={`/clients/${client.id}/deliverables/board`}
+              variant="secondary"
+            >
+              لوحة العمل
+            </ButtonLink>
+          </div>
+        }
+        description={`العقد والباقة وSLA لمتابعة ${client.name}.`}
+        title="المتابعة التجارية"
+      />
       <ManagementCommercialSummaryCards summary={summary.value} />
     </main>
   );

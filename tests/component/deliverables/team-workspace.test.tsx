@@ -10,6 +10,7 @@ const waitingDeliverable: DeliverableSafeSummary = {
   tenantId: "tenant_a",
   clientId: "client_a",
   name: "أدوات التسويق",
+  description: "وصف إداري لا يجب عرضه على أنه كابشن",
   type: "marketing_coordination",
   status: "waiting_client_approval",
   priority: "normal",
@@ -31,13 +32,30 @@ describe("team workspace", () => {
         clientNames={{ client_a: "جلاس" }}
         deliverables={[waitingDeliverable]}
         now="2026-07-16T10:00:00.000Z"
-        workspaces={{}}
+        workspaces={{
+          deliverable_waiting: {
+            deliverableId: "deliverable_waiting",
+            currentVersionId: "version_2",
+            currentVersion: {
+              id: "version_2",
+              versionNumber: 2,
+              caption: "الكابشن الحقيقي للنسخة",
+              channel: "Instagram",
+              format: "Post",
+            },
+            counts: { versions: 2, tasks: 1, files: 0, comments: 1 },
+          },
+        }}
       />,
     );
 
     const workList = within(screen.getByTestId("team-work-list"));
-    expect(workList.getByText("تنسيق تسويقي")).toBeInTheDocument();
-    expect(workList.getByText("بانتظار اعتماد العميل")).toBeInTheDocument();
+    expect(workList.getAllByText("أدوات التسويق")).toHaveLength(1);
+    expect(document.querySelectorAll("[data-content-card]")).toHaveLength(1);
+    expect(workList.getByText("الكابشن الحقيقي للنسخة")).toBeInTheDocument();
+    expect(
+      workList.queryByText("وصف إداري لا يجب عرضه على أنه كابشن"),
+    ).not.toBeInTheDocument();
     expect(workList.getByText("متوقف بانتظار العميل")).toBeInTheDocument();
     expect(workList.getByText("عادية")).toBeInTheDocument();
     expect(workList.queryByText("marketing_coordination")).not.toBeInTheDocument();

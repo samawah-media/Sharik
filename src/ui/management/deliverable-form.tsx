@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
+import type { DeliverableWorkspaceSummary } from "@/modules/deliverables/deliverable-workspace";
 import {
   initialDeliverableFormState,
   type DeliverableFormState,
@@ -13,6 +14,7 @@ import { Button } from "@/ui/core/button";
 import { Card, CardHeader, CardTitle, SectionPanel } from "@/ui/core/card";
 import { EmptyState, ErrorState } from "@/ui/core/states";
 import { DeliverableCancellationControl } from "./deliverable-actions";
+import { DeliverableContentCard } from "@/ui/deliverables/deliverable-content-card";
 
 type DeliverableFormAction = (
   previousState: DeliverableFormState,
@@ -389,64 +391,89 @@ export function DeliverableForm({
 
 export function DeliverableList({
   deliverables,
+  clientName,
+  workspaces = {},
   cancellationAction,
 }: {
   deliverables: DeliverableSafeSummary[];
+  clientName?: string;
+  workspaces?: Record<string, DeliverableWorkspaceSummary>;
   cancellationAction?: (formData: FormData) => void | Promise<void>;
 }) {
   return (
     <section aria-label="قائمة المخرجات" className="grid gap-3" dir="rtl">
       {deliverables.map((deliverable) => (
-        <Card key={deliverable.id}>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <CardHeader>
-              <CardTitle>{deliverable.name}</CardTitle>
-              <p className="text-sm text-muted">
-                {typeLabels[deliverable.type] ?? deliverable.type}
-              </p>
-            </CardHeader>
-            <Badge tone="muted">{statusLabels[deliverable.status]}</Badge>
+        <Card className="overflow-hidden p-3 sm:p-4" key={deliverable.id}>
+          <div className="grid gap-4 lg:grid-cols-[15rem_minmax(0,1fr)]">
+            <DeliverableContentCard
+              clientName={clientName}
+              deliverable={deliverable}
+              statusLabel={statusLabels[deliverable.status]}
+              summary={workspaces[deliverable.id]}
+              typeLabel={typeLabels[deliverable.type] ?? "مخرج مخصص"}
+            />
+            <div className="min-w-0">
+              <CardHeader>
+                <CardTitle>ملخص التنفيذ</CardTitle>
+              </CardHeader>
+              {deliverable.description ? (
+                <div className="mt-3 rounded-lg bg-background p-3">
+                  <p className="text-xs font-semibold text-foreground">
+                    وصف المخرج (ليس الكابشن)
+                  </p>
+                  <p className="mt-1 text-sm leading-7 text-muted">
+                    {deliverable.description}
+                  </p>
+                </div>
+              ) : null}
+              <dl className="mt-4 grid gap-3 text-sm text-muted sm:grid-cols-4">
+                <div className="rounded-md bg-background px-3 py-2">
+                  <dt className="font-semibold text-foreground">
+                    القناة / النوع
+                  </dt>
+                  <dd className="mt-1">
+                    {typeLabels[deliverable.type] ?? "مخرج مخصص"}
+                  </dd>
+                </div>
+                <div className="rounded-md bg-background px-3 py-2">
+                  <dt className="font-semibold text-foreground">التاريخ</dt>
+                  <dd className="mt-1">
+                    {formatDate(
+                      deliverable.clientDueDate ??
+                        deliverable.finalDueDate ??
+                        deliverable.plannedPublishDate,
+                    )}
+                  </dd>
+                </div>
+                <div className="rounded-md bg-background px-3 py-2">
+                  <dt className="font-semibold text-foreground">الحالة</dt>
+                  <dd className="mt-1">{statusLabels[deliverable.status]}</dd>
+                </div>
+                <div className="rounded-md bg-background px-3 py-2">
+                  <dt className="font-semibold text-foreground">التقدم</dt>
+                  <dd className="mt-1">{deliverable.progressPercentage}%</dd>
+                </div>
+              </dl>
+              <div className="mt-3 flex flex-wrap gap-2 text-sm text-muted">
+                <Badge tone="muted">
+                  {priorityLabels[deliverable.priority]}
+                </Badge>
+                {deliverable.reservation ? (
+                  <Badge tone="neutral">
+                    محجوز: {deliverable.reservation.reservedQuantity}
+                  </Badge>
+                ) : null}
+                {deliverable.approvedExtra ? (
+                  <Badge tone="warning">إضافي معتمد</Badge>
+                ) : null}
+              </div>
+              <DeliverableCancellationControl
+                action={cancellationAction}
+                deliverable={deliverable}
+                idempotencyKey={`f002d-cancel-${deliverable.id}`}
+              />
+            </div>
           </div>
-          <dl className="mt-4 grid gap-3 text-sm text-muted sm:grid-cols-4">
-            <div className="rounded-md bg-background px-3 py-2">
-              <dt className="font-semibold text-foreground">القناة / النوع</dt>
-              <dd className="mt-1">
-                {typeLabels[deliverable.type] ?? deliverable.type}
-              </dd>
-            </div>
-            <div className="rounded-md bg-background px-3 py-2">
-              <dt className="font-semibold text-foreground">التاريخ</dt>
-              <dd className="mt-1">
-                {formatDate(
-                  deliverable.clientDueDate ?? deliverable.finalDueDate,
-                )}
-              </dd>
-            </div>
-            <div className="rounded-md bg-background px-3 py-2">
-              <dt className="font-semibold text-foreground">الحالة</dt>
-              <dd className="mt-1">{statusLabels[deliverable.status]}</dd>
-            </div>
-            <div className="rounded-md bg-background px-3 py-2">
-              <dt className="font-semibold text-foreground">التقدم</dt>
-              <dd className="mt-1">{deliverable.progressPercentage}%</dd>
-            </div>
-          </dl>
-          <div className="mt-3 flex flex-wrap gap-2 text-sm text-muted">
-            <Badge tone="muted">{priorityLabels[deliverable.priority]}</Badge>
-            {deliverable.reservation ? (
-              <Badge tone="neutral">
-                محجوز: {deliverable.reservation.reservedQuantity}
-              </Badge>
-            ) : null}
-            {deliverable.approvedExtra ? (
-              <Badge tone="warning">إضافي معتمد</Badge>
-            ) : null}
-          </div>
-          <DeliverableCancellationControl
-            action={cancellationAction}
-            deliverable={deliverable}
-            idempotencyKey={`f002d-cancel-${deliverable.id}`}
-          />
         </Card>
       ))}
     </section>

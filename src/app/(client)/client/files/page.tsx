@@ -5,7 +5,10 @@ import {
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
 import { PageHeader } from "@/ui/layout/page-header";
-import { WorkspaceFileDownload, WorkspaceFilePreview } from "@/ui/deliverables/workspace-files";
+import {
+  WorkspaceFileDownload,
+  WorkspaceFilePreview,
+} from "@/ui/deliverables/workspace-files";
 import {
   AccessDeniedState,
   MembershipDisabledState,
@@ -41,7 +44,10 @@ export default async function ClientFilesPage({
   );
 
   if (!runtime.ok) {
-    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") {
+    if (
+      runtime.reason === "auth_required" ||
+      runtime.reason === "session_expired"
+    ) {
       return <SessionExpiredState />;
     }
     if (runtime.reason === "membership_disabled") {
@@ -77,10 +83,19 @@ export default async function ClientFilesPage({
   const supabase = await createSupabaseServerClient();
   const { data: files } = await supabase
     .from("file_assets")
-    .select("id, file_name, file_type, file_size, visibility, version_number, is_final, created_at")
+    .select(
+      "id, file_name, file_type, file_size, visibility, version_number, is_final, created_at",
+    )
     .eq("tenant_id", actor.tenantId)
     .eq("client_id", primaryClient.id)
-    .in("visibility", ["client_visible", "client_uploaded", "final_delivery", "contract_file", "report_file", "brand_asset"])
+    .in("visibility", [
+      "client_visible",
+      "client_uploaded",
+      "final_delivery",
+      "contract_file",
+      "report_file",
+      "brand_asset",
+    ])
     .eq("upload_state", "ready")
     .or("visibility.neq.final_delivery,is_final.eq.true")
     .order("created_at", { ascending: false });
@@ -98,6 +113,7 @@ export default async function ClientFilesPage({
           {safeFiles.map((file) => (
             <li
               className="grid gap-3 rounded-xl border border-border bg-surface p-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center"
+              data-file-visibility={file.visibility}
               key={file.id}
             >
               <div className="min-w-0">
@@ -124,7 +140,8 @@ export default async function ClientFilesPage({
       ) : (
         <div className="rounded-xl border border-dashed border-border bg-surface p-8 text-center">
           <p className="text-sm text-muted">
-            لا توجد ملفات متاحة حاليًا. تظهر الملفات المعتمدة والتسليمات النهائية هنا فور توفرها.
+            لا توجد ملفات متاحة حاليًا. تظهر الملفات المعتمدة والتسليمات
+            النهائية هنا فور توفرها.
           </p>
         </div>
       )}

@@ -4,8 +4,13 @@ import {
   ClientApprovalPanel,
   type ClientApprovalPanelItem,
 } from "./client-approval-panel";
-import { WorkspaceFileDownload, WorkspaceFilePreview } from "@/ui/deliverables/workspace-files";
+import {
+  WorkspaceFileDownload,
+  WorkspaceFilePreview,
+} from "@/ui/deliverables/workspace-files";
 import { ClientWorkspaceCommentForm } from "@/ui/deliverables/workspace-forms";
+import { ContentPreviewCard } from "@/ui/deliverables/content-preview-card";
+import { WorkspaceInlineMedia } from "@/ui/deliverables/workspace-files";
 
 export type ClientPortalFileSummary = {
   id: string;
@@ -26,6 +31,7 @@ export type ClientPortalCommentSummary = {
 };
 
 export type ClientSafeDeliverableDetail = {
+  clientName?: string;
   approvalItem: ClientApprovalPanelItem;
   statusLabel: string;
   progressPercentage: number;
@@ -39,6 +45,11 @@ export type ClientSafeDeliverableDetail = {
     format?: string;
     objective?: string;
     kpi?: string;
+  };
+  previewFile?: {
+    id: string;
+    fileType: string;
+    label: string;
   };
 };
 
@@ -74,15 +85,10 @@ export function ClientDeliverableDetail({
       id="approval"
     >
       <div className="grid gap-2">
-        <h2 className="text-lg font-semibold">بانتظار موافقتي</h2>
-        <p className="break-words text-xl font-semibold">
-          {detail.approvalItem.displayName}
-        </p>
-        <dl className="grid gap-2 text-sm text-muted sm:grid-cols-3">
-          <div className="rounded-md bg-surface px-3 py-2">
-            <dt className="font-semibold text-foreground">الحالة</dt>
-            <dd className="mt-1">{detail.statusLabel}</dd>
-          </div>
+        <h2 className="text-lg font-semibold">
+          {detail.approvalItem.isActionable ? "قرارك مطلوب" : "تفاصيل المخرج"}
+        </h2>
+        <dl className="grid gap-2 text-sm text-muted sm:grid-cols-2">
           <div className="rounded-md bg-surface px-3 py-2">
             <dt className="font-semibold text-foreground">التقدم</dt>
             <dd className="mt-1">{detail.progressPercentage}%</dd>
@@ -96,23 +102,52 @@ export function ClientDeliverableDetail({
         </dl>
       </div>
 
+      <ContentPreviewCard
+        caption={detail.content?.caption ?? detail.content?.body}
+        channel={detail.content?.channel}
+        clientName={detail.clientName}
+        eyebrow={detail.approvalItem.versionLabel}
+        format={detail.content?.format ?? detail.approvalItem.typeLabel}
+        status={detail.statusLabel}
+        title={detail.approvalItem.displayName}
+        media={
+          detail.previewFile ? (
+            <WorkspaceInlineMedia
+              fileId={detail.previewFile.id}
+              fileType={detail.previewFile.fileType}
+              label={detail.previewFile.label}
+            />
+          ) : undefined
+        }
+      />
+
       <ClientApprovalPanel
         approveAction={approveAction}
         canApprove={canApprove}
         item={detail.approvalItem}
         requestChangesAction={requestChangesAction}
+        showSummary={false}
       />
 
-      {detail.content ? (
-        <section aria-label="محتوى المخرج" className="grid min-w-0 gap-3 rounded-lg border border-border bg-surface p-4">
-          <h3 className="text-base font-semibold">المحتوى والنسخة</h3>
-          {detail.content.caption ? <p className="break-words text-sm leading-7">{detail.content.caption}</p> : null}
-          {detail.content.body ? <p className="whitespace-pre-wrap break-words text-sm leading-7">{detail.content.body}</p> : null}
+      {detail.content?.objective || detail.content?.kpi ? (
+        <section
+          aria-label="هدف المحتوى وقياسه"
+          className="grid min-w-0 gap-3 rounded-lg border border-border bg-surface p-4"
+        >
+          <h3 className="text-base font-semibold">الهدف والقياس</h3>
           <dl className="grid gap-2 text-xs text-muted sm:grid-cols-2">
-            {detail.content.channel ? <div><dt className="font-semibold text-foreground">القناة</dt><dd>{detail.content.channel}</dd></div> : null}
-            {detail.content.format ? <div><dt className="font-semibold text-foreground">الصيغة</dt><dd>{detail.content.format}</dd></div> : null}
-            {detail.content.objective ? <div><dt className="font-semibold text-foreground">الهدف</dt><dd>{detail.content.objective}</dd></div> : null}
-            {detail.content.kpi ? <div><dt className="font-semibold text-foreground">مؤشر القياس</dt><dd>{detail.content.kpi}</dd></div> : null}
+            {detail.content.objective ? (
+              <div>
+                <dt className="font-semibold text-foreground">الهدف</dt>
+                <dd>{detail.content.objective}</dd>
+              </div>
+            ) : null}
+            {detail.content.kpi ? (
+              <div>
+                <dt className="font-semibold text-foreground">مؤشر القياس</dt>
+                <dd>{detail.content.kpi}</dd>
+              </div>
+            ) : null}
           </dl>
         </section>
       ) : null}
@@ -127,13 +162,20 @@ export function ClientDeliverableDetail({
                 data-file-visibility={file.visibility}
                 key={file.id}
               >
-                <p className="break-words text-sm font-semibold">{file.label}</p>
+                <p className="break-words text-sm font-semibold">
+                  {file.label}
+                </p>
                 <p className="text-xs text-muted">
-                  {visibilityLabels[file.visibility]} · نسخة {file.versionNumber}
+                  {visibilityLabels[file.visibility]} · نسخة{" "}
+                  {file.versionNumber}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <WorkspaceFileDownload fileId={file.id} />
-                  <WorkspaceFilePreview fileId={file.id} fileType={file.fileType} label={file.label} />
+                  <WorkspaceFilePreview
+                    fileId={file.id}
+                    fileType={file.fileType}
+                    label={file.label}
+                  />
                 </div>
               </li>
             ))}
@@ -150,7 +192,10 @@ export function ClientDeliverableDetail({
         {detail.comments.length > 0 ? (
           <ul className="grid gap-2">
             {detail.comments.map((comment) => (
-              <li className="min-w-0 rounded-md bg-surface px-3 py-2" key={comment.id}>
+              <li
+                className="min-w-0 rounded-md bg-surface px-3 py-2"
+                key={comment.id}
+              >
                 <p className="break-words text-sm leading-6">{comment.body}</p>
                 <p className="mt-1 text-xs text-muted">
                   {comment.authorName} · {formatDate(comment.createdAt)}

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import {
   createPersistentActorClient,
+  persistentDeliverableNames,
   resetLocalDatabaseIfLifecycleSeeded,
   seedPersistentLifecycle,
   signInViaUi,
@@ -48,7 +49,7 @@ test("real Auth sessions enforce the task assignment and reassignment journey", 
   const seeded = await seedPersistentLifecycle();
   const { client: serviceClient, seed } = seeded;
   const boardPath = `/clients/${seed.clientA}/deliverables/board`;
-  const deliverableName = "S015 Persistent Browser Journey";
+  const deliverableName = persistentDeliverableNames.main;
 
   await signInViaUi(page, seed.actors.tenantAdmin);
   await page.goto(boardPath, { waitUntil: "domcontentloaded" });

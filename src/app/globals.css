@@ -29,8 +29,8 @@
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --color-focus: var(--focus);
-  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+  --font-sans: "Segoe UI", Tahoma, Arial, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, ui-monospace, monospace;
 }
 
 * {

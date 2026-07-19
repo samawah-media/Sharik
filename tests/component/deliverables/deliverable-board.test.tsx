@@ -104,10 +104,11 @@ describe("internal deliverable work board", () => {
     expect(
       within(board).getByRole("region", { name: "المراجعة الداخلية" }),
     ).toBeInTheDocument();
-    expect(within(board).getByText("منشور إطلاق الحملة")).toBeInTheDocument();
-    expect(within(board).getByText("تصميم إعلان المنتج")).toBeInTheDocument();
-    expect(within(board).getByText("أحمد العتيبي")).toBeInTheDocument();
-    expect(within(board).getByText("07-03")).toBeInTheDocument();
+    expect(within(board).getAllByText("منشور إطلاق الحملة")).toHaveLength(1);
+    expect(within(board).getAllByText("تصميم إعلان المنتج")).toHaveLength(1);
+    expect(document.querySelectorAll("[data-content-card]")).toHaveLength(2);
+    expect(within(board).getAllByText("أحمد العتيبي").length).toBeGreaterThan(0);
+    expect(within(board).getByText("2026-07-03")).toBeInTheDocument();
     expect(within(board).getByText("0%")).toBeInTheDocument();
     expect(within(board).getByText("70%")).toBeInTheDocument();
 
@@ -163,24 +164,19 @@ describe("internal deliverable work board", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders persistent version submission and exact-version approval inputs", () => {
+  it("keeps duplicate workflow controls inside the single details drawer", () => {
     const action = async () => undefined;
     render(
       <DeliverableBoard
         approvalAction={action}
         deliverables={deliverables}
         now="2026-07-01T10:00:00.000Z"
-        versionAction={action}
       />,
     );
 
-    expect(
-      screen.getByRole("form", { name: /رفع نسخة/ }),
-    ).toBeInTheDocument();
-    const sendForm = screen.getByRole("form", { name: /إرسال للعميل/ });
-    expect(sendForm.querySelector('input[name="versionId"]')).toHaveValue(
-      "version_ready",
-    );
+    expect(screen.queryByRole("form", { name: /رفع نسخة/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("form", { name: /إرسال للعميل/ })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "فتح مساحة المخرج" })).toHaveLength(2);
   });
 
   it("renders a safe empty state", () => {

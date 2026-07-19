@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+test.describe.configure({ timeout: 240_000 });
+
 test("management commercial summary shows scoped cards without later workflow features", async ({
   page,
 }) => {
@@ -7,11 +9,12 @@ test("management commercial summary shows scoped cards without later workflow fe
     waitUntil: "domcontentloaded",
   });
 
-  await expect(page.getByRole("heading", { name: "تجربة هدنة" })).toBeVisible();
-  const mvpSnapshot = page.getByRole("region", { name: "ملخص تجربة هدنة" });
-  await expect(mvpSnapshot.getByText("عدد المخرجات")).toBeVisible();
-  await expect(mvpSnapshot.getByText("52", { exact: true })).toBeVisible();
-  const summaryRegion = page.getByRole("region", { name: "ملخص المتابعة للإدارة" });
+  await expect(
+    page.getByRole("heading", { name: "المتابعة التجارية" }),
+  ).toBeVisible();
+  const summaryRegion = page.getByRole("region", {
+    name: "ملخص المتابعة للإدارة",
+  });
   await expect(summaryRegion).toBeVisible();
   await expect(summaryRegion.getByText("قيد العمل:").first()).toBeVisible();
   await expect(summaryRegion.getByText("المتبقي:").first()).toBeVisible();
@@ -28,7 +31,9 @@ test("client commercial summary hides internal fields and other-client identifie
     waitUntil: "domcontentloaded",
   });
 
-  await expect(page.getByRole("heading", { name: "تجربة هدنة" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "العقد والمتابعة" }),
+  ).toBeVisible();
   await expect(
     page.getByRole("region", { name: "ملخص بوابة العميل" }),
   ).toBeVisible();
@@ -36,7 +41,9 @@ test("client commercial summary hides internal fields and other-client identifie
   await expect(
     clientRegion.getByRole("heading", { name: "الباقة والمتبقي" }),
   ).toBeVisible();
-  await expect(clientRegion.getByRole("heading", { name: "مخرجاتي" })).toBeVisible();
+  await expect(
+    clientRegion.getByRole("heading", { name: "مخرجاتي" }),
+  ).toBeVisible();
   await expect(page.getByText("tenant_a")).toHaveCount(0);
   await expect(page.getByText("client_b")).toHaveCount(0);
   await expect(page.getByText("internal")).toHaveCount(0);

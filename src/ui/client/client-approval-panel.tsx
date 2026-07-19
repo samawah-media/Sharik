@@ -49,11 +49,13 @@ export function ClientApprovalPanel({
   canApprove,
   item,
   requestChangesAction,
+  showSummary = true,
 }: {
   approveAction?: ClientApprovalFormAction;
   canApprove: boolean;
   item: ClientApprovalPanelItem;
   requestChangesAction?: ClientApprovalFormAction;
+  showSummary?: boolean;
 }) {
   const canSubmitDecision = canApprove && item.isActionable !== false;
   const hasServerActions = Boolean(approveAction && requestChangesAction);
@@ -65,28 +67,36 @@ export function ClientApprovalPanel({
       data-testid="client-approval-actions"
       dir="rtl"
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="grid gap-1">
-          <p className="text-sm text-muted">بانتظار موافقتك</p>
-          <h2 className="text-base font-semibold leading-7">{item.displayName}</h2>
-        </div>
-        <Badge tone="accent">{item.statusLabel}</Badge>
-      </div>
+      {showSummary ? (
+        <>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="grid gap-1">
+              <p className="text-sm text-muted">بانتظار موافقتك</p>
+              <h2 className="text-base font-semibold leading-7">
+                {item.displayName}
+              </h2>
+            </div>
+            <Badge tone="accent">{item.statusLabel}</Badge>
+          </div>
 
-      <dl className="grid gap-2 text-sm text-muted sm:grid-cols-3">
-        <div>
-          <dt className="font-semibold text-foreground">النوع</dt>
-          <dd className="mt-1">{item.typeLabel}</dd>
-        </div>
-        <div>
-          <dt className="font-semibold text-foreground">النسخة</dt>
-          <dd className="mt-1">{item.versionLabel}</dd>
-        </div>
-        <div>
-          <dt className="font-semibold text-foreground">الموعد</dt>
-          <dd className="mt-1">{item.dueDateLabel ?? "غير محدد"}</dd>
-        </div>
-      </dl>
+          <dl className="grid gap-2 text-sm text-muted sm:grid-cols-3">
+            <div>
+              <dt className="font-semibold text-foreground">النوع</dt>
+              <dd className="mt-1">{item.typeLabel}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-foreground">النسخة</dt>
+              <dd className="mt-1">{item.versionLabel}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-foreground">الموعد</dt>
+              <dd className="mt-1">{item.dueDateLabel ?? "غير محدد"}</dd>
+            </div>
+          </dl>
+        </>
+      ) : (
+        <h3 className="text-base font-semibold">قرار الاعتماد</h3>
+      )}
 
       {!canSubmitDecision ? (
         <p className="rounded-md bg-background px-3 py-2 text-sm text-muted">

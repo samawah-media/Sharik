@@ -36,7 +36,7 @@
 
 ## Owner-Authorized Hosted Team UAT Amendment
 
-Status: `HOSTED_TEAM_UAT_READY` for a controlled internal team trial. Production acceptance remains not granted.
+Status: `HOSTED_TEAM_UAT_BLOCKED` after the owner's first human product trial rejected the Preview experience on 2026-07-19. The earlier automated hosted lifecycle remains valid technical evidence, but it is not human product acceptance. Production acceptance remains not granted.
 
 The following hosted tasks extend Spec 015 only. They do not reopen or invalidate completed local tasks T001-T019.
 
@@ -47,11 +47,11 @@ The following hosted tasks extend Spec 015 only. They do not reopen or invalidat
 - [x] H005 Synthetic Hadna UAT seed: create minimal idempotent run-ID-scoped Hadna tenant/client/contract/package/deliverable/file metadata records and record category/count-only evidence.
 - [x] H006 Team account/access setup: configure only approved individual Samawah team testers and team-controlled client personas; if approved email mapping is unavailable, stop with `TEAM_ACCESS_INPUT_REQUIRED`. Owner-approved synthetic UAT accounts now cover management, account manager, assigned writer, assigned designer, unassigned internal negative tester, client approver, and client viewer; Auth, membership, and role checks pass for all categories.
 - [x] H007 Vercel Preview deployment: configure Preview/UAT env only, deploy the reviewed branch to Preview/UAT, verify Supabase UAT binding, sign-in, Arabic RTL shell, no fixture actor support, non-local `APP_ENV`, and no service-role key in client bundles/logs. The protected UAT alias targets the exact reviewed Preview and owner-distributed protected access passed hosted smoke.
-- [x] H008 Hosted team workflow UAT: real UAT Auth sessions passed for management, account manager, assigned writer/designer, unassigned internal negative, client viewer, and client approver. Hosted route/persona smoke passed 27/27 across desktop, mobile, and RTL; the exact persistent team-to-client lifecycle passed 1/1.
-- [x] H009 Defect burn-down and T032 evidence: all discovered P1/P2 defects are fixed or explicitly dispositioned, no P0/P1 remains open, four failed synthetic lifecycle runs were retired through audited real-Auth commands, immediate replay was a no-op, and R-011A T032 is closed by the bounded hosted evidence.
-- [x] H010 Hosted handoff and boundary record: final redacted owner-facing evidence is recorded in `evidence/hosted-team-uat-final-handoff.md`; Production, merge, public signup, real customer data, and external client invitations remain out of scope.
+- [ ] H008 Hosted team workflow UAT: automated real-Auth route/lifecycle evidence passed historically, but owner human acceptance is reopened. Current Glass client/team surfaces are not usable for a formal team trial.
+- [ ] H009 Defect burn-down and T032 evidence: reopened because the owner trial found blocking product/data defects S015-P1-063 through S015-P1-068 and related P2 defects.
+- [ ] H010 Hosted handoff and boundary record: reopen until the corrected exact Preview passes owner human acceptance for management, assigned team, client viewer, and client approver.
 
-Hosted amendment note: H001-H010 have completed under owner authorization. `HOSTED_TEAM_UAT_READY` means the reviewed Preview/UAT environment is ready for the controlled internal human trial; it is not Production acceptance or proof that the human trial itself has finished.
+Hosted amendment correction: H001-H007 remain accepted technical/environment evidence. H008-H010 are reopened by the 2026-07-19 owner trial. Automated route success must never be used as a substitute for understandable, representative human product acceptance.
 
 ## Product Experience Rescue Amendment — same Spec 015
 
@@ -69,8 +69,20 @@ Hosted amendment note: H001-H010 have completed under owner authorization. `HOST
   - [x] X006-F Implement assigned-work List/Board views, filters, five-to-six macro lanes, and governed dnd-kit interaction.
   - [x] X006-G Complete exception-first management and scannable client portal experiences.
   - [x] X006-H Execute DESIGN.md RTL/mobile/keyboard/reduced-motion/state visual QA and close all local gates.
-- [x] X007 Execute generic run-ID-scoped Glass/Hadna import, hosted persona UAT, defect burn-down, rollback/no-op evidence, and H008-H010 handoff.
+- [ ] X007 Execute generic run-ID-scoped Glass/Hadna import, hosted persona UAT, defect burn-down, rollback/no-op evidence, and H008-H010 handoff. Import mechanics and automated lifecycle passed historically; representative data presentation and human acceptance are reopened under X008.
   - Execution sequence (subordinate runbook, not a second task source): [X007 Step-by-Step Execution Runbook](evidence/x007-step-by-step-execution-runbook.md).
+
+## Owner Human Trial Rescue — same Spec 015
+
+- [ ] X008 Correct the owner-rejected Preview experience without creating a new Spec or parallel plan.
+  - [ ] X008-A Remove duplicate navigation/actions and every client-name-specific hardcode from shared surfaces.
+  - [ ] X008-B Enforce understandable role entry/route boundaries and add a discoverable sign-out/profile control for every role shell.
+  - [ ] X008-C Quarantine synthetic lifecycle records from normal human-trial views without deleting their historical evidence.
+  - [ ] X008-D Present imported Glass/Hadna content as professional, reusable content cards with thumbnail or honest branded fallback, platform/format, caption excerpt, owner, status, SLA, and next action.
+  - [ ] X008-E Prepare a bounded representative Glass workflow so assigned team work is discoverable and at least one exact current version is genuinely waiting for the client approver; do not manufacture approval history.
+  - [ ] X008-F Fix corrupted display names and validate the imported field mapping using category/count/field evidence only.
+  - [ ] X008-G Add negative route/role checks, content-quality regressions, pending-count/action consistency checks, and desktop/mobile/RTL visual acceptance.
+  - [ ] X008-H Deploy only the corrected reviewed Preview, obtain explicit owner PASS for all three experiences, then close H008-H010, X007, and T032 if no P0/P1 remains.
 
 ## Correction note: task assignment authority (2026-07-15)
 

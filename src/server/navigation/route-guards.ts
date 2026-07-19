@@ -26,7 +26,11 @@ export type RouteAccessDecision =
   | {
       allowed: false;
       actor?: AuthorizationActor;
-      reason: "permission_denied" | "not_found" | "no_assigned_clients" | "membership_disabled";
+      reason:
+        | "permission_denied"
+        | "not_found"
+        | "no_assigned_clients"
+        | "membership_disabled";
       safeReturnHref: string;
     };
 
@@ -128,7 +132,8 @@ export const resolveRouteActor = (
       role({
         id: `ra_${key}`,
         membershipId: membership.id,
-        roleKey: key === "client_approver_a" ? "client_approver" : "client_viewer",
+        roleKey:
+          key === "client_approver_a" ? "client_approver" : "client_viewer",
         scopeType: "client",
         scopeId: "client_a",
       }),
@@ -136,7 +141,12 @@ export const resolveRouteActor = (
   }
 
   if (key === "disabled_member_a") {
-    const membership = tenantMembership("tm_disabled_a", key, "tenant_a", "disabled");
+    const membership = tenantMembership(
+      "tm_disabled_a",
+      key,
+      "tenant_a",
+      "disabled",
+    );
     return actor(key, membership, [
       role({
         id: "ra_disabled_a",
@@ -204,7 +214,10 @@ const decision = (
   return {
     allowed: false,
     actor: actorInput,
-    reason: resource.tenantId === actorInput.tenantId ? "permission_denied" : "not_found",
+    reason:
+      resource.tenantId === actorInput.tenantId
+        ? "permission_denied"
+        : "not_found",
     safeReturnHref: "/",
   };
 };
@@ -221,21 +234,22 @@ export const guardManagementRoute = ({
       ? PERMISSIONS.CLIENT_VIEW_ALL_IN_TENANT
       : route === "clientWrite"
         ? PERMISSIONS.CLIENT_CREATE
-      : route === "members"
-        ? PERMISSIONS.USER_VIEW
-        : route === "invitations"
-          ? PERMISSIONS.USER_INVITE
-          : PERMISSIONS.AUDIT_USER_VIEW;
+        : route === "members"
+          ? PERMISSIONS.USER_VIEW
+          : route === "invitations"
+            ? PERMISSIONS.USER_INVITE
+            : PERMISSIONS.AUDIT_USER_VIEW;
 
   return decision(actor, permission, { tenantId: actor.tenantId });
 };
 
-const isClientPortalOnlyActor = (actor: AuthorizationActor) =>
+export const isClientPortalOnlyActor = (actor: AuthorizationActor) =>
   actor.roleAssignments.length > 0 &&
-  actor.roleAssignments.every((assignment) =>
-    assignment.roleKey === "client_viewer" ||
-    assignment.roleKey === "client_approver" ||
-    assignment.roleKey === "client_admin",
+  actor.roleAssignments.every(
+    (assignment) =>
+      assignment.roleKey === "client_viewer" ||
+      assignment.roleKey === "client_approver" ||
+      assignment.roleKey === "client_admin",
   );
 
 export const guardClientsIndexRoute = ({
@@ -275,12 +289,13 @@ export const guardClientsIndexRoute = ({
 
   const hasAssignedClient = clients
     .filter((client) => client.tenantId === actor.tenantId)
-    .some((client) =>
-      evaluatePermission({
-        actor,
-        permission: PERMISSIONS.CLIENT_VIEW,
-        resource: { tenantId: client.tenantId, clientId: client.id },
-      }).allowed,
+    .some(
+      (client) =>
+        evaluatePermission({
+          actor,
+          permission: PERMISSIONS.CLIENT_VIEW,
+          resource: { tenantId: client.tenantId, clientId: client.id },
+        }).allowed,
     );
 
   return hasAssignedClient
@@ -332,6 +347,15 @@ export const guardPortfolioRoute = ({
       actor,
       reason: "membership_disabled",
       safeReturnHref: "/sign-in",
+    };
+  }
+
+  if (isClientPortalOnlyActor(actor)) {
+    return {
+      allowed: false,
+      actor,
+      reason: "permission_denied",
+      safeReturnHref: "/client",
     };
   }
 

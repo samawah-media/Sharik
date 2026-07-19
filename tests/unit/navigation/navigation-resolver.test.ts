@@ -20,9 +20,6 @@ describe("role-aware navigation resolver", () => {
     expect(navigation.items.map((item) => item.id)).toEqual([
       "management.dashboard",
       "management.clients",
-      "management.client.client_a",
-      "management.client.client_a.deliverables",
-      "management.client.client_a.sla",
       "management.members",
     ]);
     expect(navigation.items.every((item) => item.advisoryOnly)).toBe(true);
@@ -38,9 +35,6 @@ describe("role-aware navigation resolver", () => {
     expect(navigation.items.map((item) => item.id)).toEqual([
       "team.work",
       "team.portfolio",
-      "client.client_a",
-      "client.client_a.deliverables",
-      "client.client_a.summary",
     ]);
     expect(navigation.items.map((item) => item.label)).not.toContain(
       clientC.name,

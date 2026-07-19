@@ -4,7 +4,7 @@ test("client pending route is a real inbox and stays read-only for viewer", asyn
   await page.goto("/client/pending?as=client_viewer_a", { waitUntil: "domcontentloaded" });
 
   await expect(page.getByRole("heading", { name: "بانتظار موافقتي" }).first()).toBeVisible();
-  await expect(page.getByRole("heading", { name: "مخرج تجريبي آمن" })).toBeVisible();
+  await expect(page.getByText("مخرج تجريبي آمن", { exact: true })).toHaveCount(1);
   await expect(page.getByText("يمكنك مشاهدة المخرج فقط.")).toBeVisible();
   await expect(page.getByRole("button", { name: "اعتماد المخرج" })).toHaveCount(0);
   await expect(page.getByText("r007_visible_version")).toHaveCount(0);

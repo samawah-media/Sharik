@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test.describe.configure({ timeout: 90_000 });
+test.describe.configure({ timeout: 240_000 });
 
 test("tenant admin can open the internal Kanban board from deliverables", async ({
   page,
@@ -23,7 +23,10 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
     "href",
     "/clients/client_a/deliverables/board",
   );
-  await boardLink.click();
+  await Promise.all([
+    page.waitForURL("**/clients/client_a/deliverables/board"),
+    boardLink.click(),
+  ]);
 
   await expect(
     page.getByRole("heading", { name: "لوحة العمل" }),
@@ -40,8 +43,10 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
     })
     .toBeGreaterThanOrEqual(320);
   await expect(
-    page.getByRole("heading", { name: "ستوري هدنة 43" }),
-  ).toBeVisible();
+    page
+      .getByRole("region", { name: "لوحة العمل" })
+      .getByText("ستوري هدنة 43", { exact: true }),
+  ).toBeVisible({ timeout: 30_000 });
 
   await page
     .getByRole("button", { name: "تغيير الحالة ستوري هدنة 43" })

@@ -31,7 +31,7 @@ audited.
 
 ## Owner-Authorized Hosted Team UAT Amendment
 
-Status: `HOSTED_TEAM_UAT_READY` for controlled internal human trial; Production remains blocked.
+Status: `HOSTED_TEAM_UAT_BLOCKED` after owner human product rejection; Production remains blocked.
 
 This hosted amendment is additive to the accepted local baseline. T001-T019 remain historical local acceptance evidence and must not be edited into hosted PASS evidence.
 
@@ -63,7 +63,7 @@ No hosted mutation may begin until target identity, environment category, data c
 
 ## Product Experience Rescue Amendment
 
-Status: implementation and technical hosted acceptance complete within Spec 015. The rescue closes client navigation/profile discoverability, creates the real multi-item pending-approval route, narrows client visibility to the exact current client-visible version, resolves scoped member display data, removes raw assignee identifiers, and implements the shared Samawah design contract across the universal drawer and role workspaces. The owner-authorized dependencies and generic Glass/Hadna UAT import remain inside this rescue. X006, X007, and H008-H010 are closed by exact-HEAD CI plus direct Preview/UAT evidence. The next activity is the controlled internal human trial, not Production promotion.
+Status: technical hosted paths passed historically, but product acceptance is reopened under X008. The current sequence is: correct role shells and client-specific copy; quarantine synthetic lifecycle residue from human views; present imported content professionally; assign and stage a representative Glass workflow through audited commands; add role/content/visual regressions; deploy the exact corrected Preview; obtain explicit owner human PASS. Only then may H008-H010, X007, and T032 close again. Production promotion is not authorized.
 
 Dependency inventory: add only the pinned packages required for React Hook Form,
 dnd-kit, Uppy, Tiptap, and TanStack Query/Table after license/security review.

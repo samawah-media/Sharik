@@ -11,6 +11,7 @@ import {
   type DeliverableAllocationRow,
   type DeliverableWriteRow,
 } from "./deliverable-write-rpc";
+import { isHumanTrialDeliverable } from "@/modules/deliverables/human-trial-visibility";
 
 export const fixtureManagementDeliverables =
   fixtureManagementCommercialSummary.deliverables;
@@ -23,7 +24,7 @@ const selectDeliverableRows = async (
   supabase
     .from("deliverables")
     .select(
-      "id, tenant_id, client_id, contract_id, package_id, package_line_id, current_version_id, name, description, type, status, priority, owner_user_id, contributor_user_ids, start_date, internal_due_date, client_due_date, final_due_date, requires_internal_approval, requires_client_approval, progress_percentage, approved_extra, extra_reason, idempotency_key, created_by, created_at, updated_at, cancelled_at, revision",
+      "id, tenant_id, client_id, contract_id, package_id, package_line_id, current_version_id, name, description, type, status, priority, owner_user_id, contributor_user_ids, start_date, internal_due_date, client_due_date, final_due_date, requires_internal_approval, requires_client_approval, progress_percentage, approved_extra, extra_reason, idempotency_key, source_metadata, import_run_id, created_by, created_at, updated_at, cancelled_at, revision",
     )
     .eq("tenant_id", tenantId)
     .eq("client_id", clientId)
@@ -40,10 +41,26 @@ export const listScopedDeliverables = async ({
 }) => {
   if (canUseRouteActorFixtures()) {
     const fixtureDirectory = createMemberDirectory([
-      { user_id: "assigned_internal_a", display_name: "أحمد العتيبي", role_label: "مدير مشروع" },
-      { user_id: "assigned_writer_a", display_name: "سارة القحطاني", role_label: "كاتبة محتوى" },
-      { user_id: "assigned_designer_a", display_name: "رائد الحربي", role_label: "مصمم" },
-      { user_id: "designer_a", display_name: "رائد الحربي", role_label: "مصمم" },
+      {
+        user_id: "assigned_internal_a",
+        display_name: "أحمد العتيبي",
+        role_label: "مدير مشروع",
+      },
+      {
+        user_id: "assigned_writer_a",
+        display_name: "سارة القحطاني",
+        role_label: "كاتبة محتوى",
+      },
+      {
+        user_id: "assigned_designer_a",
+        display_name: "رائد الحربي",
+        role_label: "مصمم",
+      },
+      {
+        user_id: "designer_a",
+        display_name: "رائد الحربي",
+        role_label: "مصمم",
+      },
     ]);
     return {
       ok: true as const,
@@ -69,7 +86,8 @@ export const listScopedDeliverables = async ({
     return { ok: false as const };
   }
 
-  const deliverableIds = deliverableRows.map((row) => row.id);
+  const humanTrialRows = deliverableRows.filter(isHumanTrialDeliverable);
+  const deliverableIds = humanTrialRows.map((row) => row.id);
 
   if (deliverableIds.length === 0) {
     return { ok: true as const, deliverables: [] };
@@ -116,20 +134,20 @@ export const listScopedDeliverables = async ({
 
   return {
     ok: true as const,
-    deliverables: (deliverableRows as DeliverableWriteRow[]).map(
+    deliverables: (humanTrialRows as DeliverableWriteRow[]).map(
       (deliverableRow) => ({
-          ...toDeliverableSafeSummaryFromRows({
-            deliverableRow,
-            allocationRows: allocations.filter(
-              (allocation) => allocation.deliverable_id === deliverableRow.id,
-            ),
-          }),
-          ownerDisplay: memberDirectory[deliverableRow.owner_user_id ?? ""],
-          contributorDisplays: resolveMemberDisplays(
-            memberDirectory,
-            deliverableRow.contributor_user_ids ?? [],
+        ...toDeliverableSafeSummaryFromRows({
+          deliverableRow,
+          allocationRows: allocations.filter(
+            (allocation) => allocation.deliverable_id === deliverableRow.id,
           ),
         }),
+        ownerDisplay: memberDirectory[deliverableRow.owner_user_id ?? ""],
+        contributorDisplays: resolveMemberDisplays(
+          memberDirectory,
+          deliverableRow.contributor_user_ids ?? [],
+        ),
+      }),
     ),
   };
 };

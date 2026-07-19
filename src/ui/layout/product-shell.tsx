@@ -12,6 +12,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { cn } from "@/ui/core/utils";
+import { SignOutButton } from "@/ui/auth/sign-out-button";
 
 const shellIcons = {
   briefcase: BriefcaseBusiness,
@@ -219,6 +220,10 @@ export function ProductShell({
                 })}
               </nav>
             ) : null}
+            <div className="hidden rounded-xl border border-border bg-background p-3 lg:grid lg:gap-2">
+              <p className="text-xs font-semibold text-muted">الحساب الحالي</p>
+              <SignOutButton />
+            </div>
           </div>
         </aside>
         <div className="min-w-0">
@@ -229,12 +234,11 @@ export function ProductShell({
                 rootHref={breadcrumbRootHref}
                 rootLabel={breadcrumbRootLabel}
               />
-              <div className="flex items-center gap-2 text-xs text-muted">
-                <FileText aria-hidden="true" size={15} />
-                <span className="hidden sm:inline">
-                  تجربة UAT داخلية ضمن النطاق المصرح
+              <div className="flex min-h-11 items-center gap-2 text-xs text-muted">
+                <span>حساب الفريق</span>
+                <span className="lg:hidden">
+                  <SignOutButton />
                 </span>
-                <span className="sm:hidden">ضمن النطاق المصرح</span>
               </div>
             </div>
           </header>

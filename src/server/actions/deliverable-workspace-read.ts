@@ -130,13 +130,26 @@ export async function listScopedDeliverableWorkspaceSummaries({
   const client = supabase ?? (await createSupabaseServerClient());
   const deliverableIds = deliverables.map((deliverable) => deliverable.id);
 
-  const [versions, tasks, files, comments] = await Promise.all([
+  const currentVersionIds = deliverables
+    .map((deliverable) => deliverable.currentVersionId)
+    .filter((versionId): versionId is string => Boolean(versionId));
+  const [versions, currentVersions, tasks, files, comments] = await Promise.all([
     client
       .from("deliverable_versions")
       .select("deliverable_id")
       .eq("tenant_id", tenantId)
       .eq("client_id", clientId)
       .in("deliverable_id", deliverableIds),
+    currentVersionIds.length
+      ? client
+          .from("deliverable_versions")
+          .select(
+            "id, deliverable_id, version_number, brief, content_body, caption, channel, format",
+          )
+          .eq("tenant_id", tenantId)
+          .eq("client_id", clientId)
+          .in("id", currentVersionIds)
+      : Promise.resolve({ data: [], error: null }),
     client
       .from("deliverable_tasks")
       .select("deliverable_id")
@@ -145,7 +158,7 @@ export async function listScopedDeliverableWorkspaceSummaries({
       .in("deliverable_id", deliverableIds),
     client
       .from("file_assets")
-      .select("deliverable_id")
+      .select("id, deliverable_id, version_id, file_name, file_type")
       .eq("tenant_id", tenantId)
       .eq("client_id", clientId)
       .in("deliverable_id", deliverableIds)
@@ -171,6 +184,42 @@ export async function listScopedDeliverableWorkspaceSummaries({
   const taskCounts = countByDeliverable(tasks.data);
   const fileCounts = countByDeliverable(files.data);
   const commentCounts = countByDeliverable(comments.data);
+  const currentVersionByDeliverable = new Map(
+    (currentVersions.data ?? []).map((version) => [
+      version.deliverable_id,
+      {
+        id: version.id,
+        versionNumber: version.version_number,
+        brief: version.brief ?? undefined,
+        body: version.content_body ?? undefined,
+        caption: version.caption ?? undefined,
+        channel: version.channel ?? undefined,
+        format: version.format ?? undefined,
+      },
+    ]),
+  );
+  const previewFileByDeliverable = new Map<string, {
+    id: string;
+    name: string;
+    fileType: string;
+  }>();
+  for (const file of files.data ?? []) {
+    const currentVersionId = deliverables.find(
+      (deliverable) => deliverable.id === file.deliverable_id,
+    )?.currentVersionId;
+    if (
+      file.version_id === currentVersionId &&
+      (file.file_type.startsWith("image/") ||
+        file.file_type.startsWith("video/")) &&
+      !previewFileByDeliverable.has(file.deliverable_id)
+    ) {
+      previewFileByDeliverable.set(file.deliverable_id, {
+        id: file.id,
+        name: file.file_name,
+        fileType: file.file_type,
+      });
+    }
+  }
 
   return Object.fromEntries(
     deliverables.map((deliverable) => [
@@ -178,6 +227,8 @@ export async function listScopedDeliverableWorkspaceSummaries({
       {
         deliverableId: deliverable.id,
         currentVersionId: deliverable.currentVersionId,
+        currentVersion: currentVersionByDeliverable.get(deliverable.id),
+        previewFile: previewFileByDeliverable.get(deliverable.id),
         counts: {
           versions: versionCounts.get(deliverable.id) ?? 0,
           tasks: taskCounts.get(deliverable.id) ?? 0,

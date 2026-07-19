@@ -7,6 +7,7 @@ const eslintConfig = [
   {
     ignores: [
       ".next/**",
+      ".next-persistent/**",
       "node_modules/**",
       "node_modules.partial/**",
       ".vercel/**",

@@ -18,7 +18,8 @@ export default function SignInPage() {
           </div>
         </div>
         <p className="text-sm leading-6 text-muted">
-          استخدم حساب UAT المصرح به للوصول إلى مساحة هدنة ضمن نطاقك فقط.
+          استخدم حسابك المصرح به. ستنتقل تلقائيًا إلى مساحة الإدارة أو الفريق أو
+          العميل حسب دورك.
         </p>
         <Suspense fallback={null}>
           <SignInForm />

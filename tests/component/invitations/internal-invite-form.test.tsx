@@ -46,18 +46,17 @@ describe("assigned clients UI", () => {
 
     expect(screen.getByText("هدنة")).toBeInTheDocument();
     expect(screen.getByText(/عميل داخل نطاق صلاحياتك/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "عرض هدنة" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "فتح هدنة" })).toHaveAttribute(
       "href",
       "/clients/client_a",
     );
-    expect(screen.getByRole("link", { name: "مخرجات هدنة" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "المخرجات" })).toHaveAttribute(
       "href",
       "/clients/client_a/deliverables",
     );
-    expect(screen.getByRole("link", { name: "المتابعة / SLA" })).toHaveAttribute(
-      "href",
-      "/clients/client_a/commercial",
-    );
+    expect(
+      screen.getByRole("link", { name: "المتابعة / SLA" }),
+    ).toHaveAttribute("href", "/clients/client_a/commercial");
     expect(screen.queryByText("Client B")).not.toBeInTheDocument();
   });
 

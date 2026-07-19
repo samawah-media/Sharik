@@ -180,6 +180,28 @@ export async function createWorkspaceFileDownload(fileId: string) {
   return { ok: true as const, url: signed.data.signedUrl };
 }
 
+export async function createWorkspaceFilePreview(fileId: string) {
+  const parsed = z.string().uuid().safeParse(fileId);
+  if (!parsed.success) {
+    return { ok: false as const, reason: "invalid_input" as const };
+  }
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("s015_authorize_file_download", {
+    target_file_id: parsed.data,
+  });
+  const authorized = Array.isArray(data) ? data[0] : data;
+  if (error || !authorized) {
+    return { ok: false as const, reason: "denied" as const };
+  }
+  const signed = await supabase.storage
+    .from(authorized.bucket_id)
+    .createSignedUrl(authorized.storage_path, 60);
+  if (signed.error || !signed.data?.signedUrl) {
+    return { ok: false as const, reason: "denied" as const };
+  }
+  return { ok: true as const, url: signed.data.signedUrl };
+}
+
 export async function upsertDeliverableTask(
   input: z.input<typeof deliverableTaskInputSchema>,
 ) {

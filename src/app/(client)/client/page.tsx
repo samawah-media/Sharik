@@ -359,7 +359,7 @@ export default async function ClientPage({
 
   return (
     <>
-      <ClientHome clientName={primaryClient.name} stats={stats}>
+      <ClientHome canApprove={canApprove} clientName={primaryClient.name} stats={stats}>
         {portalDetail ? (
           <ClientDeliverableDetail
             approveAction={

@@ -214,7 +214,8 @@ test("client pending inbox visual states distinguish viewer and approver", async
     waitUntil: "domcontentloaded",
   });
   await expectRtlDocument(page);
-  await expect(page.getByRole("heading", { name: "بانتظار موافقتي" }).first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "قيد المراجعة" }).first()).toBeVisible();
+  await expect(page.getByText(/للاطلاع فقط/)).toBeVisible();
   await expect(page.getByText("يمكنك مشاهدة المخرج فقط.")).toBeVisible();
   await expect(page.getByRole("button", { name: "اعتماد المخرج" })).toHaveCount(0);
   await expectMinimumTouchTargets(page);

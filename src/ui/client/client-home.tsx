@@ -8,17 +8,23 @@ import {
 } from "@/ui/mvp/hadna-mvp-summary";
 
 type ClientHomeProps = {
+  canApprove?: boolean;
   children?: ReactNode;
   clientName?: string;
   stats?: MvpSnapshotStats;
 };
 
 export function ClientHome({
+  canApprove = true,
   children,
   clientName = "العميل",
   stats,
 }: ClientHomeProps) {
   const displayClientName = formatMvpClientName(clientName);
+  const reviewHeading = canApprove ? "بانتظار موافقتي" : "قيد المراجعة";
+  const reviewDescription = canApprove
+    ? "لا توجد عناصر تحتاج قرارك الآن. سنعرض هنا فقط النسخ التي اعتمدها فريق سماوة وأرسلها لك رسميًا."
+    : "هذا الحساب للاطلاع فقط. ستظهر هنا النسخ قيد المراجعة بمجرد أن يعتمدها فريق سماوة للجهة المختصة بالاعتماد.";
 
   return (
     <main className="mx-auto grid w-full max-w-5xl gap-6 px-4 py-6 sm:py-8">
@@ -46,11 +52,8 @@ export function ClientHome({
       {stats ? <MvpSnapshotCards stats={stats} /> : null}
       {children ?? (
         <section className="grid gap-3 rounded-lg border border-border p-5">
-          <h2 className="text-lg font-semibold">بانتظار موافقتي</h2>
-          <p className="text-sm text-muted">
-            لا توجد عناصر تحتاج قرارك الآن. سنعرض هنا فقط النسخ التي اعتمدها
-            فريق سماوة وأرسلها لك رسميًا.
-          </p>
+          <h2 className="text-lg font-semibold">{reviewHeading}</h2>
+          <p className="text-sm text-muted">{reviewDescription}</p>
         </section>
       )}
       <section className="grid gap-3 rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">

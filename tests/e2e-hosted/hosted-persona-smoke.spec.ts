@@ -45,6 +45,8 @@ test("hosted client viewer is read-only in pending inbox", async ({ page }) => {
   await expect(page).toHaveURL(/\/client\/pending$/u);
   await expect(page.getByRole("link", { name: "بانتظار موافقتي" })).toBeVisible();
   await expect(page.getByRole("main")).toBeVisible();
+  await expect(page.getByTestId("client-approval-detail").first()).toBeVisible();
+  await expect(page.getByText("نص النسخة الحالية").first()).toBeVisible();
   await expect(page.getByRole("button", { name: "اعتماد المخرج" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "طلب تعديل" })).toHaveCount(0);
   await expectNoSensitiveLeakage(page);
@@ -59,6 +61,14 @@ test("hosted client approver reaches pending inbox without internal leakage", as
   await expect(page).toHaveURL(/\/client\/pending$/u);
   await expect(page.getByRole("link", { name: "بانتظار موافقتي" })).toBeVisible();
   await expect(page.getByRole("main")).toBeVisible();
+  await expect(page.getByTestId("client-approval-detail").first()).toBeVisible();
+  await expect(page.getByText("نص النسخة الحالية").first()).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "اعتماد المخرج" }).first(),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "طلب تعديل" }).first(),
+  ).toBeVisible();
   await expect(page.getByText(/تعليق داخلي|ملاحظة جودة|internal/i)).toHaveCount(0);
   await expectNoSensitiveLeakage(page);
 });

@@ -75,14 +75,16 @@ Hosted amendment correction: H001-H007 remain accepted technical/environment evi
 ## Owner Human Trial Rescue — same Spec 015
 
 - [ ] X008 Correct the owner-rejected Preview experience without creating a new Spec or parallel plan.
-  - [ ] X008-A Remove duplicate navigation/actions and every client-name-specific hardcode from shared surfaces.
-  - [ ] X008-B Enforce understandable role entry/route boundaries and add a discoverable sign-out/profile control for every role shell.
-  - [ ] X008-C Quarantine synthetic lifecycle records from normal human-trial views without deleting their historical evidence.
-  - [ ] X008-D Present imported Glass/Hadna content as professional, reusable content cards with thumbnail or honest branded fallback, platform/format, caption excerpt, owner, status, SLA, and next action.
-  - [ ] X008-E Prepare a bounded representative Glass workflow so assigned team work is discoverable and at least one exact current version is genuinely waiting for the client approver; do not manufacture approval history.
-  - [ ] X008-F Fix corrupted display names and validate the imported field mapping using category/count/field evidence only.
-  - [ ] X008-G Add negative route/role checks, content-quality regressions, pending-count/action consistency checks, and desktop/mobile/RTL visual acceptance.
+  - [x] X008-A Remove duplicate navigation/actions and every client-name-specific hardcode from shared surfaces.
+  - [x] X008-B Enforce understandable role entry/route boundaries and add a discoverable sign-out/profile control for every role shell.
+  - [x] X008-C Quarantine synthetic lifecycle records from normal human-trial views without deleting their historical evidence.
+  - [x] X008-D Present imported Glass/Hadna content as professional, reusable content cards with thumbnail or honest branded fallback, platform/format, caption excerpt, owner, status, SLA, and next action.
+  - [x] X008-E Prepare a bounded representative Glass workflow so assigned team work is discoverable and at least one exact current version is genuinely waiting for the client approver; do not manufacture approval history.
+  - [x] X008-F Fix corrupted display names and validate the imported field mapping using category/count/field evidence only.
+  - [x] X008-G Add negative route/role checks, content-quality regressions, pending-count/action consistency checks, and desktop/mobile/RTL visual acceptance.
   - [ ] X008-H Deploy only the corrected reviewed Preview, obtain explicit owner PASS for all three experiences, then close H008-H010, X007, and T032 if no P0/P1 remains.
+
+X008-A through X008-G are implemented and verified locally and on the corrected protected Preview. The bounded Glass setup contains 16 imported deliverables, 9 current versions with a real caption/body, 8 assignments across four representative deliverables, and 2 genuine current versions waiting for the client; no workbook approval or file was manufactured. Real-Auth role smoke passed 21/21 across desktop, mobile, and Arabic RTL. X008-H and the parent remain open because explicit owner human PASS has not been recorded; the hosted synthetic mutation lifecycle also cannot be rerun from this workstation because the required setup-only service credential is absent. H008-H010, X007, and T032 remain open.
 
 ## Correction note: task assignment authority (2026-07-15)
 

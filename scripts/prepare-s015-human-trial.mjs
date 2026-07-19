@@ -16,6 +16,23 @@ await loadSecureEnv(
   ),
 );
 
+if (process.env.S015_UAT_PROJECT_ENV_FILE) {
+  await loadSecureEnv(path.resolve(process.env.S015_UAT_PROJECT_ENV_FILE));
+}
+
+process.env.S015_UAT_SUPABASE_URL ??= process.env.NEXT_PUBLIC_SUPABASE_URL;
+process.env.S015_UAT_PUBLISHABLE_KEY ??=
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+if (
+  !process.env.S015_UAT_SUPABASE_HOSTNAME &&
+  process.env.S015_UAT_SUPABASE_URL
+) {
+  process.env.S015_UAT_SUPABASE_HOSTNAME = new URL(
+    process.env.S015_UAT_SUPABASE_URL,
+  ).hostname;
+}
+
 const required = (key) => {
   const value = process.env[key];
   if (!value) throw new Error(`HUMAN_TRIAL_INPUT_REQUIRED:${key}`);
@@ -44,13 +61,6 @@ if (
   throw new Error("HUMAN_TRIAL_SUPABASE_TARGET_REFUSED");
 }
 
-const service = createClient(
-  supabaseUrl,
-  required("S015_UAT_SERVICE_ROLE_KEY"),
-  {
-    auth: { autoRefreshToken: false, persistSession: false },
-  },
-);
 const publishableKey = required("S015_UAT_PUBLISHABLE_KEY");
 const actorKeys = [
   "ADMIN",
@@ -68,55 +78,49 @@ const actorPasswords = Object.fromEntries(
   actorKeys.map((key) => [key, required(`S015_${key}_PASSWORD`)]),
 );
 
-const usersResponse = await service.auth.admin.listUsers({
-  page: 1,
-  perPage: 1000,
-});
-expectNoError(usersResponse, "HUMAN_TRIAL_AUTH_INVENTORY_FAILED");
-const actors = Object.fromEntries(
-  actorKeys.map((key) => {
-    const user = usersResponse.data.users.find(
-      (candidate) => candidate.email?.toLowerCase() === actorEmails[key],
-    );
-    if (!user) throw new Error(`HUMAN_TRIAL_ACTOR_MISSING:${key}`);
-    return [
-      key,
-      { id: user.id, email: actorEmails[key], password: actorPasswords[key] },
-    ];
-  }),
-);
+const actors = {};
+const actorSessions = {};
+const actorRoles = {};
+for (const key of actorKeys) {
+  const client = createClient(supabaseUrl, publishableKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const signIn = await client.auth.signInWithPassword({
+    email: actorEmails[key],
+    password: actorPasswords[key],
+  });
+  if (signIn.error || !signIn.data.user) {
+    throw new Error(`HUMAN_TRIAL_SIGN_IN_FAILED:${key}`);
+  }
+  actors[key] = {
+    id: signIn.data.user.id,
+  };
+  actorSessions[key] = client;
 
-const memberships = expectNoError(
-  await service
-    .from("tenant_memberships")
-    .select("id, tenant_id, auth_user_id")
-    .in(
-      "auth_user_id",
-      actorKeys.map((key) => actors[key].id),
-    )
-    .eq("status", "active"),
-  "HUMAN_TRIAL_MEMBERSHIP_INVENTORY_FAILED",
-);
-const roles = expectNoError(
-  await service
-    .from("role_assignments")
-    .select("tenant_id, membership_id, role_key, scope_type, scope_id")
-    .in(
-      "membership_id",
-      memberships.map((membership) => membership.id),
-    )
-    .eq("status", "active"),
-  "HUMAN_TRIAL_ROLE_INVENTORY_FAILED",
-);
+  const memberships = expectNoError(
+    await client
+      .from("tenant_memberships")
+      .select("id, tenant_id")
+      .eq("auth_user_id", signIn.data.user.id)
+      .eq("status", "active"),
+    `HUMAN_TRIAL_MEMBERSHIP_INVENTORY_FAILED:${key}`,
+  );
+  actorRoles[key] = expectNoError(
+    await client
+      .from("role_assignments")
+      .select("tenant_id, membership_id, role_key, scope_type, scope_id")
+      .in(
+        "membership_id",
+        memberships.map((membership) => membership.id),
+      )
+      .eq("status", "active"),
+    `HUMAN_TRIAL_ROLE_INVENTORY_FAILED:${key}`,
+  );
+}
 
 const roleFor = (key, accepted) => {
-  const membershipIds = memberships
-    .filter((membership) => membership.auth_user_id === actors[key].id)
-    .map((membership) => membership.id);
-  const role = roles.find(
-    (candidate) =>
-      membershipIds.includes(candidate.membership_id) &&
-      accepted.includes(candidate.role_key),
+  const role = actorRoles[key].find((candidate) =>
+    accepted.includes(candidate.role_key),
   );
   if (!role) throw new Error(`HUMAN_TRIAL_ROLE_MISSING:${key}`);
   return role;
@@ -152,7 +156,9 @@ const managementRole = roleFor("ADMIN", [
 if (managementRole.tenant_id !== tenantId)
   throw new Error("HUMAN_TRIAL_MANAGEMENT_SCOPE_MISMATCH");
 
-const clientResponse = await service
+const admin = actorSessions.ADMIN;
+
+const clientResponse = await admin
   .from("clients")
   .select("id, name, slug")
   .eq("tenant_id", tenantId)
@@ -166,7 +172,7 @@ if (!/glass|جلاس/i.test(`${clientRecord.name} ${clientRecord.slug}`)) {
   throw new Error("HUMAN_TRIAL_EXPECTED_GLASS_SCOPE");
 }
 
-const importedResponse = await service
+const importedResponse = await admin
   .from("deliverables")
   .select(
     "id, status, current_version_id, type, import_run_id, source_metadata",
@@ -200,6 +206,27 @@ const candidates = importedRows.filter(
 );
 if (candidates.length < 1)
   throw new Error("HUMAN_TRIAL_CONTENT_CANDIDATE_MISSING");
+const candidateVersions = expectNoError(
+  await admin
+    .from("deliverable_versions")
+    .select("id, caption, content_body")
+    .eq("tenant_id", tenantId)
+    .eq("client_id", clientId)
+    .in(
+      "id",
+      candidates.map((row) => row.current_version_id),
+    ),
+  "HUMAN_TRIAL_VERSION_CONTENT_INVENTORY_FAILED",
+);
+const contentVersionIds = new Set(
+  candidateVersions
+    .filter(
+      (version) =>
+        version.caption?.trim().length > 0 ||
+        version.content_body?.trim().length > 0,
+    )
+    .map((version) => version.id),
+);
 
 const requestedCount = Number(process.env.S015_HUMAN_TRIAL_ASSIGN_COUNT ?? 4);
 if (
@@ -209,7 +236,13 @@ if (
 ) {
   throw new Error("HUMAN_TRIAL_ASSIGN_COUNT_INVALID");
 }
-const selected = candidates.slice(0, requestedCount);
+const selected = [...candidates]
+  .sort(
+    (left, right) =>
+      Number(contentVersionIds.has(right.current_version_id)) -
+      Number(contentVersionIds.has(left.current_version_id)),
+  )
+  .slice(0, requestedCount);
 const alreadyPending = candidates.filter(
   (row) => row.status === "waiting_client_approval",
 ).length;
@@ -221,53 +254,61 @@ if (mode === "--dry-run") {
       category: "glass_human_trial_preparation",
       counts: {
         candidates: candidates.length,
+        withCaptionOrBody: contentVersionIds.size,
         selected: selected.length,
         alreadyPending,
       },
     }),
   );
+  await signOutActors();
   process.exit(0);
 }
 
-const profilePresentation = {
-  ADMIN: ["إدارة سماوة", "إدارة"],
-  ACCOUNT_MANAGER: ["مدير حساب جلاس", "مدير حساب"],
-  CONTENT_WRITER: ["كاتب محتوى جلاس", "كاتب محتوى"],
-  DESIGNER: ["مصمم جلاس", "مصمم"],
-  UNASSIGNED: ["عضو فريق غير مسند", "فريق سماوة"],
-  CLIENT_APPROVER: ["معتمد جلاس", "معتمد العميل"],
-  CLIENT_VIEWER: ["مشاهد جلاس", "مشاهد العميل"],
-};
-expectNoError(
-  await service.from("member_profiles").upsert(
-    actorKeys.map((key) => ({
-      tenant_id: tenantId,
-      user_id: actors[key].id,
-      display_name: profilePresentation[key][0],
-      role_label: profilePresentation[key][1],
-      avatar_url: null,
-      sync_run_id: "s015-human-trial-presentation-v1",
-      updated_at: new Date().toISOString(),
-    })),
-    { onConflict: "tenant_id,user_id" },
+const profiles = expectNoError(
+  await admin
+    .from("member_profiles")
+    .select("user_id")
+    .eq("tenant_id", tenantId)
+    .in(
+      "user_id",
+      actorKeys.map((key) => actors[key].id),
+    ),
+  "HUMAN_TRIAL_PROFILE_INVENTORY_FAILED",
+);
+if (profiles.length !== actorKeys.length) {
+  throw new Error("HUMAN_TRIAL_PROFILE_INVENTORY_INCOMPLETE");
+}
+
+const existingTasks = expectNoError(
+  await admin
+    .from("deliverable_tasks")
+    .select("deliverable_id, assignee_user_id")
+    .eq("tenant_id", tenantId)
+    .eq("client_id", clientId)
+    .in(
+      "deliverable_id",
+      selected.map((row) => row.id),
+    ),
+  "HUMAN_TRIAL_TASK_INVENTORY_FAILED",
+);
+const existingTaskAssignments = new Set(
+  existingTasks.map(
+    (task) => `${task.deliverable_id}:${task.assignee_user_id ?? "unassigned"}`,
   ),
-  "HUMAN_TRIAL_PROFILE_REPAIR_FAILED",
 );
 
-const admin = await actorClient("ADMIN");
-const writer = await actorClient("CONTENT_WRITER");
-try {
-  for (const [index, deliverable] of selected.entries()) {
-    const dueDate = normalizedDate(deliverable.source_metadata?.publishDay);
+for (const [index, deliverable] of selected.entries()) {
+  const dueDate = normalizedDate(deliverable.source_metadata?.publishDay);
+  const writerAssignment = `${deliverable.id}:${actors.CONTENT_WRITER.id}`;
+  const designerAssignment = `${deliverable.id}:${actors.DESIGNER.id}`;
+  if (!existingTaskAssignments.has(writerAssignment)) {
     await auditedRpc(
       admin,
       "s015_upsert_deliverable_task",
       {
         target_client_id: clientId,
         target_deliverable_id: deliverable.id,
-        target_task_id: stableUuid(
-          `${importRunId}:${deliverable.id}:writer-task`,
-        ),
+        target_task_id: null,
         target_title: "إعداد المحتوى ومراجعته",
         target_description: "تنفيذ المحتوى وفق الخطة المعتمدة داخل مساحة جلاس.",
         target_status: "todo",
@@ -281,15 +322,15 @@ try {
       },
       "HUMAN_TRIAL_WRITER_ASSIGNMENT_FAILED",
     );
+  }
+  if (!existingTaskAssignments.has(designerAssignment)) {
     await auditedRpc(
       admin,
       "s015_upsert_deliverable_task",
       {
         target_client_id: clientId,
         target_deliverable_id: deliverable.id,
-        target_task_id: stableUuid(
-          `${importRunId}:${deliverable.id}:designer-task`,
-        ),
+        target_task_id: null,
         target_title: "إعداد التصميم أو المعاينة",
         target_description:
           "تجهيز الأصل البصري وربطه بالنسخة قبل الإرسال للعميل.",
@@ -305,15 +346,26 @@ try {
       "HUMAN_TRIAL_DESIGNER_ASSIGNMENT_FAILED",
     );
   }
+}
 
-  const trialDeliverable =
-    selected.find((row) => row.status === "not_started") ?? selected[0];
-  let current = await readTrialDeliverable(trialDeliverable.id);
-  const version = await readTrialVersion(current);
+const submittableStatuses = new Set([
+  "not_started",
+  "in_progress",
+  "internal_changes_requested",
+  "client_changes_requested",
+]);
+const trialDeliverable =
+  selected.find(
+    (row) =>
+      contentVersionIds.has(row.current_version_id) &&
+      submittableStatuses.has(row.status),
+  ) ?? selected[0];
+let current = await readTrialDeliverable(trialDeliverable.id);
+const version = await readTrialVersion(current);
 
-  if (current.status === "not_started") {
+  if (submittableStatuses.has(current.status)) {
     await auditedRpc(
-      writer,
+      admin,
       "s015_save_or_submit_version",
       {
         target_client_id: clientId,
@@ -373,7 +425,7 @@ try {
       deliverableId: current.id,
       versionId: version.id,
       runId: importRunId,
-      command: "send_client",
+      command: "send_to_client",
     });
     current = await readTrialDeliverable(current.id);
   }
@@ -381,18 +433,14 @@ try {
   if (current.status !== "waiting_client_approval") {
     throw new Error(`HUMAN_TRIAL_UNSUPPORTED_WORKFLOW_STATE:${current.status}`);
   }
-} finally {
-  await Promise.all([admin.auth.signOut(), writer.auth.signOut()]);
-}
-
-const resultResponse = await service
+const resultResponse = await admin
   .from("deliverables")
   .select("id, status", { count: "exact" })
   .eq("tenant_id", tenantId)
   .eq("client_id", clientId)
   .eq("import_run_id", importRunId);
 const resultRows = expectNoError(resultResponse, "HUMAN_TRIAL_RESULT_FAILED");
-const taskCountResponse = await service
+const taskCountResponse = await admin
   .from("deliverable_tasks")
   .select("id", { count: "exact", head: true })
   .eq("tenant_id", tenantId)
@@ -417,18 +465,7 @@ console.log(
     },
   }),
 );
-
-async function actorClient(key) {
-  const client = createClient(supabaseUrl, publishableKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-  const signIn = await client.auth.signInWithPassword({
-    email: actors[key].email,
-    password: actors[key].password,
-  });
-  if (signIn.error) throw new Error(`HUMAN_TRIAL_SIGN_IN_FAILED:${key}`);
-  return client;
-}
+await signOutActors();
 
 async function internalWorkflow({
   client,
@@ -456,7 +493,7 @@ async function internalWorkflow({
 }
 
 async function readTrialDeliverable(deliverableId) {
-  const deliverableResponse = await service
+  const deliverableResponse = await admin
     .from("deliverables")
     .select("id, status, current_version_id")
     .eq("tenant_id", tenantId)
@@ -470,7 +507,7 @@ async function readTrialDeliverable(deliverableId) {
 }
 
 async function readTrialVersion(deliverable) {
-  const versionResponse = await service
+  const versionResponse = await admin
     .from("deliverable_versions")
     .select(
       "id, version_number, brief, content_body, caption, channel, format, objective, kpi, source_reference",
@@ -486,7 +523,9 @@ async function readTrialVersion(deliverable) {
 async function auditedRpc(client, name, input, errorCode) {
   const response = await client.rpc(name, input);
   if (response.error)
-    throw new Error(`${errorCode}:${response.error.code ?? "unknown"}`);
+    throw new Error(
+      `${errorCode}:${response.error.code ?? "unknown"}:${response.error.message ?? "unknown"}`,
+    );
   return response.data;
 }
 
@@ -494,6 +533,12 @@ function expectNoError(response, code) {
   if (response.error)
     throw new Error(`${code}:${response.error.code ?? "unknown"}`);
   return response.data;
+}
+
+async function signOutActors() {
+  await Promise.all(
+    Object.values(actorSessions).map((client) => client.auth.signOut()),
+  );
 }
 
 function stableUuid(value) {

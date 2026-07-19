@@ -31,8 +31,23 @@ const parseSecureEnvFile = (filePath: string) => {
 
 const secureEnv = parseSecureEnvFile(secureEnvPath);
 
-for (const [key, value] of Object.entries(secureEnv)) {
+const projectEnvPath = process.env.S015_UAT_PROJECT_ENV_FILE;
+const projectEnv = projectEnvPath
+  ? parseSecureEnvFile(path.resolve(projectEnvPath))
+  : {};
+
+for (const [key, value] of Object.entries({ ...secureEnv, ...projectEnv })) {
   process.env[key] ??= value;
+}
+
+process.env.S015_UAT_SUPABASE_URL ??= process.env.NEXT_PUBLIC_SUPABASE_URL;
+process.env.S015_UAT_PUBLISHABLE_KEY ??=
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+if (!process.env.S015_UAT_SUPABASE_HOSTNAME && process.env.S015_UAT_SUPABASE_URL) {
+  process.env.S015_UAT_SUPABASE_HOSTNAME = new URL(
+    process.env.S015_UAT_SUPABASE_URL,
+  ).hostname;
 }
 
 const required = (key: string) => {
@@ -48,6 +63,8 @@ const allowedHostname = required("S015_UAT_ALLOWED_HOSTNAME").toLowerCase();
 const targetCategory = required("S015_UAT_TARGET_CATEGORY").toLowerCase();
 const acceptedCategories = new Set(["preview", "uat", "preview-uat"]);
 const vercelShareUrl = process.env.S015_UAT_VERCEL_SHARE_URL;
+const vercelCookieJar = process.env.S015_UAT_VERCEL_COOKIE_JAR;
+const hasVercelProtectionState = Boolean(vercelShareUrl || vercelCookieJar);
 const vercelStorageStatePath = path.resolve(
   process.cwd(),
   "test-results/s015-vercel-share-state.json",
@@ -110,10 +127,10 @@ if (
 
 export default defineConfig({
   testDir: "./tests/e2e-hosted",
-  globalSetup: vercelShareUrl
+  globalSetup: hasVercelProtectionState
     ? "./tests/e2e-hosted/support/vercel-share-global-setup.ts"
     : undefined,
-  globalTeardown: vercelShareUrl
+  globalTeardown: hasVercelProtectionState
     ? "./tests/e2e-hosted/support/vercel-share-global-teardown.ts"
     : undefined,
   fullyParallel: false,
@@ -125,7 +142,7 @@ export default defineConfig({
     actionTimeout: 60_000,
     baseURL,
     navigationTimeout: 60_000,
-    storageState: vercelShareUrl ? vercelStorageStatePath : undefined,
+    storageState: hasVercelProtectionState ? vercelStorageStatePath : undefined,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },

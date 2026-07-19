@@ -45,4 +45,7 @@ export const expectNoSensitiveLeakage = async (page: Page) => {
   await expect(page.getByText(/SUPABASE_SERVICE_ROLE_KEY/)).toHaveCount(0);
   await expect(page.getByText(/^tenant_[a-z0-9_-]+$/i)).toHaveCount(0);
   await expect(page.getByText(/^client_[a-z0-9_-]+$/i)).toHaveCount(0);
+  await expect(page.locator("body")).not.toContainText(
+    /\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/i,
+  );
 };

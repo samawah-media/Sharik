@@ -4,6 +4,8 @@
 
 `HOLD / HOSTED_TEAM_UAT_BLOCKED`. The first owner human trial rejected the product experience. Automated Auth/RLS/lifecycle evidence remains useful technical evidence, but it did not prove representative data, comprehensible navigation, actionable client approvals, or professional role-specific UX. H008-H010, X007, and T032 are reopened until X008 passes and the owner explicitly accepts the corrected Preview.
 
+Correction update: X008-A through X008-G are now implemented and verified on a new protected non-Production Preview. Real-Auth role smoke passed 21/21 across desktop, mobile, and Arabic RTL, and two genuine current Glass versions are visible to the client, including one with real caption/body. Status remains HOLD because X008-H requires explicit owner human PASS; no team invitation has been sent. The setup-only credential required to rerun the synthetic hosted mutation lifecycle is also unavailable on this workstation, so that rerun is recorded as a hosted permission blocker rather than a pass.
+
 | Gate | Status | Reason |
 |---|---|---|
 | Baseline integrity | green | Corrected locally and committed before this continuation. |
@@ -14,8 +16,8 @@
 | RTL/mobile/keyboard UX | green locally and hosted | Repository visual QA remains green; exact-HEAD hosted smoke passed across desktop, mobile Chromium, and Arabic RTL. The hosted lifecycle also verified keyboard/focus-critical surfaces and no page-level horizontal overflow. |
 | Persistent browser E2E | green | PR #37 quality run `29404575276` passed the full persistent suite on head SHA `98a6e6745cf5e6c13e76e672a44883ec0bd51201`: original lifecycle, mobile/RTL smokes, and real-Auth assignment journey covering management create/reassign, assignee status updates, old-assignee denial, and unrelated/client persona secrecy. |
 | Local MVP acceptance | green for Checkpoint 1A | Checkpoint 1A is locally accepted for the exact corrective commit after PR #37 quality run `29404575276` passed npm ci, lint, typecheck, unit 182, integration 112, clean Supabase start/reset, RLS simulator 24, pgTAP 6 files / 404 tests, component 65, fixture E2E 123, persistent E2E 4, secret scan, and build; local `git diff --check` also passed. No P0/P1 remains open for Checkpoint 1A. |
-| Hosted UAT | `HOSTED_TEAM_UAT_BLOCKED` | Historical smoke 27/27 and lifecycle 1/1 prove technical paths only. Owner human review found wrong-client copy, repeated navigation/actions, synthetic records in normal views, no representative assigned Glass work, and no actionable client pending item. |
-| Human product acceptance | red / HOLD | Owner explicitly rejected the current Preview. No team invitation or formal trial may begin until X008 is complete and the owner passes management, assigned-team, client-viewer, and client-approver journeys. |
+| Hosted UAT | amber / corrected Preview verified | New real-Auth role smoke passed 21/21 across desktop/mobile/RTL after representative Glass preparation. The setup-only service credential needed for a fresh synthetic mutation lifecycle is unavailable; historical lifecycle evidence remains technical context only. |
+| Human product acceptance | red / HOLD | X008-A through X008-G are complete, but no team invitation or formal trial may begin until the owner explicitly passes management, assigned-team, client-viewer, and client-approver journeys under X008-H. |
 | Production acceptance | not granted | Outside task boundary. Existing actions are limited to the authorized Draft PR and Preview/UAT target; no Production deployment, promotion, merge, public signup, external-client invitation, or real customer data is authorized. |
 
 ## 2026-07-15 Checkpoint 1A exact-HEAD closure

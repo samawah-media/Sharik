@@ -2,7 +2,7 @@
 
 ## Decision
 
-The corrected non-Production Preview is technically ready for the project owner to perform the final human walkthrough. It is not yet approved for a formal Samawah team invitation. X008-H, H008-H010, X007, and T032 remain open until the owner explicitly passes management, assigned-team, client-viewer, and client-approver journeys.
+The corrected non-Production Preview is `HOSTED_TEAM_UAT_READY_FOR_OWNER_TRIAL`. The owner can now perform the final human walkthrough. It is not yet approved for a formal Samawah team or external-client invitation. X008-H, H008-H010, X007, and T032 remain open until the owner explicitly passes management, assigned-team, client-viewer, and client-approver journeys.
 
 ## Corrected experience
 
@@ -19,8 +19,8 @@ The ignored local Glass workbook was inspected and imported without printing row
 ## Verification evidence
 
 - Local: lint, typecheck, unit 185, integration 112, component 67, RLS simulator 24, pgTAP 404, fixture E2E 126 passed with 6 configured skips, persistent E2E 4, secret scan, build, and `git diff --check` passed for the corrected application slice.
-- Hosted role smoke: 21/21 passed across desktop Chromium, mobile Chromium, and Arabic RTL for management, account manager, writer, designer, unassigned negative user, client viewer, and client approver. The pending checks require a real detail, a real caption/body, read-only viewer behavior, approver actions, no internal leakage, and no raw UUID.
-- The complete synthetic hosted mutation lifecycle could not be rerun from this workstation because the required setup-only service credential is not available. Historical lifecycle evidence remains valid, but it does not replace owner human acceptance.
+- Hosted read-only boundary/persona smoke: 27/27 passed across desktop Chromium, mobile Chromium, and Arabic RTL for management, account manager, writer, designer, unassigned negative user, client viewer, and client approver. The checks require real detail and caption/body, read-only viewer behavior, approver actions, no internal leakage, no raw UUID, and no visible mojibake.
+- Read-only smoke and the mutation lifecycle are now separate commands. No mutation lifecycle rerun was required for this owner-readiness pass; historical bounded lifecycle evidence remains valid and does not replace owner human acceptance. The current representative preparation used audited real-Auth personas and did not require a service-role key.
 
 ## Visual walkthrough summary
 
@@ -31,4 +31,4 @@ The ignored local Glass workbook was inspected and imported without printing row
 
 ## Remaining gate
 
-The owner must open the protected Preview, complete the four human walkthroughs, and explicitly record PASS or defects. No Production promotion, merge, public signup, external-client invitation, or team invitation is authorized by this handoff.
+The owner must open the reviewed protected UAT Preview, complete the four human walkthroughs, and explicitly record PASS or defects. Use only that reviewed UAT target; the Git-integrated PR Preview is attached to a different Vercel project/environment and is not UAT evidence. No Production promotion, merge, public signup, external-client invitation, or formal team invitation is authorized by this handoff.

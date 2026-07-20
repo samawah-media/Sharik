@@ -31,7 +31,7 @@ audited.
 
 ## Owner-Authorized Hosted Team UAT Amendment
 
-Status: `HOSTED_TEAM_UAT_BLOCKED` after owner human product rejection; Production remains blocked.
+Status: `HOSTED_TEAM_UAT_READY_FOR_OWNER_TRIAL`. Automated local, database, CI, representative-data, and hosted role gates are green; explicit owner human PASS remains the sole X008-H exit gate. Production remains blocked.
 
 This hosted amendment is additive to the accepted local baseline. T001-T019 remain historical local acceptance evidence and must not be edited into hosted PASS evidence.
 
@@ -63,7 +63,7 @@ No hosted mutation may begin until target identity, environment category, data c
 
 ## Product Experience Rescue Amendment
 
-Status: technical hosted paths passed historically, but product acceptance is reopened under X008. The current sequence is: correct role shells and client-specific copy; quarantine synthetic lifecycle residue from human views; present imported content professionally; assign and stage a representative Glass workflow through audited commands; add role/content/visual regressions; deploy the exact corrected Preview; obtain explicit owner human PASS. Only then may H008-H010, X007, and T032 close again. Production promotion is not authorized.
+Status: the corrective role shells, representative content, audited preparation, exact reviewed Preview, negative checks, and hosted desktop/mobile/RTL role matrix are complete. The sequence is now at its final owner action: perform the human walkthrough and record PASS or defects. Only a PASS may close H008-H010, X007, and T032. Production promotion is not authorized.
 
 Dependency inventory: add only the pinned packages required for React Hook Form,
 dnd-kit, Uppy, Tiptap, and TanStack Query/Table after license/security review.

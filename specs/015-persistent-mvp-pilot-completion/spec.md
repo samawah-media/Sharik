@@ -39,7 +39,7 @@ Hosted UAT execution, deployment/promotion, team access, real customer data, soc
 
 ## Owner-Authorized Hosted Team UAT Amendment
 
-Status: `HOSTED_TEAM_UAT_BLOCKED` after owner human product rejection on 2026-07-19. Historical technical hosted evidence remains valid, but H008-H010, X007, and T032 are reopened. Production acceptance is not granted.
+Status: `HOSTED_TEAM_UAT_READY_FOR_OWNER_TRIAL`. The corrected non-Production Preview, representative Glass/Hadna data, exact-head quality matrix, and automated hosted role matrix are green. H008-H010, X007, T032, and Production acceptance remain open until the owner completes X008-H and records an explicit human PASS.
 
 This amendment extends Spec 015 only. It does not create Spec 016, does not invalidate the completed local acceptance evidence, and does not convert local MVP acceptance into hosted or Production acceptance.
 
@@ -77,7 +77,8 @@ Stop before mutation or stop immediately during execution if Production is detec
 
 Use only one hosted final state, matching the canonical rescue prompt vocabulary:
 
-- `HOSTED_TEAM_UAT_READY` — only when H008, H009, H010, T032, and X007 are all genuinely closed by direct hosted evidence.
+- `HOSTED_TEAM_UAT_READY_FOR_OWNER_TRIAL` — when the corrected Preview and all automated technical/data/role gates are green, but the owner human walkthrough is still pending; this authorizes only the owner-controlled walkthrough.
+- `HOSTED_TEAM_UAT_READY` — only when H008, H009, H010, T032, and X007 are all genuinely closed by direct hosted evidence and explicit owner human PASS.
 - `HOSTED_TEAM_UAT_BLOCKED` — for every other incomplete or failed mandatory gate, including missing approved team access.
 
 Do not use Production ready, Production accepted, customer accepted, or live release for this amendment.

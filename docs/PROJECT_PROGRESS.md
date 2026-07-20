@@ -1,6 +1,14 @@
 # Project Progress
 
-## Spec 015 X008-H corrective code slice — 2026-07-20
+## Spec 015 ready for owner online trial — 2026-07-20
+
+Status: `HOSTED_TEAM_UAT_READY_FOR_OWNER_TRIAL`.
+
+The independent review is complete. Product gaps, stale viewer-copy E2E, visible Arabic mojibake, hosted smoke safety, and post-reset Supabase 502 recovery were corrected. Exact-head PR #37 quality run `29750961098` passed the full local/DB/browser/build matrix for head `2b637ade2e8c929d58fc9c06604f80e39c9e4362`; the corrected non-Production UAT Preview passed 27/27 read-only role/boundary checks across desktop, mobile, and RTL with representative Glass/Hadna content. No P0/P1 remains in this technical slice.
+
+The project owner may now enter the reviewed protected Preview and test management, assigned-team, client-viewer, and client-approver journeys. Formal team invitation remains paused until the owner records PASS under X008-H. Production, merge, public signup, external-client invitation, and real customer data remain outside this state. Historical status sections below are chronological and are superseded by this section when they conflict.
+
+## Historical Spec 015 X008-H corrective code slice — 2026-07-20
 
 Status: `HOLD / HOSTED_TEAM_UAT_BLOCKED`. The 2026-07-20 slice closed the rescue's product-code gaps (raw enums S015-P1-073, viewer copy S015-P1-074, hosted-UAT synthetic visibility S015-P1-075, Uppy English S015-P2-076) plus three rescue build/CI defects (S015-P1-076/S015-P1-077/S015-P2-077). The complete exact-HEAD quality matrix is green on PR #37 quality run `29725841355` for head `0d7e888` (unit 191, integration 112, RLS simulator 24, pgTAP 6/404, component 69, fixture E2E 126, persistent E2E 4, secret scan, build), and the exact-HEAD Vercel Preview is Ready. Two hosted/data blockers keep H008-H010/X007/T032 closed: defects C/F (S015-P1-078 / S015-P2-078) require the setup-only service credential for the bounded UAT data correction, and the hosted role walkthrough (S015-P1-079) requires protected Preview access and the approved UAT accounts. The agent stopped before any hosted data mutation per the authorized boundary; no secret was printed or requested, and no Production action, merge, external invitation, public signup, or workbook commit occurred.
 

@@ -1,6 +1,20 @@
 # Spec 015 gate status
 
-## Current owner decision — 2026-07-20
+## Authoritative current decision — 2026-07-20
+
+`HOSTED_TEAM_UAT_READY_FOR_OWNER_TRIAL`.
+
+- Corrected application and test-harness head: `2b637ade2e8c929d58fc9c06604f80e39c9e4362` on Draft PR #37, unmerged.
+- Exact-head CI: GitHub Actions `F-001 Quality` run `29750961098`, job `88381039693`, SUCCESS in 16m49s. It passed npm ci, lint, typecheck, unit 53 files, integration 28 files, clean Supabase start/reset, RLS simulator 8 files, pgTAP 6 files / 404 tests, component 21 files, fixture E2E 126, persistent E2E 4, secret scan, and build.
+- Hosted owner-trial evidence: the corrected protected non-Production UAT Preview passed read-only boundary/persona smoke 27/27 across desktop, mobile, and Arabic RTL. Seven role categories reached only their allowed surfaces; viewer/approver separation, genuine caption/body, internal-data secrecy, UUID secrecy, and no visible mojibake were asserted.
+- Data preparation: audited real-Auth preparation remained bounded and idempotent at 16 deliverables, 9 current versions with caption/body, 8 assignments across four representative deliverables, and 2 genuine pending current versions. No approval, media/file asset, or customer decision was fabricated.
+- Defect decision: S015-P1-078, S015-P1-079, and the governance defect S015-P1-068 are fixed/verified. No P0/P1 is open in the corrective technical slice. S015-P1-063 remains the single owner-human-acceptance blocker. S015-P2-078 is explicitly dispositioned: current user-visible labels are repaired and tested; direct cleanup of the stored synthetic UAT profile rows is deferred until the controlled setup credential is available. S015-P2-082 records the separate PR-Vercel-project alignment debt; testers must use only the reviewed UAT Preview.
+- Remaining gate: X008-H is open solely for explicit owner human PASS. Until that PASS, H008-H010, X007, and T032 remain open and no formal team or external-client invitation is authorized.
+- Production boundary: no Production deployment, alias/environment change, merge, public signup, external-client invitation, or real customer data action occurred.
+
+All status sections below are chronological evidence. Where they conflict, this authoritative decision and the current `tasks.md` X008-H state govern.
+
+## Historical corrective decision before final verification — 2026-07-20
 
 `HOLD / HOSTED_TEAM_UAT_BLOCKED`. The 2026-07-20 corrective code slice closed the rescue's product-code gaps (raw enums, viewer copy, synthetic-UAT visibility, Uppy English) plus three rescue build/CI defects, and the complete exact-HEAD quality matrix is green on PR #37 quality run `29725841355` for head `0d7e8886f9ea975def04cf2405ef8555d04feda5`, with the exact-HEAD Vercel Preview Ready. Two hosted/data blockers remain open and keep H008-H010/X007/T032 closed: the setup-only service credential required for the bounded UAT data correction (defects C/F → S015-P1-078 / S015-P2-078) is unavailable on this workstation, and the hosted role walkthrough (S015-P1-079) cannot be driven without protected Preview access and the approved UAT persona accounts. No hosted data was mutated and no secret was printed or requested.
 

@@ -5,7 +5,8 @@ import process from "node:process";
 import { createClient } from "@supabase/supabase-js";
 
 const mode = process.argv.find(
-  (value) => value === "--dry-run" || value === "--apply",
+  (value) =>
+    value === "--dry-run" || value === "--apply" || value === "--retire-empty",
 );
 if (!mode) throw new Error("HUMAN_TRIAL_MODE_REQUIRED");
 
@@ -48,6 +49,12 @@ if (
   process.env.S015_HUMAN_TRIAL_PREPARE_CONFIRM !== "1"
 ) {
   throw new Error("HUMAN_TRIAL_APPLY_CONFIRMATION_REQUIRED");
+}
+if (
+  mode === "--retire-empty" &&
+  process.env.S015_HUMAN_TRIAL_RETIRE_EMPTY_CONFIRM !== "1"
+) {
+  throw new Error("HUMAN_TRIAL_RETIRE_EMPTY_CONFIRMATION_REQUIRED");
 }
 
 const supabaseUrl = required("S015_UAT_SUPABASE_URL");
@@ -283,6 +290,36 @@ if (mode === "--dry-run") {
         alreadyPending,
         emptyPending: emptyPending.length,
       },
+    }),
+  );
+  await signOutActors();
+  process.exit(0);
+}
+
+if (mode === "--retire-empty") {
+  const maintenanceClient = createClient(
+    supabaseUrl,
+    required("S015_UAT_SERVICE_ROLE_KEY"),
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  );
+  const retirement = await maintenanceClient.rpc(
+    "s015_retire_empty_uat_review_items",
+    {
+      target_tenant_id: tenantId,
+      target_client_id: clientId,
+      target_run_id: importRunId,
+    },
+  );
+  if (retirement.error) {
+    throw new Error(
+      `HUMAN_TRIAL_EMPTY_REVIEW_RETIREMENT_FAILED:${retirement.error.code ?? "unknown"}`,
+    );
+  }
+  console.log(
+    JSON.stringify({
+      status: "retired",
+      category: "glass_human_trial_empty_review",
+      counts: { retired: retirement.data ?? 0 },
     }),
   );
   await signOutActors();

@@ -357,7 +357,7 @@ export const seedPersistentLifecycle = async (): Promise<{
 
   await assertLocalStackReachable(supabaseUrl);
   await createSyntheticAuthUsers(client);
-  await seedCoreRows(client);
+  await withPostgrestRetry(() => seedCoreRows(client));
 
   return {
     client,
@@ -388,7 +388,7 @@ export const seedPersistentReadOnlySmoke = async () => {
 
   await assertLocalStackReachable(supabaseUrl);
   await createSyntheticAuthUsers(client);
-  await seedReadOnlyRows(client);
+  await withPostgrestRetry(() => seedReadOnlyRows(client));
 
   return {
     client,
@@ -474,6 +474,25 @@ const assertLocalStackReachable = async (supabaseUrl: string) => {
   throw new Error(
     `Local Supabase stack is not reachable after ${maxAttempts} attempts (last status ${lastStatus}).`,
   );
+};
+
+const withPostgrestRetry = async <T>(op: () => Promise<T>): Promise<T> => {
+  const maxAttempts = 6;
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await op();
+    } catch (error) {
+      lastError = error;
+      const message = error instanceof Error ? error.message : String(error);
+      if (/PGRST002|schema cache|Could not query the database/i.test(message)) {
+        await new Promise((resolve) => setTimeout(resolve, 3_000));
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw lastError;
 };
 
 const createSyntheticAuthUsers = async (client: SupabaseClient) => {

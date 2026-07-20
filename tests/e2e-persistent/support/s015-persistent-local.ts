@@ -886,9 +886,8 @@ const seedReadOnlyRows = async (client: SupabaseClient) => {
   );
 };
 
-export const resetLocalDatabase = () => {
+const runLocalSupabaseCommand = (args: string[], failureMessage: string) => {
   const command = process.platform === "win32" ? "npx.cmd" : "npx";
-  const args = ["supabase@2.107.0", "db", "reset", "--local", "--no-seed"];
   const options = {
     stdio: "inherit" as const,
     env: {
@@ -898,20 +897,37 @@ export const resetLocalDatabase = () => {
     },
     windowsHide: true,
   };
+  const commandArgs = ["supabase@2.107.0", ...args];
   const result =
     process.platform === "win32"
       ? spawnSync(
           process.env.ComSpec ?? "cmd.exe",
-          ["/d", "/s", "/c", [command, ...args].join(" ")],
+          ["/d", "/s", "/c", [command, ...commandArgs].join(" ")],
           options,
         )
-      : spawnSync(command, args, options);
+      : spawnSync(command, commandArgs, options);
 
   if (result.status !== 0) {
-    throw new Error(
-      "Local Supabase reset failed during persistent E2E cleanup.",
-    );
+    throw new Error(failureMessage);
   }
+};
+
+export const resetLocalDatabase = () => {
+  runLocalSupabaseCommand(
+    ["db", "reset", "--local", "--no-seed"],
+    "Local Supabase reset failed during persistent E2E cleanup.",
+  );
+};
+
+const restartLocalSupabaseAfterReset = () => {
+  runLocalSupabaseCommand(
+    ["stop", "--no-backup"],
+    "Local Supabase stop failed during persistent E2E recovery.",
+  );
+  runLocalSupabaseCommand(
+    ["start"],
+    "Local Supabase restart failed during persistent E2E recovery.",
+  );
 };
 
 export const resetLocalDatabaseIfLifecycleSeeded = async () => {
@@ -921,7 +937,10 @@ export const resetLocalDatabaseIfLifecycleSeeded = async () => {
     .select("id", { count: "exact", head: true })
     .eq("id", ids.reservationLedgerId);
   expectNoError(existingSeed, "persistent lifecycle isolation check");
-  if ((existingSeed.count ?? 0) > 0) resetLocalDatabase();
+  if ((existingSeed.count ?? 0) > 0) {
+    resetLocalDatabase();
+    restartLocalSupabaseAfterReset();
+  }
 };
 
 export const createPersistentActorClient = async ({

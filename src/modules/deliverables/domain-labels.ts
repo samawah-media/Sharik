@@ -71,6 +71,15 @@ export const approvalDecisionLabels: Record<string, string> = {
   internal_changes: "تعديلات داخلية",
 };
 
+export const slaEventLabels: Record<string, string> = {
+  running: "وقت التنفيذ جارٍ",
+  paused_waiting_client: "توقف الوقت بانتظار العميل",
+  paused_waiting_internal_decision: "توقف الوقت بانتظار قرار داخلي",
+  resumed: "استؤنف وقت التنفيذ",
+  completed: "اكتمل وقت التنفيذ",
+  cancelled: "أُلغي وقت التنفيذ",
+};
+
 export const fileVisibilityLabels: Record<FileAssetVisibility, string> = {
   internal_only: "ملف داخلي",
   client_visible: "ملف متاح",
@@ -91,16 +100,20 @@ export const priorityLabel = (priority: string) =>
   priorityLabels[priority] ?? "عادية";
 
 export const taskStatusLabel = (status: string) =>
-  taskStatusLabels[status] ?? status;
+  taskStatusLabels[status] ?? "حالة مهمة غير معروفة";
 
 export const versionStatusLabel = (status: string) =>
-  versionStatusLabels[status] ?? status;
+  versionStatusLabels[status] ?? "حالة نسخة غير معروفة";
 
 export const qualityCheckStatusLabel = (status: string) =>
-  qualityCheckStatusLabels[status] ?? status;
+  qualityCheckStatusLabels[status] ?? "حالة جودة غير معروفة";
 
 export const approvalDecisionLabel = (decision: string) =>
-  approvalDecisionLabels[decision] ?? decision;
+  approvalDecisionLabels[decision] ?? "قرار غير معروف";
 
 export const fileVisibilityLabel = (visibility: FileAssetVisibility | string) =>
-  fileVisibilityLabels[visibility as FileAssetVisibility] ?? visibility;
+  fileVisibilityLabels[visibility as FileAssetVisibility] ??
+  "نوع وصول غير معروف";
+
+export const slaEventLabel = (kind: string) =>
+  slaEventLabels[kind] ?? "تحديث وقت التنفيذ";

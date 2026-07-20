@@ -1,4 +1,5 @@
 import "server-only";
+import { repairArabicMojibake } from "@/modules/members/member-directory";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { ClientSafeDeliverableDetail } from "@/ui/client/client-deliverable-detail";
@@ -142,7 +143,7 @@ async function readClientApprovalDetailForDeliverable(
   const authorNames = new Map(
     (profilesResult.data ?? []).map((profile) => [
       profile.user_id,
-      profile.display_name,
+      repairArabicMojibake(profile.display_name),
     ]),
   );
 

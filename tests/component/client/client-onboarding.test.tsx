@@ -1,11 +1,13 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 import {
   ClientHome,
   ClientInviteForm,
   ClientPortalDeniedState,
   ClientPortalEmptyState,
 } from "@/ui/client/client-home";
+
+afterEach(cleanup);
 
 describe("client onboarding UI", () => {
   it("renders client invite form with exactly one client scope field", () => {
@@ -52,6 +54,18 @@ describe("client onboarding UI", () => {
     expect(screen.getByText("52")).toBeInTheDocument();
     expect(screen.queryByText("Client B")).not.toBeInTheDocument();
     expect(screen.queryByText("لوحة الإدارة")).not.toBeInTheDocument();
+  });
+
+  it("describes pending work as read-only for a client viewer", () => {
+    render(<ClientHome canApprove={false} clientName="هدنة" />);
+
+    expect(
+      screen.getByText(/هنا تتابع ما هو قيد المراجعة/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "عرض ما هو قيد المراجعة" }),
+    ).toHaveAttribute("href", "/client/pending");
+    expect(screen.queryByText(/هنا تجد ما يحتاج قرارك/)).not.toBeInTheDocument();
   });
 
   it("renders empty and denied states without leaking other clients", () => {

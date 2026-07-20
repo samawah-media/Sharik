@@ -86,6 +86,7 @@ export function ContentPreviewCard({
         className,
       )}
       data-content-card
+      data-has-caption={Boolean(caption)}
       dir="rtl"
     >
       <div className="relative isolate overflow-hidden bg-accent-soft text-foreground">

@@ -80,7 +80,20 @@ const { workspace } = vi.hoisted(() => {
         sortOrder: 0,
       },
     ],
-    activity: [],
+    activity: [
+      {
+        id: "approval_1",
+        kind: "approval",
+        label: "قرار العميل: مقبول",
+        createdAt: "2026-07-03T00:00:00.000Z",
+      },
+      {
+        id: "sla_1",
+        kind: "sla",
+        label: "توقف الوقت بانتظار العميل",
+        createdAt: "2026-07-02T00:00:00.000Z",
+      },
+    ],
     eligibleAssignees: [],
     taskCapabilities: {
       canCreateTask: false,
@@ -102,6 +115,8 @@ const rawEnumTokens = [
   "changes_required",
   "in_progress",
   "normal",
+  "approved",
+  "paused_waiting_client",
 ];
 
 vi.mock("@/server/actions/deliverable-workspace-actions", () => ({
@@ -160,6 +175,8 @@ describe("universal deliverable drawer localization", () => {
       "ملف داخلي",
       "تطلب تعديلًا",
       "معتمدة داخليًا",
+      "قرار العميل: مقبول",
+      "توقف الوقت بانتظار العميل",
     ];
     for (const label of expectedArabicLabels) {
       expect(drawerText, `expected Arabic label "${label}" in drawer`).toContain(label);

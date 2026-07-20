@@ -25,6 +25,12 @@ export function ClientHome({
   const reviewDescription = canApprove
     ? "لا توجد عناصر تحتاج قرارك الآن. سنعرض هنا فقط النسخ التي اعتمدها فريق سماوة وأرسلها لك رسميًا."
     : "هذا الحساب للاطلاع فقط. ستظهر هنا النسخ قيد المراجعة بمجرد أن يعتمدها فريق سماوة للجهة المختصة بالاعتماد.";
+  const heroDescription = canApprove
+    ? "هنا تجد ما يحتاج قرارك، وما تم تسليمه، وحالة المخرجات المتفق عليها في مكان واحد واضح."
+    : "هنا تتابع ما هو قيد المراجعة، وما تم تسليمه، وحالة المخرجات المتفق عليها في مكان واحد واضح.";
+  const pendingLinkLabel = canApprove
+    ? "مراجعة ما ينتظرني"
+    : "عرض ما هو قيد المراجعة";
 
   return (
     <main className="mx-auto grid w-full max-w-5xl gap-6 px-4 py-6 sm:py-8">
@@ -37,12 +43,11 @@ export function ClientHome({
           مساحة {displayClientName}
         </h1>
         <p className="max-w-2xl text-sm leading-6 text-muted">
-          هنا تجد ما يحتاج قرارك، وما تم تسليمه، وحالة المخرجات المتفق عليها في
-          مكان واحد واضح.
+          {heroDescription}
         </p>
         <div className="flex flex-col gap-2 sm:flex-row">
           <ButtonLink href="/client/pending" variant="primary">
-            مراجعة ما ينتظرني
+            {pendingLinkLabel}
           </ButtonLink>
           <ButtonLink href="/client/files" variant="secondary">
             فتح الملفات

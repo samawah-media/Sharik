@@ -6,6 +6,7 @@ import {
   fileVisibilityLabel,
   priorityLabel,
   qualityCheckStatusLabel,
+  slaEventLabel,
   taskStatusLabel,
   versionStatusLabel,
 } from "@/modules/deliverables/domain-labels";
@@ -49,6 +50,26 @@ describe("domain labels", () => {
     expect(qualityCheckStatusLabel("changes_required")).toBe("تطلب تعديلًا");
     expect(approvalDecisionLabel("approved")).toBe("مقبول");
     expect(fileVisibilityLabel("internal_only")).toBe("ملف داخلي");
+    expect(slaEventLabel("paused_waiting_client")).toBe(
+      "توقف الوقت بانتظار العميل",
+    );
+  });
+
+  it("uses safe Arabic fallbacks instead of leaking unknown technical values", () => {
+    expect(taskStatusLabel("future_task_state")).toBe(
+      "حالة مهمة غير معروفة",
+    );
+    expect(versionStatusLabel("future_version_state")).toBe(
+      "حالة نسخة غير معروفة",
+    );
+    expect(qualityCheckStatusLabel("future_quality_state")).toBe(
+      "حالة جودة غير معروفة",
+    );
+    expect(approvalDecisionLabel("future_decision")).toBe("قرار غير معروف");
+    expect(fileVisibilityLabel("future_visibility")).toBe(
+      "نوع وصول غير معروف",
+    );
+    expect(slaEventLabel("future_sla_event")).toBe("تحديث وقت التنفيذ");
   });
 
   it("never surfaces a raw technical enum token for known keys", () => {

@@ -11,6 +11,10 @@ import type {
   TaskCapabilities,
 } from "@/modules/deliverables/deliverable-workspace";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  approvalDecisionLabel,
+  slaEventLabel,
+} from "@/modules/deliverables/domain-labels";
 
 type ScopedDeliverable = { id: string; currentVersionId?: string };
 
@@ -491,14 +495,14 @@ export async function listScopedDeliverableWorkspaces({
         ...approvalRows.map((row) => ({
           id: `approval-${row.id}`,
           kind: "approval" as const,
-          label: `${row.approval_kind === "internal" ? "قرار داخلي" : "قرار العميل"}: ${row.decision}`,
+          label: `${row.approval_kind === "internal" ? "قرار داخلي" : "قرار العميل"}: ${approvalDecisionLabel(row.decision)}`,
           createdAt: row.decided_at,
           actor: member(directory, row.actor_user_id),
         })),
         ...slaRows.map((row) => ({
           id: `sla-${row.id}`,
           kind: "sla" as const,
-          label: `SLA: ${row.kind}`,
+          label: slaEventLabel(row.kind),
           createdAt: row.started_at,
         })),
       ].sort((a, b) => b.createdAt.localeCompare(a.createdAt));

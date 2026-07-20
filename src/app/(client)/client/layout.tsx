@@ -11,9 +11,10 @@ import {
 export default async function ClientLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  let canApprove = true;
+  const usesFixtures = canUseRouteActorFixtures();
+  let canApprove = usesFixtures;
 
-  if (!canUseRouteActorFixtures()) {
+  if (!usesFixtures) {
     const runtime = await resolveRuntimeContext();
 
     if (runtime.ok && !isClientPortalOnlyActor(runtime.actor)) {

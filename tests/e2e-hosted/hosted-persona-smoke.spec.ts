@@ -8,6 +8,32 @@ import {
 
 test.describe.configure({ timeout: 180_000 });
 
+async function expectEveryPendingItemHasReviewPayload(
+  page: import("@playwright/test").Page,
+) {
+  const details = page.getByTestId("client-approval-detail");
+  const detailCount = await details.count();
+  expect(detailCount).toBeGreaterThan(0);
+
+  for (let index = 0; index < detailCount; index += 1) {
+    const detail = details.nth(index);
+    const contentCard = detail.locator("[data-content-card]");
+    await expect(contentCard).toHaveCount(1);
+
+    const hasCaption =
+      (await contentCard.getAttribute("data-has-caption")) === "true";
+    const hasMedia =
+      (await contentCard.locator("[data-media-fallback]").count()) === 0;
+    const hasVisibleFile =
+      (await detail.locator('[data-testid="client-files"] > li').count()) > 0;
+
+    expect(
+      hasCaption || hasMedia || hasVisibleFile,
+      `pending detail ${index + 1} must expose a real caption, media, or visible file`,
+    ).toBe(true);
+  }
+}
+
 const internalPersonas: HostedPersonaKey[] = [
   "ADMIN",
   "ACCOUNT_MANAGER",
@@ -50,9 +76,7 @@ test("hosted client viewer is read-only in pending inbox", async ({ page }) => {
     page.getByTestId("client-approval-detail").first(),
   ).toBeVisible();
   await expect(page.locator('[data-review-ready="false"]')).toHaveCount(0);
-  await expect(
-    page.locator('[data-content-card][data-has-caption="true"]'),
-  ).not.toHaveCount(0);
+  await expectEveryPendingItemHasReviewPayload(page);
   await expect(
     page.getByRole("heading", { name: "للاطلاع" }).first(),
   ).toBeVisible();
@@ -61,6 +85,9 @@ test("hosted client viewer is read-only in pending inbox", async ({ page }) => {
     0,
   );
   await expect(page.getByRole("button", { name: "طلب تعديل" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "إضافة التعليق" })).toHaveCount(
+    0,
+  );
   await expectNoSensitiveLeakage(page);
 });
 
@@ -79,9 +106,7 @@ test("hosted client approver reaches pending inbox without internal leakage", as
     page.getByTestId("client-approval-detail").first(),
   ).toBeVisible();
   await expect(page.locator('[data-review-ready="false"]')).toHaveCount(0);
-  await expect(
-    page.locator('[data-content-card][data-has-caption="true"]'),
-  ).not.toHaveCount(0);
+  await expectEveryPendingItemHasReviewPayload(page);
   await expect(
     page.getByRole("button", { name: "اعتماد المخرج" }).first(),
   ).toBeVisible();

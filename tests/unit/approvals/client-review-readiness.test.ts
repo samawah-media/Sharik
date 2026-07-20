@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { hasClientReviewPayload } from "@/modules/approvals/client-review-readiness";
+import {
+  firstMeaningfulReviewText,
+  hasClientReviewPayload,
+  isMeaningfulReviewText,
+} from "@/modules/approvals/client-review-readiness";
 
 describe("client review readiness", () => {
   it.each([{ caption: "approval caption" }, { body: "report body" }])(
@@ -28,5 +32,26 @@ describe("client review readiness", () => {
         ],
       }),
     ).toBe(false);
+  });
+
+  it.each(["-", "—", "...", "N/A", "TBD", "لا يوجد", "غير متوفر"])(
+    "rejects placeholder-only review text: %s",
+    (value) => {
+      expect(isMeaningfulReviewText(value)).toBe(false);
+      expect(hasClientReviewPayload({ caption: value })).toBe(false);
+    },
+  );
+
+  it.each(["قريبًا", "مراجعة النسخة النهائية", "Campaign caption 2"])(
+    "accepts human-readable review text: %s",
+    (value) => {
+      expect(isMeaningfulReviewText(value)).toBe(true);
+    },
+  );
+
+  it("selects a meaningful body when caption is only a placeholder", () => {
+    expect(firstMeaningfulReviewText("-", "النص الحقيقي للنسخة")).toBe(
+      "النص الحقيقي للنسخة",
+    );
   });
 });

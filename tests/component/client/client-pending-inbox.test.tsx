@@ -50,6 +50,9 @@ describe("client pending inbox", () => {
     expect(
       screen.getAllByRole("button", { name: "اعتماد المخرج" }),
     ).toHaveLength(2);
+    expect(
+      screen.getAllByRole("button", { name: "إضافة التعليق" }),
+    ).toHaveLength(2);
     expect(screen.getAllByText("منشور الأسبوع", { exact: true })).toHaveLength(
       1,
     );
@@ -83,6 +86,9 @@ describe("client pending inbox", () => {
       screen.getByRole("heading", { name: "للاطلاع" }),
     ).toBeInTheDocument();
     expect(screen.queryByText("قرارك مطلوب")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "إضافة التعليق" }),
+    ).not.toBeInTheDocument();
     expect(
       screen.getByText("قيد المراجعة", { selector: "span" }),
     ).toBeInTheDocument();

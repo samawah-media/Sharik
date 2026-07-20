@@ -1,5 +1,6 @@
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableWorkspaceSummary } from "@/modules/deliverables/deliverable-workspace";
+import { firstMeaningfulReviewText } from "@/modules/approvals/client-review-readiness";
 import { ContentPreviewCard } from "./content-preview-card";
 import { WorkspaceInlineMedia } from "./workspace-files";
 
@@ -26,7 +27,7 @@ export function DeliverableContentCard({
 
   return (
     <ContentPreviewCard
-      caption={version?.caption ?? version?.body}
+      caption={firstMeaningfulReviewText(version?.caption, version?.body)}
       channel={version?.channel ?? typeLabel}
       clientName={clientName}
       eyebrow={version ? `النسخة ${version.versionNumber}` : "المخرج"}

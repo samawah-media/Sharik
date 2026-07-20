@@ -1,4 +1,5 @@
 import type { FileAssetVisibility } from "@/modules/files/file-visibility-rules";
+import { firstMeaningfulReviewText } from "@/modules/approvals/client-review-readiness";
 import type { ClientApprovalFormAction } from "./client-approval-panel";
 import {
   ClientApprovalPanel,
@@ -126,7 +127,10 @@ export function ClientDeliverableDetail({
       </div>
 
       <ContentPreviewCard
-        caption={detail.content?.caption ?? detail.content?.body}
+        caption={firstMeaningfulReviewText(
+          detail.content?.caption,
+          detail.content?.body,
+        )}
         channel={detail.content?.channel}
         clientName={detail.clientName}
         eyebrow={detail.approvalItem.versionLabel}
@@ -231,11 +235,13 @@ export function ClientDeliverableDetail({
             لا توجد تعليقات ظاهرة الآن.
           </p>
         )}
-        <ClientWorkspaceCommentForm
-          clientId={detail.approvalItem.clientId}
-          deliverableId={detail.approvalItem.deliverableId}
-          versionId={detail.approvalItem.versionId}
-        />
+        {canApprove ? (
+          <ClientWorkspaceCommentForm
+            clientId={detail.approvalItem.clientId}
+            deliverableId={detail.approvalItem.deliverableId}
+            versionId={detail.approvalItem.versionId}
+          />
+        ) : null}
       </section>
     </section>
   );

@@ -1,5 +1,6 @@
 import { FileText, ImageIcon, Instagram, Megaphone, Play } from "lucide-react";
 import type { ReactNode } from "react";
+import { isMeaningfulReviewText } from "@/modules/approvals/client-review-readiness";
 import { Badge } from "@/ui/core/badge";
 import { cn } from "@/ui/core/utils";
 
@@ -76,6 +77,7 @@ export function ContentPreviewCard({
 }: ContentPreviewCardProps) {
   const presentation = channelPresentation(channel || format);
   const Icon = presentation.icon;
+  const visibleCaption = isMeaningfulReviewText(caption) ? caption : undefined;
   const showFormat =
     Boolean(format) && normalized(format) !== normalized(presentation.label);
 
@@ -86,7 +88,7 @@ export function ContentPreviewCard({
         className,
       )}
       data-content-card
-      data-has-caption={Boolean(caption)}
+      data-has-caption={Boolean(visibleCaption)}
       dir="rtl"
     >
       <div className="relative isolate overflow-hidden bg-accent-soft text-foreground">
@@ -130,11 +132,11 @@ export function ContentPreviewCard({
           {showFormat ? <Badge tone="muted">{format}</Badge> : null}
           {status ? <Badge tone="accent">{status}</Badge> : null}
         </div>
-        {caption ? (
+        {visibleCaption ? (
           <div>
             <p className="text-xs font-semibold text-muted">{captionLabel}</p>
             <p className="mt-1 line-clamp-3 whitespace-pre-wrap break-words text-sm leading-7 text-foreground">
-              {caption}
+              {visibleCaption}
             </p>
           </div>
         ) : (

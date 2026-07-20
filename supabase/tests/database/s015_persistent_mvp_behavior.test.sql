@@ -551,20 +551,31 @@ select is(
 );
 reset role;
 
+select is(
+  private.s015_meaningful_client_review_text('-'),
+  false,
+  'placeholder punctuation is not meaningful client review text'
+);
+select is(
+  private.s015_meaningful_client_review_text('نسخة مراجعة حقيقية'),
+  true,
+  'Arabic review content is meaningful client review text'
+);
+
 insert into public.deliverable_versions (
-  id, tenant_id, client_id, deliverable_id, version_number, status
+  id, tenant_id, client_id, deliverable_id, version_number, status, caption
 ) values (
   '21000000-0000-4000-8000-000000000645',
   '21000000-0000-4000-8000-000000000001',
   '21000000-0000-4000-8000-000000000301',
-  '21000000-0000-4000-8000-000000000520', 99, 'client_visible'
+  '21000000-0000-4000-8000-000000000520', 99, 'client_visible', '-'
 );
 select throws_ok(
   $$update public.deliverables
     set current_version_id = '21000000-0000-4000-8000-000000000645'
     where id = '21000000-0000-4000-8000-000000000520'$$,
   'P0001', 'client review payload required',
-  'waiting client review cannot switch to an empty current version'
+  'waiting client review cannot switch to a placeholder-only current version'
 );
 select is(
   (select current_version_id from public.deliverables
@@ -584,12 +595,12 @@ insert into public.deliverables (
   's015-empty-client-review', true, true
 );
 insert into public.deliverable_versions (
-  id, tenant_id, client_id, deliverable_id, version_number, status
+  id, tenant_id, client_id, deliverable_id, version_number, status, caption
 ) values (
   '21000000-0000-4000-8000-000000000643',
   '21000000-0000-4000-8000-000000000001',
   '21000000-0000-4000-8000-000000000301',
-  '21000000-0000-4000-8000-000000000543', 1, 'internally_approved'
+  '21000000-0000-4000-8000-000000000543', 1, 'internally_approved', '—'
 );
 update public.deliverables
 set current_version_id = '21000000-0000-4000-8000-000000000643'
@@ -603,7 +614,7 @@ select throws_ok(
     '21000000-0000-4000-8000-000000000643', 'send_to_client', null, null,
     gen_random_uuid(), gen_random_uuid(), 's015-empty-client-review-send')$$,
   'P0001', 'client review payload required',
-  'empty text and file payload cannot be sent to client'
+  'placeholder-only text and empty file payload cannot be sent to client'
 );
 reset role;
 select is(
@@ -626,12 +637,12 @@ insert into public.deliverables (
   's015-legacy-empty-client-review', true, true, 'pgtap-empty-review'
 );
 insert into public.deliverable_versions (
-  id, tenant_id, client_id, deliverable_id, version_number, status
+  id, tenant_id, client_id, deliverable_id, version_number, status, caption
 ) values (
   '21000000-0000-4000-8000-000000000644',
   '21000000-0000-4000-8000-000000000001',
   '21000000-0000-4000-8000-000000000301',
-  '21000000-0000-4000-8000-000000000544', 1, 'client_visible'
+  '21000000-0000-4000-8000-000000000544', 1, 'client_visible', 'N/A'
 );
 update public.deliverables
 set current_version_id = '21000000-0000-4000-8000-000000000644'
@@ -655,7 +666,7 @@ select throws_ok(
     '21000000-0000-4000-8000-000000000644', 'approved', null,
     gen_random_uuid(), gen_random_uuid(), 's015-legacy-empty-client-approve')$$,
   'P0001', 'client review payload required',
-  'legacy empty client review payload cannot be approved'
+  'legacy placeholder-only client review payload cannot be approved'
 );
 reset role;
 select is(
@@ -1043,7 +1054,7 @@ insert into storage.objects (id, bucket_id, name, owner_id)
 values (
   '21000000-0000-4000-8000-000000000932', 'deliverable-assets',
   '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/client-note.txt',
-  '21000000-0000-4000-8000-000000000202'
+  '21000000-0000-4000-8000-000000000206'
 ), (
   '21000000-0000-4000-8000-000000000934', 'deliverable-assets',
   '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/internal.txt',
@@ -1100,6 +1111,41 @@ select results_eq(
   $$values ('Manager A'::text)$$,
   'Client A resolves only the author name attached to its visible comment'
 );
+select throws_ok(
+  $$select public.s015_add_workspace_comment(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000532',
+    '21000000-0000-4000-8000-000000000632', 'client_visible', 'client reply',
+    '{"type":"doc","content":[]}'::jsonb,
+    gen_random_uuid(), gen_random_uuid(), 's015-viewer-comment-denied')$$,
+  '42501', 'client comment denied',
+  'client viewer cannot add a client-visible comment'
+);
+select is(
+  (select count(*)::integer from public.comments where body = 'client reply'),
+  0,
+  'denied viewer comment leaves no partial comment'
+);
+select is(private.s015_can_upload_storage_object(
+  'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/client-note.txt'
+), false, 'client viewer cannot upload to a visible version path');
+select throws_ok(
+  $$select public.s015_register_file_asset(
+    gen_random_uuid(),
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000000532',
+    '21000000-0000-4000-8000-000000000632',
+    'deliverable-assets',
+    '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/client-note.txt',
+    'client-note.txt', 'text/plain', 12, 'client_uploaded', false,
+    gen_random_uuid(), gen_random_uuid(), 's015-viewer-file-upload-denied')$$,
+  '42501', 'client upload denied',
+  'client viewer cannot register a client-uploaded file'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000206', true);
 select lives_ok(
   $$select public.s015_add_workspace_comment(
     '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000532',
@@ -1107,12 +1153,12 @@ select lives_ok(
     '{"type":"doc","content":[]}'::jsonb,
     '21000000-0000-4000-8000-000000000736', '21000000-0000-4000-8000-000000000836',
     's015-visible-client-comment')$$,
-  'Client A can add a client-visible Tiptap comment to the exact visible version'
+  'client approver can add a client-visible Tiptap comment to the exact visible version'
 );
 select ok(private.s015_can_upload_storage_object(
   'deliverable-assets',
   '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/client-note.txt'
-), 'Client A viewer can upload only to its exact visible version path');
+), 'client approver can upload only to its exact visible version path');
 select results_eq(
   $$select public.s015_register_file_asset(
     '21000000-0000-4000-8000-000000000933',
@@ -1125,7 +1171,7 @@ select results_eq(
     '21000000-0000-4000-8000-000000000734',
     '21000000-0000-4000-8000-000000000834', 's015-client-file-upload')$$,
   $$values ('21000000-0000-4000-8000-000000000933'::uuid)$$,
-  'Client A registers only client-uploaded visibility'
+  'client approver registers only client-uploaded visibility'
 );
 select lives_ok(
   $$select * from public.s015_authorize_file_download('21000000-0000-4000-8000-000000000933')$$,

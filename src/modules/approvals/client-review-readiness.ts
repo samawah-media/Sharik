@@ -7,10 +7,53 @@ export type ClientReviewPayload = {
   }[];
 };
 
-const hasText = (value?: string | null) => Boolean(value?.trim());
+const placeholderValues = new Set([
+  "-",
+  "--",
+  "–",
+  "—",
+  "_",
+  ".",
+  "...",
+  "n/a",
+  "na",
+  "none",
+  "null",
+  "tbd",
+  "لا يوجد",
+  "لا يوجد محتوى",
+  "غير متاح",
+  "غير متاحة",
+  "غير متوفر",
+  "غير محدد",
+  "لاحقا",
+  "لاحقًا",
+]);
+
+export function isMeaningfulReviewText(value?: string | null) {
+  const normalized = value
+    ?.trim()
+    .replace(/\s+/gu, " ")
+    .toLocaleLowerCase("ar");
+
+  return Boolean(
+    normalized &&
+      !placeholderValues.has(normalized) &&
+      /\p{L}/u.test(normalized),
+  );
+}
+
+export function firstMeaningfulReviewText(
+  ...values: Array<string | null | undefined>
+) {
+  return values.find((value) => isMeaningfulReviewText(value)) ?? undefined;
+}
 
 export function hasClientReviewPayload(payload: ClientReviewPayload) {
-  if (hasText(payload.caption) || hasText(payload.body)) {
+  if (
+    isMeaningfulReviewText(payload.caption) ||
+    isMeaningfulReviewText(payload.body)
+  ) {
     return true;
   }
 

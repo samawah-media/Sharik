@@ -225,12 +225,45 @@ const candidateVersions = expectNoError(
     ),
   "HUMAN_TRIAL_VERSION_CONTENT_INVENTORY_FAILED",
 );
+const placeholderReviewValues = new Set([
+  "-",
+  "--",
+  "–",
+  "—",
+  "_",
+  ".",
+  "...",
+  "n/a",
+  "na",
+  "none",
+  "null",
+  "tbd",
+  "لا يوجد",
+  "لا يوجد محتوى",
+  "غير متاح",
+  "غير متاحة",
+  "غير متوفر",
+  "غير محدد",
+  "لاحقا",
+  "لاحقًا",
+]);
+const isMeaningfulReviewText = (value) => {
+  const normalized = value
+    ?.trim()
+    .replace(/\s+/gu, " ")
+    .toLocaleLowerCase("ar");
+  return Boolean(
+    normalized &&
+      !placeholderReviewValues.has(normalized) &&
+      /\p{L}/u.test(normalized),
+  );
+};
 const contentVersionIds = new Set(
   candidateVersions
     .filter(
       (version) =>
-        version.caption?.trim().length > 0 ||
-        version.content_body?.trim().length > 0,
+        isMeaningfulReviewText(version.caption) ||
+        isMeaningfulReviewText(version.content_body),
     )
     .map((version) => version.id),
 );

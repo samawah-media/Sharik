@@ -826,8 +826,8 @@ const seedReadOnlyRows = async (client: SupabaseClient) => {
       client_id: ids.clientA,
       name: persistentDeliverableNames.smoke,
       type: "post",
-      status: "waiting_client_approval",
-      progress_percentage: 80,
+      status: "internally_approved",
+      progress_percentage: 70,
       idempotency_key: `local-hadna-smoke-${runId}`,
       requires_internal_approval: true,
       requires_client_approval: true,
@@ -844,6 +844,7 @@ const seedReadOnlyRows = async (client: SupabaseClient) => {
       deliverable_id: ids.mainDeliverableId,
       version_number: 1,
       status: "client_visible",
+      caption: "نسخة مراجعة دائمة لاختبار اعتماد العميل",
       submitted_by: actors.assignedWriter.id,
     }),
     "smoke version seed",
@@ -852,7 +853,11 @@ const seedReadOnlyRows = async (client: SupabaseClient) => {
   expectNoError(
     await client
       .from("deliverables")
-      .update({ current_version_id: uuid("000000000621") })
+      .update({
+        current_version_id: uuid("000000000621"),
+        status: "waiting_client_approval",
+        progress_percentage: 80,
+      })
       .eq("id", ids.mainDeliverableId),
     "smoke current version seed",
   );

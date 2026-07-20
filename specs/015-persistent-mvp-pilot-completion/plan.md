@@ -31,7 +31,7 @@ audited.
 
 ## Owner-Authorized Hosted Team UAT Amendment
 
-Status: `HOSTED_TEAM_UAT_READY_FOR_OWNER_TRIAL`. Automated local, database, CI, representative-data, and hosted role gates are green; explicit owner human PASS remains the sole X008-H exit gate. Production remains blocked.
+Status: `HOSTED_TEAM_UAT_READY_FOR_OWNER_TRIAL`. Automated local, database, CI, one-item semantic review-data, and hosted role gates are green; explicit owner human PASS remains the sole X008-H exit gate. The remaining imported Glass items stay internal until real review payloads are added. Production remains blocked.
 
 This hosted amendment is additive to the accepted local baseline. T001-T019 remain historical local acceptance evidence and must not be edited into hosted PASS evidence.
 

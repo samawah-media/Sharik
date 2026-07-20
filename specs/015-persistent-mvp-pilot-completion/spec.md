@@ -39,7 +39,7 @@ Hosted UAT execution, deployment/promotion, team access, real customer data, soc
 
 ## Owner-Authorized Hosted Team UAT Amendment
 
-Status: `HOSTED_TEAM_UAT_READY_FOR_OWNER_TRIAL`. The corrected non-Production Preview, representative Glass/Hadna data, exact-head quality matrix, and automated hosted role matrix are green. H008-H010, X007, T032, and Production acceptance remain open until the owner completes X008-H and records an explicit human PASS.
+Status: `HOSTED_TEAM_UAT_READY_FOR_OWNER_TRIAL`. The corrected non-Production Preview, one semantically review-ready Glass item, the exact-head quality matrix, and the automated hosted role matrix are green. The remaining imported Glass items stay internal until the team supplies real text or client-visible media/files. H008-H010, X007, T032, and Production acceptance remain open until the owner completes X008-H and records an explicit human PASS.
 
 This amendment extends Spec 015 only. It does not create Spec 016, does not invalidate the completed local acceptance evidence, and does not convert local MVP acceptance into hosted or Production acceptance.
 
@@ -65,7 +65,7 @@ Forbidden actions remain Production deployment, Production alias/domain changes,
 6. Pending repository migrations apply cleanly to Supabase UAT; migration error or partial application blocks PASS.
 7. Synthetic Hadna UAT data is idempotent, run-ID scoped, tenant/client scoped, minimal, safe to rerun, safe to roll back, and unable to touch unrelated data.
 8. Team-Only UAT uses individual approved accounts for management, account manager, assigned writer/designer, unassigned internal negative tester, team-controlled client viewer, and team-controlled client approver. No guessed invitations are sent.
-9. Hosted UI journey passes for exact-version internal approval, send-to-client, waiting-client SLA pause, client viewer read-only secrecy, client approver change request/approval, stale-version rejection, delivery, audit, ledger, idempotency, and terminal delivered state.
+9. Hosted UI journey passes for exact-version internal approval, send-to-client, waiting-client SLA pause, client viewer read-only secrecy (including no decision, comment, or upload mutation), client approver change request/approval, stale-version rejection, delivery, audit, ledger, idempotency, and terminal delivered state.
 10. Desktop Chromium, mobile Chromium, Arabic RTL, and keyboard-only critical paths pass with no hydration errors, sensitive console/log output, page-level horizontal overflow, or client exposure of internal comments/files.
 11. No open P0/P1 defects remain; every P2 is owner-dispositioned; rollback rehearsal or no-op validation is recorded.
 
@@ -87,6 +87,6 @@ Do not use Production ready, Production accepted, customer accepted, or live rel
 
 This additive amendment remains inside Spec 015 and is the canonical execution scope for the Preview/UAT rescue. Management needs exception-first work and scoped clients; assigned team members need clear assigned work, human-readable ownership, internal collaboration, version submission, and review; clients need a calm read-only portal and a real exact-version approval journey.
 
-Acceptance additions: `/client/pending` is a real role-correct route; home, summary, and pending use one server-side visibility definition; client payloads exclude unsent/unapproved deliverables, internal comments, quality notes, internal files, private activity, and raw IDs; the client shell exposes home, pending, contract/follow-up, profile, and sign-out; team cards never render raw assignee identifiers; Arabic RTL, mobile, keyboard focus, 44px targets, reduced motion, and honest content fallbacks are covered by the shared `DESIGN.md` contract.
+Acceptance additions: `/client/pending` is a real role-correct route; home, summary, and pending use one server-side visibility definition; a pending client review requires meaningful caption/body text or a non-empty client-visible file, and placeholder-only values do not qualify; `client_viewer` is read-only at both UI and database boundaries; client payloads exclude unsent/unapproved deliverables, internal comments, quality notes, internal files, private activity, and raw IDs; the client shell exposes home, pending, contract/follow-up, profile, and sign-out; team cards never render raw assignee identifiers; Arabic RTL, mobile, keyboard focus, 44px targets, reduced motion, and honest content fallbacks are covered by the shared `DESIGN.md` contract.
 
 The existing persistent version, approval, file, comment, audit, SLA, idempotency, and RLS contracts remain authoritative. The generic run-ID-scoped Glass/Hadna import and automated hosted lifecycle are retained as technical evidence. They do not establish representative content presentation or human usability. The owner human trial reopened H008-H010, X007, and T032; X008 must correct the role experience, data presentation, and acceptance governance before any controlled team trial. Production remains explicitly out of scope.

@@ -37,7 +37,9 @@ Writes الحساسة لا تعتمد على RLS فقط. RLS تمنع الصفو
 | Deliverable before internal approval | Deny | Assigned | Allow | Allow | Limited/no content |
 | Deliverable sent to client | Own client | Assigned | Allow | Allow | Limited |
 | Internal comment | Deny | Assigned | Allow | Allow | Deny by default |
-| Client comment | Own client | Assigned | Allow | Allow | Limited |
+| Client comment read | Own client when externally visible | Assigned | Allow | Allow | Limited |
+| Client comment create | Approver/Admin only; Viewer deny | Assigned when permitted | Allow | Allow | Deny by default |
+| Client-uploaded file create | Approver/Admin only; Viewer deny | Assigned when permitted | Allow | Allow | Deny by default |
 | Internal file | Deny | Assigned | Allow | Allow | Deny by default |
 | Final file | Own client | Assigned | Allow | Allow | Limited |
 | Audit internal | Limited external only | Deny/limited | Allow | Allow | Restricted |
@@ -45,3 +47,6 @@ Writes الحساسة لا تعتمد على RLS فقط. RLS تمنع الصفو
 
 PostgreSQL rejects approval-derived and delivery targets through `f004_update_deliverable_status`. The persistent submission RPC checks tenant, client, supported internal role, and owner/contributor assignment. Delivered, cancelled, and archived records are terminal. Acceptance requires executed pgTAP evidence; test presence without a reachable local PostgreSQL instance is BLOCKED, not PASS.
 
+## Spec 015 client viewer write boundary
+
+`client_viewer` remains eligible only for scoped reads. Viewer-only actors are denied when inserting `client_comment` or `client_uploaded` metadata, and the Storage upload authorization helper excludes them. `client_admin` and `client_approver` retain the scoped paths required by the current V1 workflow. UI hiding is supplementary; PostgreSQL and Storage authorization are the enforcement boundary.

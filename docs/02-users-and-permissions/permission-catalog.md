@@ -107,7 +107,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `PERM.COMMENT.INTERNAL_ADD` | إضافة تعليق داخلي | Comment / Create internal / Deliverable | Management, AM, assigned execution | لا يظهر للعميل أبدا | Yes | Yes | No |
 | `PERM.COMMENT.INTERNAL_VIEW` | مشاهدة التعليقات الداخلية | Comment / View internal / Deliverable | Management, AM, assigned execution | assigned scope فقط للفريق | No | Yes | No |
-| `PERM.COMMENT.CLIENT_ADD` | إضافة تعليق مرئي للعميل | Comment / Create client-visible / Deliverable | Client Approver, Client Reviewer, PM, AM | Client Viewer يحتاج ترقية Reviewer | Yes | Yes | No |
+| `PERM.COMMENT.CLIENT_ADD` | إضافة تعليق مرئي للعميل | Comment / Create client-visible / Deliverable | Client Approver, PM, AM؛ Client Reviewer مستقبلي | Client Viewer ممنوع في Spec 015؛ Reviewer غير منفذ حاليا | Yes | Yes | No |
 | `PERM.COMMENT.CLIENT_VIEW` | مشاهدة تعليقات العميل | Comment / View client / Deliverable | Management, AM, assigned execution, client roles | كل طرف ضمن Client scope | No | Yes | No |
 | `PERM.COMMENT.EDIT_DELETE` | تعديل أو حذف تعليق | Comment / Update-Delete / Comment | author conditional, PM conditional | لا يعدل قرار اعتماد بعد تسجيله إلا بسجل تصحيح | Yes | Yes | Yes |
 | `PERM.COMMENT.MENTION` | الإشارة إلى مستخدم | Comment / Mention / Comment | users who can comment | لا يذكر مستخدما خارج النطاق | No | No | No |
@@ -175,4 +175,3 @@
 # Spec 015 corrective permission
 
 `PERM.DELIVERABLE.VERSION_SUBMIT` is independent from generic status authority. It is granted to scoped `account_manager`, `content_writer`, and `designer` roles, but execution also requires the actor to be the deliverable owner or a contributor. It does not grant internal approval, client send, client decision, or final delivery.
-

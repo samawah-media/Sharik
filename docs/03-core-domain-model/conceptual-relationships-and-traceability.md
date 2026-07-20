@@ -49,7 +49,7 @@ flowchart TD
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Multi-Tenant Isolation | Tenant يمثل الوكالة وسماوة أول Tenant | PERM.CLIENT.VIEW scoped | Tenant & Membership | Tenant، Membership | INV-001، INV-004 | TenantCreated، RoleAssigned | Tenant Membership | Platform roles content access |
 | Client Isolation | العميل داخل Tenant ولا يرى غيره | PERM.CLIENT.VIEW، PERM.DELIV.VIEW | Client Management | Client، Client Membership | INV-001، INV-004 | ClientCreated | Client | Multi-client client user |
-| Internal Comment Protection | internal_comment لا يظهر للعميل | PERM.COMMENT.INTERNAL_VIEW | Approvals & Collaboration | Comment Thread | INV-019 | CommentAdded | File/Comment Visibility | هل يعلق Client Viewer؟ |
+| Internal Comment Protection | internal_comment لا يظهر للعميل | PERM.COMMENT.INTERNAL_VIEW | Approvals & Collaboration | Comment Thread | INV-019 | CommentAdded | File/Comment Visibility | Client Viewer للقراءة فقط في Spec 015 |
 | Internal Approval | لا إرسال قبل التعميد | PERM.APPROVAL.INTERNAL_GRANT | Approvals | Approval Cycle | INV-005، INV-006 | InternalApprovalGranted | Internal Approval | multi-level internal approval |
 | Client Approval | الاعتماد على نسخة مرسلة | PERM.APPROVAL.CLIENT_GRANT | Approvals | Client Approval Cycle | INV-007 | ClientApprovalGranted | Client Approval | multi-approver |
 | SLA Pause/Resume | انتظار العميل لا يحسب على سماوة | PERM.SLA.TIMER_CONTROL | SLA & Escalation | SLA Timeline | INV-015، INV-017 | SLAPaused، SLAResumed | SLA | أيام عمل/تقويم |
@@ -98,4 +98,3 @@ flowchart TD
 | Files/Comments visibility | مغطى في approvals/files model وinvariants. |
 | Permissions mapping | مغطى بتتبع Permission IDs من Phase 03. |
 | Open Questions | مربوطة بملف المخاطر والأسئلة. |
-

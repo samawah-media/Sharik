@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set search_path = public, extensions;
-select plan(55);
+select plan(57);
 
 select has_table('public', 'deliverable_versions', 'versions persist');
 select has_table('public', 'approval_decisions', 'approval decisions persist');
@@ -99,6 +99,8 @@ select ok(has_function_privilege('service_role', 'public.s015_import_uat_payload
 select ok(not has_function_privilege('authenticated', 'public.s015_import_uat_payload(uuid,uuid,uuid,uuid,text,jsonb)', 'execute'), 'authenticated cannot execute UAT import');
 select ok(has_function_privilege('service_role', 'public.s015_rollback_uat_import(uuid,uuid,text,boolean)', 'execute'), 'service role can execute bounded UAT rollback');
 select ok(not has_function_privilege('authenticated', 'public.s015_rollback_uat_import(uuid,uuid,text,boolean)', 'execute'), 'authenticated cannot execute UAT rollback');
+select ok(has_function_privilege('service_role', 'public.s015_retire_empty_uat_review_items(uuid,uuid,text)', 'execute'), 'service role can retire untouched empty UAT review items');
+select ok(not has_function_privilege('authenticated', 'public.s015_retire_empty_uat_review_items(uuid,uuid,text)', 'execute'), 'authenticated cannot invoke empty UAT review retirement');
 
 select * from finish();
 rollback;

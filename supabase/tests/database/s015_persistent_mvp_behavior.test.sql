@@ -616,13 +616,14 @@ select is(
 alter table public.deliverables disable trigger s015_client_review_payload_guard;
 insert into public.deliverables (
   id, tenant_id, client_id, name, type, status, progress_percentage,
-  idempotency_key, requires_internal_approval, requires_client_approval
+  idempotency_key, requires_internal_approval, requires_client_approval,
+  import_run_id
 ) values (
   '21000000-0000-4000-8000-000000000544',
   '21000000-0000-4000-8000-000000000001',
   '21000000-0000-4000-8000-000000000301',
   'Legacy empty client review payload', 'post', 'waiting_client_approval', 80,
-  's015-legacy-empty-client-review', true, true
+  's015-legacy-empty-client-review', true, true, 'pgtap-empty-review'
 );
 insert into public.deliverable_versions (
   id, tenant_id, client_id, deliverable_id, version_number, status
@@ -636,6 +637,15 @@ update public.deliverables
 set current_version_id = '21000000-0000-4000-8000-000000000644'
 where id = '21000000-0000-4000-8000-000000000544';
 alter table public.deliverables enable trigger s015_client_review_payload_guard;
+insert into public.sla_timeline_segments (
+  id, tenant_id, client_id, deliverable_id, kind, started_at, reason
+) values (
+  '21000000-0000-4000-8000-000000000940',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000544',
+  'paused_waiting_client', now(), 'legacy_empty_review'
+);
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000206', true);
@@ -659,6 +669,112 @@ select is(
    where target_id = '21000000-0000-4000-8000-000000000644'),
   0,
   'rejected empty client approval leaves no partial audit event'
+);
+
+set local role service_role;
+select set_config('request.jwt.claim.role', 'service_role', true);
+select is(
+  public.s015_retire_empty_uat_review_items(
+    '21000000-0000-4000-8000-000000000001',
+    '21000000-0000-4000-8000-000000000301',
+    'pgtap-empty-review'
+  ),
+  1,
+  'service-role maintenance retires one untouched empty UAT review item'
+);
+select is(
+  public.s015_retire_empty_uat_review_items(
+    '21000000-0000-4000-8000-000000000001',
+    '21000000-0000-4000-8000-000000000301',
+    'pgtap-empty-review'
+  ),
+  0,
+  'empty UAT review retirement replays as a no-op'
+);
+reset role;
+select is(
+  (select status from public.deliverables
+   where id = '21000000-0000-4000-8000-000000000544'),
+  'cancelled',
+  'retired empty UAT review is hidden in a terminal state'
+);
+select is(
+  (select count(*)::integer from public.sla_timeline_segments
+   where deliverable_id = '21000000-0000-4000-8000-000000000544'
+     and ended_at is null),
+  0,
+  'retirement closes the active waiting-client SLA segment'
+);
+select is(
+  (select count(*)::integer from public.sla_timeline_segments
+   where deliverable_id = '21000000-0000-4000-8000-000000000544'
+     and kind = 'cancelled'
+     and reason = 'missing_client_review_payload'),
+  1,
+  'retirement records a cancelled SLA segment'
+);
+select is(
+  (select count(*)::integer from public.audit_events
+   where target_id = '21000000-0000-4000-8000-000000000544'
+     and action = 'DeliverableUatReviewRetired'
+     and reason = 'missing_client_review_payload'),
+  1,
+  'retirement appends one explicit audit event'
+);
+
+-- Client activity makes the same maintenance operation fail closed.
+alter table public.deliverables disable trigger s015_client_review_payload_guard;
+insert into public.deliverables (
+  id, tenant_id, client_id, name, type, status, progress_percentage,
+  idempotency_key, requires_internal_approval, requires_client_approval,
+  import_run_id
+) values (
+  '21000000-0000-4000-8000-000000000545',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  'Client-active empty review payload', 'post', 'waiting_client_approval', 80,
+  's015-client-active-empty-review', true, true, 'pgtap-client-active-empty'
+);
+insert into public.deliverable_versions (
+  id, tenant_id, client_id, deliverable_id, version_number, status
+) values (
+  '21000000-0000-4000-8000-000000000646',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000545', 1, 'client_visible'
+);
+update public.deliverables
+set current_version_id = '21000000-0000-4000-8000-000000000646'
+where id = '21000000-0000-4000-8000-000000000545';
+alter table public.deliverables enable trigger s015_client_review_payload_guard;
+insert into public.comments (
+  id, tenant_id, client_id, deliverable_id, version_id,
+  comment_type, visibility, body
+) values (
+  '21000000-0000-4000-8000-000000000746',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000545',
+  '21000000-0000-4000-8000-000000000646',
+  'client_comment', 'client_visible', 'existing client activity'
+);
+set local role service_role;
+select set_config('request.jwt.claim.role', 'service_role', true);
+select throws_ok(
+  $$select public.s015_retire_empty_uat_review_items(
+    '21000000-0000-4000-8000-000000000001',
+    '21000000-0000-4000-8000-000000000301',
+    'pgtap-client-active-empty'
+  )$$,
+  'P0001', 'UAT review item has client activity',
+  'maintenance refuses an empty review item after client activity'
+);
+reset role;
+select is(
+  (select status from public.deliverables
+   where id = '21000000-0000-4000-8000-000000000545'),
+  'waiting_client_approval',
+  'refused maintenance preserves the client-active review state'
 );
 
 set local role authenticated;

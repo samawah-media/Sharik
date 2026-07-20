@@ -48,6 +48,7 @@ const segmentLabels: Record<string, string> = {
   invitations: "الدعوات",
   internal: "دعوة داخلية",
   portfolio: "لوحة الإدارة",
+  work: "مهامي",
   readiness: "الجاهزية",
   r007: "R-007",
 };

@@ -46,7 +46,7 @@ insert into public.deliverables (
 ('21000000-0000-4000-8000-000000000506', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301', 'Unassigned item', 'post', 'in_progress', 30, 's015-unassigned', true, true),
 ('21000000-0000-4000-8000-000000000507', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000302', 'Client B item', 'post', 'in_progress', 30, 's015-client-b', true, true),
 ('22000000-0000-4000-8000-000000000501', '22000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000301', 'Tenant B item', 'post', 'in_progress', 30, 's015-tenant-b', true, true),
-('21000000-0000-4000-8000-000000000508', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301', 'Client decision item', 'post', 'waiting_client_approval', 80, 's015-client-decision', true, true),
+('21000000-0000-4000-8000-000000000508', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301', 'Client decision item', 'post', 'internally_approved', 70, 's015-client-decision', true, true),
 ('21000000-0000-4000-8000-000000000509', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301', 'Cancelled item', 'post', 'cancelled', 0, 's015-cancelled', true, true),
 ('21000000-0000-4000-8000-000000000510', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301', 'Archived item', 'post', 'archived', 100, 's015-archived', true, true);
 insert into public.deliverables (
@@ -65,13 +65,15 @@ where id = '21000000-0000-4000-8000-000000000504';
 update public.deliverables set contributor_user_ids = array['21000000-0000-4000-8000-000000000204'::uuid]
 where id = '21000000-0000-4000-8000-000000000505';
 insert into public.deliverable_versions (
-  id, tenant_id, client_id, deliverable_id, version_number, status
+  id, tenant_id, client_id, deliverable_id, version_number, status, content_body
 ) values
-('21000000-0000-4000-8000-000000000601', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000501', 1, 'internal_only'),
-('21000000-0000-4000-8000-000000000608', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000508', 1, 'client_visible');
+('21000000-0000-4000-8000-000000000601', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000501', 1, 'internal_only', 'internal draft'),
+('21000000-0000-4000-8000-000000000608', '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000508', 1, 'client_visible', 'client review content');
 update public.deliverables set current_version_id = '21000000-0000-4000-8000-000000000601'
 where id = '21000000-0000-4000-8000-000000000501';
 update public.deliverables set current_version_id = '21000000-0000-4000-8000-000000000608'
+where id = '21000000-0000-4000-8000-000000000508';
+update public.deliverables set status = 'waiting_client_approval', progress_percentage = 80
 where id = '21000000-0000-4000-8000-000000000508';
 
 set local role anon;
@@ -510,6 +512,10 @@ select results_eq(
 );
 reset role;
 
+update public.deliverable_versions
+set content_body = 'replacement client review content'
+where id = '21000000-0000-4000-8000-000000000621';
+
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
 select throws_ok(
@@ -544,6 +550,116 @@ select is(
   'journey SLA pauses while waiting for client'
 );
 reset role;
+
+insert into public.deliverable_versions (
+  id, tenant_id, client_id, deliverable_id, version_number, status
+) values (
+  '21000000-0000-4000-8000-000000000645',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000520', 99, 'client_visible'
+);
+select throws_ok(
+  $$update public.deliverables
+    set current_version_id = '21000000-0000-4000-8000-000000000645'
+    where id = '21000000-0000-4000-8000-000000000520'$$,
+  'P0001', 'client review payload required',
+  'waiting client review cannot switch to an empty current version'
+);
+select is(
+  (select current_version_id from public.deliverables
+   where id = '21000000-0000-4000-8000-000000000520'),
+  '21000000-0000-4000-8000-000000000621'::uuid,
+  'rejected current-version replacement preserves the reviewed version'
+);
+
+insert into public.deliverables (
+  id, tenant_id, client_id, name, type, status, progress_percentage,
+  idempotency_key, requires_internal_approval, requires_client_approval
+) values (
+  '21000000-0000-4000-8000-000000000543',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  'Empty client review payload', 'post', 'internally_approved', 70,
+  's015-empty-client-review', true, true
+);
+insert into public.deliverable_versions (
+  id, tenant_id, client_id, deliverable_id, version_number, status
+) values (
+  '21000000-0000-4000-8000-000000000643',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000543', 1, 'internally_approved'
+);
+update public.deliverables
+set current_version_id = '21000000-0000-4000-8000-000000000643'
+where id = '21000000-0000-4000-8000-000000000543';
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select throws_ok(
+  $$select * from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000543',
+    '21000000-0000-4000-8000-000000000643', 'send_to_client', null, null,
+    gen_random_uuid(), gen_random_uuid(), 's015-empty-client-review-send')$$,
+  'P0001', 'client review payload required',
+  'empty text and file payload cannot be sent to client'
+);
+reset role;
+select is(
+  (select status from public.deliverables where id = '21000000-0000-4000-8000-000000000543'),
+  'internally_approved',
+  'empty client review rejection preserves deliverable status'
+);
+
+-- Reproduce a pre-migration legacy row without weakening the production guard.
+alter table public.deliverables disable trigger s015_client_review_payload_guard;
+insert into public.deliverables (
+  id, tenant_id, client_id, name, type, status, progress_percentage,
+  idempotency_key, requires_internal_approval, requires_client_approval
+) values (
+  '21000000-0000-4000-8000-000000000544',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  'Legacy empty client review payload', 'post', 'waiting_client_approval', 80,
+  's015-legacy-empty-client-review', true, true
+);
+insert into public.deliverable_versions (
+  id, tenant_id, client_id, deliverable_id, version_number, status
+) values (
+  '21000000-0000-4000-8000-000000000644',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000544', 1, 'client_visible'
+);
+update public.deliverables
+set current_version_id = '21000000-0000-4000-8000-000000000644'
+where id = '21000000-0000-4000-8000-000000000544';
+alter table public.deliverables enable trigger s015_client_review_payload_guard;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000206', true);
+select throws_ok(
+  $$select * from public.s015_client_decide_version(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000544',
+    '21000000-0000-4000-8000-000000000644', 'approved', null,
+    gen_random_uuid(), gen_random_uuid(), 's015-legacy-empty-client-approve')$$,
+  'P0001', 'client review payload required',
+  'legacy empty client review payload cannot be approved'
+);
+reset role;
+select is(
+  (select count(*)::integer from public.approval_decisions
+   where version_id = '21000000-0000-4000-8000-000000000644'),
+  0,
+  'rejected empty client approval leaves no partial approval decision'
+);
+select is(
+  (select count(*)::integer from public.audit_events
+   where target_id = '21000000-0000-4000-8000-000000000644'),
+  0,
+  'rejected empty client approval leaves no partial audit event'
+);
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202', true);
@@ -588,6 +704,10 @@ select results_eq(
   'journey assigned writer submits final replacement'
 );
 reset role;
+
+update public.deliverable_versions
+set content_body = 'final client review content'
+where id = '21000000-0000-4000-8000-000000000622';
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
@@ -787,19 +907,21 @@ insert into public.deliverables (
   '21000000-0000-4000-8000-000000000532',
   '21000000-0000-4000-8000-000000000001',
   '21000000-0000-4000-8000-000000000301',
-  'Storage visible item', 'design', 'waiting_client_approval', 80,
+  'Storage visible item', 'design', 'internally_approved', 70,
   's015-storage-visible', true, true,
   '21000000-0000-4000-8000-000000000203'
 );
 insert into public.deliverable_versions (
-  id, tenant_id, client_id, deliverable_id, version_number, status
+  id, tenant_id, client_id, deliverable_id, version_number, status, content_body
 ) values (
   '21000000-0000-4000-8000-000000000632',
   '21000000-0000-4000-8000-000000000001',
   '21000000-0000-4000-8000-000000000301',
-  '21000000-0000-4000-8000-000000000532', 1, 'client_visible'
+  '21000000-0000-4000-8000-000000000532', 1, 'client_visible', 'client review asset'
 );
 update public.deliverables set current_version_id = '21000000-0000-4000-8000-000000000632'
+where id = '21000000-0000-4000-8000-000000000532';
+update public.deliverables set status = 'waiting_client_approval', progress_percentage = 80
 where id = '21000000-0000-4000-8000-000000000532';
 insert into storage.objects (id, bucket_id, name, owner_id)
 values (

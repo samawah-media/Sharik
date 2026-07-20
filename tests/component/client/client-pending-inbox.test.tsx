@@ -53,8 +53,12 @@ describe("client pending inbox", () => {
     expect(screen.getAllByText("منشور الأسبوع", { exact: true })).toHaveLength(
       1,
     );
-    expect(screen.getByRole("heading", { name: "بانتظار موافقتي" })).toBeInTheDocument();
-    expect(screen.getByText(/اعتمدها أو أرسل ملاحظات التعديل/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "بانتظار موافقتي" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/اعتمدها أو أرسل ملاحظات التعديل/),
+    ).toBeInTheDocument();
   });
 
   it("gives the approver an approve-oriented empty state", () => {
@@ -72,9 +76,23 @@ describe("client pending inbox", () => {
       screen.queryByRole("button", { name: "اعتماد المخرج" }),
     ).not.toBeInTheDocument();
     expect(screen.queryByText("client_a")).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "قيد المراجعة" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "قيد المراجعة" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "للاطلاع" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("قرارك مطلوب")).not.toBeInTheDocument();
+    expect(
+      screen.getByText("قيد المراجعة", { selector: "span" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "صلاحية الحساب" }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/للاطلاع فقط/)).toBeInTheDocument();
-    expect(screen.queryByText(/اعتمدها أو أرسل ملاحظات التعديل/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/اعتمدها أو أرسل ملاحظات التعديل/),
+    ).not.toBeInTheDocument();
 
     rerender(<ClientPendingInbox canApprove={false} details={[]} />);
     expect(screen.getByRole("main")).toBeInTheDocument();
@@ -83,5 +101,38 @@ describe("client pending inbox", () => {
         name: "لا توجد مخرجات قيد المراجعة الآن",
       }),
     ).toBeInTheDocument();
+  });
+
+  it("blocks approval controls when the review payload is missing", () => {
+    const complete = detail("d1");
+    const incomplete: ClientSafeDeliverableDetail = {
+      ...complete,
+      approvalItem: {
+        ...complete.approvalItem,
+        isActionable: false,
+        actionabilityReason: "missing_review_payload",
+      },
+      content: {},
+    };
+
+    render(
+      <ClientPendingInbox
+        canApprove
+        details={[incomplete]}
+        approveAction={async () => undefined}
+        requestChangesAction={async () => undefined}
+      />,
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "نسخة غير مكتملة" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/لا يمكن اتخاذ قرار عليها/)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "اعتماد المخرج" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "طلب تعديل" }),
+    ).not.toBeInTheDocument();
   });
 });

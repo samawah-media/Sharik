@@ -39,12 +39,12 @@ describe("R-007 client approval panel", () => {
     expect(
       within(panel).getByRole("button", { name: "طلب تعديل" }),
     ).toBeInTheDocument();
-    expect(
-      document.querySelector('input[name="versionId"]'),
-    ).toHaveValue("r007_visible_version");
-    expect(document.querySelector('input[name="expectedRevision"]')).toHaveValue(
-      "3",
+    expect(document.querySelector('input[name="versionId"]')).toHaveValue(
+      "r007_visible_version",
     );
+    expect(
+      document.querySelector('input[name="expectedRevision"]'),
+    ).toHaveValue("3");
     expect(within(panel).queryByText("ملاحظات داخلية")).not.toBeInTheDocument();
     expect(within(panel).queryByText("tenant_a")).not.toBeInTheDocument();
     expect(within(panel).queryByText("audit")).not.toBeInTheDocument();
@@ -54,7 +54,9 @@ describe("R-007 client approval panel", () => {
     render(<ClientApprovalPanel canApprove={false} item={approvalItem} />);
 
     const panel = screen.getByRole("region", { name: "قرار اعتماد العميل" });
-    expect(within(panel).getByText("يمكنك مشاهدة المخرج فقط.")).toBeInTheDocument();
+    expect(
+      within(panel).getByText(/لا يملك صلاحية الاعتماد أو طلب التعديل/),
+    ).toBeInTheDocument();
     expect(
       within(panel).queryByRole("button", { name: "اعتماد المخرج" }),
     ).not.toBeInTheDocument();

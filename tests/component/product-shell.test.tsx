@@ -5,13 +5,22 @@ import { EmptyState, ErrorState, LoadingSkeleton } from "@/ui/core/states";
 import { PageHeader } from "@/ui/layout/page-header";
 import { ProductShell } from "@/ui/layout/product-shell";
 
+const { pathnameState } = vi.hoisted(() => ({
+  pathnameState: {
+    value: "/clients/b0060000-0000-4000-8000-000000000301/deliverables/board",
+  },
+}));
+
 vi.mock("next/navigation", () => ({
-  usePathname: () =>
-    "/clients/b0060000-0000-4000-8000-000000000301/deliverables/board",
+  usePathname: () => pathnameState.value,
   useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }),
 }));
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  pathnameState.value =
+    "/clients/b0060000-0000-4000-8000-000000000301/deliverables/board";
+});
 
 describe("management product shell", () => {
   it("renders an RTL shell with sidebar navigation, top context, breadcrumbs, and bounded content", () => {
@@ -93,6 +102,25 @@ describe("management product shell", () => {
     expect(
       screen.queryByRole("link", { name: "الدعوات" }),
     ).not.toBeInTheDocument();
+  });
+
+  it("renders the work route breadcrumb in Arabic", () => {
+    pathnameState.value = "/work";
+
+    render(
+      <ProductShell
+        breadcrumbRootHref="/portfolio"
+        breadcrumbRootLabel="لوحة الإدارة"
+      >
+        <main>work</main>
+      </ProductShell>,
+    );
+
+    const breadcrumbs = screen.getByRole("navigation", {
+      name: "مسار الصفحة",
+    });
+    expect(within(breadcrumbs).getByText("مهامي")).toBeInTheDocument();
+    expect(within(breadcrumbs).queryByText("work")).not.toBeInTheDocument();
   });
 
   it("renders shared safe states without leaking technical details", () => {

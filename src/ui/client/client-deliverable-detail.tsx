@@ -76,18 +76,41 @@ export function ClientDeliverableDetail({
   detail: ClientSafeDeliverableDetail;
   requestChangesAction?: ClientApprovalFormAction;
 }) {
+  const reviewHeading = canApprove
+    ? detail.approvalItem.isActionable
+      ? "قرارك مطلوب"
+      : detail.approvalItem.actionabilityReason === "missing_review_payload"
+        ? "نسخة غير مكتملة"
+        : "تفاصيل المخرج"
+    : "للاطلاع";
+  const visibleStatusLabel = canApprove
+    ? detail.statusLabel
+    : detail.statusLabel === "بانتظار موافقتك"
+      ? "قيد المراجعة"
+      : detail.statusLabel;
+  const visibleApprovalItem = canApprove
+    ? detail.approvalItem
+    : {
+        ...detail.approvalItem,
+        statusLabel:
+          detail.approvalItem.statusLabel === "بانتظار موافقتك"
+            ? "قيد المراجعة"
+            : detail.approvalItem.statusLabel,
+      };
+
   return (
     <section
       aria-label="تفاصيل مخرج العميل"
       className="grid w-full min-w-0 max-w-[calc(100vw-2rem)] gap-5 sm:max-w-full"
       data-testid="client-approval-detail"
+      data-review-ready={
+        detail.approvalItem.actionabilityReason ? "false" : "true"
+      }
       dir="rtl"
       id="approval"
     >
       <div className="grid gap-2">
-        <h2 className="text-lg font-semibold">
-          {detail.approvalItem.isActionable ? "قرارك مطلوب" : "تفاصيل المخرج"}
-        </h2>
+        <h2 className="text-lg font-semibold">{reviewHeading}</h2>
         <dl className="grid gap-2 text-sm text-muted sm:grid-cols-2">
           <div className="rounded-md bg-surface px-3 py-2">
             <dt className="font-semibold text-foreground">التقدم</dt>
@@ -108,7 +131,7 @@ export function ClientDeliverableDetail({
         clientName={detail.clientName}
         eyebrow={detail.approvalItem.versionLabel}
         format={detail.content?.format ?? detail.approvalItem.typeLabel}
-        status={detail.statusLabel}
+        status={visibleStatusLabel}
         title={detail.approvalItem.displayName}
         media={
           detail.previewFile ? (
@@ -124,7 +147,7 @@ export function ClientDeliverableDetail({
       <ClientApprovalPanel
         approveAction={approveAction}
         canApprove={canApprove}
-        item={detail.approvalItem}
+        item={visibleApprovalItem}
         requestChangesAction={requestChangesAction}
         showSummary={false}
       />

@@ -7,7 +7,9 @@ test("client approver sees controlled approval actions and no internal content",
     waitUntil: "domcontentloaded",
   });
 
-  await expect(page.getByRole("navigation", { name: "تنقل بوابة العميل" })).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "تنقل بوابة العميل" }),
+  ).toBeVisible();
   await expect(page.getByRole("heading", { name: "مساحة هدنة" })).toBeVisible();
 
   const detail = page.getByRole("region", { name: "تفاصيل مخرج العميل" });
@@ -22,7 +24,9 @@ test("client approver sees controlled approval actions and no internal content",
   await expect(detail.getByText("الملفات المتاحة")).toBeVisible();
   await expect(detail.getByText("تعليق ظاهر للعميل")).toBeVisible();
   await expect(page.getByText("ملاحظات داخلية")).toHaveCount(0);
-  await expect(page.getByText("INTERNAL_QA_NOTE_SHOULD_NOT_RENDER")).toHaveCount(0);
+  await expect(
+    page.getByText("INTERNAL_QA_NOTE_SHOULD_NOT_RENDER"),
+  ).toHaveCount(0);
   await expect(page.getByText("internal_only")).toHaveCount(0);
   await expect(page.getByText("client_b")).toHaveCount(0);
 });
@@ -36,11 +40,15 @@ test("client viewer can inspect allowed data but cannot submit approval", async 
 
   const detail = page.getByRole("region", { name: "تفاصيل مخرج العميل" });
   await expect(detail).toBeVisible();
-  await expect(detail.getByText("يمكنك مشاهدة المخرج فقط.")).toBeVisible();
+  await expect(
+    detail.getByText(/لا يملك صلاحية الاعتماد أو طلب التعديل/),
+  ).toBeVisible();
   await expect(
     detail.getByRole("button", { name: "اعتماد المخرج" }),
   ).toHaveCount(0);
-  await expect(detail.getByRole("button", { name: "طلب تعديل" })).toHaveCount(0);
+  await expect(detail.getByRole("button", { name: "طلب تعديل" })).toHaveCount(
+    0,
+  );
   await expect(page.getByText("ملاحظات داخلية")).toHaveCount(0);
 });
 
@@ -51,14 +59,22 @@ test("unassigned client user receives a safe empty state without customer data",
     waitUntil: "domcontentloaded",
   });
 
-  await expect(page.getByRole("heading", { name: "لا يوجد عملاء مسندون" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "لا يوجد عملاء مسندون" }),
+  ).toBeVisible();
   await expect(page.getByText("هدنة")).toHaveCount(0);
   await expect(page.getByText("client_a")).toHaveCount(0);
   await expect(page.getByText("tenant_a")).toHaveCount(0);
 });
 
-test("client portal stays within the mobile viewport", async ({ page, isMobile }) => {
-  test.skip(!isMobile, "mobile assertion runs in the mobile Playwright project");
+test("client portal stays within the mobile viewport", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(
+    !isMobile,
+    "mobile assertion runs in the mobile Playwright project",
+  );
 
   await page.goto("/client?as=client_approver_a", {
     waitUntil: "domcontentloaded",

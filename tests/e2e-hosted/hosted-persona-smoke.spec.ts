@@ -23,6 +23,7 @@ for (const key of internalPersonas) {
     await page.goto("/work", { waitUntil: "domcontentloaded" });
 
     await expect(page.getByRole("heading", { name: "مهامي" })).toBeVisible();
+    await expect(page.getByText("work", { exact: true })).toHaveCount(0);
     await expectNoSensitiveLeakage(page);
   });
 }
@@ -45,9 +46,20 @@ test("hosted client viewer is read-only in pending inbox", async ({ page }) => {
   await expect(page).toHaveURL(/\/client\/pending$/u);
   await expect(page.getByRole("link", { name: "قيد المراجعة" })).toBeVisible();
   await expect(page.getByRole("main")).toBeVisible();
-  await expect(page.getByTestId("client-approval-detail").first()).toBeVisible();
-  await expect(page.locator('[data-content-card][data-has-caption="true"]')).not.toHaveCount(0);
-  await expect(page.getByRole("button", { name: "اعتماد المخرج" })).toHaveCount(0);
+  await expect(
+    page.getByTestId("client-approval-detail").first(),
+  ).toBeVisible();
+  await expect(page.locator('[data-review-ready="false"]')).toHaveCount(0);
+  await expect(
+    page.locator('[data-content-card][data-has-caption="true"]'),
+  ).not.toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { name: "للاطلاع" }).first(),
+  ).toBeVisible();
+  await expect(page.getByText("قرارك مطلوب", { exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "اعتماد المخرج" })).toHaveCount(
+    0,
+  );
   await expect(page.getByRole("button", { name: "طلب تعديل" })).toHaveCount(0);
   await expectNoSensitiveLeakage(page);
 });
@@ -59,16 +71,25 @@ test("hosted client approver reaches pending inbox without internal leakage", as
   await page.goto("/client/pending", { waitUntil: "domcontentloaded" });
 
   await expect(page).toHaveURL(/\/client\/pending$/u);
-  await expect(page.getByRole("link", { name: "بانتظار موافقتي" })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "بانتظار موافقتي" }),
+  ).toBeVisible();
   await expect(page.getByRole("main")).toBeVisible();
-  await expect(page.getByTestId("client-approval-detail").first()).toBeVisible();
-  await expect(page.locator('[data-content-card][data-has-caption="true"]')).not.toHaveCount(0);
+  await expect(
+    page.getByTestId("client-approval-detail").first(),
+  ).toBeVisible();
+  await expect(page.locator('[data-review-ready="false"]')).toHaveCount(0);
+  await expect(
+    page.locator('[data-content-card][data-has-caption="true"]'),
+  ).not.toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "اعتماد المخرج" }).first(),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "طلب تعديل" }).first(),
   ).toBeVisible();
-  await expect(page.getByText(/تعليق داخلي|ملاحظة جودة|internal/i)).toHaveCount(0);
+  await expect(page.getByText(/تعليق داخلي|ملاحظة جودة|internal/i)).toHaveCount(
+    0,
+  );
   await expectNoSensitiveLeakage(page);
 });

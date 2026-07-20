@@ -16,6 +16,7 @@ export type ClientApprovalPanelItem = {
   statusLabel: string;
   versionLabel: string;
   dueDateLabel?: string;
+  actionabilityReason?: "missing_review_payload";
 };
 
 const HiddenApprovalFields = ({
@@ -59,6 +60,12 @@ export function ClientApprovalPanel({
 }) {
   const canSubmitDecision = canApprove && item.isActionable !== false;
   const hasServerActions = Boolean(approveAction && requestChangesAction);
+  const unavailableMessage =
+    item.actionabilityReason === "missing_review_payload"
+      ? "هذه النسخة غير مكتملة ولا يمكن اتخاذ قرار عليها. يجري تجهيز محتوى صالح للمراجعة."
+      : canApprove
+        ? "لا يتوفر إجراء على هذه النسخة الآن."
+        : "هذا الحساب للمشاهدة فقط ولا يملك صلاحية الاعتماد أو طلب التعديل.";
 
   return (
     <section
@@ -95,12 +102,14 @@ export function ClientApprovalPanel({
           </dl>
         </>
       ) : (
-        <h3 className="text-base font-semibold">قرار الاعتماد</h3>
+        <h3 className="text-base font-semibold">
+          {canApprove ? "قرار الاعتماد" : "صلاحية الحساب"}
+        </h3>
       )}
 
       {!canSubmitDecision ? (
         <p className="rounded-md bg-background px-3 py-2 text-sm text-muted">
-          يمكنك مشاهدة المخرج فقط.
+          {unavailableMessage}
         </p>
       ) : null}
 

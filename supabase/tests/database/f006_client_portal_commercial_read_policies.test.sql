@@ -180,8 +180,8 @@ values (
   '0f060000-0000-4000-8000-000000000801',
   'F006 Deliverable',
   'post',
-  'waiting_client_approval',
-  80,
+  'internally_approved',
+  70,
   '0f060000-0000-4000-8000-000000000201'
 );
 
@@ -199,7 +199,9 @@ values (
 );
 
 update public.deliverables
-set current_version_id = '0f060000-0000-4000-8000-000000001201'
+set current_version_id = '0f060000-0000-4000-8000-000000001201',
+    status = 'waiting_client_approval',
+    progress_percentage = 80
 where id = '0f060000-0000-4000-8000-000000000901';
 
 insert into public.deliverables (

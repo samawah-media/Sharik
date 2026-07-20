@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { ClientSafeDeliverableDetail } from "@/ui/client/client-deliverable-detail";
 import { isHumanTrialDeliverable } from "@/modules/deliverables/human-trial-visibility";
+import { hasClientReviewPayload } from "@/modules/approvals/client-review-readiness";
 
 const decisionSchema = z.object({
   clientId: z.string().uuid(),
@@ -71,9 +72,15 @@ async function readClientApprovalDetails(
         ),
       ),
   ).then((details) =>
-    details.filter((detail): detail is ClientSafeDeliverableDetail =>
-      Boolean(detail),
-    ),
+    details
+      .filter((detail): detail is ClientSafeDeliverableDetail =>
+        Boolean(detail),
+      )
+      .sort(
+        (left, right) =>
+          Number(right.approvalItem.isActionable) -
+          Number(left.approvalItem.isActionable),
+      ),
   );
 }
 
@@ -150,8 +157,19 @@ async function readClientApprovalDetailForDeliverable(
   const delivered = deliverable.status === "delivered";
   const previewFile = (filesResult.data ?? []).find(
     (file) =>
-      file.file_type.startsWith("image/") || file.file_type.startsWith("video/"),
+      file.file_type.startsWith("image/") ||
+      file.file_type.startsWith("video/"),
   );
+  const reviewPayloadAvailable = hasClientReviewPayload({
+    caption: version.caption,
+    body: version.content_body,
+    files: (filesResult.data ?? []).map((file) => ({
+      fileSize: file.file_size,
+      visibility: file.visibility,
+    })),
+  });
+  const waitingForDecision =
+    !delivered && deliverable.status === "waiting_client_approval";
   return {
     clientName,
     approvalItem: {
@@ -159,8 +177,11 @@ async function readClientApprovalDetailForDeliverable(
       deliverableId: deliverable.id,
       versionId: version.id,
       expectedRevision: deliverable.revision,
-      isActionable:
-        !delivered && deliverable.status === "waiting_client_approval",
+      isActionable: waitingForDecision && reviewPayloadAvailable,
+      actionabilityReason:
+        waitingForDecision && !reviewPayloadAvailable
+          ? "missing_review_payload"
+          : undefined,
       displayName: deliverable.name,
       typeLabel: deliverable.type,
       statusLabel: delivered

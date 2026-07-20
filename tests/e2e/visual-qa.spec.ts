@@ -136,7 +136,9 @@ test("management exception dashboard and team work visual states are RTL and sta
 }, testInfo) => {
   const browserErrors = observeBrowserErrors(page);
 
-  await page.goto("/clients?as=tenant_admin_a", { waitUntil: "domcontentloaded" });
+  await page.goto("/clients?as=tenant_admin_a", {
+    waitUntil: "domcontentloaded",
+  });
   await expectRtlDocument(page);
   await expect(page.getByRole("main")).toBeVisible();
   await capture(page, testInfo, "management-exception-dashboard");
@@ -193,7 +195,9 @@ test("deliverable list, universal drawer, forms, files, comments, and focus retu
     drawer.getByRole("heading", { name: "المحتوى والنسخة" }),
   ).toBeVisible();
   await expect(drawer.getByRole("heading", { name: "الملفات" })).toBeVisible();
-  await expect(drawer.getByRole("heading", { name: "التعليقات" })).toBeVisible();
+  await expect(
+    drawer.getByRole("heading", { name: "التعليقات" }),
+  ).toBeVisible();
   await expectMinimumTouchTargets(page);
   await capture(page, testInfo, "universal-drawer-content-files-comments", {
     fullPage: false,
@@ -214,10 +218,16 @@ test("client pending inbox visual states distinguish viewer and approver", async
     waitUntil: "domcontentloaded",
   });
   await expectRtlDocument(page);
-  await expect(page.getByRole("heading", { name: "قيد المراجعة" }).first()).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "قيد المراجعة" }).first(),
+  ).toBeVisible();
   await expect(page.getByText(/للاطلاع فقط/)).toBeVisible();
-  await expect(page.getByText("يمكنك مشاهدة المخرج فقط.")).toBeVisible();
-  await expect(page.getByRole("button", { name: "اعتماد المخرج" })).toHaveCount(0);
+  await expect(
+    page.getByText(/لا يملك صلاحية الاعتماد أو طلب التعديل/),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "اعتماد المخرج" })).toHaveCount(
+    0,
+  );
   await expectMinimumTouchTargets(page);
   await expectNoUnexpectedHorizontalOverflow(page);
   await expectNoSyntheticLeakage(page);
@@ -226,9 +236,13 @@ test("client pending inbox visual states distinguish viewer and approver", async
   await page.goto("/client/pending?as=client_approver_a", {
     waitUntil: "domcontentloaded",
   });
-  await expect(page.getByRole("button", { name: "اعتماد المخرج" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "اعتماد المخرج" }),
+  ).toBeVisible();
   await expect(page.getByRole("button", { name: "طلب تعديل" })).toBeVisible();
-  await expect(page.getByText(/تعليق داخلي|ملاحظة جودة|internal/i)).toHaveCount(0);
+  await expect(page.getByText(/تعليق داخلي|ملاحظة جودة|internal/i)).toHaveCount(
+    0,
+  );
   await expectMinimumTouchTargets(page);
   await capture(page, testInfo, "client-approver-actions-pending");
 

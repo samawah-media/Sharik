@@ -227,6 +227,24 @@ const contentVersionIds = new Set(
     )
     .map((version) => version.id),
 );
+const candidateFileAssets = expectNoError(
+  await admin
+    .from("file_assets")
+    .select("version_id")
+    .eq("tenant_id", tenantId)
+    .eq("client_id", clientId)
+    .eq("visibility", "client_visible")
+    .gt("file_size", 0)
+    .in(
+      "version_id",
+      candidates.map((row) => row.current_version_id),
+    ),
+  "HUMAN_TRIAL_REVIEW_FILE_INVENTORY_FAILED",
+);
+const reviewPayloadVersionIds = new Set([
+  ...contentVersionIds,
+  ...candidateFileAssets.map((file) => file.version_id),
+]);
 
 const requestedCount = Number(process.env.S015_HUMAN_TRIAL_ASSIGN_COUNT ?? 4);
 if (
@@ -239,13 +257,18 @@ if (
 const selected = [...candidates]
   .sort(
     (left, right) =>
-      Number(contentVersionIds.has(right.current_version_id)) -
-      Number(contentVersionIds.has(left.current_version_id)),
+      Number(reviewPayloadVersionIds.has(right.current_version_id)) -
+      Number(reviewPayloadVersionIds.has(left.current_version_id)),
   )
   .slice(0, requestedCount);
 const alreadyPending = candidates.filter(
   (row) => row.status === "waiting_client_approval",
 ).length;
+const emptyPending = candidates.filter(
+  (row) =>
+    row.status === "waiting_client_approval" &&
+    !reviewPayloadVersionIds.has(row.current_version_id),
+);
 
 if (mode === "--dry-run") {
   console.log(
@@ -255,13 +278,19 @@ if (mode === "--dry-run") {
       counts: {
         candidates: candidates.length,
         withCaptionOrBody: contentVersionIds.size,
+        withReviewPayload: reviewPayloadVersionIds.size,
         selected: selected.length,
         alreadyPending,
+        emptyPending: emptyPending.length,
       },
     }),
   );
   await signOutActors();
   process.exit(0);
+}
+
+if (emptyPending.length > 0) {
+  throw new Error("HUMAN_TRIAL_EMPTY_PENDING_REQUIRES_REIMPORT");
 }
 
 const profiles = expectNoError(
@@ -357,82 +386,82 @@ const submittableStatuses = new Set([
 const trialDeliverable =
   selected.find(
     (row) =>
-      contentVersionIds.has(row.current_version_id) &&
+      reviewPayloadVersionIds.has(row.current_version_id) &&
       submittableStatuses.has(row.status),
   ) ?? selected[0];
 let current = await readTrialDeliverable(trialDeliverable.id);
 const version = await readTrialVersion(current);
 
-  if (submittableStatuses.has(current.status)) {
-    await auditedRpc(
-      admin,
-      "s015_save_or_submit_version",
-      {
-        target_client_id: clientId,
-        target_deliverable_id: current.id,
-        target_version_id: version.id,
-        target_version_number: version.version_number,
-        target_submit: true,
-        target_brief: version.brief ?? "",
-        target_content_body: version.content_body ?? "",
-        target_caption: version.caption ?? "",
-        target_channel: version.channel ?? "",
-        target_format: version.format ?? "",
-        target_objective: version.objective ?? "",
-        target_kpi: version.kpi ?? "",
-        target_source_reference: version.source_reference ?? "",
-        request_id: randomUUID(),
-        audit_event_id: randomUUID(),
-        request_idempotency_key: `human-trial-${importRunId}-${current.id}-submit`,
-      },
-      "HUMAN_TRIAL_VERSION_SUBMIT_FAILED",
-    );
-    current = await readTrialDeliverable(current.id);
-  }
+if (submittableStatuses.has(current.status)) {
+  await auditedRpc(
+    admin,
+    "s015_save_or_submit_version",
+    {
+      target_client_id: clientId,
+      target_deliverable_id: current.id,
+      target_version_id: version.id,
+      target_version_number: version.version_number,
+      target_submit: true,
+      target_brief: version.brief ?? "",
+      target_content_body: version.content_body ?? "",
+      target_caption: version.caption ?? "",
+      target_channel: version.channel ?? "",
+      target_format: version.format ?? "",
+      target_objective: version.objective ?? "",
+      target_kpi: version.kpi ?? "",
+      target_source_reference: version.source_reference ?? "",
+      request_id: randomUUID(),
+      audit_event_id: randomUUID(),
+      request_idempotency_key: `human-trial-${importRunId}-${current.id}-submit`,
+    },
+    "HUMAN_TRIAL_VERSION_SUBMIT_FAILED",
+  );
+  current = await readTrialDeliverable(current.id);
+}
 
-  if (current.status === "ready_for_internal_review") {
-    await auditedRpc(
-      admin,
-      "s015_upsert_quality_check",
-      {
-        target_client_id: clientId,
-        target_deliverable_id: current.id,
-        target_version_id: version.id,
-        target_check_id: stableUuid(`${importRunId}:${current.id}:quality`),
-        target_label: "مراجعة المحتوى والهوية قبل العميل",
-        target_status: "passed",
-        target_note: "تمت المراجعة الداخلية ضمن تجهيز تجربة الفريق.",
-        target_sort_order: 0,
-        request_id: randomUUID(),
-        audit_event_id: randomUUID(),
-        request_idempotency_key: `human-trial-${importRunId}-${current.id}-quality`,
-      },
-      "HUMAN_TRIAL_QUALITY_FAILED",
-    );
-    await internalWorkflow({
-      client: admin,
-      deliverableId: current.id,
-      versionId: version.id,
-      runId: importRunId,
-      command: "approve_internal",
-    });
-    current = await readTrialDeliverable(current.id);
-  }
+if (current.status === "ready_for_internal_review") {
+  await auditedRpc(
+    admin,
+    "s015_upsert_quality_check",
+    {
+      target_client_id: clientId,
+      target_deliverable_id: current.id,
+      target_version_id: version.id,
+      target_check_id: stableUuid(`${importRunId}:${current.id}:quality`),
+      target_label: "مراجعة المحتوى والهوية قبل العميل",
+      target_status: "passed",
+      target_note: "تمت المراجعة الداخلية ضمن تجهيز تجربة الفريق.",
+      target_sort_order: 0,
+      request_id: randomUUID(),
+      audit_event_id: randomUUID(),
+      request_idempotency_key: `human-trial-${importRunId}-${current.id}-quality`,
+    },
+    "HUMAN_TRIAL_QUALITY_FAILED",
+  );
+  await internalWorkflow({
+    client: admin,
+    deliverableId: current.id,
+    versionId: version.id,
+    runId: importRunId,
+    command: "approve_internal",
+  });
+  current = await readTrialDeliverable(current.id);
+}
 
-  if (current.status === "internally_approved") {
-    await internalWorkflow({
-      client: admin,
-      deliverableId: current.id,
-      versionId: version.id,
-      runId: importRunId,
-      command: "send_to_client",
-    });
-    current = await readTrialDeliverable(current.id);
-  }
+if (current.status === "internally_approved") {
+  await internalWorkflow({
+    client: admin,
+    deliverableId: current.id,
+    versionId: version.id,
+    runId: importRunId,
+    command: "send_to_client",
+  });
+  current = await readTrialDeliverable(current.id);
+}
 
-  if (current.status !== "waiting_client_approval") {
-    throw new Error(`HUMAN_TRIAL_UNSUPPORTED_WORKFLOW_STATE:${current.status}`);
-  }
+if (current.status !== "waiting_client_approval") {
+  throw new Error(`HUMAN_TRIAL_UNSUPPORTED_WORKFLOW_STATE:${current.status}`);
+}
 const resultResponse = await admin
   .from("deliverables")
   .select("id, status", { count: "exact" })

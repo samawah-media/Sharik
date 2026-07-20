@@ -458,10 +458,22 @@ export const seedPersistentVersionFiles = async ({
 };
 
 const assertLocalStackReachable = async (supabaseUrl: string) => {
-  const health = await fetch(new URL("/auth/v1/health", supabaseUrl));
-  if (!health.ok) {
-    throw new Error("Local Supabase stack is not reachable.");
+  const healthUrl = new URL("/auth/v1/health", supabaseUrl);
+  const maxAttempts = 8;
+  let lastStatus = 0;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const health = await fetch(healthUrl, { cache: "no-store" });
+      lastStatus = health.status;
+      if (health.ok) return;
+    } catch {
+      lastStatus = 0;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 5_000));
   }
+  throw new Error(
+    `Local Supabase stack is not reachable after ${maxAttempts} attempts (last status ${lastStatus}).`,
+  );
 };
 
 const createSyntheticAuthUsers = async (client: SupabaseClient) => {

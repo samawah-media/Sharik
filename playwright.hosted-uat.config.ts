@@ -40,10 +40,17 @@ for (const [key, value] of Object.entries({ ...secureEnv, ...projectEnv })) {
   process.env[key] ??= value;
 }
 
-process.env.S015_UAT_SUPABASE_URL ??= process.env.NEXT_PUBLIC_SUPABASE_URL;
-process.env.S015_UAT_PUBLISHABLE_KEY ??=
+const fallbackSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+if (!process.env.S015_UAT_SUPABASE_URL && fallbackSupabaseUrl) {
+  process.env.S015_UAT_SUPABASE_URL = fallbackSupabaseUrl;
+}
+
+const fallbackPublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+if (!process.env.S015_UAT_PUBLISHABLE_KEY && fallbackPublishableKey) {
+  process.env.S015_UAT_PUBLISHABLE_KEY = fallbackPublishableKey;
+}
 if (!process.env.S015_UAT_SUPABASE_HOSTNAME && process.env.S015_UAT_SUPABASE_URL) {
   process.env.S015_UAT_SUPABASE_HOSTNAME = new URL(
     process.env.S015_UAT_SUPABASE_URL,

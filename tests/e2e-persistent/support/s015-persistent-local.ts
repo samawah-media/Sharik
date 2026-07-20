@@ -459,7 +459,7 @@ export const seedPersistentVersionFiles = async ({
 
 const assertLocalStackReachable = async (supabaseUrl: string) => {
   const healthUrl = new URL("/auth/v1/health", supabaseUrl);
-  const maxAttempts = 8;
+  const maxAttempts = 18;
   let lastStatus = 0;
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {

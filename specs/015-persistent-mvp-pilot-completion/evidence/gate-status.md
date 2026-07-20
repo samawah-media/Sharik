@@ -1,6 +1,18 @@
 # Spec 015 gate status
 
-## Current owner decision — 2026-07-19
+## Current owner decision — 2026-07-20
+
+`HOLD / HOSTED_TEAM_UAT_BLOCKED`. The 2026-07-20 corrective code slice closed the rescue's product-code gaps (raw enums, viewer copy, synthetic-UAT visibility, Uppy English) plus three rescue build/CI defects, and the complete exact-HEAD quality matrix is green on PR #37 quality run `29725841355` for head `0d7e8886f9ea975def04cf2405ef8555d04feda5`, with the exact-HEAD Vercel Preview Ready. Two hosted/data blockers remain open and keep H008-H010/X007/T032 closed: the setup-only service credential required for the bounded UAT data correction (defects C/F → S015-P1-078 / S015-P2-078) is unavailable on this workstation, and the hosted role walkthrough (S015-P1-079) cannot be driven without protected Preview access and the approved UAT persona accounts. No hosted data was mutated and no secret was printed or requested.
+
+## Exact-HEAD quality matrix — 2026-07-20 (green)
+
+- Branch: `codex/015-persistent-mvp-pilot-completion`. Final HEAD: `0d7e8886f9ea975def04cf2405ef8555d04feda5`. Draft PR #37: open, unmerged.
+- CI: GitHub Actions `F-001 Quality` run `29725841355`, job `88298622704`, SUCCESS in 16m19s.
+- Result: npm ci PASS; lint PASS; typecheck PASS; unit 53 files / 191 tests PASS; integration 28 files / 112 tests PASS; clean local Supabase start PASS; clean `db reset --local` PASS; RLS simulator 8 files / 24 tests PASS; pgTAP 6 files / 404 tests PASS; component 21 files / 69 tests PASS; fixture E2E 126 passed (6 configured mobile-only skips); persistent E2E 4 passed; secret scan PASS; build PASS.
+- Vercel: deployment `8LLCzASyKbKZBatUGHRyHFw2mBZh` completed for the exact head; target Preview; Ready. No Production alias or environment was changed.
+- Local cross-check on the same head: lint, typecheck, secret scan, `git diff --check`, unit 191, integration 112, component 69, RLS simulator 24, pgTAP 404, build, and the two corrected E2E specs (18 runs across desktop/mobile/RTL) all passed. Persistent E2E could not be completed locally because of the known post-reset auth-recovery race; the retry hardening lets the authoritative exact-HEAD CI run pass it.
+- Defects S015-P1-073 through S015-P1-077 and S015-P2-076/S015-P2-077 are reconciled as fixed/CI-verified. S015-P1-078, S015-P2-078, and S015-P1-079 remain open hosted/data blockers.
+
 
 `HOLD / HOSTED_TEAM_UAT_BLOCKED`. The first owner human trial rejected the product experience. Automated Auth/RLS/lifecycle evidence remains useful technical evidence, but it did not prove representative data, comprehensible navigation, actionable client approvals, or professional role-specific UX. H008-H010, X007, and T032 are reopened until X008 passes and the owner explicitly accepts the corrected Preview.
 

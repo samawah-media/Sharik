@@ -66,7 +66,7 @@ test("client viewer A sees Hadna only through the client portal", async ({
 
   await expect(page.getByRole("heading", { name: "مساحة هدنة" })).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "مراجعة ما ينتظرني" }),
+    page.getByRole("link", { name: "عرض ما هو قيد المراجعة" }),
   ).toHaveAttribute("href", "/client/pending");
   const clientSnapshot = page.getByRole("region", {
     name: "ملخص مساحة العميل",

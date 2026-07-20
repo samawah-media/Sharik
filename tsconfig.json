@@ -37,9 +37,7 @@
     "eslint.config.mjs",
     "playwright.config.ts",
     "vitest.config.ts",
-    ".next/dev/types/**/*.ts",
-    ".next-persistent/types/**/*.ts",
-    ".next-persistent/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

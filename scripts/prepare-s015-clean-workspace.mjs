@@ -536,6 +536,9 @@ async function printStatus() {
   const legacyAuditUnchanged = await countExact(
     admin.from("audit_events").select("id", { count: "exact", head: true }).eq("tenant_id", legacyTenantId),
   );
+  const legacyLedgerUnchanged = await countExact(
+    admin.from("package_ledger_entries").select("id", { count: "exact", head: true }).eq("tenant_id", legacyTenantId),
+  );
   const cleanAuditProvisioned = await countExact(
     admin.from("audit_events").select("id", { count: "exact", head: true }).eq("tenant_id", cleanTenantId).eq("action", CLEAN_WORKSPACE_PROVISIONED_ACTION),
   );
@@ -564,7 +567,8 @@ async function printStatus() {
       legacyQuarantine: {
         tenantCategory: "legacy_uat_hadna_glass",
         internalMembershipsStillActive: legacyMembershipActive,
-        auditLedgerRowsPreserved: legacyAuditUnchanged,
+        auditRowsPreserved: legacyAuditUnchanged,
+        ledgerRowsPreserved: legacyLedgerUnchanged,
       },
     }),
   );

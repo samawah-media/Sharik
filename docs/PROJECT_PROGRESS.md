@@ -1,10 +1,12 @@
 # Project Progress
 
-## Spec 015 X009-B clean owner-entry workspace — local mechanics green, hosted apply blocked — 2026-07-21
+## Spec 015 X009-B clean owner-entry workspace closed — 2026-07-21
 
-Status: `X009_B_CORRECTIVE_CI_HOSTED_PENDING`.
+Status: `X009_B_GREEN_READY_FOR_OWNER_ENTRY`.
 
-Independent review found S015-P1-094 after the initial handoff: the command-line tool identified legacy from the only active membership, but after apply that is intentionally the clean workspace, so a new-process replay/status/rollback would fail. The correction selects legacy by excluding the deterministic clean tenant, uses the dedicated Supabase hostname allowlist, and compensates membership activation if apply fails. The linked target is confirmed read-only as healthy non-Production `sharik-uat`; exact-head CI and the hosted cycle remain pending.
+Independent review found and fixed S015-P1-094 after the initial handoff: the command-line tool identified legacy from the only active membership, but after apply that is intentionally the clean workspace, so a new-process replay/status/rollback would fail. The correction selects legacy by excluding the deterministic clean tenant, uses the dedicated Supabase hostname allowlist, and compensates membership activation if apply fails. Exact-head run `29852802208` passed, then the complete hosted cycle passed on healthy non-Production `sharik-uat` and left the clean workspace active.
+
+Final hosted state: five internal memberships/roles/profiles active; zero clients, contracts, packages, package lines, deliverables, versions, tasks, approvals, files, ledger entries, or reservations. Legacy internal memberships are inactive while 135 audit rows and 26 ledger rows remain preserved. Direct protected-Preview checks passed for management, account manager, writer, designer, unassigned, and client viewer isolation. X009-B is closed; the owner may begin X009-C first-client onboarding after review.
 
 The owner trial needs a clean empty workspace inside the approved non-Production UAT so management can enter a new client, contract, package, and deliverables from zero, while approved internal Samawah identities stay signed in and the legacy Glass/Hadna data stops polluting the natural experience.
 
@@ -14,7 +16,7 @@ Implementation inside Spec 015 only: `src/modules/uat/clean-workspace.ts` (deter
 
 Local matrix PASS on the exact reviewed head: lint; typecheck; unit 57 files/239 tests; integration 28 files/112 tests; component 21 files/72 tests; RLS simulator 8 files/24 tests; clean local Supabase reset; pgTAP 7 files/453 tests; fixture E2E 126 passed/6 skipped; persistent E2E 12 passed (5 new clean-workspace scenarios plus the prior 7); secret scan; `git diff --check`; production build. S015-P2-090 is dispositioned as fixed-by-quarantine: the legacy tenant and ledger are preserved and simply stop being the natural entry; no ledger row is rewritten and any new package commitment starts at the owner-entered balance.
 
-Hosted apply (X009-B-6) remains blocked (S015-P2-093): the reviewed UAT hostname allowlist in the secure team-UAT env does not match the Supabase URL currently reachable from this workstation, and no UAT service role key is present locally. The tool fails closed on that mismatch. The owner must point `S015_UAT_PROJECT_ENV_FILE` at the verified UAT Supabase target and run `npm run uat:clean-workspace:prepare -- --dry-run`, then `--apply`, replay no-op, `--status`, and a `--rollback` rehearsal. No Production target was reachable, no credential was printed or requested, no merge occurred, and no audit/ledger/approval history was deleted or rewritten.
+X009-B-6 is complete. The dedicated Supabase hostname guard matched the repository-linked healthy UAT project, the setup credential stayed process-only, replay and rollback evidence passed, and the final state is the clean workspace. No Production target, merge, real data, invitation, or audit/ledger/approval deletion was involved.
 
 ## Spec 015 X009-A closed after independent correction — 2026-07-21
 

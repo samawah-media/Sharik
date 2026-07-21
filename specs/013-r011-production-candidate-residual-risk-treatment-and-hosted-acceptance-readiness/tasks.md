@@ -4,7 +4,7 @@
 
 **Prerequisites**: R-010 Path B evidence at `specs/012-r010-production-candidate-gap-closure-hosted-completion-decision/evidence/`
 
-**Status**: Historical R-011 planning and local-readiness package. Its original no-hosted-action boundary remains historical evidence; T032 was later executed and closed under the separately owner-authorized Spec 015 Preview/UAT package on 2026-07-16. Production acceptance is still not authorized.
+**Status**: Historical R-011 planning and local-readiness package. Its original no-hosted-action boundary remains historical evidence. T032 received technical hosted evidence on 2026-07-16, then was reopened by the owner's 2026-07-19 human product rejection under Spec 015 X008. Production acceptance is still not authorized.
 
 **Tests**: Documentation verification only: `git diff --check`, `npm run secret:scan`, and scoped redaction scan over new R-011 docs. Lint/typecheck only if code changes.
 
@@ -76,7 +76,7 @@
 - [x] T029 [R011A] Define bounded client approver account/category prep only if owner approves it
 - [x] T030 [R011A] Define bounded waiting approval item/category prep only if owner approves it
 - [x] T031 [R011A] Define bounded final delivery/file-list category prep only if owner approves it
-- [x] T032 [R011A] Run limited hosted completion checks only after owner approval in a later package. Closed by the owner-authorized Spec 015 Preview/UAT execution on 2026-07-16; evidence is cross-referenced in the Spec 015 final hosted handoff and R-011A execution log.
+- [ ] T032 [R011A] Run limited hosted completion checks only after owner approval in a later package. Technical checks passed on 2026-07-16, but closure was reopened by the owner's 2026-07-19 human product rejection. Reclose only through Spec 015 X008-H after corrected exact-Preview owner acceptance.
 
 ## Phase 6A: R-011A - Safe Local UAT Gap Setup Paths
 

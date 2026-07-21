@@ -90,14 +90,14 @@ X008-A through X008-G are implemented and verified locally and on the corrected 
 
 ## Owner trial blocker X009-A — same Spec 015
 
-- [ ] X009-A Diagnose and permanently fix the online "تعذر حفظ المخرج بأمان" failure without starting the visual redesign, UAT cleanup, client onboarding wizard, or any data deletion.
+- [x] X009-A Diagnose and permanently fix the online "تعذر حفظ المخرج بأمان" failure without starting the visual redesign, UAT cleanup, client onboarding wizard, or any data deletion.
   - [x] X009-A-1 Reproduce and root-cause the failure on local Supabase using an authorized management UAT persona and the exact form → Zod → server action → `createDeliverableViaRpc` → `f002_create_deliverable_reservation` path.
   - [x] X009-A-2 Replace raw owner/contributor identifiers with a scoped human-readable member selector; retain safe actionable Arabic error mapping; enforce tenant/client/active-role assignment integrity in PostgreSQL without weakening RLS or the audited transactional RPC.
   - [x] X009-A-3 Add focused regression coverage for form mapping and selectors, management/account-manager directory access, client denial, invalid/cross-scope assignment denial, valid assignment, package capacity, atomic rollback, idempotent replay, audit/ledger integrity, and persistent browser creation + reload.
-  - [ ] X009-A-4 Pass the corrected exact-head gate matrix. CI run `29833746263` verified S015-P1-091; later run `29835323916` exposed S015-P1-092 at the final build. The guarded transient-artifact cleanup is locally green and awaits exact-head CI.
+  - [x] X009-A-4 Pass the corrected exact-head gate matrix. CI run `29833746263` verified S015-P1-091; later run `29835323916` exposed S015-P1-092, and corrective run `29837663256` passed the complete matrix including all seven persistent scenarios and the final production build.
   - [x] X009-A-5 Isolated non-Production Preview verification under `samawahs-projects/shrik`: migration `202607210001` applied to UAT, exact-head Preview Ready, real browser/Auth creation persisted one correctly assigned deliverable with one allocation/reservation and audit evidence, then audited cancellation released the reservation and left zero active run-scoped records. Production remained untouched.
 
-Independent review fixed S015-P1-089 and the non-Production hosted create/cancel proof is green. Exact-head CI verified S015-P1-091, then exposed S015-P1-092 from transient persistent build artifacts. X009-A remains open only for the corrective exact-head CI result. Legacy Glass package balance debt remains S015-P2-090 for the next clean-workspace checkpoint. Production remains untouched.
+Independent review fixed S015-P1-089, the non-Production hosted create/cancel proof is green, and exact-head CI verified both S015-P1-091 and S015-P1-092. X009-A is closed. Legacy Glass package balance debt remains S015-P2-090 for the next clean-workspace checkpoint. Production remains untouched.
 
 ## Correction note: task assignment authority (2026-07-15)
 

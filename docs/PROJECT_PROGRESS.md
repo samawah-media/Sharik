@@ -1,5 +1,15 @@
 # Project Progress
 
+## Spec 015 X009-A local ready for isolated Preview — 2026-07-21
+
+Status: `X009_A_LOCAL_READY_FOR_PREVIEW`.
+
+The owner online trial reported the generic "تعذر حفظ المخرج بأمان" failure on the new-deliverable form. Local reproduction with a real management UAT persona and the exact form → Zod → server action → `createDeliverableViaRpc` → `f002_create_deliverable_reservation` path proved the root cause: the free-text `ownerUserId` and `contributorUserIds` inputs forwarded non-UUID values (for example a person's name) to the audited RPC, PostgREST rejected the uuid cast with `22P02`, and the action mapped every non-23505/42501/P0001 code to the generic fallback. No partial row, authorization bypass, or RLS weakening was involved.
+
+The smallest correct root-cause fix is implemented locally without touching the shared command schema, historical migrations, fixtures, or visual design: added `src/server/actions/deliverable-write-errors.ts` with an action-layer identifier pre-check and an actionable Arabic `mapDeliverableWriteError` that surfaces 22P02 / 23502 / 23503 / 23514 without ever echoing raw Postgres text, and wired it into both `createDeliverableAction` and `createApprovedExtraDeliverableAction`. No new dependency, no architecture change, no migration. Local matrix PASS: lint; typecheck; unit 55 files / 228 tests including the new `deliverable-write-errors` 20/20; integration 28 files / 112 tests; component 21 files / 72 tests; RLS simulator 8 files / 24 tests; clean local Supabase `db reset --local --no-seed`; RLS DB pgTAP 6 files / 427 tests; persistent E2E deliverable creation 3/3 (real-Auth happy path + reload + exact-once deliverable/allocation/ledger/audit side effects, invalid owner rejection with actionable Arabic copy and zero raw Postgres leakage, idempotent replay returning the original deliverable with no duplicate side effects); secret scan; `git diff --check`; and production build.
+
+Defect S015-P1-088 is registered and locally fixed. X009-A-5 (isolated non-Production Preview verification under `samawahs-projects/shrik`) remains the only open sub-task. The owner-approved Spec 015 clarifications remain preserved unstaged. No Production deployment, stable UAT alias promotion, merge, external invitation, public signup, real customer data, or workbook commit occurred.
+
 ## Spec 015 ready for owner online trial — 2026-07-20
 
 Status: `HOSTED_TEAM_UAT_READY_FOR_OWNER_TRIAL`.

@@ -1,6 +1,20 @@
 # Spec 015 gate status
 
-## Authoritative current decision — 2026-07-20
+## Authoritative current decision — 2026-07-21
+
+`X009_A_LOCAL_READY_FOR_PREVIEW`. The online "تعذر حفظ المخرج بأمان" owner-trial blocker is locally fixed (defect S015-P1-088); the isolated non-Production Preview verification (X009-A-5) remains open.
+
+- Branch: `codex/015-persistent-mvp-pilot-completion`. Head: local-only corrective slice on top of `248b18d`; uncommitted and pending isolated-Preview verification.
+- Root cause: the new-deliverable form's free-text `ownerUserId` and `contributorUserIds` inputs forwarded non-UUID values (for example a person's name) to the audited RPCs; PostgREST rejected the uuid cast with `22P02` and the action mapped every non-23505/42501/P0001 code to the generic fallback. No partial row, authorization bypass, or RLS weakening was involved.
+- Fix: added `src/server/actions/deliverable-write-errors.ts` (action-layer identifier pre-check plus actionable Arabic `mapDeliverableWriteError` that surfaces 22P02 / 23502 / 23503 / 23514 without ever echoing raw Postgres text) and wired it into both `createDeliverableAction` and `createApprovedExtraDeliverableAction`. No new dependency, no architecture change, no migration, no command-schema change, no fixture rewrite, and no visual redesign.
+- Local matrix PASS: lint; typecheck; unit 55 files / 228 tests including the new `deliverable-write-errors` 20/20; integration 28 files / 112 tests; component 21 files / 72 tests; RLS simulator 8 files / 24 tests; clean local Supabase `db reset --local --no-seed`; RLS DB pgTAP 6 files / 427 tests; persistent E2E deliverable creation 3/3 (real-Auth happy path + reload + exact-once deliverable/allocation/ledger/audit side effects, invalid owner rejection with actionable Arabic copy and zero raw Postgres leakage, idempotent replay returning the original deliverable with no duplicate side effects); secret scan; `git diff --check`; and production build.
+- Owner-approved Spec 015 clarifications remain preserved unstaged in `spec.md` and are not part of this corrective commit.
+- Production boundary: no Production deployment, alias, environment change, merge, public signup, external-client invitation, real customer data, stable UAT alias promotion, or workbook tracking occurred.
+- Remaining gate: X009-A-5 (isolated non-Production Preview verification under `samawahs-projects/shrik`) is the only open sub-task; H008-H010/X007/T032/X008-H remain in their prior `HOSTED_TEAM_UAT_READY_FOR_OWNER_TRIAL` state and are not reopened or closed by this slice.
+
+All status sections below are chronological evidence. Where they conflict, this authoritative decision and the current `tasks.md` X009-A state govern.
+
+## Authoritative decision before X009-A — 2026-07-20
 
 `HOSTED_TEAM_UAT_READY_FOR_OWNER_TRIAL`.
 

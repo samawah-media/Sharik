@@ -1,8 +1,8 @@
 # Project Progress
 
-## Spec 015 X009-A closed after independent correction — 2026-07-21
+## Spec 015 X009-A final CI correction — 2026-07-21
 
-Status: `X009_A_GREEN_READY_FOR_NEXT_CHECKPOINT`.
+Status: `X009_A_CI_CORRECTION_PENDING`.
 
 The owner trial failure had two layers. S015-P1-088 correctly added UUID pre-validation and safe actionable Arabic database errors, but independent review found S015-P1-089: the UI still required raw identifiers and a syntactically valid UUID could still describe an ineligible cross-scope or client assignee.
 
@@ -10,7 +10,7 @@ The bounded correction replaces raw owner/contributor fields with a scoped human
 
 The migration was applied only to Supabase UAT and the official `samawahs-projects/shrik` Preview is Ready. A real administrator Auth/browser session created exactly one run-scoped deliverable with human-selected owner/contributor, allocation, reservation ledger, and audit evidence. The run was then cancelled through the audited release RPC; the allocation is released and active synthetic remainder is zero. A private browser diagnostic exposed the temporary administrator field value inside the owner's session, so that UAT credential was rotated immediately and was not committed or copied into evidence. Legacy Glass package capacity is already over-reserved and is recorded as S015-P2-090 for quarantine in the next clean-workspace checkpoint.
 
-Exact-head CI run `29831207142` first exposed cross-suite seed reuse before the old persistent lifecycle assertions. S015-P1-091 added the missing guarded reset; corrected run `29833746263` then passed the complete matrix, including all seven persistent browser scenarios, secret scan, and build. X009-A is closed; Production remains untouched.
+Exact-head CI run `29831207142` first exposed cross-suite seed reuse before the old persistent lifecycle assertions. S015-P1-091 added the missing guarded reset; corrected run `29833746263` passed the complete matrix. A following documentation-head run `29835323916` passed all seven persistent scenarios but exposed S015-P1-092 at the final build: a partially generated `.next-persistent` type artifact survived persistent dev-server termination. Production build now performs a guarded cleanup limited to that workspace-root transient directory; local build passes and exact-head CI is pending. Production remains untouched.
 
 ## Spec 015 ready for owner online trial — 2026-07-20
 

@@ -2,7 +2,7 @@
 
 ## Authoritative current decision — 2026-07-21
 
-`X009_A_GREEN_READY_FOR_NEXT_CHECKPOINT`. Product/database/hosted verification is green, and exact-head CI run `29833746263` verified the S015-P1-091 cross-suite persistent reset correction.
+`X009_A_CI_CORRECTION_PENDING`. Product/database/hosted verification remains green. Exact-head CI run `29835323916` passed through all persistent scenarios, then exposed S015-P1-092 in the final build: a partially generated ignored `.next-persistent` type artifact survived dev-server termination. A guarded pre-build cleanup is locally green and awaits exact-head CI.
 
 - Branch: `codex/015-persistent-mvp-pilot-completion`; application correction `9c8af15` is pushed to the official GitHub repository.
 - Root cause: the new-deliverable form's free-text `ownerUserId` and `contributorUserIds` inputs forwarded non-UUID values (for example a person's name) to the audited RPCs; PostgREST rejected the uuid cast with `22P02` and the action mapped every non-23505/42501/P0001 code to the generic fallback. No partial row, authorization bypass, or RLS weakening was involved.
@@ -12,7 +12,7 @@
 - Owner-approved Spec 015 clarifications are incorporated into the canonical spec; no parallel plan or Spec was created.
 - Credential hygiene: the temporary UAT administrator credential surfaced in a private browser diagnostic, was immediately rotated, and was not committed or recorded in project evidence.
 - Production boundary: no Production deployment, alias, environment change, merge, public signup, external-client invitation, real customer data, or workbook tracking occurred.
-- Remaining gate: none inside X009-A. H008-H010/X007/T032/X008-H remain unchanged.
+- Remaining gate: exact-head CI verification of S015-P1-092. H008-H010/X007/T032/X008-H remain unchanged.
 
 All status sections below are chronological evidence. Where they conflict, this authoritative decision and the current `tasks.md` X009-A state govern.
 

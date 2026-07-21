@@ -182,17 +182,20 @@ test("tampered owner identifier returns an actionable Arabic error instead of th
   await form
     .locator('select[name="packageLineId"]')
     .selectOption(freshPackageLineId);
-  const ownerSelect = form.locator('select[name="ownerUserId"]');
-  await ownerSelect.evaluate((selectElement) => {
-    const option = document.createElement("option");
-    option.value = "أحمد";
-    option.textContent = "قيمة غير مصرح بها";
-    selectElement.append(option);
-    (selectElement as HTMLSelectElement).value = option.value;
-    selectElement.dispatchEvent(new Event("input", { bubbles: true }));
-    selectElement.dispatchEvent(new Event("change", { bubbles: true }));
+  await form.evaluate((formElement) => {
+    const ownerSelect = formElement.querySelector<HTMLSelectElement>(
+      'select[name="ownerUserId"]',
+    );
+    if (!ownerSelect) throw new Error("Owner selector missing");
+    ownerSelect.removeAttribute("name");
+    const tamperedOwner = document.createElement("input");
+    tamperedOwner.type = "hidden";
+    tamperedOwner.name = "ownerUserId";
+    tamperedOwner.value = "أحمد";
+    tamperedOwner.dataset.testid = "tampered-owner-id";
+    formElement.append(tamperedOwner);
   });
-  await expect(ownerSelect).toHaveValue("أحمد");
+  await expect(form.getByTestId("tampered-owner-id")).toHaveValue("أحمد");
 
   await form.getByRole("button", { name: "حفظ المخرج وحجز الكمية" }).click();
 

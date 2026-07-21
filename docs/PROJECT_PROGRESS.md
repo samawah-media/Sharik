@@ -1,14 +1,16 @@
 # Project Progress
 
-## Spec 015 X009-A closed after independent correction — 2026-07-21
+## Spec 015 X009-A exact-head CI correction — 2026-07-21
 
-Status: `X009_A_GREEN_READY_FOR_NEXT_CHECKPOINT`.
+Status: `X009_A_CI_CORRECTION_PENDING`.
 
 The owner trial failure had two layers. S015-P1-088 correctly added UUID pre-validation and safe actionable Arabic database errors, but independent review found S015-P1-089: the UI still required raw identifiers and a syntactically valid UUID could still describe an ineligible cross-scope or client assignee.
 
 The bounded correction replaces raw owner/contributor fields with a scoped human-readable member selector and adds additive migration `202607210001` with a management-only directory and fail-closed PostgreSQL assignment-integrity trigger. Corrected local evidence is green: unit 230, integration 112, component 72, RLS simulator 24, pgTAP 436, persistent creation 3/3, lint, typecheck, clean reset, secret scan, diff check, and build. No dependency or architecture change was introduced.
 
-The migration was applied only to Supabase UAT and the official `samawahs-projects/shrik` Preview is Ready. A real administrator Auth/browser session created exactly one run-scoped deliverable with human-selected owner/contributor, allocation, reservation ledger, and audit evidence. The run was then cancelled through the audited release RPC; the allocation is released and active synthetic remainder is zero. A private browser diagnostic exposed the temporary administrator field value inside the owner's session, so that UAT credential was rotated immediately and was not committed or copied into evidence. Legacy Glass package capacity is already over-reserved and is recorded as S015-P2-090 for quarantine in the next clean-workspace checkpoint. X009-A is closed; Production remains untouched.
+The migration was applied only to Supabase UAT and the official `samawahs-projects/shrik` Preview is Ready. A real administrator Auth/browser session created exactly one run-scoped deliverable with human-selected owner/contributor, allocation, reservation ledger, and audit evidence. The run was then cancelled through the audited release RPC; the allocation is released and active synthetic remainder is zero. A private browser diagnostic exposed the temporary administrator field value inside the owner's session, so that UAT credential was rotated immediately and was not committed or copied into evidence. Legacy Glass package capacity is already over-reserved and is recorded as S015-P2-090 for quarantine in the next clean-workspace checkpoint.
+
+Exact-head CI run `29831207142` passed lint, typecheck, unit, integration, reset, RLS/pgTAP, component, and fixture E2E, then failed before the old persistent lifecycle assertions because the preceding new creation suite left the same canonical reservation-ledger seed ID. S015-P1-091 adds the missing between-suite reset. X009-A remains open only until the corrected exact-head CI passes; Production remains untouched.
 
 ## Spec 015 ready for owner online trial — 2026-07-20
 

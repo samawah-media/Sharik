@@ -292,7 +292,11 @@ test("replaying the same idempotency key returns the original deliverable withou
 });
 
 test.afterAll(async () => {
-  // The persistent global teardown resets the local database. Re-assert the
-  // local env so a stale hosted value can never leak into evidence.
+  // This suite seeds the same canonical lifecycle IDs used by the following
+  // browser suite in the combined CI invocation. Reset here so the next
+  // suite starts from migrations only instead of inheriting our seed rows.
+  await resetLocalDatabaseIfLifecycleSeeded();
+
+  // Re-assert the local env so a stale hosted value can never leak into evidence.
   loadPersistentLocalEnv();
 });

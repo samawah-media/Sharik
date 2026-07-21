@@ -115,9 +115,7 @@ const supabaseTarget = new URL(supabaseUrl);
 // Supabase URL must match it exactly and remain a supabase.co host; any
 // mismatch is an ambiguous target and a hard stop before mutation.
 const allowedHostname = (
-  process.env.S015_UAT_ALLOWED_HOSTNAME ??
-  process.env.S015_UAT_SUPABASE_HOSTNAME ??
-  ""
+  process.env.S015_UAT_SUPABASE_HOSTNAME ?? ""
 ).toLowerCase();
 if (!allowedHostname) {
   throw new Error("CLEAN_WORKSPACE_HOSTNAME_ALLOWLIST_REQUIRED");
@@ -145,6 +143,16 @@ if (
 
 const cleanTenantId = tenantIdFor(runId);
 const publishableKey = required("S015_UAT_PUBLISHABLE_KEY");
+const serviceRoleKey =
+  process.env.S015_UAT_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (mode !== "--dry-run" && !serviceRoleKey) {
+  throw new Error("CLEAN_WORKSPACE_SERVICE_ROLE_REQUIRED");
+}
+const admin = serviceRoleKey
+  ? createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+  : null;
 
 const personaEmails = Object.fromEntries(
   INTERNAL_PERSONAS.map((key) => [
@@ -175,24 +183,25 @@ for (const key of INTERNAL_PERSONAS) {
     throw new Error(`CLEAN_WORKSPACE_SIGN_IN_FAILED:${key}`);
   }
   const userId = signIn.data.user.id;
+  const inventoryClient = admin ?? client;
   const memberships = expectNoError(
-    await client
+    await inventoryClient
       .from("tenant_memberships")
       .select("id, tenant_id, status")
       .eq("auth_user_id", userId),
     `CLEAN_WORKSPACE_MEMBERSHIP_INVENTORY_FAILED:${key}`,
   );
-  const activeMemberships = memberships.filter(
-    (membership) => membership.status === "active",
+  const legacyMemberships = memberships.filter(
+    (membership) => membership.tenant_id !== cleanTenantId,
   );
-  if (activeMemberships.length !== 1) {
+  if (legacyMemberships.length !== 1) {
     throw new Error(
-      `CLEAN_WORKSPACE_LEGACY_MEMBERSHIP_AMBIGUOUS:${key}:${activeMemberships.length}`,
+      `CLEAN_WORKSPACE_LEGACY_MEMBERSHIP_AMBIGUOUS:${key}:${legacyMemberships.length}`,
     );
   }
-  const legacyMembership = activeMemberships[0];
+  const legacyMembership = legacyMemberships[0];
   const roles = expectNoError(
-    await client
+    await inventoryClient
       .from("role_assignments")
       .select("role_key, scope_type, status")
       .eq("membership_id", legacyMembership.id)
@@ -285,15 +294,6 @@ if (mode === "--dry-run") {
   process.exit(0);
 }
 
-const serviceRoleKey =
-  process.env.S015_UAT_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
-if (!serviceRoleKey) {
-  throw new Error("CLEAN_WORKSPACE_SERVICE_ROLE_REQUIRED");
-}
-const admin = createClient(supabaseUrl, serviceRoleKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
-
 if (mode === "--status") {
   await printStatus();
   process.exit(0);
@@ -310,6 +310,15 @@ await printStatus();
 process.exit(0);
 
 async function runApply() {
+  try {
+    await applyWorkspace();
+  } catch (error) {
+    await compensateFailedApply();
+    throw error;
+  }
+}
+
+async function applyWorkspace() {
   expectNoError(
     await admin.from("tenants").upsert(
       {
@@ -401,6 +410,23 @@ async function runApply() {
     )
     .eq("status", "active");
   expectNoError(legacyDisable, "CLEAN_WORKSPACE_LEGACY_DISABLE_FAILED");
+}
+
+async function compensateFailedApply() {
+  if (!admin) return;
+  await admin
+    .from("tenant_memberships")
+    .update({ status: "disabled", disabled_at: new Date().toISOString() })
+    .eq("tenant_id", cleanTenantId)
+    .eq("status", "active");
+  await admin
+    .from("tenant_memberships")
+    .update({ status: "active", disabled_at: null })
+    .in(
+      "id",
+      plannedMemberships.map((entry) => entry.legacyMembershipId),
+    )
+    .eq("status", "disabled");
 }
 
 async function runRollback() {
@@ -552,9 +578,7 @@ async function countExact(request) {
 
 function expectNoError(response, code) {
   if (response.error) {
-    throw new Error(
-      `${code}:${response.error.code ?? "unknown"}:${response.error.message ?? "unknown"}`,
-    );
+    throw new Error(`${code}:${response.error.code ?? "unknown"}`);
   }
   return response.data;
 }

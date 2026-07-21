@@ -84,6 +84,30 @@ export type CleanRolePlan = {
   assignmentId: string;
 };
 
+export type WorkspaceMembershipReference = {
+  id: string;
+  tenantId: string;
+  status: string;
+};
+
+// Replays and rollback run after the clean membership becomes the only active
+// membership. Therefore legacy identity is determined by tenant identity, not
+// by whichever membership happens to be active at invocation time.
+export const selectLegacyWorkspaceMembership = (input: {
+  cleanTenantId: string;
+  memberships: readonly WorkspaceMembershipReference[];
+}): WorkspaceMembershipReference => {
+  const legacyMemberships = input.memberships.filter(
+    (membership) => membership.tenantId !== input.cleanTenantId,
+  );
+  if (legacyMemberships.length !== 1) {
+    throw new Error(
+      `CLEAN_WORKSPACE_LEGACY_MEMBERSHIP_AMBIGUOUS:${legacyMemberships.length}`,
+    );
+  }
+  return legacyMemberships[0];
+};
+
 // Mirror a persona's legacy role assignments into the clean workspace at tenant
 // scope. Management roles are already tenant-scoped and migrate unchanged.
 // Client-scoped internal roles (account_manager/content_writer/designer/...)

@@ -2,7 +2,7 @@
 
 ## Authoritative current decision — 2026-07-21
 
-`X009_B_LOCAL_GREEN_HOSTED_APPLY_BLOCKED`. The clean owner-entry UAT workspace tooling and mechanics are complete and locally verified on the exact reviewed head. The hosted apply is blocked on owner target/credential confirmation and the tool fails closed.
+`X009_B_CORRECTIVE_CI_HOSTED_PENDING`. Independent review found and locally fixed S015-P1-094 in separate-process replay/status/rollback discovery. The linked hosted target is confirmed read-only as healthy non-Production `sharik-uat`; corrective exact-head CI must pass before the hosted cycle.
 
 - Branch: `codex/015-persistent-mvp-pilot-completion`; X009-B adds the clean-workspace contract, hosted `--dry-run/--apply/--rollback/--status` tool, and unit/pgTAP/persistent coverage on top of the X009-A head.
 - Clean-workspace model: a new run-ID-scoped tenant inside the approved non-Production UAT; approved internal Samawah identities receive a new active tenant membership and tenant-scoped role assignment there; their legacy Glass/Hadna tenant membership is set to `disabled` (reversible); legacy audit and package-ledger history is never deleted or rewritten; client personas never receive clean-workspace access automatically.
@@ -11,7 +11,7 @@
 - S015-P2-090 dispositioned as fixed-by-quarantine: legacy Glass/Hadna tenant preserved; no ledger rewrite; new package commitments start at the owner-entered balance.
 - Hosted apply blocker (S015-P2-093): the reviewed UAT hostname allowlist in the secure team-UAT env does not match the Supabase URL currently reachable from this workstation, and no UAT service role key is present locally. The tool refuses the mismatched target and requires `S015_UAT_PROJECT_ENV_FILE` to point at the verified UAT target before `--apply`.
 - Production boundary: no Production deployment, alias, environment change, merge, public signup, external-client invitation, real customer data, or audit/ledger deletion occurred. The hosted mutation boundary remains Preview/UAT only.
-- Remaining gate: X009-B-6 hosted apply pending owner target/credential confirmation. H008-H010/X007/T032/X008-H remain unchanged.
+- Remaining gate: corrective exact-head CI, then X009-B-6 hosted dry-run/apply/replay/status/rollback/final-apply. H008-H010/X007/T032/X008-H remain unchanged.
 
 All status sections below are chronological evidence. Where they conflict, this authoritative decision and the current `tasks.md` X009-B state govern.
 

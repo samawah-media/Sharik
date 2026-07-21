@@ -2,7 +2,9 @@
 
 ## Spec 015 X009-B clean owner-entry workspace — local mechanics green, hosted apply blocked — 2026-07-21
 
-Status: `X009_B_LOCAL_GREEN_HOSTED_APPLY_BLOCKED`.
+Status: `X009_B_CORRECTIVE_CI_HOSTED_PENDING`.
+
+Independent review found S015-P1-094 after the initial handoff: the command-line tool identified legacy from the only active membership, but after apply that is intentionally the clean workspace, so a new-process replay/status/rollback would fail. The correction selects legacy by excluding the deterministic clean tenant, uses the dedicated Supabase hostname allowlist, and compensates membership activation if apply fails. The linked target is confirmed read-only as healthy non-Production `sharik-uat`; exact-head CI and the hosted cycle remain pending.
 
 The owner trial needs a clean empty workspace inside the approved non-Production UAT so management can enter a new client, contract, package, and deliverables from zero, while approved internal Samawah identities stay signed in and the legacy Glass/Hadna data stops polluting the natural experience.
 

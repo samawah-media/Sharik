@@ -9,6 +9,7 @@ import {
   cleanWorkspaceRoleAssignmentId,
   cleanWorkspaceTenantId,
   planCleanWorkspaceRolesForUser,
+  selectLegacyWorkspaceMembership,
 } from "@/modules/uat/clean-workspace";
 
 describe("clean owner-entry workspace identifiers", () => {
@@ -171,5 +172,54 @@ describe("clean owner-entry workspace role mirroring", () => {
       "designer",
       "performance_specialist",
     ]);
+  });
+});
+
+describe("clean workspace replay membership discovery", () => {
+  const legacy = {
+    id: "legacy-membership",
+    tenantId: "legacy-tenant",
+    status: "disabled",
+  };
+  const clean = {
+    id: "clean-membership",
+    tenantId: "clean-tenant",
+    status: "active",
+  };
+
+  it("keeps selecting the disabled legacy membership after apply", () => {
+    expect(
+      selectLegacyWorkspaceMembership({
+        cleanTenantId: clean.tenantId,
+        memberships: [clean, legacy],
+      }),
+    ).toEqual(legacy);
+  });
+
+  it("selects the same legacy membership before apply", () => {
+    expect(
+      selectLegacyWorkspaceMembership({
+        cleanTenantId: clean.tenantId,
+        memberships: [{ ...legacy, status: "active" }],
+      }),
+    ).toEqual({ ...legacy, status: "active" });
+  });
+
+  it("fails closed when legacy identity is missing or ambiguous", () => {
+    expect(() =>
+      selectLegacyWorkspaceMembership({
+        cleanTenantId: clean.tenantId,
+        memberships: [clean],
+      }),
+    ).toThrow(/CLEAN_WORKSPACE_LEGACY_MEMBERSHIP_AMBIGUOUS:0/u);
+    expect(() =>
+      selectLegacyWorkspaceMembership({
+        cleanTenantId: clean.tenantId,
+        memberships: [
+          legacy,
+          { ...legacy, id: "legacy-2", tenantId: "legacy-tenant-2" },
+        ],
+      }),
+    ).toThrow(/CLEAN_WORKSPACE_LEGACY_MEMBERSHIP_AMBIGUOUS:2/u);
   });
 });

@@ -2309,5 +2309,90 @@ select is(
 );
 reset role;
 
+-- 3.21 Deliverable assignment directory and write boundary.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select is(
+  (select count(*)::integer from public.s015_list_deliverable_eligible_members(
+    '21000000-0000-4000-8000-000000000001',
+    '21000000-0000-4000-8000-000000000301'
+  )),
+  5, 'tenant management lists active internal deliverable members for Client A'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000201', true);
+select is(
+  (select count(*)::integer from public.s015_list_deliverable_eligible_members(
+    '21000000-0000-4000-8000-000000000001',
+    '21000000-0000-4000-8000-000000000301'
+  )),
+  5, 'scoped account manager lists eligible deliverable members for Client A'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202', true);
+select is(
+  (select count(*)::integer from public.s015_list_deliverable_eligible_members(
+    '21000000-0000-4000-8000-000000000001',
+    '21000000-0000-4000-8000-000000000301'
+  )),
+  0, 'client viewer cannot list internal deliverable members'
+);
+reset role;
+
+select throws_ok(
+  $$insert into public.deliverables (
+    id, tenant_id, client_id, name, type, status, progress_percentage,
+    idempotency_key, requires_internal_approval, requires_client_approval,
+    owner_user_id
+  ) values (
+    '21000000-0000-4000-8000-000000000590',
+    '21000000-0000-4000-8000-000000000001',
+    '21000000-0000-4000-8000-000000000301',
+    'Wrong tenant owner', 'post', 'not_started', 0,
+    's015-invalid-deliverable-owner-tenant', true, true,
+    '22000000-0000-4000-8000-000000000201'
+  )$$,
+  '42501', 'invalid deliverable owner',
+  'wrong-tenant user cannot be assigned as deliverable owner'
+);
+
+select throws_ok(
+  $$insert into public.deliverables (
+    id, tenant_id, client_id, name, type, status, progress_percentage,
+    idempotency_key, requires_internal_approval, requires_client_approval,
+    contributor_user_ids
+  ) values (
+    '21000000-0000-4000-8000-000000000591',
+    '21000000-0000-4000-8000-000000000001',
+    '21000000-0000-4000-8000-000000000301',
+    'Client contributor', 'post', 'not_started', 0,
+    's015-invalid-deliverable-contributor-client', true, true,
+    array['21000000-0000-4000-8000-000000000202'::uuid]
+  )$$,
+  '42501', 'invalid deliverable contributor',
+  'client persona cannot be assigned as deliverable contributor'
+);
+
+select lives_ok(
+  $$insert into public.deliverables (
+    id, tenant_id, client_id, name, type, status, progress_percentage,
+    idempotency_key, requires_internal_approval, requires_client_approval,
+    owner_user_id, contributor_user_ids
+  ) values (
+    '21000000-0000-4000-8000-000000000592',
+    '21000000-0000-4000-8000-000000000001',
+    '21000000-0000-4000-8000-000000000301',
+    'Valid internal assignment', 'post', 'not_started', 0,
+    's015-valid-deliverable-assignment', true, true,
+    '21000000-0000-4000-8000-000000000203',
+    array['21000000-0000-4000-8000-000000000204'::uuid]
+  )$$,
+  'same-client active internal members can be assigned to a deliverable'
+);
+
 select * from finish();
 rollback;

@@ -6,6 +6,16 @@ Move the Hadna-only local MVP from synthetic route fixtures to one persistent, t
 
 `team version -> internal review -> internal approval -> client approval/change request -> SLA pause/resume -> delivery -> package closure -> audit`
 
+## Clarifications
+
+### Session 2026-07-21
+
+- Q: How should the owner begin with clean online trial data? → A: Create a new empty non-Production UAT workspace, retain approved team users and roles, and quarantine legacy Hadna/Glass synthetic data outside the new workspace.
+- Q: How should management enter a new client, contract, package, and initial deliverables? → A: Use one guided four-step setup flow with draft preservation, review-before-submit, and field-specific errors.
+- Q: How should day-to-day client requests be recorded after setup? → A: Management or the account manager creates each request from the client's workspace, selecting a package item while seeing the remaining balance before saving.
+- Q: How closely should the visual system follow the supplied Salla reference? → A: Match the reference as closely as practical in layout, density, color treatment, typography character, navigation, and component rhythm while retaining Samawah branding and using original code and assets.
+- Q: How should each major product update reach the owner's online trial? → A: Pass local gates, deploy an isolated Preview, complete Codex review, then promote the exact reviewed commit to the stable non-Production UAT entry.
+
 ## Scope and boundaries
 
 - Local Hadna synthetic data only. No hosted mutation, deployment, access configuration, real customer data, or Production acceptance.
@@ -90,3 +100,23 @@ This additive amendment remains inside Spec 015 and is the canonical execution s
 Acceptance additions: `/client/pending` is a real role-correct route; home, summary, and pending use one server-side visibility definition; a pending client review requires meaningful caption/body text or a non-empty client-visible file, and placeholder-only values do not qualify; `client_viewer` is read-only at both UI and database boundaries; client payloads exclude unsent/unapproved deliverables, internal comments, quality notes, internal files, private activity, and raw IDs; the client shell exposes home, pending, contract/follow-up, profile, and sign-out; team cards never render raw assignee identifiers; Arabic RTL, mobile, keyboard focus, 44px targets, reduced motion, and honest content fallbacks are covered by the shared `DESIGN.md` contract.
 
 The existing persistent version, approval, file, comment, audit, SLA, idempotency, and RLS contracts remain authoritative. The generic run-ID-scoped Glass/Hadna import and automated hosted lifecycle are retained as technical evidence. They do not establish representative content presentation or human usability. The owner human trial reopened H008-H010, X007, and T032; X008 must correct the role experience, data presentation, and acceptance governance before any controlled team trial. Production remains explicitly out of scope.
+
+### Clean owner-entry UAT workspace
+
+The next owner trial must use a new empty workspace inside the approved non-Production UAT environment. Approved team Auth identities and reviewed role assignments may be retained, but the workspace begins with no clients, contracts, packages, deliverables, versions, tasks, comments, approvals, or files. Legacy Hadna/Glass synthetic records remain isolated and hidden from the new workspace rather than being destructively deleted. Historical audit and package-ledger evidence remains append-only. Production and Production configuration remain untouched.
+
+### Guided client setup
+
+Management creates a client through one Arabic RTL guided flow with four explicit steps: client details; contract details; package and initial deliverables; team assignments and dates. The flow preserves an unfinished draft, shows a final review before submission, prevents duplicate submission, and reports actionable field-level or step-level errors instead of a generic safe-save failure. Successful submission atomically creates the scoped records and a corresponding audit trail; partial creation is not allowed.
+
+### Client-scoped request capture
+
+Management and the assigned account manager create day-to-day work from the client's workspace rather than from an unscoped global form. The request flow shows the active contract, package item, committed quantity, consumed quantity, remaining balance, request description or supplied content, due dates, assignees, and attachments before submission. It blocks exhausted or mismatched package items, prevents duplicate submission, creates the tenant/client-scoped deliverable and initial work context atomically, and records the actor and package relationship in the audit trail. Client roles remain view/approval-only for request capture in V1.
+
+### Salla-aligned visual direction
+
+The owner-selected visual target is a close practical match to the supplied Salla reference: a dark right-hand navigation rail, bright low-noise content canvas, restrained accent colors, compact Arabic information hierarchy, thin borders, subtle radii, consistent icon treatment, dense but readable tables and status summaries, and calm feedback states. The client, assigned-team, account-manager, and management experiences share this system while preserving role-specific information architecture. Samawah name, logo, content, and brand ownership remain explicit; implementation must be original and must not copy Salla code, protected assets, wording, or brand identifiers. Desktop, mobile, RTL, keyboard, contrast, and reduced-motion acceptance remain mandatory.
+
+### Incremental online review cadence
+
+Each major task must pass its scoped local verification before an isolated Vercel Preview is created from the reviewed branch. Codex reviews the implementation, security boundaries, tests, and visible role journeys on that exact Preview. Only the exact reviewed commit may then update the stable non-Production owner-UAT entry. A failed gate keeps the stable UAT entry unchanged. Production deployments, aliases, environment variables, and data remain outside this cadence and require separate owner authorization.

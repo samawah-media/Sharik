@@ -7,6 +7,7 @@ import {
   createApprovedExtraDeliverableAction,
   createDeliverableAction,
 } from "@/server/actions/deliverables";
+import { listEligibleDeliverableMembers } from "@/server/actions/deliverable-member-read";
 import type {
   PackageLedgerRow,
   PackageLineRow,
@@ -194,12 +195,18 @@ export default async function NewClientDeliverablePage({
     return <DeliverableDeniedState />;
   }
 
-  const packageContext = approvedExtra
-    ? undefined
-    : await listFirstActivePackageLines({
-        tenantId: client.tenantId,
-        clientId: client.id,
-      });
+  const [packageContext, eligibleMembers] = await Promise.all([
+    approvedExtra
+      ? Promise.resolve(undefined)
+      : listFirstActivePackageLines({
+          tenantId: client.tenantId,
+          clientId: client.id,
+        }),
+    listEligibleDeliverableMembers({
+      tenantId: client.tenantId,
+      clientId: client.id,
+    }),
+  ]);
 
   if (!approvedExtra && (!packageContext || !packageContext.ok)) {
     return <DeliverableDeniedState />;
@@ -222,6 +229,8 @@ export default async function NewClientDeliverablePage({
         approvedExtra={approvedExtra}
         clientId={client.id}
         contractId={packageContext?.ok ? packageContext.contractId : undefined}
+        eligibleMembers={eligibleMembers.members}
+        memberDirectoryAvailable={eligibleMembers.ok}
         packageId={packageContext?.ok ? packageContext.packageId : undefined}
         packageLines={packageContext?.ok ? packageContext.packageLines : []}
         idempotencyKey={crypto.randomUUID()}

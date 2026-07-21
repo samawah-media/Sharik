@@ -113,7 +113,12 @@ test("management can create a deliverable through the real persistent browser fl
     .locator('select[name="packageLineId"]')
     .selectOption(freshPackageLineId);
   await form.locator('input[name="reservedQuantity"]').fill("2");
-  // Leave owner/contributor empty: valid (no UUID required).
+  await form
+    .locator('select[name="ownerUserId"]')
+    .selectOption(freshSeed.actors.assignedWriter.id);
+  await form
+    .getByRole("checkbox", { name: /المصمم المسند/u })
+    .check();
 
   await form.getByRole("button", { name: "حفظ المخرج وحجز الكمية" }).click();
 
@@ -163,7 +168,7 @@ test("management can create a deliverable through the real persistent browser fl
   ).toBe(1);
 });
 
-test("invalid owner identifier now returns an actionable Arabic error instead of the generic safe-save fallback", async ({
+test("tampered owner identifier returns an actionable Arabic error instead of the generic safe-save fallback", async ({
   page,
 }) => {
   await signInViaUi(page, freshSeed.actors.tenantAdmin);
@@ -177,8 +182,13 @@ test("invalid owner identifier now returns an actionable Arabic error instead of
   await form
     .locator('select[name="packageLineId"]')
     .selectOption(freshPackageLineId);
-  // Type a display name (Arabic) the way a human trial user would.
-  await form.locator('input[name="ownerUserId"]').fill("أحمد");
+  await form.locator('select[name="ownerUserId"]').evaluate((selectElement) => {
+    const option = document.createElement("option");
+    option.value = "أحمد";
+    option.textContent = "قيمة غير مصرح بها";
+    selectElement.append(option);
+    (selectElement as HTMLSelectElement).value = option.value;
+  });
 
   await form.getByRole("button", { name: "حفظ المخرج وحجز الكمية" }).click();
 

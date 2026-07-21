@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set search_path = public, extensions;
-select plan(57);
+select plan(60);
 
 select has_table('public', 'deliverable_versions', 'versions persist');
 select has_table('public', 'approval_decisions', 'approval decisions persist');
@@ -92,6 +92,9 @@ select ok(has_function_privilege('authenticated', 'public.s015_list_task_eligibl
 select ok(not has_function_privilege('anon', 'public.s015_list_task_eligible_assignees(uuid,uuid)', 'execute'), 'anonymous cannot call the assignee directory');
 select ok(not has_function_privilege('authenticated', 'private.s015_validate_task_assignee(uuid,uuid,uuid)', 'execute'), 'authenticated callers cannot invoke the assignee-validation oracle directly');
 select ok(not has_function_privilege('authenticated', 'private.s015_upsert_deliverable_task_core(uuid,uuid,uuid,text,text,text,text,uuid,date,integer,uuid,uuid,text)', 'execute'), 'authenticated callers cannot bypass the active-role task command wrapper');
+select ok(has_function_privilege('authenticated', 'public.s015_list_deliverable_eligible_members(uuid,uuid)', 'execute'), 'authenticated can call the internally authorized deliverable member directory');
+select ok(not has_function_privilege('anon', 'public.s015_list_deliverable_eligible_members(uuid,uuid)', 'execute'), 'anonymous cannot call the deliverable member directory');
+select has_trigger('public', 'deliverables', 's015_validate_deliverable_assignments', 'deliverable assignment integrity trigger exists');
 select ok(has_table_privilege('service_role', 'public.member_profiles', 'INSERT'), 'service role can seed scoped member profiles for persistent acceptance');
 select ok(has_table_privilege('service_role', 'public.deliverable_tasks', 'SELECT'), 'service role can assert persistent task outcomes');
 select ok(has_table_privilege('service_role', 'public.deliverable_quality_checks', 'SELECT'), 'service role can assert persistent quality outcomes');

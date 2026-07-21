@@ -9,6 +9,7 @@ import {
   type DeliverableFormState,
 } from "@/modules/deliverables/deliverable-form-state";
 import type { PackageLineSafeSummary } from "@/modules/packages/package-repository";
+import type { MemberDisplay } from "@/modules/members/member-directory";
 import { Badge } from "@/ui/core/badge";
 import { Button } from "@/ui/core/button";
 import { Card, CardHeader, CardTitle, SectionPanel } from "@/ui/core/card";
@@ -152,6 +153,8 @@ export function DeliverableForm({
   contractId,
   packageId,
   packageLines,
+  eligibleMembers = [],
+  memberDirectoryAvailable = true,
   idempotencyKey,
   approvedExtra = false,
 }: {
@@ -160,6 +163,8 @@ export function DeliverableForm({
   contractId?: string;
   packageId?: string;
   packageLines?: PackageLineSafeSummary[];
+  eligibleMembers?: MemberDisplay[];
+  memberDirectoryAvailable?: boolean;
   idempotencyKey: string;
   approvedExtra?: boolean;
 }) {
@@ -173,6 +178,12 @@ export function DeliverableForm({
     packageLines?.find((line) => line.id === selectedPackageLineId) ??
     packageLines?.[0];
   const quantity = Number(state.values?.reservedQuantity ?? "1");
+  const selectedContributorIds = new Set(
+    state.values?.contributorUserIds
+      ?.split(",")
+      .map((value) => value.trim())
+      .filter(Boolean) ?? [],
+  );
 
   return (
     <form action={formAction} aria-label="إنشاء مخرج" dir="rtl">
@@ -300,21 +311,49 @@ export function DeliverableForm({
         <div className="grid gap-4 md:grid-cols-2">
           <label className="grid gap-2 text-sm font-medium">
             المسؤول
-            <input
+            <select
               className="rounded-md border border-border bg-background px-3 py-2"
               name="ownerUserId"
               defaultValue={state.values?.ownerUserId}
-            />
+            >
+              <option value="">بدون مسؤول حاليًا</option>
+              {eligibleMembers.map((member) => (
+                <option key={member.userId} value={member.userId}>
+                  {member.displayName}
+                  {member.roleLabel ? ` — ${member.roleLabel}` : ""}
+                </option>
+              ))}
+            </select>
           </label>
-          <label className="grid gap-2 text-sm font-medium">
-            المساهمون
-            <input
-              className="rounded-md border border-border bg-background px-3 py-2"
-              name="contributorUserIds"
-              defaultValue={state.values?.contributorUserIds}
-            />
-          </label>
+          <fieldset className="grid gap-2 text-sm font-medium">
+            <legend>المساهمون</legend>
+            <div className="grid max-h-40 gap-2 overflow-y-auto rounded-md border border-border bg-background p-3">
+              {eligibleMembers.length > 0 ? (
+                eligibleMembers.map((member) => (
+                  <label className="flex min-h-11 items-center gap-2" key={member.userId}>
+                    <input
+                      defaultChecked={selectedContributorIds.has(member.userId)}
+                      name="contributorUserIds"
+                      type="checkbox"
+                      value={member.userId}
+                    />
+                    <span>{member.displayName}</span>
+                    {member.roleLabel ? (
+                      <span className="text-xs text-muted">{member.roleLabel}</span>
+                    ) : null}
+                  </label>
+                ))
+              ) : (
+                <p className="text-muted">لا يوجد أعضاء متاحون للإسناد.</p>
+              )}
+            </div>
+          </fieldset>
         </div>
+        {!memberDirectoryAvailable ? (
+          <p className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+            تعذر تحميل قائمة الفريق. يمكنك حفظ المخرج بدون إسناد والمحاولة لاحقًا.
+          </p>
+        ) : null}
         <div className="grid gap-4 md:grid-cols-4">
           <label className="grid gap-2 text-sm font-medium">
             تاريخ البدء

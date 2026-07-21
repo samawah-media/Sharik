@@ -70,9 +70,14 @@ export default async function ClientsPage({
       <PageHeader
         actions={
           writeAccess.allowed ? (
-            <ButtonLink href="/clients/new" variant="primary">
-              إضافة عميل
-            </ButtonLink>
+            <div className="flex flex-wrap gap-2">
+              <ButtonLink href="/clients/onboard" variant="primary">
+                إضافة أول عميل
+              </ButtonLink>
+              <ButtonLink href="/clients/new" variant="secondary">
+                إضافة عميل
+              </ButtonLink>
+            </div>
           ) : null
         }
         description="العملاء المسندون لك مع روابط التشغيل الأساسية."

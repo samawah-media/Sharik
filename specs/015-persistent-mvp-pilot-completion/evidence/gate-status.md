@@ -1,19 +1,16 @@
 # Spec 015 gate status
 
-## Authoritative current decision — 2026-07-21
+## Authoritative current decision — 2026-07-22
 
-`X009_B_GREEN_READY_FOR_OWNER_ENTRY`. Independent correction, the complete hosted cycle, direct Preview persona inspection, and final exact-head F-001 run `29860433963` all pass. S015-P2-095 is fixed and all 12 persistent scenarios are green.
+`X009_C_LOCAL_GREEN_CI_PENDING`. The guided first-client onboarding wizard is implemented and locally verified. The owner can enter the first client, contract, package, and first deliverable entirely from the UI through a 5-step Arabic RTL wizard at `/clients/onboard`. All mutations go through the existing audited RPCs with run-ID-derived idempotency keys. Local matrix PASS: typecheck; unit + component 80 files/338 tests; pgTAP 8 files/468 tests; persistent E2E 4 passed; build. Exact-head CI pending.
 
-- Branch: `codex/015-persistent-mvp-pilot-completion`; X009-B adds the clean-workspace contract, hosted `--dry-run/--apply/--rollback/--status` tool, and unit/pgTAP/persistent coverage on top of the X009-A head.
-- Clean-workspace model: a new run-ID-scoped tenant inside the approved non-Production UAT; approved internal Samawah identities receive a new active tenant membership and tenant-scoped role assignment there; their legacy Glass/Hadna tenant membership is set to `disabled` (reversible); legacy audit and package-ledger history is never deleted or rewritten; client personas never receive clean-workspace access automatically.
-- Local matrix PASS on the exact reviewed head: lint; typecheck; unit 57 files/239 tests; integration 28 files/112 tests; component 21 files/72 tests; RLS simulator 8 files/24 tests; clean local Supabase reset; pgTAP 7 files/453 tests (new `s015_clean_workspace_membership.test.sql`); fixture E2E 126 passed/6 skipped; persistent E2E 12 passed (5 new `s015-clean-workspace-journey.spec.ts` scenarios plus the prior 7); secret scan; `git diff --check`; production build.
-- Idempotent replay and rollback proven locally and in pgTAP: replay does not duplicate the tenant/membership/role rows; rollback flips membership status only and leaves audit/ledger counts unchanged; cross-tenant RLS denies legacy client/member data to the migrated identities (0 rows, no error).
-- S015-P2-090 dispositioned as fixed-by-quarantine: legacy Glass/Hadna tenant preserved; no ledger rewrite; new package commitments start at the owner-entered balance.
-- Hosted closure: five approved internal identities now enter the clean workspace; client personas were not migrated; all operational counts are zero; legacy audit and ledger remain preserved and inaccessible to the migrated internal identities.
-- Production boundary: no Production deployment, alias, environment change, merge, public signup, external-client invitation, real customer data, or audit/ledger deletion occurred. The hosted mutation boundary remains Preview/UAT only.
-- Remaining gate: none inside X009-B. The next owner-entry/onboarding work starts only under X009-C; Production and merge remain separate.
+- Branch: `codex/015-persistent-mvp-pilot-completion`; X009-C adds the onboarding schema, orchestrating server action, wizard component, wizard page, member directory helper, and full test coverage on top of the X009-B head.
+- Wizard model: 5 input steps (client info, contract, package lines, team assignment, first deliverable + SLA) + review/submit, all in a single `<form>` with hidden inputs; per-step client-side validation; single server action submission; idempotent replay via run-ID-derived keys.
+- All mutations are tenant-scoped, RLS-protected, idempotent (via idempotency keys on contract/package/deliverable RPCs + slug lookup for duplicate client), and audited through the existing `f001_create_client_write`, `f002_create_contract_context`, `f002_create_package_commitments`, `f002_create_deliverable_reservation` RPCs.
+- No new dependency, migration, or ADR.
+- Production boundary: no Production deployment, alias, environment change, merge, public signup, external-client invitation, real customer data, or audit/ledger deletion occurred.
 
-All status sections below are chronological evidence. Where they conflict, this authoritative decision and the current `tasks.md` X009-B state govern.
+All status sections below are chronological evidence. Where they conflict, this authoritative decision and the current `tasks.md` X009-C state govern.
 
 ## Authoritative decision before X009-B — 2026-07-21
 

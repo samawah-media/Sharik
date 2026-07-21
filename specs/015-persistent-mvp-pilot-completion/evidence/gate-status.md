@@ -2,7 +2,7 @@
 
 ## Authoritative current decision — 2026-07-21
 
-`X009_B_HOSTED_GREEN_EXACT_HEAD_CI_PENDING`. Independent correction, exact-head CI run `29852802208`, the complete hosted cycle, and direct Preview persona inspection pass. Documentation-head run `29856562297` exposed only S015-P2-095 in a pre-existing direct-DOM tamper test; the harness correction awaits exact-head CI.
+`X009_B_GREEN_READY_FOR_OWNER_ENTRY`. Independent correction, the complete hosted cycle, direct Preview persona inspection, and final exact-head F-001 run `29860433963` all pass. S015-P2-095 is fixed and all 12 persistent scenarios are green.
 
 - Branch: `codex/015-persistent-mvp-pilot-completion`; X009-B adds the clean-workspace contract, hosted `--dry-run/--apply/--rollback/--status` tool, and unit/pgTAP/persistent coverage on top of the X009-A head.
 - Clean-workspace model: a new run-ID-scoped tenant inside the approved non-Production UAT; approved internal Samawah identities receive a new active tenant membership and tenant-scoped role assignment there; their legacy Glass/Hadna tenant membership is set to `disabled` (reversible); legacy audit and package-ledger history is never deleted or rewritten; client personas never receive clean-workspace access automatically.

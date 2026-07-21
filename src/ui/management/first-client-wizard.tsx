@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { MemberDisplay } from "@/modules/members/member-directory";
 import type { OnboardingFormState } from "@/modules/onboarding/onboarding-form-state";
@@ -169,6 +169,7 @@ export function FirstClientWizard({
 }) {
   const [step, setStep] = useState(0);
   const [data, setData] = useState<WizardData>(initialData);
+  const dataRef = useRef<WizardData>(initialData);
   const [stepError, setStepError] = useState<string | null>(null);
   const [state, formAction] = useActionState(
     action ?? onboardFirstClientAction,
@@ -176,7 +177,9 @@ export function FirstClientWizard({
   );
 
   const update = <K extends keyof WizardData>(key: K, value: WizardData[K]) => {
-    setData((prev) => ({ ...prev, [key]: value }));
+    const nextData = { ...dataRef.current, [key]: value };
+    dataRef.current = nextData;
+    setData(nextData);
     setStepError(null);
   };
 
@@ -185,20 +188,22 @@ export function FirstClientWizard({
     field: keyof PackageLineDraft,
     value: string,
   ) => {
-    setData((prev) => ({
-      ...prev,
-      packageLines: prev.packageLines.map((line, i) =>
+    const nextData = {
+      ...dataRef.current,
+      packageLines: dataRef.current.packageLines.map((line, i) =>
         i === index ? { ...line, [field]: value } : line,
       ),
-    }));
+    };
+    dataRef.current = nextData;
+    setData(nextData);
     setStepError(null);
   };
 
   const addLine = () => {
-    setData((prev) => ({
-      ...prev,
+    const nextData = {
+      ...dataRef.current,
       packageLines: [
-        ...prev.packageLines,
+        ...dataRef.current.packageLines,
         {
           serviceLabel: "",
           deliverableTypeHint: "",
@@ -206,46 +211,52 @@ export function FirstClientWizard({
           committedQuantity: "1",
         },
       ],
-    }));
+    };
+    dataRef.current = nextData;
+    setData(nextData);
   };
 
   const removeLine = (index: number) => {
-    setData((prev) => ({
-      ...prev,
+    const nextData = {
+      ...dataRef.current,
       packageLines:
-        prev.packageLines.length > 1
-          ? prev.packageLines.filter((_, i) => i !== index)
-          : prev.packageLines,
-    }));
+        dataRef.current.packageLines.length > 1
+          ? dataRef.current.packageLines.filter((_, i) => i !== index)
+          : dataRef.current.packageLines,
+    };
+    dataRef.current = nextData;
+    setData(nextData);
   };
 
   const validateStep = (target: number): string | null => {
+    const currentData = dataRef.current;
+
     if (target === 0) {
-      if (data.clientName.trim().length < 2)
+      if (currentData.clientName.trim().length < 2)
         return "اسم العميل مطلوب (حرفان على الأقل).";
     }
 
     if (target === 1) {
-      if (data.contractName.trim().length < 2)
+      if (currentData.contractName.trim().length < 2)
         return "اسم العقد مطلوب (حرفان على الأقل).";
       if (
-        data.contractPeriodStart &&
-        data.contractPeriodEnd &&
-        data.contractPeriodStart > data.contractPeriodEnd
+        currentData.contractPeriodStart &&
+        currentData.contractPeriodEnd &&
+        currentData.contractPeriodStart > currentData.contractPeriodEnd
       )
         return "بداية فترة العقد بعد نهايتها.";
     }
 
     if (target === 2) {
-      if (data.packageName.trim().length < 2)
+      if (currentData.packageName.trim().length < 2)
         return "اسم الباقة مطلوب (حرفان على الأقل).";
       if (
-        data.packagePeriodStart &&
-        data.packagePeriodEnd &&
-        data.packagePeriodStart > data.packagePeriodEnd
+        currentData.packagePeriodStart &&
+        currentData.packagePeriodEnd &&
+        currentData.packagePeriodStart > currentData.packagePeriodEnd
       )
         return "بداية فترة الباقة بعد نهايتها.";
-      for (const line of data.packageLines) {
+      for (const line of currentData.packageLines) {
         if (line.serviceLabel.trim().length < 2)
           return "كل سطر باقة يحتاج اسم خدمة (حرفان على الأقل).";
         if (line.unitLabel.trim().length < 1)
@@ -257,24 +268,24 @@ export function FirstClientWizard({
     }
 
     if (target === 4) {
-      if (data.deliverableName.trim().length < 2)
+      if (currentData.deliverableName.trim().length < 2)
         return "اسم المخرج مطلوب (حرفان على الأقل).";
-      if (data.deliverableType.trim().length < 1)
+      if (currentData.deliverableType.trim().length < 1)
         return "نوع المخرج مطلوب.";
       const dates = [
-        data.startDate,
-        data.internalDueDate,
-        data.clientDueDate,
-        data.finalDueDate,
+        currentData.startDate,
+        currentData.internalDueDate,
+        currentData.clientDueDate,
+        currentData.finalDueDate,
       ].filter(Boolean);
       if (
         dates.some((d, i) => i > 0 && d < dates[i - 1])
       )
         return "المواعيد غير مرتبة بشكل صحيح.";
       const firstLineQty = Number(
-        data.packageLines[0]?.committedQuantity ?? 0,
+        currentData.packageLines[0]?.committedQuantity ?? 0,
       );
-      const reserved = Number(data.reservedQuantity);
+      const reserved = Number(currentData.reservedQuantity);
       if (Number.isFinite(reserved) && reserved > firstLineQty)
         return "الكمية المحجوزة أكبر من سعة أول سطر باقة.";
     }
@@ -298,12 +309,14 @@ export function FirstClientWizard({
   };
 
   const toggleContributor = (userId: string) => {
-    setData((prev) => ({
-      ...prev,
-      contributorUserIds: prev.contributorUserIds.includes(userId)
-        ? prev.contributorUserIds.filter((id) => id !== userId)
-        : [...prev.contributorUserIds, userId],
-    }));
+    const nextData = {
+      ...dataRef.current,
+      contributorUserIds: dataRef.current.contributorUserIds.includes(userId)
+        ? dataRef.current.contributorUserIds.filter((id) => id !== userId)
+        : [...dataRef.current.contributorUserIds, userId],
+    };
+    dataRef.current = nextData;
+    setData(nextData);
   };
 
   const packageLinesJson = JSON.stringify(

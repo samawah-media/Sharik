@@ -2,6 +2,21 @@
 
 ## Authoritative current decision — 2026-07-21
 
+`X009_B_LOCAL_GREEN_HOSTED_APPLY_BLOCKED`. The clean owner-entry UAT workspace tooling and mechanics are complete and locally verified on the exact reviewed head. The hosted apply is blocked on owner target/credential confirmation and the tool fails closed.
+
+- Branch: `codex/015-persistent-mvp-pilot-completion`; X009-B adds the clean-workspace contract, hosted `--dry-run/--apply/--rollback/--status` tool, and unit/pgTAP/persistent coverage on top of the X009-A head.
+- Clean-workspace model: a new run-ID-scoped tenant inside the approved non-Production UAT; approved internal Samawah identities receive a new active tenant membership and tenant-scoped role assignment there; their legacy Glass/Hadna tenant membership is set to `disabled` (reversible); legacy audit and package-ledger history is never deleted or rewritten; client personas never receive clean-workspace access automatically.
+- Local matrix PASS on the exact reviewed head: lint; typecheck; unit 57 files/239 tests; integration 28 files/112 tests; component 21 files/72 tests; RLS simulator 8 files/24 tests; clean local Supabase reset; pgTAP 7 files/453 tests (new `s015_clean_workspace_membership.test.sql`); fixture E2E 126 passed/6 skipped; persistent E2E 12 passed (5 new `s015-clean-workspace-journey.spec.ts` scenarios plus the prior 7); secret scan; `git diff --check`; production build.
+- Idempotent replay and rollback proven locally and in pgTAP: replay does not duplicate the tenant/membership/role rows; rollback flips membership status only and leaves audit/ledger counts unchanged; cross-tenant RLS denies legacy client/member data to the migrated identities (0 rows, no error).
+- S015-P2-090 dispositioned as fixed-by-quarantine: legacy Glass/Hadna tenant preserved; no ledger rewrite; new package commitments start at the owner-entered balance.
+- Hosted apply blocker (S015-P2-093): the reviewed UAT hostname allowlist in the secure team-UAT env does not match the Supabase URL currently reachable from this workstation, and no UAT service role key is present locally. The tool refuses the mismatched target and requires `S015_UAT_PROJECT_ENV_FILE` to point at the verified UAT target before `--apply`.
+- Production boundary: no Production deployment, alias, environment change, merge, public signup, external-client invitation, real customer data, or audit/ledger deletion occurred. The hosted mutation boundary remains Preview/UAT only.
+- Remaining gate: X009-B-6 hosted apply pending owner target/credential confirmation. H008-H010/X007/T032/X008-H remain unchanged.
+
+All status sections below are chronological evidence. Where they conflict, this authoritative decision and the current `tasks.md` X009-B state govern.
+
+## Authoritative decision before X009-B — 2026-07-21
+
 `X009_A_GREEN_READY_FOR_NEXT_CHECKPOINT`. Product/database/hosted verification is green. Corrective exact-head CI run `29837663256` passed the complete matrix, including all seven persistent scenarios followed by the final production build, and verifies S015-P1-092.
 
 - Branch: `codex/015-persistent-mvp-pilot-completion`; application correction `9c8af15` is pushed to the official GitHub repository.

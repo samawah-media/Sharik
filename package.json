@@ -24,7 +24,8 @@
     "secret:scan": "node scripts/secret-scan.mjs",
     "uat:profiles:sync": "node scripts/sync-s015-uat-member-profiles.mjs",
     "uat:workbook:import": "node scripts/import-s015-uat-workbook.mjs",
-    "uat:human-trial:prepare": "node scripts/prepare-s015-human-trial.mjs"
+    "uat:human-trial:prepare": "node scripts/prepare-s015-human-trial.mjs",
+    "uat:clean-workspace:prepare": "node scripts/prepare-s015-clean-workspace.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",

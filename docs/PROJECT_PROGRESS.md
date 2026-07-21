@@ -1,5 +1,19 @@
 # Project Progress
 
+## Spec 015 X009-B clean owner-entry workspace — local mechanics green, hosted apply blocked — 2026-07-21
+
+Status: `X009_B_LOCAL_GREEN_HOSTED_APPLY_BLOCKED`.
+
+The owner trial needs a clean empty workspace inside the approved non-Production UAT so management can enter a new client, contract, package, and deliverables from zero, while approved internal Samawah identities stay signed in and the legacy Glass/Hadna data stops polluting the natural experience.
+
+The clean-workspace model is a new run-ID-scoped tenant. Approved internal identities (admin, account manager, content writer, designer, unassigned negative tester) receive a new active tenant membership and a tenant-scoped role assignment there; their legacy Glass/Hadna tenant membership is set to `disabled` so the new workspace becomes their single natural entry, exactly matching the runtime rule that denies access when more than one tenant membership is active. Client personas are never migrated automatically. Legacy audit and package-ledger history is append-only and is never deleted or rewritten; rollback simply flips membership status back.
+
+Implementation inside Spec 015 only: `src/modules/uat/clean-workspace.ts` (deterministic identifiers + tenant-scope role mirroring), `scripts/prepare-s015-clean-workspace.mjs` (`--dry-run`/`--apply`/`--rollback`/`--status`, mandatory target category, owner-approved hostname allowlist, automatic Production refusal, idempotent replay, category/count-only output), unit coverage, pgTAP `s015_clean_workspace_membership.test.sql`, and persistent browser `s015-clean-workspace-journey.spec.ts`. The persistent journey proves admin/account-manager/writer/designer entry, honest `لا يوجد عملاء مسندون` empty states, legacy Glass/Hadna invisibility across the tenant boundary, client-persona denial, idempotent replay (no duplicate tenant/membership/role), and rollback that restores the legacy entry with audit and ledger rows unchanged.
+
+Local matrix PASS on the exact reviewed head: lint; typecheck; unit 57 files/239 tests; integration 28 files/112 tests; component 21 files/72 tests; RLS simulator 8 files/24 tests; clean local Supabase reset; pgTAP 7 files/453 tests; fixture E2E 126 passed/6 skipped; persistent E2E 12 passed (5 new clean-workspace scenarios plus the prior 7); secret scan; `git diff --check`; production build. S015-P2-090 is dispositioned as fixed-by-quarantine: the legacy tenant and ledger are preserved and simply stop being the natural entry; no ledger row is rewritten and any new package commitment starts at the owner-entered balance.
+
+Hosted apply (X009-B-6) remains blocked (S015-P2-093): the reviewed UAT hostname allowlist in the secure team-UAT env does not match the Supabase URL currently reachable from this workstation, and no UAT service role key is present locally. The tool fails closed on that mismatch. The owner must point `S015_UAT_PROJECT_ENV_FILE` at the verified UAT Supabase target and run `npm run uat:clean-workspace:prepare -- --dry-run`, then `--apply`, replay no-op, `--status`, and a `--rollback` rehearsal. No Production target was reachable, no credential was printed or requested, no merge occurred, and no audit/ledger/approval history was deleted or rewritten.
+
 ## Spec 015 X009-A closed after independent correction — 2026-07-21
 
 Status: `X009_A_GREEN_READY_FOR_NEXT_CHECKPOINT`.

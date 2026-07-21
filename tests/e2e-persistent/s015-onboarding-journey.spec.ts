@@ -177,9 +177,7 @@ test("wizard prevents advancing with empty required client name", async ({
   await expect(form.locator('input[aria-label="اسم العقد"]')).toHaveCount(0);
 });
 
-test("idempotent replay with same run-id does not duplicate entities", async ({
-  page,
-}) => {
+test("idempotent replay with same run-id does not duplicate entities", async () => {
   const adminClient = await createPersistentActorClient({
     seed: freshSeed,
     actor: freshSeed.actors.tenantAdmin,

@@ -1,6 +1,5 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { listTenantTeamMembers } from "@/server/actions/onboarding-member-read";
 import {
   guardManagementRoute,

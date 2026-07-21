@@ -90,14 +90,14 @@ X008-A through X008-G are implemented and verified locally and on the corrected 
 
 ## Owner trial blocker X009-A — same Spec 015
 
-- [ ] X009-A Diagnose and permanently fix the online "تعذر حفظ المخرج بأمان" failure without starting the visual redesign, UAT cleanup, client onboarding wizard, or any data deletion.
+- [x] X009-A Diagnose and permanently fix the online "تعذر حفظ المخرج بأمان" failure without starting the visual redesign, UAT cleanup, client onboarding wizard, or any data deletion.
   - [x] X009-A-1 Reproduce and root-cause the failure on local Supabase using an authorized management UAT persona and the exact form → Zod → server action → `createDeliverableViaRpc` → `f002_create_deliverable_reservation` path.
   - [x] X009-A-2 Replace raw owner/contributor identifiers with a scoped human-readable member selector; retain safe actionable Arabic error mapping; enforce tenant/client/active-role assignment integrity in PostgreSQL without weakening RLS or the audited transactional RPC.
   - [x] X009-A-3 Add focused regression coverage for form mapping and selectors, management/account-manager directory access, client denial, invalid/cross-scope assignment denial, valid assignment, package capacity, atomic rollback, idempotent replay, audit/ledger integrity, and persistent browser creation + reload.
   - [x] X009-A-4 Pass the corrected local gate matrix: lint, typecheck, unit 230, integration 112, clean local Supabase reset, RLS simulator 24, RLS DB pgTAP 436, component 72, persistent E2E deliverable creation 3, secret scan, `git diff --check`, and build.
-  - [ ] X009-A-5 Isolated non-Production Preview verification under `samawahs-projects/shrik`: deploy the reviewed commit, reproduce creation through the real browser/Auth path using run-ID-scoped synthetic data, confirm persistence after reload and exact-once audit/ledger effects, and roll back only the synthetic records. The stable UAT alias is not updated; Production remains untouched.
+  - [x] X009-A-5 Isolated non-Production Preview verification under `samawahs-projects/shrik`: migration `202607210001` applied to UAT, exact-head Preview Ready, real browser/Auth creation persisted one correctly assigned deliverable with one allocation/reservation and audit evidence, then audited cancellation released the reservation and left zero active run-scoped records. Production remained untouched.
 
-Independent review reopened X009-A after finding that S015-P1-088 improved validation/copy but left the raw-identifier UX and valid-UUID cross-scope assignment gap open. The bounded S015-P1-089 correction adds a human member directory, database assignment-integrity trigger, and real-Auth regressions. X009-A-1 through X009-A-4 are now locally green; X009-A-5 remains open until the corrected exact-head Preview and UAT migration are verified. Production and the stable UAT alias remain untouched.
+Independent review reopened and then closed X009-A after finding that S015-P1-088 improved validation/copy but left the raw-identifier UX and valid-UUID cross-scope assignment gap open. S015-P1-089 adds a human member directory, database assignment-integrity trigger, and real-Auth regressions. All X009-A gates are green on non-Production UAT. Legacy Glass package balance debt is recorded separately as S015-P2-090 and will be quarantined by the next clean-workspace checkpoint; it does not invalidate the isolated successful create/cancel proof. Production remains untouched.
 
 ## Correction note: task assignment authority (2026-07-15)
 

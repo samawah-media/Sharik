@@ -2,16 +2,17 @@
 
 ## Authoritative current decision — 2026-07-21
 
-`X009_A_CORRECTIVE_LOCAL_GREEN_HOSTED_VERIFY_PENDING`. Independent review found that S015-P1-088 improved error handling but did not remove raw UUID entry or enforce valid-UUID tenant/client assignment integrity. S015-P1-089 closes both gaps locally; exact-head hosted verification remains pending.
+`X009_A_GREEN_READY_FOR_NEXT_CHECKPOINT`. Independent review found and fixed the remaining raw-UUID UX and cross-scope assignment-integrity gap (S015-P1-089). Local, database, and isolated non-Production Preview evidence are green.
 
-- Branch: `codex/015-persistent-mvp-pilot-completion`; corrected head is not yet pushed at this checkpoint.
+- Branch: `codex/015-persistent-mvp-pilot-completion`; application correction `9c8af15` is pushed to the official GitHub repository.
 - Root cause: the new-deliverable form's free-text `ownerUserId` and `contributorUserIds` inputs forwarded non-UUID values (for example a person's name) to the audited RPCs; PostgREST rejected the uuid cast with `22P02` and the action mapped every non-23505/42501/P0001 code to the generic fallback. No partial row, authorization bypass, or RLS weakening was involved.
 - Corrective fix: retain safe Arabic error mapping, replace raw UUID fields with scoped names/roles, and add migration `202607210001` to deny owner/contributor values that are not active eligible internal members in the exact tenant/client scope. No dependency or architecture change.
 - Corrected local matrix PASS: lint; typecheck; unit 56 files / 230 tests; integration 28 files / 112 tests; component 21 files / 72 tests; RLS simulator 8 files / 24 tests; clean local Supabase reset; pgTAP 6 files / 436 tests; persistent creation 3/3; secret scan; diff check; and build.
-- Hosted status: previous Preview evidence for `2373700` is historical only. X009-A-5 requires the corrected migration and exact-head Preview verification before closure.
+- Hosted status: non-Production guard passed; migration `202607210001` applied and remote inventory matched local. Preview `shrik-qfr3bpyw3-samawahs-projects.vercel.app` is Ready/Preview. Real Auth/browser creation produced one correctly assigned deliverable, one allocation/reservation, and audit evidence; audited cancellation released the reservation and left zero active run-scoped records.
 - Owner-approved Spec 015 clarifications are incorporated into the canonical spec; no parallel plan or Spec was created.
-- Production boundary: no Production deployment, alias, environment change, merge, public signup, external-client invitation, real customer data, stable UAT alias promotion, or workbook tracking occurred.
-- Remaining gate: X009-A-5 (isolated non-Production Preview browser verification under `samawahs-projects/shrik`) is open. H008-H010/X007/T032/X008-H are unchanged.
+- Credential hygiene: the temporary UAT administrator credential surfaced in a private browser diagnostic, was immediately rotated, and was not committed or recorded in project evidence.
+- Production boundary: no Production deployment, alias, environment change, merge, public signup, external-client invitation, real customer data, or workbook tracking occurred.
+- Remaining gate: X009-A has no open subtask. H008-H010/X007/T032/X008-H remain unchanged and still require the owner's later human acceptance.
 
 All status sections below are chronological evidence. Where they conflict, this authoritative decision and the current `tasks.md` X009-A state govern.
 

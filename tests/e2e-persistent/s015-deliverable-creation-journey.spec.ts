@@ -182,13 +182,17 @@ test("tampered owner identifier returns an actionable Arabic error instead of th
   await form
     .locator('select[name="packageLineId"]')
     .selectOption(freshPackageLineId);
-  await form.locator('select[name="ownerUserId"]').evaluate((selectElement) => {
+  const ownerSelect = form.locator('select[name="ownerUserId"]');
+  await ownerSelect.evaluate((selectElement) => {
     const option = document.createElement("option");
     option.value = "أحمد";
     option.textContent = "قيمة غير مصرح بها";
     selectElement.append(option);
     (selectElement as HTMLSelectElement).value = option.value;
+    selectElement.dispatchEvent(new Event("input", { bubbles: true }));
+    selectElement.dispatchEvent(new Event("change", { bubbles: true }));
   });
+  await expect(ownerSelect).toHaveValue("أحمد");
 
   await form.getByRole("button", { name: "حفظ المخرج وحجز الكمية" }).click();
 

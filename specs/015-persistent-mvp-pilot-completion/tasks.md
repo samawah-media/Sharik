@@ -97,7 +97,7 @@ X008-A through X008-G are implemented and verified locally and on the corrected 
   - [x] X009-A-4 Pass the full local gate matrix: lint, typecheck, unit 228, integration 112, clean local Supabase reset, RLS simulator 24, RLS DB pgTAP 427, component 72, persistent E2E deliverable creation 3, secret scan, `git diff --check`, and build.
   - [ ] X009-A-5 Isolated non-Production Preview verification under `samawahs-projects/shrik`: deploy the reviewed commit, reproduce creation through the real browser/Auth path using run-ID-scoped synthetic data, confirm persistence after reload and exact-once audit/ledger effects, and roll back only the synthetic records. The stable UAT alias is not updated; Production remains untouched.
 
-X009-A-1 through X009-A-4 are closed by the local-evidence slice recorded in `execution-log.md` and `defect-register.md` (S015-P1-088). X009-A-5 remains open for the isolated Preview verification and cannot be closed from local evidence alone.
+X009-A-1 through X009-A-4 are closed by the local-evidence slice recorded in `execution-log.md` and `defect-register.md` (S015-P1-088). X009-A-5 is partially complete: the Preview deployment `https://shrik-ou7tduzns-samawahs-projects.vercel.app` for commit `2373700` is Ready, non-Production (target=preview), and bound to the UAT Supabase env vars, but Vercel Deployment Protection currently blocks browser access without a configured bypass; the stable UAT alias was not modified per the prompt boundary. X009-A-5 cannot close from local evidence alone and requires either an owner-provided redacted protection bypass or a temporary authorized alias reassignment before browser verification can complete.
 
 ## Correction note: task assignment authority (2026-07-15)
 

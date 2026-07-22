@@ -2511,13 +2511,18 @@ select lives_ok(
   'same onboarding run replays despite fresh transport identifiers'
 );
 
+reset role;
+set local role service_role;
 select is(
   (select count(*)::integer from public.s015_onboarding_requests
    where idempotency_key = 's015-onboarding-atomic-success'),
   1,
   'onboarding replay creates one request and one entity graph'
 );
+reset role;
 
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
 select throws_ok(
   $$select * from public.s015_onboard_first_client(
     request_idempotency_key => 's015-onboarding-atomic-rollback',

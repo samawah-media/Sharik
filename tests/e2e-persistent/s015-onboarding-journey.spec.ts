@@ -23,10 +23,6 @@ const onboardPath = "/clients/onboard";
 
 const replaceText = async (locator: Locator, value: string) => {
   await locator.fill(value);
-  await locator.evaluate((element) => {
-    element.dispatchEvent(new Event("input", { bubbles: true }));
-    element.dispatchEvent(new Event("change", { bubbles: true }));
-  });
   await expect(locator).toHaveValue(value);
 };
 

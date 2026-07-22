@@ -233,76 +233,6 @@ export function FirstClientWizard({
     setData(nextData);
   };
 
-  const syncCurrentStepFromDom = (target: number) => {
-    const form = formRef.current;
-    if (!form) return dataRef.current;
-
-    const read = (selector: string) =>
-      form.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
-        selector,
-      )?.value ?? "";
-
-    let nextData = dataRef.current;
-
-    if (target === 0) {
-      nextData = {
-        ...nextData,
-        clientName: read('input[aria-label="اسم العميل"]'),
-        clientContactName: read('input[aria-label="اسم جهة التواصل"]'),
-        clientContactEmail: read('input[aria-label="بريد جهة التواصل"]'),
-      };
-    }
-
-    if (target === 1) {
-      nextData = {
-        ...nextData,
-        contractName: read('input[aria-label="اسم العقد"]'),
-        contractReference: read('input[aria-label="مرجع العقد"]'),
-        contractSummary: read('textarea[aria-label="ملخص العقد"]'),
-        contractPeriodStart: read('input[aria-label="بداية فترة العقد"]'),
-        contractPeriodEnd: read('input[aria-label="نهاية فترة العقد"]'),
-      };
-    }
-
-    if (target === 2) {
-      nextData = {
-        ...nextData,
-        packageName: read('input[aria-label="اسم الباقة"]'),
-        packagePeriodStart: read('input[aria-label="بداية فترة الباقة"]'),
-        packagePeriodEnd: read('input[aria-label="نهاية فترة الباقة"]'),
-        packageLines: nextData.packageLines.map((line, index) => ({
-          serviceLabel: read(`input[aria-label="اسم الخدمة للسطر ${index + 1}"]`),
-          deliverableTypeHint: read(
-            `input[aria-label="نوع المخرج للسطر ${index + 1}"]`,
-          ),
-          unitLabel: read(`input[aria-label="وحدة القياس للسطر ${index + 1}"]`),
-          committedQuantity: read(
-            `input[aria-label="الكمية المتفق عليها للسطر ${index + 1}"]`,
-          ),
-        })),
-      };
-    }
-
-    if (target === 4) {
-      nextData = {
-        ...nextData,
-        deliverableName: read('input[aria-label="اسم المخرج"]'),
-        deliverableDescription: read('textarea[aria-label="وصف المخرج"]'),
-        deliverableType: read('select[aria-label="نوع المخرج"]'),
-        deliverablePriority: read('select[aria-label="الأولوية"]'),
-        reservedQuantity: read('input[aria-label="الكمية المحجوزة"]'),
-        startDate: read('input[aria-label="تاريخ البدء"]'),
-        internalDueDate: read('input[aria-label="الموعد الداخلي"]'),
-        clientDueDate: read('input[aria-label="موعد العميل"]'),
-        finalDueDate: read('input[aria-label="الموعد النهائي"]'),
-      };
-    }
-
-    dataRef.current = nextData;
-    setData(nextData);
-    return nextData;
-  };
-
   const validateStep = (target: number): string | null => {
     const currentData = dataRef.current;
 
@@ -369,7 +299,6 @@ export function FirstClientWizard({
   };
 
   const next = () => {
-    syncCurrentStepFromDom(step);
     const error = validateStep(step);
     if (error) {
       setStepError(error);

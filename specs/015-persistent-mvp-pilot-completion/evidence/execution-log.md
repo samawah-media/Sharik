@@ -6,7 +6,11 @@
 - Root cause: onboarding listed internal members before the new client scope existed, then invoked four independent RPC transactions; exact-client assignment integrity correctly rejected the deliverable after the earlier writes had committed.
 - Implemented additive migration `202607220001_s015_atomic_first_client_onboarding.sql`: one atomic audited command, selected-member client-scope provisioning, management-only eligible-member directory, business-payload idempotency, and rollback on any failure.
 - Local gates passed: typecheck, scoped ESLint, schema unit 17/17, wizard component 7/7, and `git diff --check`.
-- Current stop: exact-head clean PostgreSQL/pgTAP, persistent browser, CI, UAT migration apply, partial-attempt disposition, and Preview verification remain mandatory. No hosted mutation or Production action occurred in this corrective slice yet.
+- Exact code-head F-001 run `29907779138` passed: unit 259, integration 112, RLS simulator 24, pgTAP 476, component 79, fixture E2E 126, persistent E2E 16, secret scan, and build.
+- Confirmed linked Supabase is `sharik-uat` / `ACTIVE_HEALTHY`; dry-run listed only `202607220001`, then apply succeeded and local/remote migration inventories matched.
+- Completed the owner's exact partial graph forward without deleting history: one first deliverable, one active reservation, one quantity-reserved ledger entry, and one `DeliverableCreated` audit event now exist.
+- Protected official Preview is Ready/Preview. Real administrator sign-in, client visibility, repaired deliverable visibility, wizard hydration, and five eligible team options passed. A hosted invalid-member rehearsal was denied with `42501` and left zero partial client rows.
+- No Production, merge, public signup, external-client invitation, or unrelated data mutation occurred.
 
 | Date | Milestone | Result | Evidence |
 |---|---|---|---|

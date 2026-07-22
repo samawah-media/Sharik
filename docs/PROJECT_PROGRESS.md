@@ -2,16 +2,16 @@
 
 ## Spec 015 X009-C guided first-client onboarding — 2026-07-22
 
-Status: `HOLD / X009_C_CORRECTIVE_PENDING`.
+Status: `X009_C_GREEN_OWNER_CAN_CREATE_FIRST_CLIENT`.
 
-Owner testing exposed S015-P1-097 on the protected Preview: choosing an internal team member could create the client, contract, and package, then fail while creating the first deliverable because that member had no role in the brand-new client scope. The previous application orchestration used four independent transactions, so the failure left partial rows. The corrective implementation now uses one atomic PostgreSQL onboarding command, creates exact client-scoped roles only for selected eligible internal members, and treats same-run replay by stable business payload rather than newly generated internal IDs. Local typecheck, scoped lint, schema unit 17/17, wizard component 7/7, and diff check pass; X009-C remains on HOLD pending exact-head database/persistent CI, UAT migration apply, partial-attempt disposition, and Preview verification.
+Owner testing exposed S015-P1-097 on the protected Preview: choosing an internal team member could create the client, contract, and package, then fail while creating the first deliverable because that member had no role in the brand-new client scope. The previous application orchestration used four independent transactions, so the failure left partial rows. The corrected path now uses one atomic PostgreSQL onboarding command, creates exact client-scoped roles only for selected eligible internal members, and treats same-run replay by stable business payload rather than generated internal IDs. F-001 run `29907779138` passed PostgreSQL/pgTAP 476, persistent browser 16/16, the full UI/build matrix, and secret scan. Migration `202607220001` is applied to healthy non-Production `sharik-uat`; the owner's partial attempt was completed forward with one audited deliverable/reservation/ledger entry, and the protected official Preview passed real administrator, data visibility, wizard hydration, five-member directory, and rollback/no-op checks.
 
 The owner can now enter the first client, contract, package, and first deliverable entirely from the UI through a 5-step Arabic RTL wizard at `/clients/onboard`. No UUIDs, SQL, or manual database intervention required.
 
 ### What was built
 
 - **Combined Zod schema** (`src/server/commands/onboarding/onboarding-schema.ts`) — validates client + contract + package lines + first deliverable with Arabic validation rules, date-order checks, package capacity enforcement, and duplicate prevention.
-- **Orchestrating server action** (`src/server/actions/onboarding.ts`) — creates all four entities through the existing audited RPCs (`f001_create_client_write`, `f002_create_contract_context`, `f002_create_package_commitments`, `f002_create_deliverable_reservation`), enforces tenant scope + RLS + all four create permissions, uses run-ID-derived idempotency keys for safe replay, and handles partial-failure recovery via slug lookup for duplicate clients.
+- **Orchestrating server action** (`src/server/actions/onboarding.ts`) — invokes one atomic audited onboarding RPC that composes the existing client, contract, package, and deliverable RPCs, enforces tenant scope + RLS + all four create permissions, provisions selected internal team scope, and uses payload-bound run-ID idempotency for safe replay.
 - **Multi-step wizard component** (`src/ui/management/first-client-wizard.tsx`) — 5 input steps (client info, contract, package lines, team assignment, first deliverable + SLA) + review/submit, Arabic RTL layout, mobile/desktop responsive grid, keyboard-accessible inputs, per-step validation, team member selector with human names only (no UUIDs), dynamic package-line add/remove, and a single form submission.
 - **Wizard page** (`src/app/(management)/clients/onboard/page.tsx`) — route guards (CLIENT_CREATE + CONTRACT_CREATE + PACKAGE_CREATE + DELIVERABLE_CREATE), tenant-scoped member directory, and stable run-ID.
 - **Empty state CTA** — prominent "إضافة أول عميل" button on `/clients` empty state and header.
@@ -21,17 +21,17 @@ The owner can now enter the first client, contract, package, and first deliverab
 
 - Unit schema tests: 17 tests (validation, date order, capacity, duplicate, JSON parsing).
 - Component wizard tests: 7 tests (step navigation, validation, team selector, hidden fields).
-- pgTAP onboarding sequence: 15 tests (4-step RPC creation, audit events, idempotent replay, unauthorized-role denial).
-- Persistent browser E2E: 4 tests (full success journey, account-manager denial, empty-field prevention, idempotent replay).
+- pgTAP database matrix: 476 tests, including atomic onboarding, selected-team scope, replay, unauthorized-role denial, and full rollback.
+- Persistent browser E2E: 16 tests, including full selected-team onboarding and database-side persistence assertions.
 
 ### Local verification
 
-Typecheck; unit + component 80 files/338 tests; pgTAP 8 files/468 tests; persistent E2E 4 passed; secret scan; `git diff --check`; production build. All green.
+Exact code-head CI: unit 58 files/259 tests; integration 28/112; RLS simulator 8/24; pgTAP 8 files/476 tests; component 22/79; fixture E2E 126; persistent E2E 16; secret scan; and production build. All green.
 
 ### Compliance
 
 - All mutations are tenant-scoped, RLS-protected, idempotent, and audited.
-- No new dependency, migration, or ADR.
+- One additive migration; no new dependency or ADR.
 - No Production deployment, alias, environment change, merge, public signup, external-client invitation, real customer data, or audit/ledger deletion.
 - Exact-head `dc013684f51438467c7adb1dd212d9efaa510248` passed F-001 Quality run `29901885473`; the Samawah Vercel Preview deployment passed.
 

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 import {
   createPersistentActorClient,
   loadPersistentLocalEnv,
@@ -21,6 +21,15 @@ test.beforeAll(async () => {
 
 const onboardPath = "/clients/onboard";
 
+const replaceText = async (locator: Locator, value: string) => {
+  await locator.fill(value);
+  await locator.evaluate((element) => {
+    element.dispatchEvent(new Event("input", { bubbles: true }));
+    element.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  await expect(locator).toHaveValue(value);
+};
+
 test("management can onboard a complete first client through the wizard", async ({
   page,
 }) => {
@@ -34,30 +43,36 @@ test("management can onboard a complete first client through the wizard", async 
 
   const form = page.getByRole("form", { name: "معالج إضافة أول عميل" });
   await expect(form).toBeVisible();
+  await expect(form).toHaveAttribute("data-hydrated", "true");
 
-  await form.locator('input[aria-label="اسم العميل"]').fill(clientName);
-  await expect(form.locator('input[aria-label="اسم العميل"]')).toHaveValue(clientName);
-  await form.locator('input[aria-label="اسم جهة التواصل"]').fill("جهة التواصل التجريبية");
+  await replaceText(form.locator('input[aria-label="اسم العميل"]'), clientName);
+  await replaceText(
+    form.locator('input[aria-label="اسم جهة التواصل"]'),
+    "جهة التواصل التجريبية",
+  );
   await form.getByRole("button", { name: "التالي" }).click();
 
   await expect(form.locator('input[aria-label="اسم العقد"]')).toBeVisible();
-  await form.locator('input[aria-label="اسم العقد"]').fill(contractName);
-  await expect(form.locator('input[aria-label="اسم العقد"]')).toHaveValue(contractName);
-  await form.locator('input[aria-label="مرجع العقد"]').fill("X009C-E2E");
+  await replaceText(form.locator('input[aria-label="اسم العقد"]'), contractName);
+  await replaceText(form.locator('input[aria-label="مرجع العقد"]'), "X009C-E2E");
   await form.getByRole("button", { name: "التالي" }).click();
 
   await expect(form.locator('input[aria-label="اسم الباقة"]')).toBeVisible();
-  await form.locator('input[aria-label="اسم الباقة"]').fill(packageName);
-  await expect(form.locator('input[aria-label="اسم الباقة"]')).toHaveValue(packageName);
-  await form.locator('input[aria-label="اسم الخدمة للسطر 1"]').fill("منشورات تجريبية");
+  await replaceText(form.locator('input[aria-label="اسم الباقة"]'), packageName);
+  await replaceText(
+    form.locator('input[aria-label="اسم الخدمة للسطر 1"]'),
+    "منشورات تجريبية",
+  );
   await form.getByRole("button", { name: "التالي" }).click();
 
   await expect(form.locator('select[aria-label="المسؤول"]')).toBeVisible();
   await form.getByRole("button", { name: "التالي" }).click();
 
   await expect(form.locator('input[aria-label="اسم المخرج"]')).toBeVisible();
-  await form.locator('input[aria-label="اسم المخرج"]').fill(deliverableName);
-  await expect(form.locator('input[aria-label="اسم المخرج"]')).toHaveValue(deliverableName);
+  await replaceText(
+    form.locator('input[aria-label="اسم المخرج"]'),
+    deliverableName,
+  );
   await form
     .locator('select[aria-label="نوع المخرج"]')
     .selectOption("post");
@@ -171,10 +186,12 @@ test("wizard prevents advancing with empty required client name", async ({
   await page.goto(onboardPath, { waitUntil: "domcontentloaded" });
 
   const form = page.getByRole("form", { name: "معالج إضافة أول عميل" });
+  await expect(form).toHaveAttribute("data-hydrated", "true");
   await form.getByRole("button", { name: "التالي" }).click();
 
   await expect(page.getByText(/اسم العميل مطلوب/u)).toBeVisible();
   await expect(form.locator('input[aria-label="اسم العقد"]')).toHaveCount(0);
+  await expect(form.locator('input[aria-label="اسم العميل"]')).toBeVisible();
 });
 
 test("idempotent replay with same run-id does not duplicate entities", async () => {

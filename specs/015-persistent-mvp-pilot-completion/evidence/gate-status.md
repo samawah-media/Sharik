@@ -2,12 +2,12 @@
 
 ## Authoritative current decision — 2026-07-22
 
-`X009_C_GREEN_OWNER_CAN_CREATE_FIRST_CLIENT`. The guided first-client onboarding wizard is implemented and exact-head verified. The owner can enter the first client, contract, package, and first deliverable entirely from the UI through a 5-step Arabic RTL wizard at `/clients/onboard`. All mutations go through the existing audited RPCs with run-ID-derived idempotency keys. Exact-head `dc013684f51438467c7adb1dd212d9efaa510248` passed F-001 Quality run `29901885473`, including lint, typecheck, unit, integration, clean Supabase reset, RLS/pgTAP, component, fixture E2E, persistent E2E, secret scan, and build; the Samawah Vercel Preview deployment also passed.
+`HOLD / X009_C_CORRECTIVE_PENDING`. Owner testing reproduced S015-P1-097: selecting a team member during first-client onboarding could leave client/contract/package rows persisted before the deliverable failed, because the selected member did not yet have exact new-client scope. The corrective slice replaces the sequential application writes with one atomic PostgreSQL command, provisions only the selected eligible internal roles, and binds replay to business payload rather than generated transport IDs. Local typecheck, scoped lint, unit/component 24, and diff check pass. X009-C remains open until exact-head PostgreSQL/persistent CI, non-Production UAT migration apply, partial-attempt disposition, and protected-Preview verification pass.
 
 - Branch: `codex/015-persistent-mvp-pilot-completion`; X009-C adds the onboarding schema, orchestrating server action, wizard component, wizard page, member directory helper, and full test coverage on top of the X009-B head.
 - Wizard model: 5 input steps (client info, contract, package lines, team assignment, first deliverable + SLA) + review/submit, all in a single `<form>` with hidden inputs; per-step client-side validation; single server action submission; idempotent replay via run-ID-derived keys.
 - All mutations are tenant-scoped, RLS-protected, idempotent (via idempotency keys on contract/package/deliverable RPCs + slug lookup for duplicate client), and audited through the existing `f001_create_client_write`, `f002_create_contract_context`, `f002_create_package_commitments`, `f002_create_deliverable_reservation` RPCs.
-- No new dependency, migration, or ADR.
+- One additive migration; no new dependency or ADR.
 - Production boundary: no Production deployment, alias, environment change, merge, public signup, external-client invitation, real customer data, or audit/ledger deletion occurred.
 
 All status sections below are chronological evidence. Where they conflict, this authoritative decision and the current `tasks.md` X009-C state govern.

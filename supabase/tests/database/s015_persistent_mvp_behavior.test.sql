@@ -2394,5 +2394,184 @@ select lives_ok(
   'same-client active internal members can be assigned to a deliverable'
 );
 
+-- 3.22 First-client onboarding is atomic, scoped, and replay-safe.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select is(
+  (select count(*)::integer from public.s015_list_onboarding_team_members(
+    '21000000-0000-4000-8000-000000000001'
+  )),
+  5,
+  'tenant management can list active internal members for a new client'
+);
+
+select lives_ok(
+  $$select * from public.s015_onboard_first_client(
+    request_idempotency_key => 's015-onboarding-atomic-success',
+    client_id_input => '21000000-0000-4000-8000-000000009001',
+    client_audit_event_id => '21000000-0000-4000-8000-000000009101',
+    client_name_input => 'Atomic onboarding client',
+    client_slug_input => 'atomic-onboarding-client',
+    client_contact_name_input => null,
+    client_contact_email_input => null,
+    contract_id_input => '21000000-0000-4000-8000-000000009002',
+    contract_audit_event_id => '21000000-0000-4000-8000-000000009102',
+    contract_name_input => 'Atomic onboarding contract',
+    contract_reference_input => null,
+    contract_summary_input => null,
+    contract_period_start_input => null,
+    contract_period_end_input => null,
+    contract_status_input => 'active',
+    package_id_input => '21000000-0000-4000-8000-000000009003',
+    package_audit_event_id => '21000000-0000-4000-8000-000000009103',
+    package_name_input => 'Atomic onboarding package',
+    package_status_input => 'active',
+    package_period_start_input => null,
+    package_period_end_input => null,
+    package_line_items_input => '[{"id":"21000000-0000-4000-8000-000000009004","ledger_entry_id":"21000000-0000-4000-8000-000000009104","service_label":"Posts","deliverable_type_hint":"post","unit_label":"post","committed_quantity":2}]',
+    deliverable_id_input => '21000000-0000-4000-8000-000000009005',
+    allocation_id_input => '21000000-0000-4000-8000-000000009006',
+    deliverable_ledger_entry_id => '21000000-0000-4000-8000-000000009105',
+    deliverable_audit_event_id => '21000000-0000-4000-8000-000000009106',
+    deliverable_name_input => 'Atomic onboarding deliverable',
+    deliverable_description_input => null,
+    deliverable_type_input => 'post',
+    deliverable_priority_input => 'normal',
+    owner_user_id_input => '21000000-0000-4000-8000-000000000203',
+    contributor_user_ids_input => array['21000000-0000-4000-8000-000000000204'::uuid],
+    start_on_input => null,
+    internal_due_on_input => null,
+    client_due_on_input => null,
+    final_due_on_input => null,
+    requires_internal_approval_input => true,
+    requires_client_approval_input => true,
+    reserved_quantity_input => 1
+  )$$,
+  'onboarding creates the complete graph with selected team members'
+);
+
+select is(
+  (select count(*)::integer from public.role_assignments
+   where scope_type = 'client'
+     and scope_id = '21000000-0000-4000-8000-000000009001'
+     and status = 'active'),
+  2,
+  'onboarding grants only the selected internal members access to the new client'
+);
+
+select is(
+  (select owner_user_id from public.deliverables
+   where id = '21000000-0000-4000-8000-000000009005'),
+  '21000000-0000-4000-8000-000000000203'::uuid,
+  'onboarding persists the selected owner after establishing client scope'
+);
+
+select lives_ok(
+  $$select * from public.s015_onboard_first_client(
+    request_idempotency_key => 's015-onboarding-atomic-success',
+    client_id_input => '21000000-0000-4000-8000-000000009201',
+    client_audit_event_id => '21000000-0000-4000-8000-000000009211',
+    client_name_input => 'Atomic onboarding client',
+    client_slug_input => 'atomic-onboarding-client',
+    client_contact_name_input => null,
+    client_contact_email_input => null,
+    contract_id_input => '21000000-0000-4000-8000-000000009202',
+    contract_audit_event_id => '21000000-0000-4000-8000-000000009212',
+    contract_name_input => 'Atomic onboarding contract',
+    contract_reference_input => null,
+    contract_summary_input => null,
+    contract_period_start_input => null,
+    contract_period_end_input => null,
+    contract_status_input => 'active',
+    package_id_input => '21000000-0000-4000-8000-000000009203',
+    package_audit_event_id => '21000000-0000-4000-8000-000000009213',
+    package_name_input => 'Atomic onboarding package',
+    package_status_input => 'active',
+    package_period_start_input => null,
+    package_period_end_input => null,
+    package_line_items_input => '[{"id":"21000000-0000-4000-8000-000000009204","ledger_entry_id":"21000000-0000-4000-8000-000000009214","service_label":"Posts","deliverable_type_hint":"post","unit_label":"post","committed_quantity":2}]',
+    deliverable_id_input => '21000000-0000-4000-8000-000000009205',
+    allocation_id_input => '21000000-0000-4000-8000-000000009206',
+    deliverable_ledger_entry_id => '21000000-0000-4000-8000-000000009215',
+    deliverable_audit_event_id => '21000000-0000-4000-8000-000000009216',
+    deliverable_name_input => 'Atomic onboarding deliverable',
+    deliverable_description_input => null,
+    deliverable_type_input => 'post',
+    deliverable_priority_input => 'normal',
+    owner_user_id_input => '21000000-0000-4000-8000-000000000203',
+    contributor_user_ids_input => array['21000000-0000-4000-8000-000000000204'::uuid],
+    start_on_input => null,
+    internal_due_on_input => null,
+    client_due_on_input => null,
+    final_due_on_input => null,
+    requires_internal_approval_input => true,
+    requires_client_approval_input => true,
+    reserved_quantity_input => 1
+  )$$,
+  'same onboarding run replays despite fresh transport identifiers'
+);
+
+select is(
+  (select count(*)::integer from public.s015_onboarding_requests
+   where idempotency_key = 's015-onboarding-atomic-success'),
+  1,
+  'onboarding replay creates one request and one entity graph'
+);
+
+select throws_ok(
+  $$select * from public.s015_onboard_first_client(
+    request_idempotency_key => 's015-onboarding-atomic-rollback',
+    client_id_input => '21000000-0000-4000-8000-000000009301',
+    client_audit_event_id => '21000000-0000-4000-8000-000000009311',
+    client_name_input => 'Rolled back onboarding client',
+    client_slug_input => 'rolled-back-onboarding-client',
+    client_contact_name_input => null,
+    client_contact_email_input => null,
+    contract_id_input => '21000000-0000-4000-8000-000000009302',
+    contract_audit_event_id => '21000000-0000-4000-8000-000000009312',
+    contract_name_input => 'Rolled back onboarding contract',
+    contract_reference_input => null,
+    contract_summary_input => null,
+    contract_period_start_input => null,
+    contract_period_end_input => null,
+    contract_status_input => 'active',
+    package_id_input => '21000000-0000-4000-8000-000000009303',
+    package_audit_event_id => '21000000-0000-4000-8000-000000009313',
+    package_name_input => 'Rolled back onboarding package',
+    package_status_input => 'active',
+    package_period_start_input => null,
+    package_period_end_input => null,
+    package_line_items_input => '[{"id":"21000000-0000-4000-8000-000000009304","ledger_entry_id":"21000000-0000-4000-8000-000000009314","service_label":"Posts","deliverable_type_hint":"post","unit_label":"post","committed_quantity":2}]',
+    deliverable_id_input => '21000000-0000-4000-8000-000000009305',
+    allocation_id_input => '21000000-0000-4000-8000-000000009306',
+    deliverable_ledger_entry_id => '21000000-0000-4000-8000-000000009315',
+    deliverable_audit_event_id => '21000000-0000-4000-8000-000000009316',
+    deliverable_name_input => 'Rolled back onboarding deliverable',
+    deliverable_description_input => null,
+    deliverable_type_input => 'post',
+    deliverable_priority_input => 'normal',
+    owner_user_id_input => '21000000-0000-4000-8000-000000000202',
+    contributor_user_ids_input => array[]::uuid[],
+    start_on_input => null,
+    internal_due_on_input => null,
+    client_due_on_input => null,
+    final_due_on_input => null,
+    requires_internal_approval_input => true,
+    requires_client_approval_input => true,
+    reserved_quantity_input => 1
+  )$$,
+  '42501',
+  'invalid onboarding team member',
+  'client persona assignment rejects the entire onboarding transaction'
+);
+
+select is(
+  (select count(*)::integer from public.clients
+   where slug = 'rolled-back-onboarding-client'),
+  0,
+  'failed onboarding leaves no partially persisted client'
+);
+reset role;
+
 select * from finish();
 rollback;

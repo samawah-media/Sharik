@@ -2,7 +2,9 @@
 
 ## Spec 015 X009-C guided first-client onboarding — 2026-07-22
 
-Status: `X009_C_GREEN_OWNER_CAN_CREATE_FIRST_CLIENT`.
+Status: `HOLD / X009_C_CORRECTIVE_PENDING`.
+
+Owner testing exposed S015-P1-097 on the protected Preview: choosing an internal team member could create the client, contract, and package, then fail while creating the first deliverable because that member had no role in the brand-new client scope. The previous application orchestration used four independent transactions, so the failure left partial rows. The corrective implementation now uses one atomic PostgreSQL onboarding command, creates exact client-scoped roles only for selected eligible internal members, and treats same-run replay by stable business payload rather than newly generated internal IDs. Local typecheck, scoped lint, schema unit 17/17, wizard component 7/7, and diff check pass; X009-C remains on HOLD pending exact-head database/persistent CI, UAT migration apply, partial-attempt disposition, and Preview verification.
 
 The owner can now enter the first client, contract, package, and first deliverable entirely from the UI through a 5-step Arabic RTL wizard at `/clients/onboard`. No UUIDs, SQL, or manual database intervention required.
 

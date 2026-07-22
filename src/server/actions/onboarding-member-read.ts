@@ -20,11 +20,10 @@ export const listTenantTeamMembers = async ({
   tenantId: string;
 }): Promise<TenantMembersResult> => {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("member_profiles")
-    .select("user_id, display_name, role_label")
-    .eq("tenant_id", tenantId)
-    .order("display_name", { ascending: true });
+  const { data, error } = await supabase.rpc(
+    "s015_list_onboarding_team_members",
+    { target_tenant_id: tenantId },
+  );
 
   if (error) return { ok: false, members: [] };
 

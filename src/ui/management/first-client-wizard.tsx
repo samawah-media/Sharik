@@ -595,9 +595,11 @@ export function FirstClientWizard({
                       key={member.userId}
                     >
                       <input
+                        aria-label={`إضافة ${member.displayName} كمساهم`}
                         checked={data.contributorUserIds.includes(member.userId)}
                         onChange={() => toggleContributor(member.userId)}
                         type="checkbox"
+                        value={member.userId}
                       />
                       <span>{member.displayName}</span>
                       {member.roleLabel ? (

@@ -62,6 +62,14 @@ test("management can onboard a complete first client through the wizard", async 
   await form.getByRole("button", { name: "التالي" }).click();
 
   await expect(form.locator('select[aria-label="المسؤول"]')).toBeVisible();
+  await form
+    .locator('select[aria-label="المسؤول"]')
+    .selectOption(freshSeed.actors.assignedWriter.id);
+  await form
+    .locator(
+      `input[type="checkbox"][value="${freshSeed.actors.assignedDesigner.id}"]`,
+    )
+    .check();
   await form.getByRole("button", { name: "التالي" }).click();
 
   await expect(form.locator('input[aria-label="اسم المخرج"]')).toBeVisible();
@@ -128,7 +136,9 @@ test("management can onboard a complete first client through the wizard", async 
 
   const persistedDeliverable = await seeded.client
     .from("deliverables")
-    .select("id, name, type, status, progress_percentage")
+    .select(
+      "id, name, type, status, progress_percentage, owner_user_id, contributor_user_ids",
+    )
     .eq("tenant_id", freshSeed.tenantA)
     .eq("client_id", clientId)
     .eq("name", deliverableName)
@@ -138,6 +148,8 @@ test("management can onboard a complete first client through the wizard", async 
     type: "post",
     status: "not_started",
     progress_percentage: 0,
+    owner_user_id: freshSeed.actors.assignedWriter.id,
+    contributor_user_ids: [freshSeed.actors.assignedDesigner.id],
   });
   const deliverableId = persistedDeliverable.data!.id;
 
@@ -162,6 +174,15 @@ test("management can onboard a complete first client through the wizard", async 
     .eq("deliverable_id", deliverableId)
     .eq("status", "reserved");
   expect(allocationCount ?? 0).toBe(1);
+
+  const { count: scopedTeamRoleCount } = await seeded.client
+    .from("role_assignments")
+    .select("id", { count: "exact", head: true })
+    .eq("tenant_id", freshSeed.tenantA)
+    .eq("scope_type", "client")
+    .eq("scope_id", clientId)
+    .in("role_key", ["content_writer", "designer"]);
+  expect(scopedTeamRoleCount ?? 0).toBe(2);
 });
 
 test("account manager cannot access the onboarding wizard", async ({

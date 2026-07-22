@@ -4,10 +4,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
-import { toClientSlug } from "@/modules/clients/client-repository";
-import type { ContractStatus } from "@/modules/contracts/contract-repository";
-import type { PackageStatus } from "@/modules/packages/package-repository";
-import type { DeliverablePriority } from "@/modules/deliverables/deliverable-repository";
 import {
   onboardingFormError,
   type OnboardingFormState,
@@ -19,25 +15,16 @@ import {
   onboardingSchema,
   parseOnboardingLinesJson,
 } from "@/server/commands/onboarding/onboarding-schema";
-import { createClientViaRpc } from "./client-write-rpc";
-import { createContractViaRpc } from "./contract-write-rpc";
-import { createPackageViaRpc } from "./package-write-rpc";
-import { createDeliverableViaRpc } from "./deliverable-write-rpc";
 import {
   asDeliverableWriteError,
-  mapDeliverableWriteError,
   validateDeliverableIdentifierFields,
 } from "./deliverable-write-errors";
+import { onboardFirstClientViaRpc } from "./onboarding-write-rpc";
 
 const saveFailureMessage = "تعذر إكمال الإضافة بأمان. حاول مرة أخرى.";
 const validationFailureMessage = "راجع البيانات ثم حاول مرة أخرى.";
 const permissionFailureMessage = "لا يمكنك إضافة عميل جديد.";
 const duplicateClientMessage = "يوجد عميل بنفس الاسم داخل هذا النطاق.";
-
-const nullableFormValue = (value: string | undefined): string | null => {
-  const trimmed = value?.trim() ?? "";
-  return trimmed.length > 0 ? trimmed : null;
-};
 
 const mapOnboardingError = (error: { code?: string; message?: string }) => {
   const { code, message } = error;
@@ -48,6 +35,10 @@ const mapOnboardingError = (error: { code?: string; message?: string }) => {
 
   if (code === "42501" && message === "insufficient package capacity") {
     return "لا توجد سعة كافية في سطر الباقة. راجع الكميات ثم حاول مرة أخرى.";
+  }
+
+  if (code === "42501" && message === "invalid onboarding team member") {
+    return "تعذر إسناد أحد أعضاء الفريق. ارجع إلى خطوة الفريق واختر عضوًا متاحًا.";
   }
 
   if (code === "42501") {
@@ -175,164 +166,16 @@ export async function onboardFirstClientAction(
     }
   }
 
-  const slug = toClientSlug(data.clientName);
-  const clientAuditEventId = crypto.randomUUID();
-  const clientResult = await createClientViaRpc({
-    supabase,
-    input: {
-      clientId: crypto.randomUUID(),
-      auditEventId: clientAuditEventId,
-      name: data.clientName,
-      slug,
-      primaryContactName: nullableFormValue(data.clientContactName),
-      primaryContactEmail: nullableFormValue(data.clientContactEmail),
-    },
-  });
+  const onboardingResult = await onboardFirstClientViaRpc({ supabase, data });
 
-  let clientId: string;
-
-  if (!clientResult.ok) {
-    if (clientResult.error.code === "23505") {
-      const { data: existingClient } = await supabase
-        .from("clients")
-        .select("id")
-        .eq("tenant_id", tenantId)
-        .eq("slug", slug)
-        .limit(1);
-
-      if (existingClient?.[0]?.id) {
-        clientId = existingClient[0].id;
-      } else {
-        return onboardingFormError({
-          message: duplicateClientMessage,
-          values,
-        });
-      }
-    } else {
-      return onboardingFormError({
-        message: mapOnboardingError(clientResult.error),
-        values,
-      });
-    }
-  } else {
-    clientId = clientResult.value.id;
-  }
-
-  const contractIdempotencyKey = `${data.runId}:contract`;
-  const contractResult = await createContractViaRpc({
-    supabase,
-    input: {
-      contractId: crypto.randomUUID(),
-      auditEventId: crypto.randomUUID(),
-      clientId,
-      name: data.contractName,
-      reference: nullableFormValue(data.contractReference),
-      summary: nullableFormValue(data.contractSummary),
-      periodStart: nullableFormValue(data.contractPeriodStart),
-      periodEnd: nullableFormValue(data.contractPeriodEnd),
-      status: data.contractStatus as ContractStatus,
-      idempotencyKey: contractIdempotencyKey,
-    },
-  });
-
-  if (!contractResult.ok) {
+  if (!onboardingResult.ok) {
     return onboardingFormError({
-      message: mapOnboardingError(contractResult.error),
+      message: mapOnboardingError(asDeliverableWriteError(onboardingResult.error)),
       values,
     });
   }
 
-  const contractId = contractResult.value.id;
-  const packageIdempotencyKey = `${data.runId}:package`;
-  const packageLineInputs = data.packageLines.map((line) => ({
-    id: crypto.randomUUID(),
-    ledgerEntryId: crypto.randomUUID(),
-    serviceLabel: line.serviceLabel,
-    deliverableTypeHint: nullableFormValue(line.deliverableTypeHint),
-    unitLabel: line.unitLabel,
-    committedQuantity: line.committedQuantity,
-  }));
-
-  const packageResult = await createPackageViaRpc({
-    supabase,
-    input: {
-      packageId: crypto.randomUUID(),
-      auditEventId: crypto.randomUUID(),
-      clientId,
-      contractId,
-      name: data.packageName,
-      status: data.packageStatus as PackageStatus,
-      periodStart: nullableFormValue(data.packagePeriodStart),
-      periodEnd: nullableFormValue(data.packagePeriodEnd),
-      idempotencyKey: packageIdempotencyKey,
-      lines: packageLineInputs,
-    },
-  });
-
-  if (!packageResult.ok) {
-    return onboardingFormError({
-      message: mapOnboardingError(packageResult.error),
-      values,
-    });
-  }
-
-  const packageId = packageResult.value.id;
-
-  const { data: packageLineRows, error: packageLineError } = await supabase
-    .from("package_lines")
-    .select("id, committed_quantity")
-    .eq("tenant_id", tenantId)
-    .eq("client_id", clientId)
-    .eq("package_id", packageId)
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1);
-
-  if (packageLineError || !packageLineRows?.[0]?.id) {
-    return onboardingFormError({
-      message: saveFailureMessage,
-      values,
-    });
-  }
-
-  const packageLineId = packageLineRows[0].id;
-
-  const deliverableIdempotencyKey = `${data.runId}:deliverable`;
-  const deliverableResult = await createDeliverableViaRpc({
-    supabase,
-    input: {
-      deliverableId: crypto.randomUUID(),
-      allocationId: crypto.randomUUID(),
-      ledgerEntryId: crypto.randomUUID(),
-      auditEventId: crypto.randomUUID(),
-      clientId,
-      contractId,
-      packageId,
-      packageLineId,
-      name: data.deliverableName,
-      description: nullableFormValue(data.deliverableDescription),
-      type: data.deliverableType,
-      priority: data.deliverablePriority as DeliverablePriority,
-      ownerUserId: nullableFormValue(data.ownerUserId),
-      contributorUserIds: data.contributorUserIds,
-      startDate: nullableFormValue(data.startDate),
-      internalDueDate: nullableFormValue(data.internalDueDate),
-      clientDueDate: nullableFormValue(data.clientDueDate),
-      finalDueDate: nullableFormValue(data.finalDueDate),
-      requiresInternalApproval: data.requiresInternalApproval,
-      requiresClientApproval: data.requiresClientApproval,
-      reservedQuantity: data.reservedQuantity,
-      idempotencyKey: deliverableIdempotencyKey,
-    },
-  });
-
-  if (!deliverableResult.ok) {
-    return onboardingFormError({
-      message: mapDeliverableWriteError(asDeliverableWriteError(deliverableResult.error)),
-      values,
-    });
-  }
-
+  const clientId = onboardingResult.value.result_client_id;
   revalidatePath("/clients");
   redirect(`/clients/${clientId}?onboarded=1`);
 }

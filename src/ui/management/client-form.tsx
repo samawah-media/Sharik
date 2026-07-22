@@ -7,7 +7,7 @@ import {
   initialClientFormState,
   type ClientFormState,
 } from "@/modules/clients/client-form-state";
-import { Button } from "@/ui/core/button";
+import { Button, ButtonLink } from "@/ui/core/button";
 import { EmptyState, ErrorState } from "@/ui/core/states";
 
 type ClientFormAction = (
@@ -107,7 +107,12 @@ export function ClientForm({
 export function ClientEmptyState() {
   return (
     <EmptyState
-      description="ابدأ بإضافة أول عميل داخل نطاق سماوة الآمن."
+      action={
+        <ButtonLink href="/clients/onboard" variant="primary">
+          إضافة أول عميل
+        </ButtonLink>
+      }
+      description="ابدأ بإضافة أول عميل: أنشئ العميل والعقد والباقة وأول مخرج في رحلة واحدة متصلة."
       title="لا يوجد عملاء بعد"
     />
   );

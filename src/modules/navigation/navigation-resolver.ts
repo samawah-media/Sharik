@@ -36,9 +36,6 @@ const item = (
   advisoryOnly: true,
 });
 
-const displayClientName = (name: string) =>
-  name.trim().toLowerCase() === "hadna" ? "هدنة" : name;
-
 const can = (
   actor: AuthorizationActor,
   permission: (typeof PERMISSIONS)[keyof typeof PERMISSIONS],
@@ -66,34 +63,11 @@ export const resolveRoleAwareNavigation = ({
   }
 
   if (can(actor, PERMISSIONS.CLIENT_VIEW_ALL_IN_TENANT)) {
-    const primaryClient = assignedClients.find(
-      (client) => client.tenantId === actor.tenantId,
-    );
-
     return {
       state: "ready",
       items: [
         item("management.dashboard", "لوحة الإدارة", "/portfolio"),
         item("management.clients", "العملاء", "/clients"),
-        ...(primaryClient
-          ? [
-              item(
-                `management.client.${primaryClient.id}`,
-                displayClientName(primaryClient.name),
-                `/clients/${primaryClient.id}`,
-              ),
-              item(
-                `management.client.${primaryClient.id}.deliverables`,
-                "المخرجات",
-                `/clients/${primaryClient.id}/deliverables`,
-              ),
-              item(
-                `management.client.${primaryClient.id}.sla`,
-                "المتابعة / SLA",
-                `/clients/${primaryClient.id}/commercial`,
-              ),
-            ]
-          : []),
         item("management.members", "الفريق", "/members"),
       ],
     };
@@ -137,24 +111,8 @@ export const resolveRoleAwareNavigation = ({
     return {
       state: "ready",
       items: [
+        item("team.work", "مهامي", "/work"),
         item("team.portfolio", "عملائي", "/portfolio"),
-        ...visibleClients.flatMap((client) => [
-          item(
-            `client.${client.id}`,
-            displayClientName(client.name),
-            `/clients/${client.id}`,
-          ),
-          item(
-            `client.${client.id}.deliverables`,
-            `مخرجات ${displayClientName(client.name)}`,
-            `/clients/${client.id}/deliverables`,
-          ),
-          item(
-            `client.${client.id}.summary`,
-            "ملخص المتابعة",
-            `/clients/${client.id}/commercial`,
-          ),
-        ]),
       ],
     };
   }

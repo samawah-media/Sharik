@@ -1,6 +1,10 @@
 import { resolveRoleAwareNavigation } from "@/modules/navigation/navigation-resolver";
 import { resolveRuntimeContext } from "@/server/auth/runtime-context";
-import { canUseRouteActorFixtures } from "@/server/navigation/route-guards";
+import {
+  canUseRouteActorFixtures,
+  isClientPortalOnlyActor,
+} from "@/server/navigation/route-guards";
+import { redirect } from "next/navigation";
 import {
   ProductShell,
   type ProductShellNavigationItem,
@@ -19,7 +23,7 @@ const iconForNavigationItem = (
 const hasSupabasePublicRuntimeEnv = () =>
   Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   );
 
 const resolveShellNavigation = async () => {
@@ -52,6 +56,18 @@ export default async function ManagementLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  if (
+    process.env.NODE_ENV !== "test" &&
+    !canUseRouteActorFixtures() &&
+    hasSupabasePublicRuntimeEnv()
+  ) {
+    const runtime = await resolveRuntimeContext();
+
+    if (runtime.ok && isClientPortalOnlyActor(runtime.actor)) {
+      redirect("/client");
+    }
+  }
+
   const navigationItems = await resolveShellNavigation();
   const shellRoot = navigationItems[0] ?? {
     href: "/portfolio",

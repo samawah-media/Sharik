@@ -1,4 +1,6 @@
 import { ButtonLink } from "@/ui/core/button";
+import { Badge } from "@/ui/core/badge";
+import type { ReactNode } from "react";
 import {
   formatMvpClientName,
   MvpSnapshotCards,
@@ -6,40 +8,60 @@ import {
 } from "@/ui/mvp/hadna-mvp-summary";
 
 type ClientHomeProps = {
+  canApprove?: boolean;
+  children?: ReactNode;
   clientName?: string;
   stats?: MvpSnapshotStats;
 };
 
-export function ClientHome({ clientName = "هدنة", stats }: ClientHomeProps) {
+export function ClientHome({
+  canApprove = true,
+  children,
+  clientName = "العميل",
+  stats,
+}: ClientHomeProps) {
   const displayClientName = formatMvpClientName(clientName);
+  const reviewHeading = canApprove ? "بانتظار موافقتي" : "قيد المراجعة";
+  const reviewDescription = canApprove
+    ? "لا توجد عناصر تحتاج قرارك الآن. سنعرض هنا فقط النسخ التي اعتمدها فريق سماوة وأرسلها لك رسميًا."
+    : "هذا الحساب للاطلاع فقط. ستظهر هنا النسخ قيد المراجعة بمجرد أن يعتمدها فريق سماوة للجهة المختصة بالاعتماد.";
+  const heroDescription = canApprove
+    ? "هنا تجد ما يحتاج قرارك، وما تم تسليمه، وحالة المخرجات المتفق عليها في مكان واحد واضح."
+    : "هنا تتابع ما هو قيد المراجعة، وما تم تسليمه، وحالة المخرجات المتفق عليها في مكان واحد واضح.";
+  const pendingLinkLabel = canApprove
+    ? "مراجعة ما ينتظرني"
+    : "عرض ما هو قيد المراجعة";
 
   return (
-    <main className="mx-auto grid w-full max-w-4xl gap-6 px-4 py-8">
-      <section className="grid gap-3">
-        <p className="text-sm font-medium text-muted">بوابة العميل</p>
-        <h1 className="text-2xl font-semibold">مساحة {displayClientName}</h1>
+    <main className="mx-auto grid w-full max-w-5xl gap-6 px-4 py-6 sm:py-8">
+      <section className="grid gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-7">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-accent">بوابة العميل</p>
+          <Badge tone="success">مساحتك الخاصة</Badge>
+        </div>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          مساحة {displayClientName}
+        </h1>
         <p className="max-w-2xl text-sm leading-6 text-muted">
-          هذه واجهة هدنة المبسطة. تظهر هنا الباقة والمخرجات المسموحة لك فقط،
-          بدون لوحات الإدارة الداخلية أو عملاء آخرين.
+          {heroDescription}
         </p>
-        <div className="flex flex-wrap gap-2">
-          <ButtonLink href="/client/commercial#deliverables" variant="primary">
-            عرض مخرجاتي
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <ButtonLink href="/client/pending" variant="primary">
+            {pendingLinkLabel}
           </ButtonLink>
-          <ButtonLink href="/client/commercial#package" variant="secondary">
-            عرض الباقة
+          <ButtonLink href="/client/files" variant="secondary">
+            فتح الملفات
           </ButtonLink>
         </div>
       </section>
       {stats ? <MvpSnapshotCards stats={stats} /> : null}
-      <section className="grid gap-3 rounded-lg border border-border p-5">
-        <h2 className="text-lg font-semibold">بانتظار موافقتي</h2>
-        <p className="text-sm text-muted">
-          لا توجد عناصر بانتظار موافقتك الآن. سيتم تفعيل هذه المساحة لاحقًا
-          لمسار الاعتماد.
-        </p>
-      </section>
-      <section className="grid gap-3 rounded-lg border border-border p-5">
+      {children ?? (
+        <section className="grid gap-3 rounded-lg border border-border p-5">
+          <h2 className="text-lg font-semibold">{reviewHeading}</h2>
+          <p className="text-sm text-muted">{reviewDescription}</p>
+        </section>
+      )}
+      <section className="grid gap-3 rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
         <h2 className="text-lg font-semibold">المخرجات والباقة</h2>
         <p className="text-sm text-muted">
           افتح مخرجاتي لمراجعة الاسم والنوع والتاريخ والحالة والتقدم، وافتح

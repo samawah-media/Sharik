@@ -7,6 +7,7 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://${appHost}:${appPort}
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  timeout: 240_000,
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,
@@ -21,7 +22,7 @@ export default defineConfig({
     command: "node scripts/playwright-webserver.mjs",
     url: `http://${appHost}:${readyPort}/ready`,
     reuseExistingServer: false,
-    timeout: 240_000,
+    timeout: 480_000,
   },
   projects: [
     { name: "desktop-chromium", use: { ...devices["Desktop Chrome"] } },

@@ -3,16 +3,19 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
+import type { DeliverableWorkspaceSummary } from "@/modules/deliverables/deliverable-workspace";
 import {
   initialDeliverableFormState,
   type DeliverableFormState,
 } from "@/modules/deliverables/deliverable-form-state";
 import type { PackageLineSafeSummary } from "@/modules/packages/package-repository";
+import type { MemberDisplay } from "@/modules/members/member-directory";
 import { Badge } from "@/ui/core/badge";
 import { Button } from "@/ui/core/button";
 import { Card, CardHeader, CardTitle, SectionPanel } from "@/ui/core/card";
 import { EmptyState, ErrorState } from "@/ui/core/states";
 import { DeliverableCancellationControl } from "./deliverable-actions";
+import { DeliverableContentCard } from "@/ui/deliverables/deliverable-content-card";
 
 type DeliverableFormAction = (
   previousState: DeliverableFormState,
@@ -150,6 +153,8 @@ export function DeliverableForm({
   contractId,
   packageId,
   packageLines,
+  eligibleMembers = [],
+  memberDirectoryAvailable = true,
   idempotencyKey,
   approvedExtra = false,
 }: {
@@ -158,6 +163,8 @@ export function DeliverableForm({
   contractId?: string;
   packageId?: string;
   packageLines?: PackageLineSafeSummary[];
+  eligibleMembers?: MemberDisplay[];
+  memberDirectoryAvailable?: boolean;
   idempotencyKey: string;
   approvedExtra?: boolean;
 }) {
@@ -171,6 +178,12 @@ export function DeliverableForm({
     packageLines?.find((line) => line.id === selectedPackageLineId) ??
     packageLines?.[0];
   const quantity = Number(state.values?.reservedQuantity ?? "1");
+  const selectedContributorIds = new Set(
+    state.values?.contributorUserIds
+      ?.split(",")
+      .map((value) => value.trim())
+      .filter(Boolean) ?? [],
+  );
 
   return (
     <form action={formAction} aria-label="إنشاء مخرج" dir="rtl">
@@ -298,21 +311,49 @@ export function DeliverableForm({
         <div className="grid gap-4 md:grid-cols-2">
           <label className="grid gap-2 text-sm font-medium">
             المسؤول
-            <input
+            <select
               className="rounded-md border border-border bg-background px-3 py-2"
               name="ownerUserId"
               defaultValue={state.values?.ownerUserId}
-            />
+            >
+              <option value="">بدون مسؤول حاليًا</option>
+              {eligibleMembers.map((member) => (
+                <option key={member.userId} value={member.userId}>
+                  {member.displayName}
+                  {member.roleLabel ? ` — ${member.roleLabel}` : ""}
+                </option>
+              ))}
+            </select>
           </label>
-          <label className="grid gap-2 text-sm font-medium">
-            المساهمون
-            <input
-              className="rounded-md border border-border bg-background px-3 py-2"
-              name="contributorUserIds"
-              defaultValue={state.values?.contributorUserIds}
-            />
-          </label>
+          <fieldset className="grid gap-2 text-sm font-medium">
+            <legend>المساهمون</legend>
+            <div className="grid max-h-40 gap-2 overflow-y-auto rounded-md border border-border bg-background p-3">
+              {eligibleMembers.length > 0 ? (
+                eligibleMembers.map((member) => (
+                  <label className="flex min-h-11 items-center gap-2" key={member.userId}>
+                    <input
+                      defaultChecked={selectedContributorIds.has(member.userId)}
+                      name="contributorUserIds"
+                      type="checkbox"
+                      value={member.userId}
+                    />
+                    <span>{member.displayName}</span>
+                    {member.roleLabel ? (
+                      <span className="text-xs text-muted">{member.roleLabel}</span>
+                    ) : null}
+                  </label>
+                ))
+              ) : (
+                <p className="text-muted">لا يوجد أعضاء متاحون للإسناد.</p>
+              )}
+            </div>
+          </fieldset>
         </div>
+        {!memberDirectoryAvailable ? (
+          <p className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+            تعذر تحميل قائمة الفريق. يمكنك حفظ المخرج بدون إسناد والمحاولة لاحقًا.
+          </p>
+        ) : null}
         <div className="grid gap-4 md:grid-cols-4">
           <label className="grid gap-2 text-sm font-medium">
             تاريخ البدء
@@ -389,64 +430,89 @@ export function DeliverableForm({
 
 export function DeliverableList({
   deliverables,
+  clientName,
+  workspaces = {},
   cancellationAction,
 }: {
   deliverables: DeliverableSafeSummary[];
+  clientName?: string;
+  workspaces?: Record<string, DeliverableWorkspaceSummary>;
   cancellationAction?: (formData: FormData) => void | Promise<void>;
 }) {
   return (
     <section aria-label="قائمة المخرجات" className="grid gap-3" dir="rtl">
       {deliverables.map((deliverable) => (
-        <Card key={deliverable.id}>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <CardHeader>
-              <CardTitle>{deliverable.name}</CardTitle>
-              <p className="text-sm text-muted">
-                {typeLabels[deliverable.type] ?? deliverable.type}
-              </p>
-            </CardHeader>
-            <Badge tone="muted">{statusLabels[deliverable.status]}</Badge>
+        <Card className="overflow-hidden p-3 sm:p-4" key={deliverable.id}>
+          <div className="grid gap-4 lg:grid-cols-[15rem_minmax(0,1fr)]">
+            <DeliverableContentCard
+              clientName={clientName}
+              deliverable={deliverable}
+              statusLabel={statusLabels[deliverable.status]}
+              summary={workspaces[deliverable.id]}
+              typeLabel={typeLabels[deliverable.type] ?? "مخرج مخصص"}
+            />
+            <div className="min-w-0">
+              <CardHeader>
+                <CardTitle>ملخص التنفيذ</CardTitle>
+              </CardHeader>
+              {deliverable.description ? (
+                <div className="mt-3 rounded-lg bg-background p-3">
+                  <p className="text-xs font-semibold text-foreground">
+                    وصف المخرج (ليس الكابشن)
+                  </p>
+                  <p className="mt-1 text-sm leading-7 text-muted">
+                    {deliverable.description}
+                  </p>
+                </div>
+              ) : null}
+              <dl className="mt-4 grid gap-3 text-sm text-muted sm:grid-cols-4">
+                <div className="rounded-md bg-background px-3 py-2">
+                  <dt className="font-semibold text-foreground">
+                    القناة / النوع
+                  </dt>
+                  <dd className="mt-1">
+                    {typeLabels[deliverable.type] ?? "مخرج مخصص"}
+                  </dd>
+                </div>
+                <div className="rounded-md bg-background px-3 py-2">
+                  <dt className="font-semibold text-foreground">التاريخ</dt>
+                  <dd className="mt-1">
+                    {formatDate(
+                      deliverable.clientDueDate ??
+                        deliverable.finalDueDate ??
+                        deliverable.plannedPublishDate,
+                    )}
+                  </dd>
+                </div>
+                <div className="rounded-md bg-background px-3 py-2">
+                  <dt className="font-semibold text-foreground">الحالة</dt>
+                  <dd className="mt-1">{statusLabels[deliverable.status]}</dd>
+                </div>
+                <div className="rounded-md bg-background px-3 py-2">
+                  <dt className="font-semibold text-foreground">التقدم</dt>
+                  <dd className="mt-1">{deliverable.progressPercentage}%</dd>
+                </div>
+              </dl>
+              <div className="mt-3 flex flex-wrap gap-2 text-sm text-muted">
+                <Badge tone="muted">
+                  {priorityLabels[deliverable.priority]}
+                </Badge>
+                {deliverable.reservation ? (
+                  <Badge tone="neutral">
+                    محجوز: {deliverable.reservation.reservedQuantity}
+                  </Badge>
+                ) : null}
+                {deliverable.approvedExtra ? (
+                  <Badge tone="warning">إضافي معتمد</Badge>
+                ) : null}
+              </div>
+              <DeliverableCancellationControl
+                action={cancellationAction}
+                deliverable={deliverable}
+                idempotencyKey={`f002d-cancel-${deliverable.id}`}
+              />
+            </div>
           </div>
-          <dl className="mt-4 grid gap-3 text-sm text-muted sm:grid-cols-4">
-            <div className="rounded-md bg-background px-3 py-2">
-              <dt className="font-semibold text-foreground">القناة / النوع</dt>
-              <dd className="mt-1">
-                {typeLabels[deliverable.type] ?? deliverable.type}
-              </dd>
-            </div>
-            <div className="rounded-md bg-background px-3 py-2">
-              <dt className="font-semibold text-foreground">التاريخ</dt>
-              <dd className="mt-1">
-                {formatDate(
-                  deliverable.clientDueDate ?? deliverable.finalDueDate,
-                )}
-              </dd>
-            </div>
-            <div className="rounded-md bg-background px-3 py-2">
-              <dt className="font-semibold text-foreground">الحالة</dt>
-              <dd className="mt-1">{statusLabels[deliverable.status]}</dd>
-            </div>
-            <div className="rounded-md bg-background px-3 py-2">
-              <dt className="font-semibold text-foreground">التقدم</dt>
-              <dd className="mt-1">{deliverable.progressPercentage}%</dd>
-            </div>
-          </dl>
-          <div className="mt-3 flex flex-wrap gap-2 text-sm text-muted">
-            <Badge tone="muted">{priorityLabels[deliverable.priority]}</Badge>
-            {deliverable.reservation ? (
-              <Badge tone="neutral">
-                محجوز: {deliverable.reservation.reservedQuantity}
-              </Badge>
-            ) : null}
-            {deliverable.approvedExtra ? (
-              <Badge tone="warning">إضافي معتمد</Badge>
-            ) : null}
-          </div>
-          <DeliverableCancellationControl
-            action={cancellationAction}
-            deliverable={deliverable}
-            idempotencyKey={`f002d-cancel-${deliverable.id}`}
-          />
         </Card>
       ))}
     </section>

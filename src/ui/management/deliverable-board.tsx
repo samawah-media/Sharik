@@ -1,17 +1,42 @@
-import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
+"use client";
+
 import {
-  activeKanbanStatuses,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical } from "lucide-react";
+import { useState } from "react";
+import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
+import type { DeliverableWorkspaceSummary } from "@/modules/deliverables/deliverable-workspace";
+import {
   canChangeDeliverableStatus,
+  genericOperationalStatuses,
+  getProgressForDeliverableStatus,
   type ActiveKanbanStatus,
+  type DeliverableLifecycleStatus,
 } from "@/modules/deliverables/deliverable-rules";
 import { deriveSlaStatus, type SlaStatus } from "@/modules/sla/sla-policy";
 import { Badge } from "@/ui/core/badge";
 import { Button } from "@/ui/core/button";
 import { EmptyState } from "@/ui/core/states";
+import { DeliverableStatusDisclosure } from "./deliverable-status-disclosure";
+import { UniversalDeliverableDrawer } from "@/ui/deliverables/universal-deliverable-drawer";
+import { DeliverableContentCard } from "@/ui/deliverables/deliverable-content-card";
+import { moveDeliverableOnBoard } from "@/server/actions/deliverable-workspace-actions";
 
 type StatusUpdateAction = (formData: FormData) => void | Promise<void>;
 
-export const kanbanStatusLabels: Record<ActiveKanbanStatus, string> = {
+export const kanbanStatusLabels: Record<DeliverableLifecycleStatus, string> = {
   not_started: "لم يبدأ",
   in_progress: "قيد التنفيذ",
   ready_for_internal_review: "جاهز للمراجعة الداخلية",
@@ -22,16 +47,18 @@ export const kanbanStatusLabels: Record<ActiveKanbanStatus, string> = {
   client_approved: "معتمد من العميل",
   ready_for_delivery: "جاهز للتسليم",
   delivered: "تم التسليم",
+  cancelled: "ملغي",
+  archived: "مؤرشف",
 };
 
-const priorityLabels = {
+export const priorityLabels = {
   low: "منخفضة",
   normal: "عادية",
   high: "مرتفعة",
   urgent: "عاجلة",
 } as const;
 
-const slaLabels: Record<SlaStatus, string> = {
+export const slaLabels: Record<SlaStatus, string> = {
   on_track: "ضمن المسار",
   at_risk: "معرض للتأخير",
   overdue: "متأخر",
@@ -41,28 +68,61 @@ const slaLabels: Record<SlaStatus, string> = {
   cancelled: "ملغي",
 };
 
-const formatDate = (value?: string) => {
-  if (!value) {
-    return "غير محدد";
-  }
-
-  const isoDate = /^\d{4}-\d{2}-\d{2}$/.test(value);
-
-  return isoDate ? value.slice(5) : value;
+export const deliverableTypeLabels: Record<string, string> = {
+  post: "منشور",
+  reel: "ريلز",
+  story: "ستوري",
+  design: "تصميم",
+  report: "تقرير",
+  video: "فيديو",
+  campaign: "حملة",
+  article: "مقال",
+  marketing_coordination: "تنسيق تسويقي",
 };
 
-const formatPeople = (deliverable: DeliverableSafeSummary) => {
-  const contributors = deliverable.contributorUserIds ?? [];
+export const getDeliverableTypeLabel = (type: string) =>
+  deliverableTypeLabels[type] ?? "مخرج مخصص";
 
-  if (!deliverable.ownerUserId && contributors.length === 0) {
-    return "غير محدد";
-  }
-
-  return [deliverable.ownerUserId, ...contributors].filter(Boolean).join("، ");
+type MacroLane = {
+  id: string;
+  label: string;
+  statuses: readonly ActiveKanbanStatus[];
+  targetStatus?: "not_started" | "in_progress";
 };
+
+const macroLanes: readonly MacroLane[] = [
+  {
+    id: "planning",
+    label: "لم يبدأ",
+    statuses: ["not_started"],
+    targetStatus: "not_started",
+  },
+  {
+    id: "execution",
+    label: "قيد التنفيذ والتعديلات",
+    statuses: [
+      "in_progress",
+      "internal_changes_requested",
+      "client_changes_requested",
+    ],
+    targetStatus: "in_progress",
+  },
+  {
+    id: "internal-review",
+    label: "المراجعة الداخلية",
+    statuses: ["ready_for_internal_review", "internally_approved"],
+  },
+  {
+    id: "client-review",
+    label: "مراجعة العميل",
+    statuses: ["waiting_client_approval", "client_approved"],
+  },
+  { id: "delivery", label: "جاهز للتسليم", statuses: ["ready_for_delivery"] },
+  { id: "completed", label: "تم التسليم", statuses: ["delivered"] },
+];
 
 const statusOptions = (deliverable: DeliverableSafeSummary) =>
-  activeKanbanStatuses.map((status) => {
+  genericOperationalStatuses.map((status) => {
     const allowed =
       status === deliverable.status ||
       canChangeDeliverableStatus({
@@ -110,10 +170,7 @@ function DeliverableStatusControl({
   action?: StatusUpdateAction;
 }) {
   return (
-    <details className="mt-4 rounded-lg border border-border bg-background/70">
-      <summary className="cursor-pointer list-none px-3 py-2 text-sm font-semibold text-accent marker:hidden">
-        تغيير الحالة
-      </summary>
+    <DeliverableStatusDisclosure label={`تغيير الحالة ${deliverable.name}`}>
       <form
         action={action}
         aria-label={`تغيير حالة ${deliverable.name}`}
@@ -135,7 +192,7 @@ function DeliverableStatusControl({
         <label className="grid gap-1 text-xs font-semibold">
           الحالة
           <select
-            className="min-h-9 rounded-md border border-border bg-surface px-2 py-1 text-sm"
+            className="min-h-11 rounded-md border border-border bg-surface px-2 py-1 text-sm"
             defaultValue={deliverable.status}
             name="toStatus"
           >
@@ -149,7 +206,7 @@ function DeliverableStatusControl({
         <label className="grid gap-1 text-xs font-semibold">
           سبب التغيير
           <input
-            className="min-h-9 rounded-md border border-border bg-surface px-2 py-1 text-sm"
+            className="min-h-11 rounded-md border border-border bg-surface px-2 py-1 text-sm"
             maxLength={500}
             name="reason"
             placeholder="اختياري"
@@ -159,17 +216,25 @@ function DeliverableStatusControl({
           تحديث الحالة
         </Button>
       </form>
-    </details>
+    </DeliverableStatusDisclosure>
   );
 }
 
 function DeliverableCard({
   deliverable,
   action,
+  approvalAction,
+  summary,
+  clientName,
+  canPublishClientComment,
   now,
 }: {
   deliverable: DeliverableSafeSummary;
   action?: StatusUpdateAction;
+  approvalAction?: StatusUpdateAction;
+  summary?: DeliverableWorkspaceSummary;
+  clientName?: string;
+  canPublishClientComment: boolean;
   now: string;
 }) {
   const sla = deriveSlaStatus({
@@ -180,58 +245,129 @@ function DeliverableCard({
     clientDueDate: deliverable.clientDueDate,
     finalDueDate: deliverable.finalDueDate,
   });
-  const statusLabel = activeKanbanStatuses.includes(
-    deliverable.status as ActiveKanbanStatus,
-  )
-    ? kanbanStatusLabels[deliverable.status as ActiveKanbanStatus]
-    : deliverable.status;
+  const statusLabel = kanbanStatusLabels[deliverable.status];
 
   return (
-    <article className="min-w-0 overflow-hidden rounded-lg border border-border bg-surface p-4 shadow-sm">
-      <div className="grid gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="min-w-0 text-sm font-semibold leading-6">
-            {deliverable.name}
-          </h3>
+    <article className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md">
+      <DeliverableContentCard
+        clientName={clientName}
+        deliverable={deliverable}
+        statusLabel={statusLabel}
+        summary={summary}
+        typeLabel={getDeliverableTypeLabel(deliverable.type)}
+      />
+      <div className="mt-4 grid gap-3">
+        <div className="flex justify-end">
           <Badge tone="accent">{deliverable.progressPercentage}%</Badge>
         </div>
         <div className="flex flex-wrap gap-2">
           <Badge tone="neutral">{statusLabel}</Badge>
-          <Badge tone="muted">{deliverable.type}</Badge>
+          <Badge tone="muted">
+            {getDeliverableTypeLabel(deliverable.type)}
+          </Badge>
           <Badge tone={priorityTone(deliverable.priority)}>
             {priorityLabels[deliverable.priority]}
           </Badge>
           <Badge tone={slaTone(sla.status)}>{slaLabels[sla.status]}</Badge>
         </div>
       </div>
-      <dl className="mt-4 grid gap-3 text-xs text-muted">
-        <div className="min-w-0">
-          <dt className="font-semibold text-foreground">المسؤولون</dt>
-          <dd className="mt-1 truncate">{formatPeople(deliverable)}</dd>
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          <div className="min-w-0 rounded-md bg-background px-2 py-2">
-            <dt className="font-semibold text-foreground">داخلي</dt>
-            <dd className="mt-1 truncate">
-              {formatDate(deliverable.internalDueDate)}
-            </dd>
-          </div>
-          <div className="min-w-0 rounded-md bg-background px-2 py-2">
-            <dt className="font-semibold text-foreground">العميل</dt>
-            <dd className="mt-1 truncate">
-              {formatDate(deliverable.clientDueDate)}
-            </dd>
-          </div>
-          <div className="min-w-0 rounded-md bg-background px-2 py-2">
-            <dt className="font-semibold text-foreground">نهائي</dt>
-            <dd className="mt-1 truncate">
-              {formatDate(deliverable.finalDueDate)}
-            </dd>
-          </div>
-        </div>
-      </dl>
-      <DeliverableStatusControl action={action} deliverable={deliverable} />
+      <div
+        className="mt-4 h-1.5 overflow-hidden rounded-full bg-border"
+        aria-label={`تقدم ${deliverable.progressPercentage}%`}
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={deliverable.progressPercentage}
+      >
+        <div
+          className="h-full rounded-full bg-accent transition-all"
+          style={{ width: `${deliverable.progressPercentage}%` }}
+        />
+      </div>
+      <div className="mt-4">
+        <UniversalDeliverableDrawer
+          approvalAction={approvalAction}
+          canPublishClientComment={canPublishClientComment}
+          deliverable={deliverable}
+          summary={summary}
+        />
+      </div>
+      {action ? (
+        <DeliverableStatusControl action={action} deliverable={deliverable} />
+      ) : null}
     </article>
+  );
+}
+
+function DraggableDeliverableCard({
+  canDrag,
+  children,
+  deliverable,
+}: {
+  canDrag: boolean;
+  children: React.ReactNode;
+  deliverable: DeliverableSafeSummary;
+}) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: deliverable.id,
+      data: { deliverableId: deliverable.id },
+      disabled: !canDrag,
+    });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Translate.toString(transform),
+        opacity: isDragging ? 0.55 : 1,
+      }}
+    >
+      {canDrag ? (
+        <button
+          aria-label={`سحب ${deliverable.name}. استخدم مفتاح المسافة ثم الأسهم للتحريك.`}
+          className="mb-1 flex min-h-11 w-full touch-none items-center justify-center rounded-lg border border-dashed border-border bg-surface text-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+          type="button"
+          {...listeners}
+          {...attributes}
+        >
+          <GripVertical aria-hidden="true" size={18} />
+          <span className="ms-2 text-xs">تحريك البطاقة</span>
+        </button>
+      ) : null}
+      {children}
+    </div>
+  );
+}
+
+function MacroLaneColumn({
+  activeDeliverable,
+  children,
+  lane,
+}: {
+  activeDeliverable?: DeliverableSafeSummary;
+  children: React.ReactNode;
+  lane: MacroLane;
+}) {
+  const { isOver, setNodeRef } = useDroppable({ id: lane.id });
+  const valid = Boolean(
+    activeDeliverable &&
+    lane.targetStatus &&
+    canChangeDeliverableStatus({
+      currentStatus: activeDeliverable.status,
+      targetStatus: lane.targetStatus,
+      requiresClientApproval: activeDeliverable.requiresClientApproval,
+    }).allowed,
+  );
+  return (
+    <section
+      aria-label={lane.label}
+      className={`flex min-h-[32rem] w-[20rem] min-w-[20rem] flex-col rounded-xl border bg-background ${isOver && valid ? "border-accent ring-2 ring-accent/30" : "border-border"}`}
+      data-drop-valid={valid ? "true" : "false"}
+      data-testid="kanban-column"
+      ref={setNodeRef}
+    >
+      {children}
+    </section>
   );
 }
 
@@ -247,30 +383,91 @@ export function DeliverableBoardEmptyState() {
 export function DeliverableBoard({
   deliverables,
   action,
+  approvalAction,
+  workspaces = {},
+  clientNames = {},
   now = new Date().toISOString(),
 }: {
   deliverables: DeliverableSafeSummary[];
   action?: StatusUpdateAction;
+  approvalAction?: StatusUpdateAction;
+  workspaces?: Record<string, DeliverableWorkspaceSummary>;
+  clientNames?: Record<string, string>;
   now?: string;
 }) {
+  const [items, setItems] = useState(deliverables);
+  const [activeId, setActiveId] = useState<string>();
+  const [dragFeedback, setDragFeedback] = useState<string>();
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 180, tolerance: 6 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+  const activeDeliverable = items.find((item) => item.id === activeId);
+
   if (deliverables.length === 0) {
     return <DeliverableBoardEmptyState />;
   }
 
-  const deliverablesByStatus = new Map<
-    ActiveKanbanStatus,
-    DeliverableSafeSummary[]
-  >(activeKanbanStatuses.map((status) => [status, []]));
-
-  for (const deliverable of deliverables) {
-    if (
-      activeKanbanStatuses.includes(deliverable.status as ActiveKanbanStatus)
-    ) {
-      deliverablesByStatus
-        .get(deliverable.status as ActiveKanbanStatus)
-        ?.push(deliverable);
+  const finishDrag = async ({ active, over }: DragEndEvent) => {
+    setActiveId(undefined);
+    if (!over || !action) return;
+    const deliverable = items.find((item) => item.id === active.id);
+    const lane = macroLanes.find((item) => item.id === over.id);
+    if (!deliverable || !lane?.targetStatus) {
+      setDragFeedback(
+        "هذه المرحلة تحتاج إجراء اعتماد مخصصًا من داخل مساحة المخرج.",
+      );
+      return;
     }
-  }
+    const targetStatus = lane.targetStatus;
+    const decision = canChangeDeliverableStatus({
+      currentStatus: deliverable.status,
+      targetStatus,
+      requiresClientApproval: deliverable.requiresClientApproval,
+    });
+    if (!decision.allowed || deliverable.status === targetStatus) {
+      setDragFeedback(
+        deliverable.status === targetStatus
+          ? undefined
+          : "لا يمكن تنفيذ هذه الحركة بالسحب. استخدم الإجراء المخصص للحالة.",
+      );
+      return;
+    }
+    const previous = items;
+    setItems((current) =>
+      current.map((item) =>
+        item.id === deliverable.id
+          ? {
+              ...item,
+              status: targetStatus,
+              progressPercentage: getProgressForDeliverableStatus(targetStatus),
+              revision: item.revision + 1,
+            }
+          : item,
+      ),
+    );
+    setDragFeedback("جارٍ حفظ الحركة…");
+    const result = await moveDeliverableOnBoard({
+      clientId: deliverable.clientId,
+      deliverableId: deliverable.id,
+      toStatus: targetStatus,
+      expectedRevision: deliverable.revision,
+      idempotencyKey: `s015-drag-${deliverable.id}-${deliverable.revision}-${crypto.randomUUID()}`,
+    });
+    if (!result.ok) {
+      setItems(previous);
+      setDragFeedback(
+        "تعذر حفظ الحركة وأُعيدت البطاقة إلى مكانها. راجع الصلاحية أو حدّث الصفحة.",
+      );
+    } else {
+      setDragFeedback("تم حفظ الحركة وتسجيلها في سجل النشاط.");
+    }
+  };
 
   return (
     <section
@@ -279,46 +476,75 @@ export function DeliverableBoard({
       data-testid="kanban-board-scroll"
       dir="rtl"
     >
-      <div className="flex min-w-max gap-4">
-        {activeKanbanStatuses.map((status) => {
-          const items = deliverablesByStatus.get(status) ?? [];
+      {dragFeedback ? (
+        <p
+          aria-live="polite"
+          className="mb-3 rounded-lg bg-surface px-3 py-2 text-sm"
+        >
+          {dragFeedback}
+        </p>
+      ) : null}
+      <DndContext
+        collisionDetection={closestCenter}
+        id="deliverables-board"
+        onDragCancel={() => setActiveId(undefined)}
+        onDragEnd={finishDrag}
+        onDragStart={({ active }) => setActiveId(String(active.id))}
+        sensors={sensors}
+      >
+        <div className="flex min-w-max gap-4">
+          {macroLanes.map((lane) => {
+            const laneItems = items.filter((deliverable) =>
+              lane.statuses.includes(deliverable.status as never),
+            );
 
-          return (
-            <section
-              aria-label={kanbanStatusLabels[status]}
-              className="flex min-h-[32rem] w-80 min-w-80 flex-col rounded-lg border border-border bg-background"
-              data-testid="kanban-column"
-              key={status}
-            >
-              <div className="sticky top-0 z-10 flex items-start justify-between gap-2 border-b border-border bg-background/95 p-3">
-                <div className="min-w-0">
-                  <h2 className="truncate text-sm font-semibold">
-                    {kanbanStatusLabels[status]}
-                  </h2>
-                  <p className="mt-1 text-xs text-muted">مرحلة تشغيل داخلية</p>
+            return (
+              <MacroLaneColumn
+                activeDeliverable={activeDeliverable}
+                key={lane.id}
+                lane={lane}
+              >
+                <div className="sticky top-0 z-10 flex items-start justify-between gap-2 border-b border-border bg-background/95 p-3">
+                  <div className="min-w-0">
+                    <h2 className="truncate text-sm font-semibold">
+                      {lane.label}
+                    </h2>
+                    <p className="mt-1 text-xs text-muted">
+                      مسار بصري يجمع حالات قاعدة البيانات كما هي
+                    </p>
+                  </div>
+                  <Badge tone="muted">{laneItems.length}</Badge>
                 </div>
-                <Badge tone="muted">{items.length}</Badge>
-              </div>
-              <div className="grid content-start gap-3 p-3">
-                {items.length > 0 ? (
-                  items.map((deliverable) => (
-                    <DeliverableCard
-                      action={action}
-                      deliverable={deliverable}
-                      key={deliverable.id}
-                      now={now}
-                    />
-                  ))
-                ) : (
-                  <p className="rounded-lg border border-dashed border-border bg-surface p-4 text-sm leading-6 text-muted">
-                    ما فيه مخرجات في هذه المرحلة.
-                  </p>
-                )}
-              </div>
-            </section>
-          );
-        })}
-      </div>
+                <div className="grid content-start gap-3 p-3">
+                  {laneItems.length > 0 ? (
+                    laneItems.map((deliverable) => (
+                      <DraggableDeliverableCard
+                        canDrag={Boolean(action)}
+                        deliverable={deliverable}
+                        key={deliverable.id}
+                      >
+                        <DeliverableCard
+                          action={action}
+                          approvalAction={approvalAction}
+                          canPublishClientComment={Boolean(approvalAction)}
+                          clientName={clientNames[deliverable.clientId]}
+                          deliverable={deliverable}
+                          now={now}
+                          summary={workspaces[deliverable.id]}
+                        />
+                      </DraggableDeliverableCard>
+                    ))
+                  ) : (
+                    <p className="rounded-lg border border-dashed border-border bg-surface p-4 text-sm leading-6 text-muted">
+                      ما فيه مخرجات في هذه المرحلة.
+                    </p>
+                  )}
+                </div>
+              </MacroLaneColumn>
+            );
+          })}
+        </div>
+      </DndContext>
     </section>
   );
 }

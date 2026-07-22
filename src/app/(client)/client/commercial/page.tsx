@@ -11,19 +11,15 @@ import {
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
 import { ClientCommercialSummaryCards } from "@/ui/client/commercial-summary";
-import { ButtonLink } from "@/ui/core/button";
-import {
-  buildClientMvpStats,
-  HadnaMvpHero,
-} from "@/ui/mvp/hadna-mvp-summary";
-import { RoleAwareNavigation } from "@/ui/navigation/role-aware-nav";
-import { resolveRoleAwareNavigation } from "@/modules/navigation/navigation-resolver";
+import { PageHeader } from "@/ui/layout/page-header";
 import {
   AccessDeniedState,
   MembershipDisabledState,
   NoAssignedClientState,
   SessionExpiredState,
 } from "@/ui/shared/access-states";
+
+export const dynamic = "force-dynamic";
 
 export default async function ClientCommercialSummaryPage({
   searchParams,
@@ -36,7 +32,10 @@ export default async function ClientCommercialSummaryPage({
   );
 
   if (!runtime.ok) {
-    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") {
+    if (
+      runtime.reason === "auth_required" ||
+      runtime.reason === "session_expired"
+    ) {
       return <SessionExpiredState />;
     }
 
@@ -75,22 +74,24 @@ export default async function ClientCommercialSummaryPage({
     evaluatePermission({
       actor,
       permission: PERMISSIONS.CONTRACT_VIEW,
-      resource: { tenantId: primaryClient.tenantId, clientId: primaryClient.id },
+      resource: {
+        tenantId: primaryClient.tenantId,
+        clientId: primaryClient.id,
+      },
     }).allowed &&
     evaluatePermission({
       actor,
       permission: PERMISSIONS.LEDGER_VIEW_SUMMARY,
-      resource: { tenantId: primaryClient.tenantId, clientId: primaryClient.id },
+      resource: {
+        tenantId: primaryClient.tenantId,
+        clientId: primaryClient.id,
+      },
     }).allowed;
 
   if (!canViewSummary) {
     return <AccessDeniedState />;
   }
 
-  const navigation = resolveRoleAwareNavigation({
-    actor,
-    assignedClients: clients.filter((client) => client.id === primaryClient.id),
-  });
   const summary = canUseRouteActorFixtures()
     ? { ok: true as const, value: fixtureClientCommercialSummary }
     : await readCommercialSummary({
@@ -106,20 +107,11 @@ export default async function ClientCommercialSummaryPage({
 
   return (
     <>
-      <RoleAwareNavigation items={navigation.items} label="تنقل بوابة العميل" />
       <main className="mx-auto grid w-full max-w-4xl gap-5 px-4 py-8" dir="rtl">
-        <HadnaMvpHero
-          clientName={primaryClient.name}
-          roleLabel="بوابة العميل"
-          stats={buildClientMvpStats(summary.value)}
-        >
-          <ButtonLink href="#deliverables" variant="primary">
-            عرض مخرجاتي
-          </ButtonLink>
-          <ButtonLink href="#package" variant="secondary">
-            الباقة والمتبقي
-          </ButtonLink>
-        </HadnaMvpHero>
+        <PageHeader
+          description={`العقد والباقة والتقدم الخاص بمساحة ${primaryClient.name}.`}
+          title="العقد والمتابعة"
+        />
         <ClientCommercialSummaryCards summary={summary.value} />
       </main>
     </>

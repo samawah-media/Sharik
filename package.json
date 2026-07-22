@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node node_modules/next/dist/bin/next dev",
-    "build": "node node_modules/next/dist/bin/next build",
+    "build": "node scripts/clean-persistent-build-artifacts.mjs && node node_modules/next/dist/bin/next build",
     "start": "node node_modules/next/dist/bin/next start",
     "lint": "node node_modules/eslint/bin/eslint.js . --max-warnings=0",
     "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
@@ -17,23 +17,45 @@
     "test:rls:db": "node scripts/supabase-rls-db-test.mjs",
     "test:component": "node node_modules/vitest/vitest.mjs run --project component",
     "test:e2e": "node node_modules/@playwright/test/cli.js test",
+    "test:e2e:persistent": "node node_modules/@playwright/test/cli.js test --config=playwright.persistent.config.ts",
+    "test:e2e:hosted-uat": "node node_modules/@playwright/test/cli.js test tests/e2e-hosted/hosted-boundary.spec.ts tests/e2e-hosted/hosted-persona-smoke.spec.ts --config=playwright.hosted-uat.config.ts",
+    "test:e2e:hosted-lifecycle": "node node_modules/@playwright/test/cli.js test tests/e2e-hosted/hosted-lifecycle.spec.ts --config=playwright.hosted-uat.config.ts --project=hosted-desktop-chromium",
     "test:e2e:list": "node node_modules/@playwright/test/cli.js test --list",
-    "secret:scan": "node scripts/secret-scan.mjs"
+    "secret:scan": "node scripts/secret-scan.mjs",
+    "uat:profiles:sync": "node scripts/sync-s015-uat-member-profiles.mjs",
+    "uat:workbook:import": "node scripts/import-s015-uat-workbook.mjs",
+    "uat:human-trial:prepare": "node scripts/prepare-s015-human-trial.mjs",
+    "uat:clean-workspace:prepare": "node scripts/prepare-s015-clean-workspace.mjs"
   },
   "dependencies": {
+    "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/sortable": "10.0.0",
+    "@dnd-kit/utilities": "3.2.2",
+    "@emnapi/core": "1.11.2",
+    "@emnapi/runtime": "1.11.2",
+    "@floating-ui/dom": "1.8.0",
+    "@hookform/resolvers": "5.4.0",
     "@supabase/ssr": "0.12.0",
     "@supabase/supabase-js": "2.108.2",
+    "@tiptap/react": "3.27.3",
+    "@tiptap/starter-kit": "3.27.3",
+    "@uppy/core": "5.2.0",
+    "@uppy/dashboard": "5.1.1",
+    "@uppy/react": "5.2.0",
+    "@uppy/tus": "5.1.1",
     "clsx": "2.1.1",
     "lucide-react": "0.546.0",
     "next": "16.2.9",
     "react": "19.2.7",
     "react-dom": "19.2.7",
+    "react-hook-form": "7.81.0",
     "server-only": "0.0.1",
     "tailwind-merge": "3.4.0",
     "zod": "4.4.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.3.3",
+    "@playwright/test": "1.61.0",
     "@tailwindcss/postcss": "4.1.18",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.2",
@@ -44,7 +66,6 @@
     "eslint": "9.39.2",
     "eslint-config-next": "16.2.9",
     "jsdom": "27.3.0",
-    "@playwright/test": "1.61.0",
     "prettier": "3.7.4",
     "tailwindcss": "4.1.18",
     "typescript": "5.9.3",
@@ -52,5 +73,10 @@
   },
   "engines": {
     "node": ">=20.9.0"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "8.5.10"
+    }
   }
 }

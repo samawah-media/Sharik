@@ -94,3 +94,6 @@ Kanban أداة تشغيل داخلية للفريق والإدارة، وليس
 | Cards مع SLA/Owner | Preserve with changes. |
 | عرض العميل للKanban | Remove: العميل لا يرى Kanban. |
 | نص "Trello الكبرى" | Redesign: نبرة سعودية عملية بدون تسمية منتج خارجي. |
+# Spec 015 protected workflow controls
+
+The generic status selector offers only safe operational states (`not_started`, `in_progress`). Version submission, internal changes/approval, client send/decision, and final delivery use distinct exact-version controls. Team members see only their assigned board items when version submission is their sole workflow authority; management controls remain hidden and server-denied.

@@ -311,15 +311,29 @@ begin
   if expected_revision is not null
         and target_deliverable.revision <> expected_revision then
     status_denial_reason := 'expected_state_mismatch';
-  elsif target_deliverable.status in ('cancelled', 'archived') then
+  elsif target_deliverable.status in ('delivered', 'cancelled', 'archived') then
     status_denial_reason := 'terminal_status_locked';
-  elsif normalized_target_status = 'waiting_client_approval'
-        and target_deliverable.status <> 'internally_approved' then
+  elsif normalized_target_status = 'waiting_client_approval' then
     status_denial_reason := 'internal_approval_required_before_client_waiting';
-  elsif normalized_target_status = 'delivered'
-        and target_deliverable.requires_client_approval
-        and target_deliverable.status <> 'client_approved' then
-    status_denial_reason := 'client_approval_required_before_delivery';
+  elsif normalized_target_status in (
+    'ready_for_internal_review',
+    'internal_changes_requested',
+    'internally_approved',
+    'waiting_client_approval',
+    'client_changes_requested',
+    'client_approved',
+    'ready_for_delivery',
+    'delivered'
+  ) then
+    status_denial_reason := 'protected_status_requires_exact_version_command';
+  elsif normalized_target_status = 'not_started'
+        and target_deliverable.status not in ('not_started', 'in_progress') then
+    status_denial_reason := 'unsafe_operational_transition';
+  elsif normalized_target_status = 'in_progress'
+        and target_deliverable.status not in (
+          'not_started', 'in_progress', 'internal_changes_requested', 'client_changes_requested'
+        ) then
+    status_denial_reason := 'unsafe_operational_transition';
   end if;
 
   if status_denial_reason is not null then

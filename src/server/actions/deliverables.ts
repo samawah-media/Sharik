@@ -19,37 +19,16 @@ import {
   optionalFormValue,
 } from "./deliverable-write-mappers";
 import {
+  asDeliverableWriteError,
+  mapDeliverableWriteError,
+  permissionFailureMessage,
+  validateDeliverableIdentifierFields,
+  validationFailureMessage,
+} from "./deliverable-write-errors";
+import {
   createApprovedExtraDeliverableViaRpc,
   createDeliverableViaRpc,
 } from "./deliverable-write-rpc";
-
-const saveFailureMessage = "تعذر حفظ المخرج بأمان.";
-const validationFailureMessage = "راجع بيانات المخرج ثم حاول مرة أخرى.";
-const permissionFailureMessage = "لا يمكنك حفظ هذا المخرج.";
-const capacityFailureMessage =
-  "لا توجد سعة كافية لهذا السطر. اختر سطرًا آخر أو استخدم مسار المخرج الإضافي المعتمد.";
-
-const mapWriteError = (error: { code?: string; message?: string }) => {
-  const { code, message } = error;
-
-  if (code === "23505") {
-    return "تم تسجيل طلب إنشاء هذا المخرج مسبقًا.";
-  }
-
-  if (code === "42501" && message === "insufficient package capacity") {
-    return capacityFailureMessage;
-  }
-
-  if (code === "42501") {
-    return permissionFailureMessage;
-  }
-
-  if (code === "P0001") {
-    return validationFailureMessage;
-  }
-
-  return saveFailureMessage;
-};
 
 export async function createDeliverableAction(
   _previousState: DeliverableFormState,
@@ -82,6 +61,15 @@ export async function createDeliverableAction(
       message: validationFailureMessage,
       values,
     });
+  }
+
+  const identifierError = validateDeliverableIdentifierFields({
+    ownerUserId: parsed.data.ownerUserId,
+    contributorUserIds: parsed.data.contributorUserIds,
+  });
+
+  if (identifierError) {
+    return deliverableFormError({ message: identifierError, values });
   }
 
   const supabase = await createSupabaseServerClient();
@@ -142,7 +130,7 @@ export async function createDeliverableAction(
 
   if (!result.ok) {
     return deliverableFormError({
-      message: mapWriteError(result.error),
+      message: mapDeliverableWriteError(asDeliverableWriteError(result.error)),
       values,
     });
   }
@@ -179,6 +167,15 @@ export async function createApprovedExtraDeliverableAction(
       message: validationFailureMessage,
       values,
     });
+  }
+
+  const identifierError = validateDeliverableIdentifierFields({
+    ownerUserId: parsed.data.ownerUserId,
+    contributorUserIds: parsed.data.contributorUserIds,
+  });
+
+  if (identifierError) {
+    return deliverableFormError({ message: identifierError, values });
   }
 
   const supabase = await createSupabaseServerClient();
@@ -234,7 +231,7 @@ export async function createApprovedExtraDeliverableAction(
 
   if (!result.ok) {
     return deliverableFormError({
-      message: mapWriteError(result.error),
+      message: mapDeliverableWriteError(asDeliverableWriteError(result.error)),
       values,
     });
   }

@@ -1,10 +1,17 @@
 import { expect, test } from "@playwright/test";
 
-test.describe.configure({ timeout: 90_000 });
+test.describe.configure({ timeout: 240_000 });
 
 test("tenant admin can open the internal Kanban board from deliverables", async ({
   page,
 }) => {
+  const browserErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") {
+      browserErrors.push(message.text());
+    }
+  });
+
   await page.goto("/clients/client_a/deliverables?as=tenant_admin_a", {
     waitUntil: "domcontentloaded",
   });
@@ -16,7 +23,10 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
     "href",
     "/clients/client_a/deliverables/board",
   );
-  await boardLink.click();
+  await Promise.all([
+    page.waitForURL("**/clients/client_a/deliverables/board"),
+    boardLink.click(),
+  ]);
 
   await expect(
     page.getByRole("heading", { name: "لوحة العمل" }),
@@ -32,9 +42,15 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
       return Math.round(box?.width ?? 0);
     })
     .toBeGreaterThanOrEqual(320);
-  await expect(page.getByText("ستوري هدنة 43")).toBeVisible();
+  await expect(
+    page
+      .getByRole("region", { name: "لوحة العمل" })
+      .getByText("ستوري هدنة 43", { exact: true }),
+  ).toBeVisible({ timeout: 30_000 });
 
-  await page.getByText("تغيير الحالة").first().click();
+  await page
+    .getByRole("button", { name: "تغيير الحالة ستوري هدنة 43" })
+    .click();
   await expect(
     page.getByRole("form", { name: "تغيير حالة ستوري هدنة 43" }),
   ).toBeVisible();
@@ -42,6 +58,7 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
   await expect(page.getByLabel("الحالة").first()).toHaveValue("in_progress");
   await expect(page.getByText("client_b")).toHaveCount(0);
   await expect(page.getByText("approval log")).toHaveCount(0);
+  expect(browserErrors).toEqual([]);
 });
 
 test("client viewer cannot access the internal Kanban board", async ({

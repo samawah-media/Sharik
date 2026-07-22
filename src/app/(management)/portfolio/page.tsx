@@ -1,21 +1,11 @@
 import { AssignedClients } from "@/ui/management/assigned-clients";
 import { resolveRoleAwareNavigation } from "@/modules/navigation/navigation-resolver";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import {
-  fixtureManagementCommercialSummary,
-  readCommercialSummary,
-} from "@/server/actions/commercial-summary-read";
 import {
   canUseRouteActorFixtures,
   guardPortfolioRoute,
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
-import { ButtonLink } from "@/ui/core/button";
-import {
-  buildEmptyMvpStats,
-  buildManagementMvpStats,
-  HadnaMvpHero,
-} from "@/ui/mvp/hadna-mvp-summary";
+import { PageHeader } from "@/ui/layout/page-header";
 import { RoleAwareNavigation } from "@/ui/navigation/role-aware-nav";
 import {
   AccessDeniedState,
@@ -23,6 +13,8 @@ import {
   NoAssignedClientState,
   SessionExpiredState,
 } from "@/ui/shared/access-states";
+import { listScopedDeliverables } from "@/server/actions/deliverable-read";
+import { ManagementExceptionDashboard } from "@/ui/management/exception-dashboard";
 
 export default async function PortfolioPage({
   searchParams,
@@ -33,7 +25,10 @@ export default async function PortfolioPage({
   const runtime = await resolveRouteRuntime(params?.as);
 
   if (!runtime.ok) {
-    if (runtime.reason === "auth_required" || runtime.reason === "session_expired") {
+    if (
+      runtime.reason === "auth_required" ||
+      runtime.reason === "session_expired"
+    ) {
       return <SessionExpiredState />;
     }
 
@@ -59,64 +54,53 @@ export default async function PortfolioPage({
     return <AccessDeniedState returnHref={access.safeReturnHref} />;
   }
 
-  const clients = runtime.clients.filter((client) => client.tenantId === actor.tenantId);
+  const clients = runtime.clients.filter(
+    (client) => client.tenantId === actor.tenantId,
+  );
   const navigation = resolveRoleAwareNavigation({
     actor,
     assignedClients: clients,
   });
-  const visibleClients = clients.filter((client) =>
-    navigation.items.some((item) => item.id === "management.clients")
-      ? true
-      : navigation.items.some((item) => item.id === `client.${client.id}`),
+  // `runtime.clients` is already tenant- and assignment-scoped. Navigation is
+  // presentation-only and must not be reused as the data visibility source.
+  const visibleClients = clients;
+  const isManagementPortfolio = navigation.items.some(
+    (navigationItem) => navigationItem.id === "management.clients",
   );
-  const primaryClient = visibleClients[0];
-  const summary =
-    primaryClient && canUseRouteActorFixtures()
-      ? { ok: true as const, value: fixtureManagementCommercialSummary }
-      : primaryClient
-        ? await readCommercialSummary({
-            supabase: await createSupabaseServerClient(),
-            tenantId: primaryClient.tenantId,
-            clientId: primaryClient.id,
-            audience: "management",
-          })
-        : { ok: false as const };
-  const stats =
-    summary.ok && summary.value.audience === "management"
-      ? buildManagementMvpStats(summary.value)
-      : buildEmptyMvpStats();
-  const roleLabel = navigation.items.some(
-    (item) => item.id === "management.clients",
-  )
-    ? "الإدارة / مدير المشروع"
-    : "مدير الحساب";
+  const scopedDeliverables = (
+    await Promise.all(
+      visibleClients.map((client) =>
+        listScopedDeliverables({
+          tenantId: client.tenantId,
+          clientId: client.id,
+        }),
+      ),
+    )
+  ).flatMap((result) => (result.ok ? result.deliverables : []));
 
   return (
     <main className="grid gap-6">
-      <RoleAwareNavigation items={navigation.items} label="تنقل مساحة الفريق" />
-      {primaryClient ? (
-        <HadnaMvpHero
-          clientName={primaryClient.name}
-          roleLabel={roleLabel}
-          stats={stats}
-        >
-          <ButtonLink href={`/clients/${primaryClient.id}`} variant="primary">
-            عرض هدنة
-          </ButtonLink>
-          <ButtonLink
-            href={`/clients/${primaryClient.id}/deliverables`}
-            variant="secondary"
-          >
-            عرض المخرجات
-          </ButtonLink>
-          <ButtonLink
-            href={`/clients/${primaryClient.id}/commercial`}
-            variant="secondary"
-          >
-            فتح المتابعة / SLA
-          </ButtonLink>
-        </HadnaMvpHero>
+      {canUseRouteActorFixtures() ? (
+        <RoleAwareNavigation
+          items={navigation.items}
+          label="تنقل مساحة الفريق"
+        />
       ) : null}
+      <PageHeader
+        description={
+          isManagementPortfolio
+            ? "الأعمال التي تحتاج تدخلك الآن، ثم مساحات العملاء المصرح بها."
+            : "أعمال العملاء المسندة لك وما يحتاج متابعة الآن."
+        }
+        title={isManagementPortfolio ? "لوحة الإدارة" : "مساحة العمل"}
+      />
+      <ManagementExceptionDashboard
+        clientNames={Object.fromEntries(
+          visibleClients.map((client) => [client.id, client.name]),
+        )}
+        deliverables={scopedDeliverables}
+        now={new Date().toISOString()}
+      />
       <h2 className="text-xl font-semibold">عملائي</h2>
       <AssignedClients clients={visibleClients} />
     </main>

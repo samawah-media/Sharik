@@ -2,6 +2,7 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { PackageLineSafeSummary } from "@/modules/packages/package-repository";
+import type { MemberDisplay } from "@/modules/members/member-directory";
 import {
   ApprovedExtraNotice,
   DeliverableDeniedState,
@@ -34,6 +35,21 @@ const packageLineSummary: PackageLineSafeSummary = {
     available: 3,
   },
 };
+
+const eligibleMembers: MemberDisplay[] = [
+  {
+    userId: "00000000-0000-4000-8000-000000000001",
+    displayName: "سارة علي",
+    roleLabel: "مصممة",
+    initial: "س",
+  },
+  {
+    userId: "00000000-0000-4000-8000-000000000002",
+    displayName: "أحمد محمد",
+    roleLabel: "كاتب محتوى",
+    initial: "أ",
+  },
+];
 
 const deliverableSummary: DeliverableSafeSummary = {
   id: "deliverable_a",
@@ -71,6 +87,7 @@ describe("deliverable creation form and reservation preview", () => {
         contractId="contract_a"
         packageId="package_a"
         packageLines={[packageLineSummary]}
+        eligibleMembers={eligibleMembers}
         idempotencyKey="f002c-deliverable-client-a"
       />,
     );
@@ -84,9 +101,20 @@ describe("deliverable creation form and reservation preview", () => {
     expect(screen.getByLabelText("سطر الباقة")).toHaveValue(
       "package_line_posts_a",
     );
-    expect(screen.getByLabelText("الكمية المحجوزة")).toHaveAttribute("min", "1");
+    expect(screen.getByLabelText("الكمية المحجوزة")).toHaveAttribute(
+      "min",
+      "1",
+    );
     expect(screen.getByLabelText("يتطلب تعميدًا داخليًا")).toBeChecked();
     expect(screen.getByLabelText("يتطلب اعتماد العميل")).toBeChecked();
+    expect(screen.getByLabelText("المسؤول")).toHaveTextContent("سارة علي");
+    expect(
+      screen.getByRole("checkbox", { name: /سارة علي/u }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("checkbox", { name: /أحمد محمد/u }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(eligibleMembers[0].userId)).not.toBeInTheDocument();
     expect(document.querySelector('input[name="clientId"]')).toHaveValue(
       "client_a",
     );
@@ -102,7 +130,12 @@ describe("deliverable creation form and reservation preview", () => {
   });
 
   it("shows reservation impact and over-capacity recovery actions without internal details", () => {
-    render(<ReservationImpactPreview packageLine={packageLineSummary} quantity={4} />);
+    render(
+      <ReservationImpactPreview
+        packageLine={packageLineSummary}
+        quantity={4}
+      />,
+    );
 
     const preview = screen.getByRole("region", { name: "أثر الحجز" });
     expect(within(preview).getByText("المتاح قبل الحجز")).toBeInTheDocument();
@@ -112,7 +145,9 @@ describe("deliverable creation form and reservation preview", () => {
       within(preview).getByText("لا توجد سعة كافية لهذا السطر."),
     ).toBeInTheDocument();
     expect(within(preview).getByText("اختر سطر باقة آخر")).toBeInTheDocument();
-    expect(within(preview).getByText("أنشئ مخرجًا إضافيًا معتمدًا")).toBeInTheDocument();
+    expect(
+      within(preview).getByText("أنشئ مخرجًا إضافيًا معتمدًا"),
+    ).toBeInTheDocument();
     expect(within(preview).queryByText("Client B")).not.toBeInTheDocument();
     expect(within(preview).queryByText("internal")).not.toBeInTheDocument();
   });
@@ -130,21 +165,27 @@ describe("deliverable creation form and reservation preview", () => {
     render(<DeliverableList deliverables={[deliverableSummary]} />);
 
     const list = screen.getByRole("region", { name: "قائمة المخرجات" });
-    expect(within(list).getByText("منشور إطلاق الحملة")).toBeInTheDocument();
+    expect(within(list).getAllByText("منشور إطلاق الحملة")).toHaveLength(1);
     expect(within(list).getAllByText("منشور").length).toBeGreaterThan(0);
-    expect(within(list).getByText("2026-07-05")).toBeInTheDocument();
+    expect(within(list).getAllByText("2026-07-05").length).toBeGreaterThan(0);
     expect(within(list).getAllByText("لم يبدأ").length).toBeGreaterThan(0);
     expect(within(list).getByText("0%")).toBeInTheDocument();
-    expect(within(list).queryByText("مخرج متفق عليه ضمن الباقة.")).not.toBeInTheDocument();
+    expect(
+      within(list).getByText("مخرج متفق عليه ضمن الباقة."),
+    ).toBeInTheDocument();
     expect(within(list).getByText("محجوز: 1")).toBeInTheDocument();
     expect(within(list).queryByText("approval log")).not.toBeInTheDocument();
-    expect(within(list).queryByText("internal comment")).not.toBeInTheDocument();
+    expect(
+      within(list).queryByText("internal comment"),
+    ).not.toBeInTheDocument();
   });
 
   it("renders safe empty and denied states", () => {
     const { rerender } = render(<DeliverableEmptyState />);
 
-    expect(screen.getByText("لا توجد مخرجات لهذا العميل بعد")).toBeInTheDocument();
+    expect(
+      screen.getByText("لا توجد مخرجات لهذا العميل بعد"),
+    ).toBeInTheDocument();
     expect(screen.queryByText("Client B")).not.toBeInTheDocument();
 
     rerender(<DeliverableDeniedState />);

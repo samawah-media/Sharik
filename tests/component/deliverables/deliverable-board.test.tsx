@@ -24,6 +24,12 @@ const deliverables: DeliverableSafeSummary[] = [
     status: "not_started",
     priority: "normal",
     ownerUserId: "assigned_internal_a",
+    ownerDisplay: {
+      userId: "assigned_internal_a",
+      displayName: "أحمد العتيبي",
+      roleLabel: "مدير مشروع",
+      initial: "أ",
+    },
     contributorUserIds: [],
     internalDueDate: "2026-07-03",
     clientDueDate: "2026-07-05",
@@ -38,6 +44,7 @@ const deliverables: DeliverableSafeSummary[] = [
   },
   {
     id: "deliverable_ready",
+    currentVersionId: "version_ready",
     tenantId: "tenant_a",
     clientId: "client_a",
     name: "تصميم إعلان المنتج",
@@ -45,7 +52,21 @@ const deliverables: DeliverableSafeSummary[] = [
     status: "internally_approved",
     priority: "high",
     ownerUserId: "assigned_internal_a",
+    ownerDisplay: {
+      userId: "assigned_internal_a",
+      displayName: "أحمد العتيبي",
+      roleLabel: "مدير مشروع",
+      initial: "أ",
+    },
     contributorUserIds: ["designer_a"],
+    contributorDisplays: [
+      {
+        userId: "designer_a",
+        displayName: "رائد الحربي",
+        roleLabel: "مصمم",
+        initial: "ر",
+      },
+    ],
     internalDueDate: "2026-07-02",
     clientDueDate: "2026-07-04",
     finalDueDate: "2026-07-06",
@@ -63,6 +84,7 @@ describe("internal deliverable work board", () => {
   it("renders active columns, scoped cards, SLA, due dates, and status update forms", () => {
     render(
       <DeliverableBoard
+        action={async () => undefined}
         deliverables={deliverables}
         now="2026-07-01T10:00:00.000Z"
       />,
@@ -72,23 +94,25 @@ describe("internal deliverable work board", () => {
     expect(screen.getByTestId("kanban-board-scroll")).toHaveClass(
       "overflow-x-auto",
     );
-    expect(screen.getAllByTestId("kanban-column")).toHaveLength(10);
-    expect(screen.getAllByTestId("kanban-column")[0]).toHaveClass("min-w-80");
+    expect(screen.getAllByTestId("kanban-column")).toHaveLength(6);
+    expect(screen.getAllByTestId("kanban-column")[0]).toHaveClass(
+      "min-w-[20rem]",
+    );
     expect(
       within(board).getByRole("region", { name: "لم يبدأ" }),
     ).toBeInTheDocument();
     expect(
-      within(board).getByRole("region", { name: "معتمد داخليًا" }),
+      within(board).getByRole("region", { name: "المراجعة الداخلية" }),
     ).toBeInTheDocument();
-    expect(within(board).getByText("منشور إطلاق الحملة")).toBeInTheDocument();
-    expect(within(board).getByText("تصميم إعلان المنتج")).toBeInTheDocument();
-    expect(within(board).getByText("assigned_internal_a")).toBeInTheDocument();
-    expect(within(board).getByText(/designer_a/)).toBeInTheDocument();
-    expect(within(board).getByText("07-03")).toBeInTheDocument();
+    expect(within(board).getAllByText("منشور إطلاق الحملة")).toHaveLength(1);
+    expect(within(board).getAllByText("تصميم إعلان المنتج")).toHaveLength(1);
+    expect(document.querySelectorAll("[data-content-card]")).toHaveLength(2);
+    expect(within(board).getAllByText("أحمد العتيبي").length).toBeGreaterThan(0);
+    expect(within(board).getByText("2026-07-03")).toBeInTheDocument();
     expect(within(board).getByText("0%")).toBeInTheDocument();
     expect(within(board).getByText("70%")).toBeInTheDocument();
 
-    fireEvent.click(screen.getAllByText("تغيير الحالة")[0]);
+    fireEvent.click(screen.getAllByText(/^تغيير الحالة/)[0]);
 
     const firstForm = screen.getByRole("form", {
       name: "تغيير حالة منشور إطلاق الحملة",
@@ -107,20 +131,21 @@ describe("internal deliverable work board", () => {
     expect(screen.queryByText("approval log")).not.toBeInTheDocument();
   });
 
-  it("disables direct waiting-client transition until internal approval exists", () => {
+  it("does not offer protected workflow transitions in the generic status form", () => {
     render(
       <DeliverableBoard
+        action={async () => undefined}
         deliverables={[deliverables[0]]}
         now="2026-07-01T10:00:00.000Z"
       />,
     );
 
-    fireEvent.click(screen.getByText("تغيير الحالة"));
+    fireEvent.click(screen.getByText(/^تغيير الحالة/));
 
-    const waitingOption = screen.getByRole("option", {
-      name: "بانتظار اعتماد العميل",
-    });
-    expect(waitingOption).toBeDisabled();
+    expect(screen.getAllByRole("option")).toHaveLength(2);
+    expect(
+      screen.queryByRole("option", { name: "بانتظار اعتماد العميل" }),
+    ).not.toBeInTheDocument();
   });
 
   it("keeps empty columns readable without stretching cards", () => {
@@ -132,11 +157,26 @@ describe("internal deliverable work board", () => {
     );
 
     const inProgressColumn = screen.getByRole("region", {
-      name: "قيد التنفيذ",
+      name: "قيد التنفيذ والتعديلات",
     });
     expect(
       within(inProgressColumn).getByText("ما فيه مخرجات في هذه المرحلة."),
     ).toBeInTheDocument();
+  });
+
+  it("keeps duplicate workflow controls inside the single details drawer", () => {
+    const action = async () => undefined;
+    render(
+      <DeliverableBoard
+        approvalAction={action}
+        deliverables={deliverables}
+        now="2026-07-01T10:00:00.000Z"
+      />,
+    );
+
+    expect(screen.queryByRole("form", { name: /رفع نسخة/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("form", { name: /إرسال للعميل/ })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "فتح مساحة المخرج" })).toHaveLength(2);
   });
 
   it("renders a safe empty state", () => {

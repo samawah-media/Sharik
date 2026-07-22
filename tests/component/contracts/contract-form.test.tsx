@@ -1,5 +1,5 @@
-import { render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { cleanup, render, screen, within } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 import type { ContractSafeSummary } from "@/modules/contracts/contract-repository";
 import {
   ContractDeniedState,
@@ -21,6 +21,8 @@ const contractSummary: ContractSafeSummary = {
   createdAt: "2026-06-28T00:00:00.000Z",
   updatedAt: "2026-06-28T00:00:00.000Z",
 };
+
+afterEach(() => cleanup());
 
 describe("contract form and states", () => {
   it("renders Arabic RTL-ready create fields with scoped hidden values", () => {

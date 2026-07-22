@@ -26,7 +26,7 @@ function SafeState({
         <h1 className="text-2xl font-semibold">{heading}</h1>
         <p className="text-sm leading-6 text-muted">{body}</p>
         <a
-          className="w-fit rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          className="inline-flex min-h-11 items-center rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           href={returnHref}
         >
           {actionLabel}

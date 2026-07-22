@@ -28,9 +28,21 @@ describe("F-002 permissions", () => {
     expect(PERMISSIONS.DELIVERABLE_STATUS_UPDATE).toBe(
       "PERM.DELIVERABLE.STATUS_UPDATE",
     );
+    expect(PERMISSIONS.DELIVERABLE_VERSION_SUBMIT).toBe(
+      "PERM.DELIVERABLE.VERSION_SUBMIT",
+    );
     expect(PERMISSIONS.LEDGER_VIEW_SUMMARY).toBe(
       "PERM.LEDGER.VIEW_SUMMARY",
     );
+  });
+
+  it("grants version submission without approval authority to supported team roles", () => {
+    for (const role of ["account_manager", "content_writer", "designer"] as const) {
+      expect(roleGrantsPermission(role, PERMISSIONS.DELIVERABLE_VERSION_SUBMIT)).toBe(true);
+      expect(roleGrantsPermission(role, PERMISSIONS.DELIVERABLE_INTERNAL_APPROVE)).toBe(false);
+      expect(roleGrantsPermission(role, PERMISSIONS.DELIVERABLE_SEND_TO_CLIENT)).toBe(false);
+      expect(roleGrantsPermission(role, PERMISSIONS.DELIVERABLE_CLIENT_APPROVE)).toBe(false);
+    }
   });
 
   it("allows tenant administrators to manage contracts, packages, deliverables, and ledger summaries", () => {

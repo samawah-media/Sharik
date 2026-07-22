@@ -12,6 +12,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { cn } from "@/ui/core/utils";
+import { SignOutButton } from "@/ui/auth/sign-out-button";
 
 const shellIcons = {
   briefcase: BriefcaseBusiness,
@@ -47,6 +48,9 @@ const segmentLabels: Record<string, string> = {
   invitations: "الدعوات",
   internal: "دعوة داخلية",
   portfolio: "لوحة الإدارة",
+  work: "مهامي",
+  readiness: "الجاهزية",
+  r007: "R-007",
 };
 
 const uuidLikePattern =
@@ -116,7 +120,10 @@ function Breadcrumbs({
     <nav aria-label="مسار الصفحة" className="min-w-0 text-xs text-muted">
       <ol className="flex min-w-0 flex-wrap items-center gap-1">
         <li>
-          <Link className="hover:text-foreground" href={rootHref}>
+          <Link
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md px-3 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+            href={rootHref}
+          >
             {rootLabel}
           </Link>
         </li>
@@ -132,7 +139,7 @@ function Breadcrumbs({
                 </span>
               ) : (
                 <Link
-                  className="truncate hover:text-foreground"
+                  className="inline-flex min-h-11 min-w-11 max-w-full items-center justify-center truncate rounded-md px-3 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                   href={crumb.href}
                 >
                   {crumb.label}
@@ -170,14 +177,14 @@ export function ProductShell({
       data-testid="product-shell"
       dir="rtl"
     >
-      <div className="grid min-h-screen lg:grid-cols-[17rem_minmax(0,1fr)]">
-        <aside className="border-b border-border bg-surface/95 px-4 py-4 lg:border-b-0 lg:border-l">
-          <div className="mx-auto grid max-w-7xl gap-4 lg:sticky lg:top-4">
+      <div className="grid min-h-screen lg:grid-cols-[18rem_minmax(0,1fr)]">
+        <aside className="border-b border-border bg-surface/95 px-3 py-3 shadow-sm lg:border-b-0 lg:border-l lg:px-4 lg:py-5 lg:shadow-none">
+          <div className="mx-auto grid max-w-7xl gap-4 lg:sticky lg:top-5">
             <Link
-              className="flex items-center gap-3 rounded-lg px-2 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              className="flex items-center gap-3 rounded-xl px-2 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
               href={homeHref}
             >
-              <span className="flex size-10 items-center justify-center rounded-lg bg-accent text-sm font-bold text-white">
+              <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-sm font-bold text-white shadow-sm">
                 ش
               </span>
               <span className="grid">
@@ -188,7 +195,7 @@ export function ProductShell({
             {navigationItems.length > 0 ? (
               <nav
                 aria-label={navigationLabel}
-                className="flex gap-2 overflow-x-auto pb-1 lg:grid lg:overflow-visible lg:pb-0"
+                className="flex snap-x gap-2 overflow-x-auto pb-1 lg:grid lg:overflow-visible lg:pb-0"
               >
                 {navigationItems.map((item) => {
                   const Icon = shellIcons[item.icon ?? "briefcase"];
@@ -197,7 +204,7 @@ export function ProductShell({
                   return (
                     <Link
                       className={cn(
-                        "flex min-w-fit items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors",
+                        "flex min-h-11 min-w-fit snap-start items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors",
                         "focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent",
                         active
                           ? "border-accent/20 bg-accent-soft text-accent"
@@ -205,6 +212,7 @@ export function ProductShell({
                       )}
                       href={item.href}
                       key={`${item.href}-${item.label}`}
+                      aria-current={active ? "page" : undefined}
                     >
                       <Icon aria-hidden="true" size={18} />
                       <span>{item.label}</span>
@@ -213,19 +221,25 @@ export function ProductShell({
                 })}
               </nav>
             ) : null}
+            <div className="hidden rounded-xl border border-border bg-background p-3 lg:grid lg:gap-2">
+              <p className="text-xs font-semibold text-muted">الحساب الحالي</p>
+              <SignOutButton />
+            </div>
           </div>
         </aside>
         <div className="min-w-0">
-          <header className="border-b border-border bg-background/90 px-4 py-4 backdrop-blur">
+          <header className="sticky top-0 z-20 border-b border-border bg-background/90 px-4 py-3 backdrop-blur sm:py-4">
             <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <Breadcrumbs
                 pathname={pathname}
                 rootHref={breadcrumbRootHref}
                 rootLabel={breadcrumbRootLabel}
               />
-              <div className="flex items-center gap-2 text-xs text-muted">
-                <FileText aria-hidden="true" size={15} />
-                <span>تجربة UAT داخلية ضمن النطاق المصرح</span>
+              <div className="flex min-h-11 items-center gap-2 text-xs text-muted">
+                <span>حساب الفريق</span>
+                <span className="lg:hidden">
+                  <SignOutButton />
+                </span>
               </div>
             </div>
           </header>

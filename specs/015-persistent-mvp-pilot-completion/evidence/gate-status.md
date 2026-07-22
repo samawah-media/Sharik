@@ -2,7 +2,7 @@
 
 ## Authoritative current decision — 2026-07-22
 
-`X009_C_LOCAL_GREEN_CI_PENDING`. The guided first-client onboarding wizard is implemented and locally verified. The owner can enter the first client, contract, package, and first deliverable entirely from the UI through a 5-step Arabic RTL wizard at `/clients/onboard`. All mutations go through the existing audited RPCs with run-ID-derived idempotency keys. Local matrix PASS: typecheck; unit + component 80 files/338 tests; pgTAP 8 files/468 tests; persistent E2E 4 passed; build. Exact-head CI pending.
+`X009_C_GREEN_OWNER_CAN_CREATE_FIRST_CLIENT`. The guided first-client onboarding wizard is implemented and exact-head verified. The owner can enter the first client, contract, package, and first deliverable entirely from the UI through a 5-step Arabic RTL wizard at `/clients/onboard`. All mutations go through the existing audited RPCs with run-ID-derived idempotency keys. Exact-head `dc013684f51438467c7adb1dd212d9efaa510248` passed F-001 Quality run `29901885473`, including lint, typecheck, unit, integration, clean Supabase reset, RLS/pgTAP, component, fixture E2E, persistent E2E, secret scan, and build; the Samawah Vercel Preview deployment also passed.
 
 - Branch: `codex/015-persistent-mvp-pilot-completion`; X009-C adds the onboarding schema, orchestrating server action, wizard component, wizard page, member directory helper, and full test coverage on top of the X009-B head.
 - Wizard model: 5 input steps (client info, contract, package lines, team assignment, first deliverable + SLA) + review/submit, all in a single `<form>` with hidden inputs; per-step client-side validation; single server action submission; idempotent replay via run-ID-derived keys.

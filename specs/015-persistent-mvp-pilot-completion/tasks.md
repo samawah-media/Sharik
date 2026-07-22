@@ -119,7 +119,7 @@ Independent review fixed S015-P1-094, corrective exact-head CI run `29852802208`
   - [x] X009-C-3 Build a multi-step client-side wizard component (`FirstClientWizard`) with 5 input steps + review, Arabic RTL layout, mobile/desktop responsive grid, keyboard-accessible inputs, per-step validation, team member selector with human names only (no UUIDs), dynamic package-line add/remove, and a single form submission to the orchestrating action.
   - [x] X009-C-4 Wire the wizard page at `/clients/onboard` with route guards (CLIENT_CREATE + CONTRACT_CREATE + PACKAGE_CREATE + DELIVERABLE_CREATE), tenant-scoped member directory, and a stable run-ID. Add a prominent "إضافة أول عميل" CTA on the `/clients` empty state and header.
   - [x] X009-C-5 Add full test coverage: unit schema tests (17 tests), component wizard tests (7 tests), pgTAP onboarding RPC sequence + idempotency + unauthorized-role denial (15 tests), and persistent browser E2E for full success journey, unauthorized role denial, empty-field prevention, and idempotent replay (4 tests).
-  - [x] X009-C-6 Pass the local verification matrix: lint, typecheck, unit 338, component (included), pgTAP 468, persistent E2E 4, build. Exact-head CI pending.
+  - [x] X009-C-6 Pass the local verification matrix and exact-head CI: F-001 Quality run `29901885473` passed on `dc013684f51438467c7adb1dd212d9efaa510248`, including lint, typecheck, unit, integration, clean Supabase reset, RLS/pgTAP, component, fixture E2E, persistent E2E, secret scan, and build; Vercel Preview passed.
 
 
 ## Correction note: task assignment authority (2026-07-15)

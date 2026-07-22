@@ -2,7 +2,7 @@
 
 ## Spec 015 X009-C guided first-client onboarding — 2026-07-22
 
-Status: `X009_C_LOCAL_GREEN_CI_PENDING`.
+Status: `X009_C_GREEN_OWNER_CAN_CREATE_FIRST_CLIENT`.
 
 The owner can now enter the first client, contract, package, and first deliverable entirely from the UI through a 5-step Arabic RTL wizard at `/clients/onboard`. No UUIDs, SQL, or manual database intervention required.
 
@@ -31,7 +31,7 @@ Typecheck; unit + component 80 files/338 tests; pgTAP 8 files/468 tests; persist
 - All mutations are tenant-scoped, RLS-protected, idempotent, and audited.
 - No new dependency, migration, or ADR.
 - No Production deployment, alias, environment change, merge, public signup, external-client invitation, real customer data, or audit/ledger deletion.
-- Exact-head CI pending.
+- Exact-head `dc013684f51438467c7adb1dd212d9efaa510248` passed F-001 Quality run `29901885473`; the Samawah Vercel Preview deployment passed.
 
 ## Spec 015 X009-B clean owner-entry workspace closed — 2026-07-21
 

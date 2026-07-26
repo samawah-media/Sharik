@@ -3,6 +3,7 @@ import {
   expectNoHorizontalOverflow,
   persistentDeliverableNames,
   seedPersistentLifecycle,
+  seedPersistentClientReviewImage,
   seedPersistentVersionFiles,
   signInViaUi,
   type PersistentSeed,
@@ -242,6 +243,11 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
     note: "replacement draft",
   });
   const version2 = await latestVersion(seed.mainDeliverableId);
+  const reviewFileId = await seedPersistentClientReviewImage({
+    client: seeded.client,
+    seed,
+    versionId: version2.id,
+  });
   await assertDeliverable(seed.mainDeliverableId, {
     status: "ready_for_internal_review",
     current_version_id: version2.id,
@@ -266,6 +272,23 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
 
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
   managementCard = cardFor(page, persistentDeliverableNames.main);
+  const reviewDrawer = await openDrawer(managementCard);
+  await expect(
+    reviewDrawer.getByRole("img", { name: "review.png" }),
+  ).toBeVisible();
+  await reviewDrawer
+    .getByRole("button", { name: "تجهيز للعميل" })
+    .click();
+  await expect(
+    reviewDrawer.getByText("جاهز للإرسال للعميل"),
+  ).toBeVisible();
+  const stagedReviewFile = await seeded.client
+    .from("file_assets")
+    .select("visibility")
+    .eq("id", reviewFileId)
+    .single();
+  expect(stagedReviewFile.error).toBeNull();
+  expect(stagedReviewFile.data?.visibility).toBe("client_visible");
   await runManagementStep({ card: managementCard, step: "send_to_client" });
   await expectBoardSaved(page);
   await assertDeliverable(seed.mainDeliverableId, {

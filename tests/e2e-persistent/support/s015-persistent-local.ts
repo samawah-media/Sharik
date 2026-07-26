@@ -457,6 +457,51 @@ export const seedPersistentVersionFiles = async ({
   );
 };
 
+export const seedPersistentClientReviewImage = async ({
+  client,
+  seed,
+  versionId,
+}: {
+  client: SupabaseClient;
+  seed: PersistentSeed;
+  versionId: string;
+}) => {
+  const fileId = crypto.randomUUID();
+  const storagePath = `${seed.tenantA}/${seed.clientA}/${seed.mainDeliverableId}/${versionId}/review.png`;
+  const png = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+    "base64",
+  );
+  expectNoError(
+    await client.storage
+      .from("deliverable-assets")
+      .upload(storagePath, png, { contentType: "image/png", upsert: true }),
+    "current-version review image storage seed",
+  );
+  expectNoError(
+    await client.from("file_assets").insert({
+      id: fileId,
+      tenant_id: seed.tenantA,
+      client_id: seed.clientA,
+      deliverable_id: seed.mainDeliverableId,
+      version_id: versionId,
+      owner_user_id: seed.actors.assignedWriter.id,
+      visibility: "internal_only",
+      bucket_id: "deliverable-assets",
+      storage_path: storagePath,
+      file_name: "review.png",
+      file_type: "image/png",
+      file_size: png.byteLength,
+      version_number: 2,
+      is_final: false,
+      upload_idempotency_key: `s015-review-image-${versionId}`,
+      upload_state: "ready",
+    }),
+    "current-version review image metadata seed",
+  );
+  return fileId;
+};
+
 const assertLocalStackReachable = async (supabaseUrl: string) => {
   const healthUrl = new URL("/auth/v1/health", supabaseUrl);
   const maxAttempts = 18;

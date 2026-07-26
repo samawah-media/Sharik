@@ -9,6 +9,7 @@ import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import {
   versionContentInputSchema,
   workspaceCommentInputSchema,
+  stageClientReviewFileInputSchema,
   deliverableTaskInputSchema,
   deleteTaskInputSchema,
   qualityCheckInputSchema,
@@ -156,6 +157,30 @@ export async function registerWorkspaceFile(
   });
   if (error) return { ok: false as const, reason: "denied" as const };
   revalidatePath(`/clients/${parsed.data.clientId}/deliverables/board`);
+  revalidatePath("/client/pending");
+  return { ok: true as const };
+}
+
+export async function stageWorkspaceFileForClientReview(
+  input: z.input<typeof stageClientReviewFileInputSchema>,
+) {
+  const parsed = stageClientReviewFileInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false as const, reason: "invalid_input" as const };
+  }
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("s015_stage_file_for_client_review", {
+    target_client_id: parsed.data.clientId,
+    target_deliverable_id: parsed.data.deliverableId,
+    target_version_id: parsed.data.versionId,
+    target_file_id: parsed.data.fileId,
+    request_id: crypto.randomUUID(),
+    audit_event_id: crypto.randomUUID(),
+    request_idempotency_key: parsed.data.idempotencyKey,
+  });
+  if (error) return { ok: false as const, reason: "denied" as const };
+  revalidatePath(`/clients/${parsed.data.clientId}/deliverables/board`);
+  revalidatePath("/work");
   revalidatePath("/client/pending");
   return { ok: true as const };
 }

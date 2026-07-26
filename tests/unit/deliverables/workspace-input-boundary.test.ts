@@ -7,6 +7,7 @@ import {
   deliverableTaskInputSchema,
   deleteTaskInputSchema,
   qualityCheckInputSchema,
+  stageClientReviewFileInputSchema,
 } from "@/modules/deliverables/workspace-inputs";
 
 describe("workspace input boundary", () => {
@@ -90,6 +91,27 @@ describe("workspace input boundary", () => {
         idempotencyKey: "task-delete-1",
       }).success,
     ).toBe(true);
+  });
+
+  it("binds client-review file staging to exact scoped identifiers", () => {
+    expect(
+      stageClientReviewFileInputSchema.safeParse({
+        clientId: crypto.randomUUID(),
+        deliverableId: crypto.randomUUID(),
+        versionId: crypto.randomUUID(),
+        fileId: crypto.randomUUID(),
+        idempotencyKey: "stage-review-file-1",
+      }).success,
+    ).toBe(true);
+    expect(
+      stageClientReviewFileInputSchema.safeParse({
+        clientId: crypto.randomUUID(),
+        deliverableId: crypto.randomUUID(),
+        versionId: "stale",
+        fileId: crypto.randomUUID(),
+        idempotencyKey: "stage-review-file-2",
+      }).success,
+    ).toBe(false);
   });
 
   it("validates quality check input with required fields", () => {

@@ -65,6 +65,7 @@ const { workspace } = vi.hoisted(() => {
         fileType: "image/png",
         fileSize: 1024,
         visibility: "internal_only",
+        versionId: "version_1",
         versionNumber: 1,
         isFinal: false,
         createdAt: "2026-07-02T00:00:00.000Z",
@@ -136,11 +137,40 @@ vi.mock("@/ui/deliverables/workspace-files", () => ({
   WorkspaceFileDownload: () => <div data-testid="stub-file-download" />,
   WorkspaceFilePreview: () => <div data-testid="stub-file-preview" />,
   WorkspaceFileUpload: () => <div data-testid="stub-file-upload" />,
+  WorkspaceInlineMedia: ({
+    fileId,
+    fit,
+  }: {
+    fileId: string;
+    fit?: string;
+  }) => <div data-fit={fit} data-testid={`stub-inline-media-${fileId}`} />,
+  WorkspaceFileClientReviewControl: ({
+    canStage,
+    file,
+    versionId,
+  }: {
+    canStage: boolean;
+    file: { id: string };
+    versionId: string;
+  }) => (
+    <div
+      data-can-stage={String(canStage)}
+      data-testid={`stub-client-review-file-${file.id}`}
+      data-version-id={versionId}
+    />
+  ),
 }));
 
 vi.mock("@/ui/management/deliverable-actions", () => ({
-  DeliverableApprovalWorkflowControl: () => (
-    <div data-testid="stub-approval-control" />
+  DeliverableApprovalWorkflowControl: ({
+    clientReviewReady,
+  }: {
+    clientReviewReady?: boolean;
+  }) => (
+    <div
+      data-client-review-ready={String(clientReviewReady)}
+      data-testid="stub-approval-control"
+    />
   ),
 }));
 
@@ -185,5 +215,59 @@ describe("universal deliverable drawer localization", () => {
     for (const token of rawEnumTokens) {
       expect(drawerText, `raw enum "${token}" leaked into drawer`).not.toContain(token);
     }
+  });
+
+  it("renders the exact current-version media and client-review readiness", async () => {
+    render(
+      <UniversalDeliverableDrawer
+        approvalAction={vi.fn()}
+        deliverable={deliverable}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "فتح مساحة المخرج" }));
+
+    const media = await screen.findByTestId("stub-inline-media-file_1");
+    expect(media).toHaveAttribute("data-fit", "contain");
+    expect(
+      screen.getByTestId("stub-client-review-file-file_1"),
+    ).toHaveAttribute("data-version-id", "version_1");
+    expect(
+      screen.getByTestId("stub-client-review-file-file_1"),
+    ).toHaveAttribute("data-can-stage", "true");
+    expect(screen.getByTestId("stub-approval-control")).toHaveAttribute(
+      "data-client-review-ready",
+      "true",
+    );
+  });
+
+  it("reports an image-only internal file as not ready until it is staged", async () => {
+    const imageOnlyWorkspace: DeliverableWorkspace = {
+      ...workspace,
+      versions: [
+        {
+          ...workspace.versions[0],
+          body: undefined,
+          caption: undefined,
+        },
+      ],
+      files: [{ ...workspace.files[0], visibility: "internal_only" }],
+    };
+    render(
+      <UniversalDeliverableDrawer
+        approvalAction={vi.fn()}
+        deliverable={deliverable}
+        workspace={imageOnlyWorkspace}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "فتح مساحة المخرج" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("stub-approval-control")).toHaveAttribute(
+        "data-client-review-ready",
+        "false",
+      );
+    });
   });
 });

@@ -1,7 +1,8 @@
 "use client";
 
-import { FileText, Image as ImageIcon, X } from "lucide-react";
+import { FileText, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { hasClientReviewPayload } from "@/modules/approvals/client-review-readiness";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type {
   DeliverableTaskWorkspace,
@@ -31,8 +32,10 @@ import {
 } from "./workspace-forms";
 import {
   WorkspaceFileDownload,
+  WorkspaceFileClientReviewControl,
   WorkspaceFilePreview,
   WorkspaceFileUpload,
+  WorkspaceInlineMedia,
 } from "./workspace-files";
 import { DeliverableApprovalWorkflowControl } from "@/ui/management/deliverable-actions";
 
@@ -227,6 +230,21 @@ export function UniversalDeliverableDrawer({
     workspace?.versions.find(
       (version) => version.id === workspace.currentVersionId,
     ) ?? workspace?.versions[0];
+  const currentVersionFiles =
+    currentVersion && workspace
+      ? workspace.files.filter((file) => file.versionId === currentVersion.id)
+      : [];
+  const currentVersionMedia = currentVersionFiles.find(
+    (file) =>
+      file.fileSize > 0 &&
+      (file.fileType.startsWith("image/") ||
+        file.fileType.startsWith("video/")),
+  );
+  const clientReviewReady = hasClientReviewPayload({
+    caption: currentVersion?.caption,
+    body: currentVersion?.body,
+    files: currentVersionFiles,
+  });
 
   return (
     <>
@@ -356,18 +374,23 @@ export function UniversalDeliverableDrawer({
                     </div>
                     {currentVersion ? (
                       <div className="grid gap-4 rounded-xl border border-border bg-background p-4">
-                        <div className="grid min-h-36 place-items-center rounded-lg border border-dashed border-border bg-surface text-center text-muted">
-                          {workspace?.files.some((file) =>
-                            file.fileType.startsWith("image/"),
-                          ) ? (
-                            <ImageIcon aria-hidden="true" size={32} />
-                          ) : (
+                        {currentVersionMedia ? (
+                          <div className="overflow-hidden rounded-lg border border-border bg-surface">
+                            <WorkspaceInlineMedia
+                              fileId={currentVersionMedia.id}
+                              fileType={currentVersionMedia.fileType}
+                              fit="contain"
+                              label={currentVersionMedia.name}
+                            />
+                          </div>
+                        ) : (
+                          <div className="grid min-h-36 place-items-center rounded-lg border border-dashed border-border bg-surface text-center text-muted">
                             <FileText aria-hidden="true" size={32} />
-                          )}
-                          <p className="text-sm">
-                            معاينة {currentVersion.format ?? deliverable.type}
-                          </p>
-                        </div>
+                            <p className="text-sm">
+                              لا يوجد أصل مرئي في النسخة الحالية
+                            </p>
+                          </div>
+                        )}
                         {currentVersion.brief ? (
                           <div>
                             <p className="text-xs font-semibold text-muted">
@@ -447,6 +470,7 @@ export function UniversalDeliverableDrawer({
                     />
                     <DeliverableApprovalWorkflowControl
                       action={approvalAction}
+                      clientReviewReady={clientReviewReady}
                       deliverable={deliverable}
                     />
                   </section>
@@ -508,10 +532,23 @@ export function UniversalDeliverableDrawer({
                                 {file.name}
                               </span>
                               <span className="shrink-0 text-xs text-muted">
-                                {fileVisibilityLabel(file.visibility)}
+                                {file.visibility === "client_visible" &&
+                                deliverable.status ===
+                                  "internally_approved"
+                                  ? "جاهز للإرسال للعميل"
+                                  : fileVisibilityLabel(file.visibility)}
                               </span>
                               <WorkspaceFileDownload fileId={file.id} />
                             </div>
+                            {workspace.currentVersionId ? (
+                              <WorkspaceFileClientReviewControl
+                                canStage={Boolean(approvalAction)}
+                                deliverable={deliverable}
+                                file={file}
+                                onMutated={handleMutated}
+                                versionId={workspace.currentVersionId}
+                              />
+                            ) : null}
                             <WorkspaceFilePreview
                               fileId={file.id}
                               fileType={file.fileType}

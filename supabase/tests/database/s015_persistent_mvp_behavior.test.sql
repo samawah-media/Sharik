@@ -2578,5 +2578,241 @@ select is(
 );
 reset role;
 
+-- X009-D: an image-only current version can be explicitly staged by
+-- management, stays hidden from the client before send, and then becomes the
+-- exact client-review payload.
+set local role service_role;
+insert into public.deliverables (
+  id, tenant_id, client_id, name, type, status, progress_percentage,
+  idempotency_key, requires_internal_approval, requires_client_approval
+) values (
+  '21000000-0000-4000-8000-000000009501',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  'Image-only client review item',
+  'post',
+  'internally_approved',
+  70,
+  's015-image-only-client-review',
+  true,
+  true
+);
+insert into public.deliverable_versions (
+  id, tenant_id, client_id, deliverable_id, version_number, status
+) values
+(
+  '21000000-0000-4000-8000-000000009502',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000009501',
+  1,
+  'internally_approved'
+),
+(
+  '21000000-0000-4000-8000-000000009503',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000009501',
+  2,
+  'internally_approved'
+);
+update public.deliverables
+set current_version_id = '21000000-0000-4000-8000-000000009502'
+where id = '21000000-0000-4000-8000-000000009501';
+insert into public.file_assets (
+  id, tenant_id, client_id, deliverable_id, version_id, owner_user_id,
+  visibility, bucket_id, storage_path, file_name, file_type, file_size,
+  version_number, is_final, upload_idempotency_key, upload_state
+) values
+(
+  '21000000-0000-4000-8000-000000009504',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000009501',
+  '21000000-0000-4000-8000-000000009502',
+  '21000000-0000-4000-8000-000000000203',
+  'internal_only',
+  'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000009501/21000000-0000-4000-8000-000000009502/current.png',
+  'current.png',
+  'image/png',
+  2048,
+  1,
+  false,
+  's015-image-only-current-file',
+  'ready'
+),
+(
+  '21000000-0000-4000-8000-000000009505',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000009501',
+  '21000000-0000-4000-8000-000000009503',
+  '21000000-0000-4000-8000-000000000203',
+  'internal_only',
+  'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000009501/21000000-0000-4000-8000-000000009503/stale.png',
+  'stale.png',
+  'image/png',
+  1024,
+  2,
+  false,
+  's015-image-only-stale-file',
+  'ready'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000201', true);
+select throws_ok(
+  $$select public.s015_stage_file_for_client_review(
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000009501',
+    '21000000-0000-4000-8000-000000009502',
+    '21000000-0000-4000-8000-000000009504',
+    gen_random_uuid(), gen_random_uuid(), 's015-stage-file-account-manager'
+  )$$,
+  '42501',
+  'client-review file staging denied',
+  'account manager cannot stage a file for client review'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000206', true);
+select throws_ok(
+  $$select public.s015_stage_file_for_client_review(
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000009501',
+    '21000000-0000-4000-8000-000000009502',
+    '21000000-0000-4000-8000-000000009504',
+    gen_random_uuid(), gen_random_uuid(), 's015-stage-file-client-approver'
+  )$$,
+  '42501',
+  'client-review file staging denied',
+  'client approver cannot stage an internal file'
+);
+select is(
+  (select count(*)::integer
+   from public.file_assets
+   where id = '21000000-0000-4000-8000-000000009504'),
+  0,
+  'client approver cannot read the internal file before staging'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select throws_ok(
+  $$select public.s015_stage_file_for_client_review(
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000009501',
+    '21000000-0000-4000-8000-000000009503',
+    '21000000-0000-4000-8000-000000009505',
+    gen_random_uuid(), gen_random_uuid(), 's015-stage-stale-file'
+  )$$,
+  '42501',
+  'stale or cross-scope client-review file',
+  'management cannot stage a stale-version file'
+);
+select is(
+  public.s015_stage_file_for_client_review(
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000009501',
+    '21000000-0000-4000-8000-000000009502',
+    '21000000-0000-4000-8000-000000009504',
+    '21000000-0000-4000-8000-000000009506',
+    '21000000-0000-4000-8000-000000009507',
+    's015-stage-current-image'
+  ),
+  '21000000-0000-4000-8000-000000009504'::uuid,
+  'management stages the exact current-version image'
+);
+select is(
+  (select visibility from public.file_assets
+   where id = '21000000-0000-4000-8000-000000009504'),
+  'client_visible',
+  'staged file metadata is client-ready'
+);
+select is(
+  (select count(*)::integer from public.audit_events
+   where id = '21000000-0000-4000-8000-000000009507'
+     and action = 'FileAssetStagedForClientReview'
+     and target_id = '21000000-0000-4000-8000-000000009504'),
+  1,
+  'file staging creates one exact audit event'
+);
+select is(
+  (select count(*)::integer from public.mvp_command_requests
+   where idempotency_key = 's015-stage-current-image'
+     and command_name = 'stage_file_for_client_review'),
+  1,
+  'file staging creates one idempotency record'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000206', true);
+select is(
+  (select count(*)::integer
+   from public.file_assets
+   where id = '21000000-0000-4000-8000-000000009504'),
+  0,
+  'staged file remains unreadable to the client before explicit send'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select results_eq(
+  $$select deliverable_status
+    from public.s015_execute_internal_workflow(
+      '21000000-0000-4000-8000-000000000301',
+      '21000000-0000-4000-8000-000000009501',
+      '21000000-0000-4000-8000-000000009502',
+      'send_to_client',
+      null,
+      null,
+      '21000000-0000-4000-8000-000000009508',
+      '21000000-0000-4000-8000-000000009509',
+      's015-send-image-only-current-version'
+    )$$,
+  $$values ('waiting_client_approval'::text)$$,
+  'an image-only staged version can be sent to the client'
+);
+select is(
+  public.s015_stage_file_for_client_review(
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000009501',
+    '21000000-0000-4000-8000-000000009502',
+    '21000000-0000-4000-8000-000000009504',
+    gen_random_uuid(),
+    gen_random_uuid(),
+    's015-stage-current-image'
+  ),
+  '21000000-0000-4000-8000-000000009504'::uuid,
+  'file staging replays after send without duplicating mutation'
+);
+select is(
+  (select count(*)::integer from public.audit_events
+   where action = 'FileAssetStagedForClientReview'
+     and target_id = '21000000-0000-4000-8000-000000009504'),
+  1,
+  'staging replay does not duplicate audit evidence'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000206', true);
+select is(
+  (select count(*)::integer
+   from public.file_assets
+   where id = '21000000-0000-4000-8000-000000009504'
+     and visibility = 'client_visible'),
+  1,
+  'client approver reads the staged file only after explicit send'
+);
+reset role;
+
 select * from finish();
 rollback;

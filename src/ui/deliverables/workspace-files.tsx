@@ -8,11 +8,13 @@ import "@uppy/dashboard/css/style.min.css";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
+import type { DeliverableFileWorkspace } from "@/modules/deliverables/deliverable-workspace";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
   createWorkspaceFileDownload,
   createWorkspaceFilePreview,
   registerWorkspaceFile,
+  stageWorkspaceFileForClientReview,
 } from "@/server/actions/deliverable-workspace-actions";
 import { Button } from "@/ui/core/button";
 
@@ -139,6 +141,17 @@ export function WorkspaceFileUpload({
   const [feedback, setFeedback] = useState<string>();
   const [visibility, setVisibility] = useState<"internal_only" | "client_visible" | "final_delivery">("internal_only");
   const visibilityRef = useRef(visibility);
+  const canUploadClientVisible = [
+    "waiting_client_approval",
+    "client_approved",
+    "ready_for_delivery",
+    "delivered",
+  ].includes(deliverable.status);
+  const canUploadFinal = [
+    "client_approved",
+    "ready_for_delivery",
+    "delivered",
+  ].includes(deliverable.status);
 
   useEffect(() => {
     visibilityRef.current = visibility;
@@ -226,9 +239,92 @@ export function WorkspaceFileUpload({
   if (!currentVersionId) return <p className="text-sm text-muted">احفظ نسخة أولًا لرفع ملفات مرتبطة بها.</p>;
   return (
     <div className="grid gap-3 rounded-xl border border-border bg-background p-4">
-      {canPublishClientFile ? <label className="grid gap-1 text-sm font-semibold">رؤية الملف<select className="min-h-11 rounded-lg border border-border bg-surface px-3" onChange={(event) => setVisibility(event.target.value as typeof visibility)} value={visibility}><option value="internal_only">داخلي — الافتراضي</option><option value="client_visible">ظاهر للعميل</option><option value="final_delivery">تسليم نهائي</option></select></label> : null}
+      {canPublishClientFile ? (
+        <label className="grid gap-1 text-sm font-semibold">
+          استخدام الملف
+          <select
+            className="min-h-11 rounded-lg border border-border bg-surface px-3"
+            onChange={(event) =>
+              setVisibility(event.target.value as typeof visibility)
+            }
+            value={visibility}
+          >
+            <option value="internal_only">داخلي — الافتراضي</option>
+            {canUploadClientVisible ? (
+              <option value="client_visible">إضافة إلى مراجعة العميل الحالية</option>
+            ) : null}
+            {canUploadFinal ? (
+              <option value="final_delivery">تسليم نهائي</option>
+            ) : null}
+          </select>
+          {!canUploadClientVisible ? (
+            <span className="text-xs font-normal leading-5 text-muted">
+              ارفع الملف داخليًا، ثم اعتمده وجهّزه للعميل من قائمة الملفات.
+            </span>
+          ) : null}
+        </label>
+      ) : null}
       {uppy ? <Dashboard height={300} proudlyDisplayPoweredByUppy={false} uppy={uppy} width="100%" /> : <p className="text-sm text-muted">جارٍ تجهيز الرفع الآمن…</p>}
       {feedback ? <p aria-live="polite" className="text-sm text-muted">{feedback}</p> : null}
+    </div>
+  );
+}
+
+export function WorkspaceFileClientReviewControl({
+  canStage,
+  deliverable,
+  file,
+  onMutated,
+  versionId,
+}: {
+  canStage: boolean;
+  deliverable: DeliverableSafeSummary;
+  file: DeliverableFileWorkspace;
+  onMutated: () => void;
+  versionId: string;
+}) {
+  const [pending, setPending] = useState(false);
+  const [feedback, setFeedback] = useState<string>();
+  const eligible =
+    canStage &&
+    deliverable.status === "internally_approved" &&
+    deliverable.requiresClientApproval &&
+    file.versionId === versionId &&
+    file.visibility === "internal_only" &&
+    file.fileSize > 0 &&
+    !file.isFinal;
+
+  if (!eligible) return null;
+
+  const stage = async () => {
+    setPending(true);
+    setFeedback(undefined);
+    const result = await stageWorkspaceFileForClientReview({
+      clientId: deliverable.clientId,
+      deliverableId: deliverable.id,
+      versionId,
+      fileId: file.id,
+      idempotencyKey: `s015-stage-review-${deliverable.id}-${versionId}-${file.id}`,
+    });
+    setPending(false);
+    if (!result.ok) {
+      setFeedback("تعذر تجهيز الملف للعميل. راجع النسخة الحالية والصلاحية.");
+      return;
+    }
+    setFeedback("الملف جاهز للإرسال للعميل، لكنه ما زال مخفيًا حتى تضغط «إرسال للعميل».");
+    onMutated();
+  };
+
+  return (
+    <div className="grid gap-1">
+      <Button disabled={pending} onClick={stage} size="sm" type="button">
+        {pending ? "جارٍ التجهيز…" : "تجهيز للعميل"}
+      </Button>
+      {feedback ? (
+        <p aria-live="polite" className="text-xs leading-5 text-muted">
+          {feedback}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -282,10 +378,12 @@ export function WorkspaceFilePreview({
 export function WorkspaceInlineMedia({
   fileId,
   fileType,
+  fit = "cover",
   label,
 }: {
   fileId: string;
   fileType: string;
+  fit?: "cover" | "contain";
   label: string;
 }) {
   const [url, setUrl] = useState<string>();
@@ -322,13 +420,25 @@ export function WorkspaceInlineMedia({
     return (
       // Signed object URLs are short-lived and cannot use the image optimizer.
       // eslint-disable-next-line @next/next/no-img-element
-      <img alt={label} className="h-full min-h-36 w-full object-cover" src={url} />
+      <img
+        alt={label}
+        className={
+          fit === "contain"
+            ? "max-h-[32rem] min-h-56 w-full bg-background object-contain"
+            : "h-full min-h-36 w-full object-cover"
+        }
+        src={url}
+      />
     );
   }
   return (
     <video
       aria-label={label}
-      className="h-full min-h-36 w-full object-cover"
+      className={
+        fit === "contain"
+          ? "max-h-[32rem] min-h-56 w-full bg-background object-contain"
+          : "h-full min-h-36 w-full object-cover"
+      }
       controls
       preload="metadata"
       src={url}

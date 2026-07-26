@@ -122,6 +122,15 @@ Independent review fixed S015-P1-094, corrective exact-head CI run `29852802208`
   - [x] X009-C-6 Pass the local verification matrix and exact-head CI: F-001 Quality run `29901885473` passed on `dc013684f51438467c7adb1dd212d9efaa510248`, including lint, typecheck, unit, integration, clean Supabase reset, RLS/pgTAP, component, fixture E2E, persistent E2E, secret scan, and build; Vercel Preview passed.
   - [x] X009-C-7 Close S015-P1-097: exact code-head F-001 run `29907779138` passed clean PostgreSQL/pgTAP 476 and persistent browser 16/16; migration `202607220001` was the only pending migration and was applied to healthy non-Production `sharik-uat`; the owner's exact partial attempt was completed forward with one audited deliverable/reservation/ledger entry; protected Preview sign-in, repaired data visibility, wizard hydration, and five eligible team members passed; hosted invalid-assignment rollback left zero rows.
 
+## Owner trial client-ready media correction X009-D — same Spec 015
+
+- [ ] X009-D Close the image-only client-review deadlock discovered during the owner walkthrough without weakening exact-version, visibility, RLS, or audit boundaries.
+  - [ ] X009-D-1 Render the real current-version image/video in the unified deliverable drawer and retain a clear fallback only when no previewable current-version media exists.
+  - [ ] X009-D-2 Add one management-only, audited, idempotent command to stage an existing ready internal current-version file for client review while keeping it unreadable to client personas until the explicit send-to-client transition.
+  - [ ] X009-D-3 Make file visibility copy and the send-to-client readiness state explicit; do not label staged media as already visible before the deliverable is sent.
+  - [ ] X009-D-4 Prove exact-version scope, tenant/client isolation, unauthorized-role denial, pre-send client secrecy, replay safety, audit evidence, and successful image-only send with pgTAP and component/browser regressions.
+  - [ ] X009-D-5 Pass the complete local and exact-head CI quality matrix, apply only the additive migration to approved non-Production `sharik-uat`, and verify the corrected owner route on the official protected Preview. Production remains untouched.
+
 
 ## Correction note: task assignment authority (2026-07-15)
 

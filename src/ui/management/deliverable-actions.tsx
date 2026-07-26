@@ -131,9 +131,11 @@ export function DeliverableCancellationControl({
 export function DeliverableApprovalWorkflowControl({
   deliverable,
   action,
+  clientReviewReady = true,
 }: {
   deliverable: DeliverableSafeSummary;
   action?: ManagementDeliverableAction;
+  clientReviewReady?: boolean;
 }) {
   if (!action) {
     return null;
@@ -153,64 +155,83 @@ export function DeliverableApprovalWorkflowControl({
     >
       <p className="text-sm font-semibold">مسار الاعتماد</p>
       <div className="grid gap-2">
-        {workflows.map((workflow) => (
-          <form
-            action={action}
-            aria-label={`${workflow.label} ${deliverable.name}`}
-            className="grid gap-2"
-            key={workflow.step}
-          >
-            <input name="clientId" type="hidden" value={deliverable.clientId} />
-            <input
-              name="deliverableId"
-              type="hidden"
-              value={deliverable.id}
-            />
-            <input name="workflowStep" type="hidden" value={workflow.step} />
-            {deliverable.currentVersionId ? (
+        {workflows.map((workflow) => {
+          const reviewPayloadMissing =
+            workflow.step === "send_to_client" && !clientReviewReady;
+          return (
+            <form
+              action={action}
+              aria-label={`${workflow.label} ${deliverable.name}`}
+              className="grid gap-2"
+              key={workflow.step}
+            >
               <input
-                name="versionId"
+                name="clientId"
                 type="hidden"
-                value={deliverable.currentVersionId}
+                value={deliverable.clientId}
               />
-            ) : null}
-            <input
-              name="toStatus"
-              type="hidden"
-              value={r007WorkflowStepTargets[workflow.step]}
-            />
-            <input
-              name="expectedRevision"
-              type="hidden"
-              value={deliverable.revision}
-            />
-            <input
-              name="idempotencyKey"
-              type="hidden"
-              value={`r007-${workflow.step}-${deliverable.id}-${deliverable.revision}`}
-            />
-            {workflow.reasonRequired ? (
-              <label className="grid gap-1 text-xs font-semibold">
-                {workflow.reasonLabel}
-                <textarea
-                  className="min-h-16 rounded-md border border-border bg-surface px-2 py-1 text-sm"
-                  maxLength={500}
-                  name="reason"
-                  required
+              <input
+                name="deliverableId"
+                type="hidden"
+                value={deliverable.id}
+              />
+              <input name="workflowStep" type="hidden" value={workflow.step} />
+              {deliverable.currentVersionId ? (
+                <input
+                  name="versionId"
+                  type="hidden"
+                  value={deliverable.currentVersionId}
                 />
-              </label>
-            ) : (
+              ) : null}
               <input
-                name="reason"
+                name="toStatus"
                 type="hidden"
-                value={workflow.defaultReason}
+                value={r007WorkflowStepTargets[workflow.step]}
               />
-            )}
-            <Button size="sm" type="submit" variant={workflow.variant}>
-              {workflow.label}
-            </Button>
-          </form>
-        ))}
+              <input
+                name="expectedRevision"
+                type="hidden"
+                value={deliverable.revision}
+              />
+              <input
+                name="idempotencyKey"
+                type="hidden"
+                value={`r007-${workflow.step}-${deliverable.id}-${deliverable.revision}`}
+              />
+              {workflow.reasonRequired ? (
+                <label className="grid gap-1 text-xs font-semibold">
+                  {workflow.reasonLabel}
+                  <textarea
+                    className="min-h-16 rounded-md border border-border bg-surface px-2 py-1 text-sm"
+                    maxLength={500}
+                    name="reason"
+                    required
+                  />
+                </label>
+              ) : (
+                <input
+                  name="reason"
+                  type="hidden"
+                  value={workflow.defaultReason}
+                />
+              )}
+              {reviewPayloadMissing ? (
+                <p className="text-xs leading-5 text-warning">
+                  أضف نصًا فعليًا أو جهّز ملف النسخة الحالية للعميل قبل
+                  الإرسال.
+                </p>
+              ) : null}
+              <Button
+                disabled={reviewPayloadMissing}
+                size="sm"
+                type="submit"
+                variant={workflow.variant}
+              >
+                {workflow.label}
+              </Button>
+            </form>
+          );
+        })}
       </div>
     </div>
   );

@@ -27,6 +27,14 @@ export const workspaceCommentInputSchema = z.object({
   idempotencyKey: z.string().min(8).max(200),
 });
 
+export const stageClientReviewFileInputSchema = z.object({
+  clientId: z.string().uuid(),
+  deliverableId: z.string().uuid(),
+  versionId: z.string().uuid(),
+  fileId: z.string().uuid(),
+  idempotencyKey: z.string().min(8).max(200),
+});
+
 export const taskStatusSchema = z.enum(["todo", "in_progress", "done", "cancelled"]);
 export const taskPrioritySchema = z.enum(["low", "normal", "high", "urgent"]);
 

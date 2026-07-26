@@ -2812,6 +2812,62 @@ select is(
   1,
   'client approver reads the staged file only after explicit send'
 );
+select results_eq(
+  $$select deliverable_status
+    from public.s015_client_decide_version(
+      '21000000-0000-4000-8000-000000000301',
+      '21000000-0000-4000-8000-000000009501',
+      '21000000-0000-4000-8000-000000009502',
+      'approved',
+      'image approved',
+      gen_random_uuid(),
+      gen_random_uuid(),
+      's015-client-approve-image-only'
+    )$$,
+  $$values ('client_approved'::text)$$,
+  'client approver approves the exact image-only version'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select results_eq(
+  $$select deliverable_status
+    from public.s015_execute_internal_workflow(
+      '21000000-0000-4000-8000-000000000301',
+      '21000000-0000-4000-8000-000000009501',
+      '21000000-0000-4000-8000-000000009502',
+      'deliver',
+      null,
+      'image-only final delivery',
+      gen_random_uuid(),
+      gen_random_uuid(),
+      's015-deliver-image-only'
+    )$$,
+  $$values ('delivered'::text)$$,
+  'management delivers the approved image-only version'
+);
+select is(
+  (select visibility
+   from public.file_assets
+   where id = '21000000-0000-4000-8000-000000009504'),
+  'final_delivery',
+  'delivery promotes the staged current-version file to final delivery'
+);
+select ok(
+  (select is_final
+   from public.file_assets
+   where id = '21000000-0000-4000-8000-000000009504'),
+  'delivery marks the promoted current-version file as final'
+);
+select is(
+  (select count(*)::integer
+   from public.audit_events
+   where action = 'FileAssetPromotedToFinalDelivery'
+     and target_id = '21000000-0000-4000-8000-000000009504'),
+  1,
+  'file promotion records one audit event'
+);
 reset role;
 
 select * from finish();

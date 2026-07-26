@@ -1014,10 +1014,23 @@ export const createPersistentActorClient = async ({
 
 export const signInViaUi = async (page: Page, actor: PersistentActor) => {
   await page.context().clearCookies();
-  await page.goto("/sign-in", { waitUntil: "domcontentloaded" });
   const form = page.locator("form").filter({
     has: page.locator('input[name="email"]'),
   });
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    await page.goto(attempt === 0 ? "/sign-in" : "/sign-in?retry=1", {
+      waitUntil: "domcontentloaded",
+    });
+    try {
+      await form.locator('input[name="email"]').waitFor({
+        state: "visible",
+        timeout: 15_000,
+      });
+      break;
+    } catch (error) {
+      if (attempt === 1) throw error;
+    }
+  }
   await form.locator('input[name="email"]').fill(actor.email);
   await form.locator('input[name="password"]').fill(actor.password);
   await form.locator('button[type="submit"]').click();

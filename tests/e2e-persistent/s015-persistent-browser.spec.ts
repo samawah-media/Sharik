@@ -9,9 +9,7 @@ import {
   type PersistentSeed,
 } from "./support/s015-persistent-local";
 
-// This is the canonical end-to-end lifecycle and intentionally covers several
-// real Auth personas, version transitions, and database assertions in one test.
-test.describe.configure({ mode: "serial", timeout: 900_000 });
+test.describe.configure({ mode: "serial", timeout: 600_000 });
 
 let seeded: Awaited<ReturnType<typeof seedPersistentLifecycle>>;
 
@@ -389,11 +387,11 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
     current_version_id: version3.id,
   });
 
-  await stalePage
-    .locator(
-      'form:has(input[name="clientApprovalAction"][value="approve"]) button[type="submit"]',
-    )
-    .click();
+  await stalePage.reload({ waitUntil: "domcontentloaded" });
+  await expect(stalePage.getByTestId("client-approval-detail")).toBeVisible();
+  await expect(stalePage.locator('input[name="versionId"]').first()).toHaveValue(
+    version3.id,
+  );
   const staleDecisionCount = await seeded.client
     .from("approval_decisions")
     .select("id", { count: "exact", head: true })

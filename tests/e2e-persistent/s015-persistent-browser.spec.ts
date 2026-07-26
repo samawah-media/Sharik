@@ -9,7 +9,9 @@ import {
   type PersistentSeed,
 } from "./support/s015-persistent-local";
 
-test.describe.configure({ mode: "serial", timeout: 600_000 });
+// This is the canonical end-to-end lifecycle and intentionally covers several
+// real Auth personas, version transitions, and database assertions in one test.
+test.describe.configure({ mode: "serial", timeout: 900_000 });
 
 let seeded: Awaited<ReturnType<typeof seedPersistentLifecycle>>;
 

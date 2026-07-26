@@ -1,10 +1,12 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 import {
   ClientDeniedState,
   ClientEmptyState,
   ClientForm,
 } from "@/ui/management/client-form";
+
+afterEach(cleanup);
 
 describe("client form and states", () => {
   it("renders Arabic RTL-ready create fields", () => {

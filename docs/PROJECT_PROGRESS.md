@@ -1,5 +1,15 @@
 # Project Progress
 
+## Spec 015 X009-D owner image-only lifecycle closed — 2026-07-26
+
+Status: `X009_D_GREEN_OWNER_CORE_LIFECYCLE_COMPLETE`.
+
+The owner-created image-only deliverable completed the full non-Production journey on the correct protected `samawahs-projects/shrik` Preview: real current-version media, explicit exact-file staging, pre-send client secrecy, management send, client approver/viewer role separation, exact-version approval, final delivery, final-file preview/download, and an empty approval inbox. Internal comments remained hidden.
+
+S015-P1-099 is fixed. Additive migrations `202607260001` and `202607260002` match healthy `sharik-uat`; delivery now atomically promotes the staged current-version file to `final_delivery` with `is_final=true` and an audit event. Exact-head F-001 run `30214571221` passed the complete matrix on `fbee205`, including unit 263 and pgTAP 494.
+
+X009-D is closed. The broader onboarding/navigation usability item S015-P2-098 remains explicitly open for simplification, and formal team invitation still requires the owner's direct human PASS under S015-P1-063/X008-H. No Production deployment, merge, public signup, external-client invitation, or Production acceptance occurred.
+
 ## Spec 015 X009-C guided first-client onboarding — 2026-07-22
 
 Status: `X009_C_GREEN_OWNER_CAN_CREATE_FIRST_CLIENT`.

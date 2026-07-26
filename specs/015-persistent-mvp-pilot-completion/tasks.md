@@ -124,12 +124,12 @@ Independent review fixed S015-P1-094, corrective exact-head CI run `29852802208`
 
 ## Owner trial client-ready media correction X009-D — same Spec 015
 
-- [ ] X009-D Close the image-only client-review deadlock discovered during the owner walkthrough without weakening exact-version, visibility, RLS, or audit boundaries.
-  - [ ] X009-D-1 Render the real current-version image/video in the unified deliverable drawer and retain a clear fallback only when no previewable current-version media exists.
-  - [ ] X009-D-2 Add one management-only, audited, idempotent command to stage an existing ready internal current-version file for client review while keeping it unreadable to client personas until the explicit send-to-client transition.
-  - [ ] X009-D-3 Make file visibility copy and the send-to-client readiness state explicit; do not label staged media as already visible before the deliverable is sent.
-  - [ ] X009-D-4 Prove exact-version scope, tenant/client isolation, unauthorized-role denial, pre-send client secrecy, replay safety, audit evidence, and successful image-only send with pgTAP and component/browser regressions.
-  - [ ] X009-D-5 Pass the complete local and exact-head CI quality matrix, apply only the additive migration to approved non-Production `sharik-uat`, and verify the corrected owner route on the official protected Preview. Production remains untouched.
+- [x] X009-D Close the image-only client-review deadlock discovered during the owner walkthrough without weakening exact-version, visibility, RLS, or audit boundaries.
+  - [x] X009-D-1 Render the real current-version image/video in the unified deliverable drawer and retain a clear fallback only when no previewable current-version media exists.
+  - [x] X009-D-2 Add one management-only, audited, idempotent command to stage an existing ready internal current-version file for client review while keeping it unreadable to client personas until the explicit send-to-client transition.
+  - [x] X009-D-3 Make file visibility copy and the send-to-client readiness state explicit; do not label staged media as already visible before the deliverable is sent.
+  - [x] X009-D-4 Prove exact-version scope, tenant/client isolation, unauthorized-role denial, pre-send client secrecy, replay safety, audit evidence, successful image-only send, and atomic promotion to final delivery with pgTAP and component/browser regressions.
+  - [x] X009-D-5 Exact-head F-001 run `30214571221` passed the complete matrix on `fbee205`; additive migrations `202607260001` and `202607260002` match approved non-Production `sharik-uat`; the official protected Preview proved real 1600x1600 media, pre-send client secrecy, approver/viewer role separation, exact-version approval, delivery, final-file preview/download, and empty post-decision inbox. Production remains untouched.
 
 
 ## Correction note: task assignment authority (2026-07-15)

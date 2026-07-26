@@ -1,5 +1,14 @@
 # Spec 015 execution log
 
+## 2026-07-26 — X009-D image-only owner lifecycle closure
+
+- Corrected the image-only deadlock with a real signed current-version preview and an exact-file management staging RPC that is audited, idempotent, tenant/client/version scoped, and client-secret until explicit send.
+- Added a guarded UAT-only client-persona scoping tool with dry-run/apply/status/rollback, deterministic run IDs, category/count-only output, audit, compensation, hostname allowlist, and Production refusal. Apply/replay/status produced exactly two active tenant memberships, two client memberships, and two client-scoped roles.
+- Completed the hosted owner lifecycle on the correct protected Preview: 1600x1600 media rendered; pre-send client access was zero; approver had approve/change controls; viewer had none; neither client persona saw internal notes; exact-version approval succeeded; management delivered; the approval inbox became empty; and `/client/files` exposed one final-delivery file with preview/download.
+- Added migration `202607260002_s015_finalize_delivered_review_files.sql` so staged current-version review files become `final_delivery` and `is_final=true` atomically on delivery, with append-only audit evidence and a bounded existing-delivery backfill.
+- Local verification passed: clean Supabase reset, pgTAP 8 files / 494 tests, lint, typecheck, unit 59 files / 263 tests, secret scan, and diff check. Exact-head F-001 run `30214571221` passed the full CI matrix on `fbee205bf9dddb0ebd9594127729f63c94de2efd`.
+- UAT migration inventory matches through `202607260002`; exact Vercel deployment `dpl_7sqY7k4FM79JDUSrbA57kUvFjR9p` is Ready under `samawahs-projects/shrik`. S015-P1-099 and X009-D are closed. S015-P2-098 remains open with owner disposition; Production and merge remain untouched.
+
 ## 2026-07-22 — X009-C owner-submit corrective slice
 
 - Reproduced S015-P1-097 from the owner's protected-Preview attempt and verified read-only that client, contract, and package persisted while no deliverable was created.

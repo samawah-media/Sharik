@@ -47,16 +47,16 @@ Open observations from the owner's first-client onboarding walkthrough. These no
    - The standalone package form allows decimal quantities and the walkthrough produced a decimal balance for a "منشور" unit.
    - Desired direction: explain that the entered value is the total contracted quantity, display remaining quantity separately, and review whether count-based units should accept whole numbers only.
 
-9. **Image-only client review is blocked**
+9. **Image-only client review was blocked — resolved**
    - The actual uploaded image is available in the files section, but the drawer's primary current-version area shows only an icon placeholder.
    - After internal approval the file remains internal, and there is no explicit action to select and stage it for client review.
    - Technical review found a circular guard: registering a client-visible file requires a sent version, while sending an image-only version requires an already client-visible file.
-   - Registered as `S015-P1-099`; X009-D must preserve client secrecy until the explicit send transition.
+   - Resolved under `S015-P1-099` / X009-D: the real image renders, management explicitly stages it, client secrecy holds until send, approver/viewer boundaries pass, and delivery promotes it to a final file.
 
 ## Current disposition
 
 - Keep the owner walkthrough active so more usability findings can be collected in one pass.
-- Do not invite the wider team based on this walkthrough alone.
+- X009-D no longer blocks the owner walkthrough. Do not invite the wider team until the owner explicitly accepts the remaining onboarding/navigation usability disposition in `S015-P2-098`.
 - Triage and implement the onboarding simplification as one bounded Spec 015 correction after the owner completes the core management journey.
 
 ## Next walkthrough checkpoint

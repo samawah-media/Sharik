@@ -1,6 +1,18 @@
 # Spec 015 gate status
 
-## Authoritative current decision — 2026-07-22
+## Authoritative current decision — 2026-07-26
+
+`X009_D_GREEN_OWNER_CORE_LIFECYCLE_COMPLETE`. The owner's image-only deliverable completed the full protected Preview/UAT journey: management rendered the real 1600x1600 current-version image, staged the exact file through an audited idempotent command, proved both client personas could not read it before send, sent it to the client, verified approver/viewer role separation and internal-data secrecy, recorded exact-version client approval, delivered it, and verified the client final-files route exposes one `final_delivery` file with preview/download while the approval inbox is empty. Client UAT personas were attached only to the owner-created client through a guarded run-ID-scoped UAT tool with dry-run, idempotent replay, status, rollback, audit, target-category, hostname, and Production refusal controls.
+
+- Exact code head `fbee205bf9dddb0ebd9594127729f63c94de2efd` passed F-001 run `30214571221`: install, lint, typecheck, unit 263, integration, clean Supabase reset, RLS simulator, pgTAP 494, component, fixture E2E, persistent E2E, secret scan, and build.
+- Vercel deployment `dpl_7sqY7k4FM79JDUSrbA57kUvFjR9p` is Ready on the correct `samawahs-projects/shrik` Preview project and exact commit.
+- Additive migrations `202607260001` and `202607260002` are applied to healthy non-Production `sharik-uat`; local and remote migration inventories match.
+- S015-P1-099 is fixed. X009-D is closed. S015-P2-098 remains openly dispositioned for onboarding/navigation simplification.
+- Formal wider-team invitation remains gated only by the owner's explicit human acceptance of the remaining UX disposition under S015-P1-063/X008-H. Production, PR merge, public signup, external-client invitation, and Production acceptance remain untouched.
+
+All status sections below are chronological evidence. Where they conflict, this decision and the current `tasks.md` X009-D state govern.
+
+## Previous authoritative decision — 2026-07-22
 
 `X009_C_GREEN_OWNER_CAN_CREATE_FIRST_CLIENT`. S015-P1-097 is fixed and verified. The first-client wizard now commits client, contract, package, selected-team client scope, and first deliverable in one PostgreSQL transaction; failure rolls back the complete graph, and replay is bound to stable business payload. Exact code head `1547621454620c0eebb0343ed94ba91b2a53b122` passed F-001 run `29907779138`: unit 259, integration 112, RLS simulator 24, pgTAP 476, component 79, fixture E2E 126, persistent E2E 16, secret scan, and build. Migration `202607220001` is applied to healthy non-Production `sharik-uat`; the protected official Preview is Ready, the owner's partial attempt was completed forward with one audited deliverable/reservation/ledger entry, management sign-in/data/wizard/team-directory checks passed, and hosted invalid-assignment rollback left zero partial rows.
 

@@ -13,6 +13,20 @@ synthetic UAT fixture across all required personas, and rollback/no-op proof.
 No real UAT data, invitations, or Production state were changed by this local
 checkpoint.
 
+## X010-A hosted closure update — 2026-07-29
+
+Status is `X010_A_GREEN` for the bounded workflow-safety scope. Exact-HEAD CI
+`30479343344`, the correct `samawahs-projects/shrik` Preview, UAT migration
+`202607290002`, and shared synthetic lifecycle
+`s015-hosted-lifecycle-6998e30147` all passed. Viewer was read-only; approver
+requested changes on version 1 and approved version 2; internal comment/file
+were invisible to both; final client files contained only version-2 delivery
+assets. Failed replacement upload survived reload and blocked send until an
+explicit audited cancel. Persona scope `x010a-scope-20260729-f8b363d` was
+rolled back and replayed with zero active target client memberships/roles.
+Production, real customer data, invitations, and the owner's separate
+onboarding observations below were not changed or reclassified.
+
 ## Status
 
 Open observations from the owner's first-client onboarding walkthrough. These notes record the experience as observed; no product fix or readiness closure is claimed here.

@@ -1,5 +1,33 @@
 # Project Progress
 
+## Spec 015 X010-A GREEN — 2026-07-29
+
+Status: `X010_A_GREEN`.
+
+The durable-upload and exact-delivery closure started from mandatory HEAD
+`2f72f175b41f23b753deef5f701dab481a9a7c11`. Application HEAD
+`f8b363d0ac6ff86290fc025fdb7b1a220cc2ddc0` passed F-001
+`30479343344`; Preview `dpl_8FsJYiCoiULPi9HJ7swZurXqZEW8` was Ready in the
+correct `samawahs-projects/shrik` project. Migration `202607290002` is present
+in healthy non-Production UAT with matching local/remote inventory.
+
+Hosted run `s015-hosted-lifecycle-6998e30147` completed failed replacement
+upload, reload recovery and blocked send, explicit audited cancel, exact
+version-1 send, viewer read-only proof, approver change request, exact
+version-2 resubmission/approval/send, approver approval, prepare delivery, and
+final delivery. PostgreSQL ended delivered at revision 12/progress 100 with
+version 2 final, four approval decisions, SLA pause/resume/completion, one
+reservation, one consumption, and one final-delivery command after an exact
+idempotency replay. Internal comment/file remained client-invisible.
+
+Protected persona run `x010a-scope-20260729-f8b363d` used dry-run, allowlist,
+apply, audit journal, rollback, and immediate no-op replay. Target client
+memberships and roles ended 0 active; pre-existing tenant memberships were
+reused and retained. The terminal fixture is hidden by its run marker and kept
+as append-only audit evidence. X010-A-1/2/8 and S015-P1-100/101 are closed.
+No Production, real-data, invitation, signup, merge, or alias-promotion action
+occurred.
+
 ## Spec 015 X010-A durable upload local correction — 2026-07-29
 
 Status: `X010_A_LOCAL_GREEN_HOSTED_HOLD`.

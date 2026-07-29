@@ -15,4 +15,24 @@ export function createS015ClientPersonaScopeIds(input: {
   rollbackAuditId: string;
 };
 
+export function createS015PersonaScopeJournalId(input: {
+  runId: string;
+  resourceType: string;
+  resourceId: string;
+}): string;
+
+export function planS015PersonaTenantMembership(input: {
+  memberships: Array<{
+    id: string;
+    tenant_id: string;
+    status: string;
+  }>;
+  targetTenantId: string;
+  generatedMembershipId: string;
+}): {
+  tenantMembershipId: string;
+  createsTenantMembership: boolean;
+  activeExternalMembershipId: string | null;
+};
+
 export function isS015ClientPersonaScopeRunId(value: string): boolean;

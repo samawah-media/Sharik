@@ -28,5 +28,41 @@ export const createS015ClientPersonaScopeIds = ({
   rollbackAuditId: stableUuid(`x009d:audit:${runId}:${userId}:rollback`),
 });
 
+export const createS015PersonaScopeJournalId = ({
+  runId,
+  resourceType,
+  resourceId,
+}) => stableUuid(`x009d:journal:${runId}:${resourceType}:${resourceId}`);
+
+export const planS015PersonaTenantMembership = ({
+  memberships,
+  targetTenantId,
+  generatedMembershipId,
+}) => {
+  const activeTargetMemberships = memberships.filter(
+    (membership) =>
+      membership.tenant_id === targetTenantId &&
+      membership.status === "active",
+  );
+  if (activeTargetMemberships.length > 1) {
+    throw new Error("CLIENT_PERSONA_SCOPE_TARGET_MEMBERSHIP_AMBIGUOUS");
+  }
+  const activeExternalMemberships = memberships.filter(
+    (membership) =>
+      membership.tenant_id !== targetTenantId &&
+      membership.status === "active",
+  );
+  if (activeExternalMemberships.length > 1) {
+    throw new Error("CLIENT_PERSONA_SCOPE_EXTERNAL_MEMBERSHIP_AMBIGUOUS");
+  }
+
+  return {
+    tenantMembershipId:
+      activeTargetMemberships[0]?.id ?? generatedMembershipId,
+    createsTenantMembership: activeTargetMemberships.length === 0,
+    activeExternalMembershipId: activeExternalMemberships[0]?.id ?? null,
+  };
+};
+
 export const isS015ClientPersonaScopeRunId = (value) =>
   /^[a-zA-Z0-9][a-zA-Z0-9._-]{2,80}$/.test(value);

@@ -1,5 +1,33 @@
 # Spec 015 gate status
 
+## X010-A final gate — 2026-07-29
+
+`X010_A_GREEN`.
+
+All X010-A-1/2/8 gates pass. Mandatory starting HEAD was
+`2f72f175b41f23b753deef5f701dab481a9a7c11`. Application HEAD
+`f8b363d0ac6ff86290fc025fdb7b1a220cc2ddc0` passed exact-HEAD F-001
+`30479343344`; correct `samawahs-projects/shrik` Preview deployment
+`dpl_8FsJYiCoiULPi9HJ7swZurXqZEW8` was Ready. Additive migration
+`202607290002` is applied to healthy non-Production UAT and inventories match.
+
+Shared hosted run `s015-hosted-lifecycle-6998e30147` proved durable failed
+upload recovery after reload, server-backed send blocking, audited cancel, no
+old-file substitution, exact version/file confirmation, internal secrecy,
+viewer read-only, approver change request and approval, prepare delivery, final
+delivery, SLA pause/resume/completion, ledger, and idempotent replay.
+Persona-scope run `x010a-scope-20260729-f8b363d` rolled back and replayed to 0
+active target client memberships and 0 target roles. The terminal fixture
+remains hidden by its run marker because audit/ledger evidence is append-only.
+
+Local matrix: lint, typecheck, unit 61/279 after the fixture-tool correction, integration 28/112, component
+24/88, RLS simulator 8/24, clean reset, pgTAP 8/535, fixture Playwright 126
+pass/6 configured skips, persistent Playwright 16/16, secret scan, diff check,
+and production build. S015-P1-100/101 and X010-A-1/2/8 are closed. No open P0
+or P1 remains in X010-A. Production, real data, external invitations, public
+signup, Production promotion, merge, and automatic correction of `11.93`
+remain outside the boundary.
+
 ## Durable upload correction checkpoint — 2026-07-29
 
 `X010_A_LOCAL_GREEN_HOSTED_HOLD`.

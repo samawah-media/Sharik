@@ -1,5 +1,12 @@
 # Spec 015 execution log
 
+## 2026-07-29 — X010-A hosted exact-version closure
+
+- Status: `X010_A_GREEN`. Application HEAD `f8b363d0ac6ff86290fc025fdb7b1a220cc2ddc0` passed exact-HEAD F-001 run `30479343344`; correct project `samawahs-projects/shrik` Preview deployment `dpl_8FsJYiCoiULPi9HJ7swZurXqZEW8` was Ready. Healthy non-Production UAT `jnvuccapgsabrwwkxnbh` received additive migration `202607290002`; local/remote migration inventory matched.
+- Protected shared fixture run `s015-hosted-lifecycle-6998e30147` covered admin, account manager, assigned writer, tenant-scoped designer boundary, client viewer, and client approver. A replacement attempt failed, survived reload, disabled send, and required explicit audited cancellation. Management sent exact version 1; viewer saw it read-only without internal comment/file; approver requested changes; writer submitted exact version 2; management approved/sent it; approver approved; management prepared and finally delivered version 2.
+- PostgreSQL ended with deliverable `a863308e-fc4d-4f1e-b76a-0b5581d70cfd` delivered at revision 12/progress 100, final current version `622667e0-dc41-4a92-9f05-428c5a5a162c`, four approval decisions, two paused-client SLA segments plus resume/completion, one reservation, and one consumption. Exact final-delivery replay returned the original result and left one `deliver_ready_version` command and one consumption.
+- Persona-scope run `x010a-scope-20260729-f8b363d` used dry-run, allowlist/category, apply, audit journal, rollback, and immediate replay. Both rollback outputs showed 0 active target client memberships and 0 active target roles; pre-existing target-tenant memberships were reused and retained. The delivered lifecycle fixture was restored to its run marker and retained hidden as append-only audit evidence. Production, real data, external invitations, public signup, alias promotion, and merge were untouched.
+
 ## 2026-07-29 — X010-A durable upload local checkpoint
 
 - Added additive migration `202607290002_s015_durable_upload_attempts.sql`. It records the exact tenant/client/deliverable/current-version/actor/storage/file/run/idempotency attempt before transport and uses durable `pending`, `ready`, `failed`, and `cancelled` states.

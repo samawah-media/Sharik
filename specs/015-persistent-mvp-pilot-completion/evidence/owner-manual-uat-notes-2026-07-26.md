@@ -1,5 +1,18 @@
 # Owner Manual UAT Notes — 2026-07-26
 
+## Durable upload correction update — 2026-07-29
+
+The local Spec 015 correction now persists every upload attempt before file
+transport and restores pending/failed attempts after reload. A failed
+replacement blocks client send, delivery preparation, and final delivery at
+the PostgreSQL layer; Retry or an explicit audited cancellation is required.
+The clean local matrix, including 535 pgTAP tests and 16/16 persistent browser
+scenarios, passes. Owner/hosted acceptance is not claimed yet: X010-A-1/2/8
+remain open pending exact-HEAD CI, the correct Preview, a single shared
+synthetic UAT fixture across all required personas, and rollback/no-op proof.
+No real UAT data, invitations, or Production state were changed by this local
+checkpoint.
+
 ## Status
 
 Open observations from the owner's first-client onboarding walkthrough. These notes record the experience as observed; no product fix or readiness closure is claimed here.

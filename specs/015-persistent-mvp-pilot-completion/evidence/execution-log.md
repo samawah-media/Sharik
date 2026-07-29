@@ -1,5 +1,14 @@
 # Spec 015 execution log
 
+## 2026-07-29 — X010-A durable upload local checkpoint
+
+- Added additive migration `202607290002_s015_durable_upload_attempts.sql`. It records the exact tenant/client/deliverable/current-version/actor/storage/file/run/idempotency attempt before transport and uses durable `pending`, `ready`, `failed`, and `cancelled` states.
+- Protected PostgreSQL commands now recover unsettled attempts after reload, audit retry/cancel, verify the Storage object before exact-version registration, atomically mark success ready, and block send, prepare delivery, and final delivery while an exact-current-version attempt is pending or failed. Stale and cross-scope attempts are denied; failed replacements cannot silently fall back to an older file.
+- The Uppy surface persists before TUS transport, restores pending/failed attempts after reload, keeps the drawer fail-closed, and exposes explicit Retry and audited cancellation. No service-role credential was added to browser or Next.js runtime.
+- Complete local matrix PASS from mandatory starting HEAD `2f72f175b41f23b753deef5f701dab481a9a7c11`: lint; typecheck; unit 61 files / 275 tests; integration 28 / 112; component 24 / 88; RLS simulator 8 / 24; clean Supabase reset; pgTAP 8 files / 535 tests; fixture E2E 126 passed / 6 configured skips; persistent E2E 16/16; secret scan; `git diff --check`; and production build.
+- The persistent browser proves failed replacement upload → durable failed row → reload restoration → client-send blocked → explicit audited cancel → only the exact correct file in confirmation/client view → approval → prepare delivery → final delivery.
+- This is a local checkpoint only. X010-A-1/2/8 and S015-P1-100/101 remain open until the resulting commit passes exact-HEAD CI, the correct `samawahs-projects/shrik` Preview, one shared non-Production synthetic persona lifecycle, and rollback/no-op proof. Production and real data remain untouched.
+
 ## 2026-07-29 — X010-A reviewer correction
 
 - Reopened S015-P1-100 after tracing the real upload sequence: failed or not-yet-registered upload intent is browser-local and disappears on reload, while PostgreSQL can only block attempts already represented by a `file_assets` row. X010-A-1/2 remain open pending durable upload-attempt persistence and reload recovery coverage.

@@ -40,6 +40,101 @@ const registerFileSchema = z.object({
   idempotencyKey: z.string().min(8).max(200),
 });
 
+const uploadAttemptSchema = registerFileSchema.extend({
+  attemptId: z.string().uuid(),
+  runId: z.string().trim().min(8).max(200),
+  replacesFileId: z.string().uuid().nullable().optional(),
+});
+
+const uploadAttemptProgressSchema = z.object({
+  attemptId: z.string().uuid(),
+  progressPercentage: z.number().int().min(0).max(99),
+});
+
+const failUploadAttemptSchema = uploadAttemptProgressSchema.extend({
+  failureCode: z.string().trim().min(1).max(120),
+});
+
+const cancelUploadAttemptSchema = z.object({
+  attemptId: z.string().uuid(),
+  reason: z.string().trim().min(3).max(200),
+  storagePath: z.string().min(10).max(1_000),
+});
+
+const retryUploadAttemptSchema = z.object({
+  failedAttemptId: z.string().uuid(),
+  attemptId: z.string().uuid(),
+  fileId: z.string().uuid(),
+  storagePath: z.string().min(10).max(1_000),
+  runId: z.string().trim().min(8).max(200),
+  idempotencyKey: z.string().min(8).max(200),
+});
+
+const listUploadAttemptsSchema = z.object({
+  clientId: z.string().uuid(),
+  deliverableId: z.string().uuid(),
+  versionId: z.string().uuid(),
+});
+
+type UploadAttemptRow = {
+  id: string;
+  planned_file_id: string;
+  version_id: string;
+  storage_path: string;
+  file_name: string;
+  file_type: string;
+  file_size: number;
+  visibility: string;
+  status: string;
+  progress_percentage: number;
+  run_id: string;
+  retry_of_id: string | null;
+  replaces_file_id: string | null;
+  failure_code: string | null;
+  cancellation_reason: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export async function listWorkspaceFileUploadAttempts(
+  input: z.input<typeof listUploadAttemptsSchema>,
+) {
+  const parsed = listUploadAttemptsSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false as const, reason: "invalid_input" as const };
+  }
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .rpc("s015_list_unsettled_file_upload_attempts", {
+      target_client_id: parsed.data.clientId,
+      target_deliverable_id: parsed.data.deliverableId,
+      target_version_id: parsed.data.versionId,
+    });
+  if (error) return { ok: false as const, reason: "denied" as const };
+  return {
+    ok: true as const,
+    attempts: ((data ?? []) as UploadAttemptRow[]).map((row) => ({
+      id: row.id,
+      fileId: row.planned_file_id,
+      name: row.file_name,
+      fileType: row.file_type,
+      fileSize: Number(row.file_size),
+      storagePath: row.storage_path,
+      visibility: row.visibility,
+      status: row.status,
+      progressPercentage: row.progress_percentage,
+      versionId: row.version_id,
+      runId: row.run_id,
+      retryOfId: row.retry_of_id ?? undefined,
+      replacesFileId: row.replaces_file_id ?? undefined,
+      failureCode: row.failure_code ?? undefined,
+      cancellationReason: row.cancellation_reason ?? undefined,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    })),
+  };
+}
+
 export async function saveOrSubmitVersionContent(
   input: z.input<typeof versionContentInputSchema>,
 ) {
@@ -159,6 +254,117 @@ export async function registerWorkspaceFile(
   revalidatePath(`/clients/${parsed.data.clientId}/deliverables/board`);
   revalidatePath("/client/pending");
   return { ok: true as const };
+}
+
+export async function beginWorkspaceFileUpload(
+  input: z.input<typeof uploadAttemptSchema>,
+) {
+  const parsed = uploadAttemptSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false as const, reason: "invalid_input" as const };
+  }
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("s015_begin_file_upload_attempt", {
+    target_attempt_id: parsed.data.attemptId,
+    target_file_id: parsed.data.fileId,
+    target_client_id: parsed.data.clientId,
+    target_deliverable_id: parsed.data.deliverableId,
+    target_version_id: parsed.data.versionId,
+    target_bucket_id: parsed.data.bucketId,
+    target_storage_path: parsed.data.storagePath,
+    target_file_name: parsed.data.fileName,
+    target_file_type: parsed.data.fileType,
+    target_file_size: parsed.data.fileSize,
+    target_visibility: parsed.data.visibility,
+    target_is_final: parsed.data.isFinal,
+    target_replaces_file_id: parsed.data.replacesFileId ?? null,
+    target_run_id: parsed.data.runId,
+    request_idempotency_key: parsed.data.idempotencyKey,
+    audit_event_id: crypto.randomUUID(),
+  });
+  if (error) return { ok: false as const, reason: "denied" as const };
+  revalidatePath(`/clients/${parsed.data.clientId}/deliverables/board`);
+  return { ok: true as const };
+}
+
+export async function updateWorkspaceFileUploadProgress(
+  input: z.input<typeof uploadAttemptProgressSchema>,
+) {
+  const parsed = uploadAttemptProgressSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false as const, reason: "invalid_input" as const };
+  }
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc(
+    "s015_update_file_upload_attempt_progress",
+    {
+      target_attempt_id: parsed.data.attemptId,
+      target_progress_percentage: parsed.data.progressPercentage,
+    },
+  );
+  return error
+    ? { ok: false as const, reason: "denied" as const }
+    : { ok: true as const };
+}
+
+export async function failWorkspaceFileUpload(
+  input: z.input<typeof failUploadAttemptSchema>,
+) {
+  const parsed = failUploadAttemptSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false as const, reason: "invalid_input" as const };
+  }
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("s015_fail_file_upload_attempt", {
+    target_attempt_id: parsed.data.attemptId,
+    target_failure_code: parsed.data.failureCode,
+    target_progress_percentage: parsed.data.progressPercentage,
+    audit_event_id: crypto.randomUUID(),
+  });
+  return error
+    ? { ok: false as const, reason: "denied" as const }
+    : { ok: true as const };
+}
+
+export async function cancelWorkspaceFileUpload(
+  input: z.input<typeof cancelUploadAttemptSchema>,
+) {
+  const parsed = cancelUploadAttemptSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false as const, reason: "invalid_input" as const };
+  }
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("s015_cancel_file_upload_attempt", {
+    target_attempt_id: parsed.data.attemptId,
+    target_reason: parsed.data.reason,
+    audit_event_id: crypto.randomUUID(),
+  });
+  if (error) return { ok: false as const, reason: "denied" as const };
+  await supabase.storage.from("deliverable-assets").remove([parsed.data.storagePath]);
+  return { ok: true as const };
+}
+
+export async function retryWorkspaceFileUpload(
+  input: z.input<typeof retryUploadAttemptSchema>,
+) {
+  const parsed = retryUploadAttemptSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false as const, reason: "invalid_input" as const };
+  }
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("s015_retry_file_upload_attempt", {
+    target_failed_attempt_id: parsed.data.failedAttemptId,
+    target_attempt_id: parsed.data.attemptId,
+    target_file_id: parsed.data.fileId,
+    target_storage_path: parsed.data.storagePath,
+    target_run_id: parsed.data.runId,
+    request_idempotency_key: parsed.data.idempotencyKey,
+    cancel_audit_event_id: crypto.randomUUID(),
+    retry_audit_event_id: crypto.randomUUID(),
+  });
+  return error
+    ? { ok: false as const, reason: "denied" as const }
+    : { ok: true as const };
 }
 
 export async function stageWorkspaceFileForClientReview(

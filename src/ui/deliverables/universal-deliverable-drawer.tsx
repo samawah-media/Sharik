@@ -164,6 +164,18 @@ export function UniversalDeliverableDrawer({
     setLoading(true);
     setRefreshKey((key) => key + 1);
   }, []);
+  const handleUploadAttemptCancelled = useCallback((attemptId: string) => {
+    setWorkspace((currentWorkspace) =>
+      currentWorkspace
+        ? {
+            ...currentWorkspace,
+            uploadAttempts: currentWorkspace.uploadAttempts.filter(
+              (attempt) => attempt.id !== attemptId,
+            ),
+          }
+        : currentWorkspace,
+    );
+  }, []);
 
   const handleOpen = () => {
     if (!workspace) setLoading(true);
@@ -260,6 +272,14 @@ export function UniversalDeliverableDrawer({
       file.fileSize > 0 &&
       (file.fileType.startsWith("image/") ||
         file.fileType.startsWith("video/")),
+  );
+  const persistedUploadBlocked = Boolean(
+    currentVersion &&
+      workspace?.uploadAttempts.some(
+        (attempt) =>
+          attempt.versionId === currentVersion.id &&
+          (attempt.status === "pending" || attempt.status === "failed"),
+      ),
   );
   const clientReviewReady = hasClientReviewPayload({
     caption: currentVersion?.caption,
@@ -504,7 +524,9 @@ export function UniversalDeliverableDrawer({
                       currentVersion={currentVersion}
                       deliverable={deliverable}
                       files={currentVersionFiles}
-                      uploadBlocked={uploadSafety !== "settled"}
+                      uploadBlocked={
+                        persistedUploadBlocked || uploadSafety !== "settled"
+                      }
                     />
                   </section>
 
@@ -597,7 +619,11 @@ export function UniversalDeliverableDrawer({
                       canPublishClientFile={canPublishClientComment}
                       currentVersionId={workspace?.currentVersionId}
                       deliverable={deliverable}
+                      files={workspace?.files}
+                      onMutated={handleMutated}
                       onSafetyStateChange={setUploadSafety}
+                      onUploadAttemptCancelled={handleUploadAttemptCancelled}
+                      uploadAttempts={workspace?.uploadAttempts}
                     />
                   </section>
 

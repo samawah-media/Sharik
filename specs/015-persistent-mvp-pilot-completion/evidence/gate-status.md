@@ -1,5 +1,30 @@
 # Spec 015 gate status
 
+## Durable upload correction checkpoint — 2026-07-29
+
+`X010_A_LOCAL_GREEN_HOSTED_HOLD`.
+
+Checkpoint 1 now passes locally. Additive migration `202607290002` persists
+the exact upload attempt before transport, restores pending/failed attempts
+after reload, audits retry/cancel, verifies the Storage object, registers only
+the exact current version, and blocks send, prepare delivery, and final
+delivery in PostgreSQL until the attempt is ready or explicitly cancelled.
+The browser and Next.js runtime contain no service-role credential.
+
+Complete local evidence passes: lint; typecheck; unit 275; integration 112;
+component 88; RLS simulator 24; clean reset; pgTAP 535; fixture E2E 126 with
+6 configured skips; persistent E2E 16/16; secret scan; diff check; and build.
+The persistent journey includes failed replacement upload, durable reload
+recovery, blocked send, audited explicit cancel, exact-file confirmation and
+client view, approval, prepare, and final delivery.
+
+This checkpoint started from mandatory local HEAD
+`2f72f175b41f23b753deef5f701dab481a9a7c11`. X010-A-1/2/8 and
+S015-P1-100/101 deliberately remain open until the new commit passes
+exact-HEAD CI, the correct `samawahs-projects/shrik` Preview, the shared
+synthetic hosted lifecycle, and rollback/no-op proof. No GREEN is declared;
+Production and real data remain outside the boundary.
+
 ## Current X010-A checkpoint — 2026-07-29
 
 `X010_A_BLOCKED_DURABLE_UPLOAD_AND_HOSTED_CLIENT_FIXTURE`.

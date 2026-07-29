@@ -276,6 +276,7 @@ export async function listScopedDeliverableWorkspaces({
     versions,
     tasks,
     files,
+    uploadAttempts,
     comments,
     quality,
     approvals,
@@ -311,6 +312,15 @@ export async function listScopedDeliverableWorkspaces({
       .eq("client_id", clientId)
       .in("deliverable_id", deliverableIds)
       .eq("upload_state", "ready")
+      .order("created_at", { ascending: false }),
+    client
+      .from("file_upload_attempts")
+      .select(
+        "id, planned_file_id, deliverable_id, version_id, storage_path, file_name, file_type, file_size, visibility, status, progress_percentage, run_id, retry_of_id, replaces_file_id, failure_code, cancellation_reason, created_at, updated_at",
+      )
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .in("deliverable_id", deliverableIds)
       .order("created_at", { ascending: false }),
     client
       .from("comments")
@@ -375,6 +385,7 @@ export async function listScopedDeliverableWorkspaces({
     versions,
     tasks,
     files,
+    uploadAttempts,
     comments,
     quality,
     approvals,
@@ -442,6 +453,9 @@ export async function listScopedDeliverableWorkspaces({
         (row) => row.deliverable_id === deliverable.id,
       );
       const fileRows = scoped(files.data).filter(
+        (row) => row.deliverable_id === deliverable.id,
+      );
+      const uploadAttemptRows = scoped(uploadAttempts.data).filter(
         (row) => row.deliverable_id === deliverable.id,
       );
       const commentRows = scoped(comments.data).filter(
@@ -550,6 +564,25 @@ export async function listScopedDeliverableWorkspaces({
           isFinal: row.is_final,
           createdAt: row.created_at,
         })),
+        uploadAttempts: uploadAttemptRows.map((row) => ({
+          id: row.id,
+          fileId: row.planned_file_id,
+          name: row.file_name,
+          fileType: row.file_type,
+          fileSize: Number(row.file_size),
+          storagePath: row.storage_path,
+          visibility: row.visibility,
+          status: row.status,
+          progressPercentage: row.progress_percentage,
+          versionId: row.version_id,
+          runId: row.run_id,
+          retryOfId: row.retry_of_id ?? undefined,
+          replacesFileId: row.replaces_file_id ?? undefined,
+          failureCode: row.failure_code ?? undefined,
+          cancellationReason: row.cancellation_reason ?? undefined,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+        })),
         comments: commentRows.map((row) => ({
           id: row.id,
           versionId: row.version_id ?? undefined,
@@ -576,6 +609,7 @@ export async function listScopedDeliverableWorkspaces({
           versions: versionRows.length,
           tasks: taskRows.length,
           files: fileRows.length,
+          uploadAttempts: uploadAttemptRows.length,
           comments: commentRows.length,
         },
       };

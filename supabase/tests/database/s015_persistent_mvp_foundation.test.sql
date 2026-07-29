@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set search_path = public, extensions;
-select plan(60);
+select plan(69);
 
 select has_table('public', 'deliverable_versions', 'versions persist');
 select has_table('public', 'approval_decisions', 'approval decisions persist');
@@ -104,6 +104,57 @@ select ok(has_function_privilege('service_role', 'public.s015_rollback_uat_impor
 select ok(not has_function_privilege('authenticated', 'public.s015_rollback_uat_import(uuid,uuid,text,boolean)', 'execute'), 'authenticated cannot execute UAT rollback');
 select ok(has_function_privilege('service_role', 'public.s015_retire_empty_uat_review_items(uuid,uuid,text)', 'execute'), 'service role can retire untouched empty UAT review items');
 select ok(not has_function_privilege('authenticated', 'public.s015_retire_empty_uat_review_items(uuid,uuid,text)', 'execute'), 'authenticated cannot invoke empty UAT review retirement');
+select has_table('public', 'file_upload_attempts', 'durable upload attempts persist');
+select ok(
+  (select relrowsecurity from pg_class where oid = 'public.file_upload_attempts'::regclass),
+  'durable upload attempts enforce RLS'
+);
+select ok(
+  has_table_privilege('authenticated', 'public.file_upload_attempts', 'SELECT'),
+  'authenticated scoped actors can restore upload attempts after reload'
+);
+select ok(
+  has_table_privilege('service_role', 'public.file_upload_attempts', 'SELECT'),
+  'protected synthetic acceptance tooling can assert upload-attempt outcomes'
+);
+select ok(
+  has_function_privilege(
+    'authenticated',
+    'public.s015_begin_file_upload_attempt(uuid,uuid,uuid,uuid,uuid,text,text,text,text,bigint,text,boolean,uuid,text,text,uuid)',
+    'execute'
+  ),
+  'authenticated actors can invoke the guarded pre-transfer attempt command'
+);
+select ok(
+  not has_function_privilege(
+    'anon',
+    'public.s015_begin_file_upload_attempt(uuid,uuid,uuid,uuid,uuid,text,text,text,text,bigint,text,boolean,uuid,text,text,uuid)',
+    'execute'
+  ),
+  'anonymous actors cannot create upload attempts'
+);
+select ok(
+  has_function_privilege(
+    'authenticated',
+    'public.s015_list_unsettled_file_upload_attempts(uuid,uuid,uuid)',
+    'execute'
+  ),
+  'authenticated actors can recover exact-version unsettled upload attempts'
+);
+select ok(
+  not has_function_privilege(
+    'anon',
+    'public.s015_list_unsettled_file_upload_attempts(uuid,uuid,uuid)',
+    'execute'
+  ),
+  'anonymous actors cannot recover upload attempts'
+);
+select has_trigger(
+  'public',
+  'deliverables',
+  's015_block_unsettled_upload_transition',
+  'server-side send, prepare, and delivery upload blocker exists'
+);
 
 select * from finish();
 rollback;

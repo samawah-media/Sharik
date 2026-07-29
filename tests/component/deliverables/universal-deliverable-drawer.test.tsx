@@ -71,6 +71,7 @@ const { workspace } = vi.hoisted(() => {
         createdAt: "2026-07-02T00:00:00.000Z",
       },
     ],
+    uploadAttempts: [],
     comments: [],
     qualityChecks: [
       {
@@ -164,11 +165,14 @@ vi.mock("@/ui/deliverables/workspace-files", () => ({
 vi.mock("@/ui/management/deliverable-actions", () => ({
   DeliverableApprovalWorkflowControl: ({
     clientReviewReady,
+    uploadBlocked,
   }: {
     clientReviewReady?: boolean;
+    uploadBlocked?: boolean;
   }) => (
     <div
       data-client-review-ready={String(clientReviewReady)}
+      data-upload-blocked={String(uploadBlocked)}
       data-testid="stub-approval-control"
     />
   ),
@@ -267,6 +271,47 @@ describe("universal deliverable drawer localization", () => {
       expect(screen.getByTestId("stub-approval-control")).toHaveAttribute(
         "data-client-review-ready",
         "false",
+      );
+    });
+  });
+
+  it("restores a failed durable upload attempt and blocks client send after reload", async () => {
+    const restoredWorkspace: DeliverableWorkspace = {
+      ...workspace,
+      uploadAttempts: [
+        {
+          id: "attempt_failed",
+          fileId: "replacement_file",
+          name: "replacement.png",
+          fileType: "image/png",
+          fileSize: 2048,
+          storagePath:
+            "tenant/client/deliverable/version/replacement.png",
+          visibility: "client_visible",
+          status: "failed",
+          progressPercentage: 40,
+          versionId: "version_1",
+          runId: "s015-restored-attempt",
+          failureCode: "storage_transfer_failed",
+          createdAt: "2026-07-29T00:00:00.000Z",
+          updatedAt: "2026-07-29T00:01:00.000Z",
+        },
+      ],
+    };
+    render(
+      <UniversalDeliverableDrawer
+        approvalAction={vi.fn()}
+        deliverable={deliverable}
+        workspace={restoredWorkspace}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "فتح مساحة المخرج" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("stub-approval-control")).toHaveAttribute(
+        "data-upload-blocked",
+        "true",
       );
     });
   });

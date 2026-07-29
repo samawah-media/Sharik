@@ -1138,6 +1138,18 @@ select lives_ok(
   'management publishes an explicit client-visible comment'
 );
 select lives_ok(
+  $$select public.s015_begin_file_upload_attempt(
+    '21000000-0000-4000-8000-000000000737',
+    '21000000-0000-4000-8000-000000000937',
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000000532',
+    '21000000-0000-4000-8000-000000000632', 'deliverable-assets',
+    '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/internal.txt',
+    'internal.txt', 'text/plain', 12, 'internal_only', false, null,
+    's015-run-internal-file', 's015-internal-file', gen_random_uuid())$$,
+  'management persists the internal upload attempt before registration'
+);
+select lives_ok(
   $$select public.s015_register_file_asset(
     '21000000-0000-4000-8000-000000000937',
     '21000000-0000-4000-8000-000000000301',
@@ -1147,6 +1159,18 @@ select lives_ok(
     'internal.txt', 'text/plain', 12, 'internal_only', false,
     gen_random_uuid(), gen_random_uuid(), 's015-internal-file')$$,
   'management registers an internal-only object'
+);
+select lives_ok(
+  $$select public.s015_begin_file_upload_attempt(
+    '21000000-0000-4000-8000-000000000738',
+    '21000000-0000-4000-8000-000000000938',
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000000532',
+    '21000000-0000-4000-8000-000000000632', 'deliverable-assets',
+    '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/visible.pdf',
+    'visible.pdf', 'application/pdf', 12, 'client_visible', false, null,
+    's015-run-visible-file', 's015-visible-file', gen_random_uuid())$$,
+  'management persists the visible upload attempt before registration'
 );
 select lives_ok(
   $$select public.s015_register_file_asset(
@@ -1187,7 +1211,8 @@ select is(private.s015_can_upload_storage_object(
   '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/client-note.txt'
 ), false, 'client viewer cannot upload to a visible version path');
 select throws_ok(
-  $$select public.s015_register_file_asset(
+  $$select public.s015_begin_file_upload_attempt(
+    gen_random_uuid(),
     gen_random_uuid(),
     '21000000-0000-4000-8000-000000000301',
     '21000000-0000-4000-8000-000000000532',
@@ -1195,9 +1220,10 @@ select throws_ok(
     'deliverable-assets',
     '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/client-note.txt',
     'client-note.txt', 'text/plain', 12, 'client_uploaded', false,
-    gen_random_uuid(), gen_random_uuid(), 's015-viewer-file-upload-denied')$$,
-  '42501', 'client upload denied',
-  'client viewer cannot register a client-uploaded file'
+    null, 's015-viewer-upload-run', 's015-viewer-file-upload-denied',
+    gen_random_uuid())$$,
+  '42501', 'file upload denied',
+  'client viewer cannot persist a client-upload attempt'
 );
 reset role;
 
@@ -1216,6 +1242,21 @@ select ok(private.s015_can_upload_storage_object(
   'deliverable-assets',
   '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/client-note.txt'
 ), 'client approver can upload only to its exact visible version path');
+select results_eq(
+  $$select public.s015_begin_file_upload_attempt(
+    '21000000-0000-4000-8000-000000000733',
+    '21000000-0000-4000-8000-000000000933',
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000000532',
+    '21000000-0000-4000-8000-000000000632',
+    'deliverable-assets',
+    '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/client-note.txt',
+    'client-note.txt', 'text/plain', 12, 'client_uploaded', false, null,
+    's015-client-upload-run', 's015-client-file-upload',
+    gen_random_uuid())$$,
+  $$values ('21000000-0000-4000-8000-000000000733'::uuid)$$,
+  'client approver persists its exact visible-version upload attempt'
+);
 select results_eq(
   $$select public.s015_register_file_asset(
     '21000000-0000-4000-8000-000000000933',
@@ -1276,6 +1317,18 @@ where id = '21000000-0000-4000-8000-000000000632';
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select lives_ok(
+  $$select public.s015_begin_file_upload_attempt(
+    '21000000-0000-4000-8000-000000000739',
+    '21000000-0000-4000-8000-000000000939',
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000000532',
+    '21000000-0000-4000-8000-000000000632', 'deliverable-assets',
+    '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000000532/21000000-0000-4000-8000-000000000632/final.pdf',
+    'final.pdf', 'application/pdf', 12, 'final_delivery', true, null,
+    's015-run-final-file', 's015-final-file', gen_random_uuid())$$,
+  'management persists the final upload attempt before registration'
+);
 select lives_ok(
   $$select public.s015_register_file_asset(
     '21000000-0000-4000-8000-000000000939',
@@ -2936,6 +2989,309 @@ select is(
      and target_id = '21000000-0000-4000-8000-000000009504'),
   1,
   'file promotion records one audit event'
+);
+reset role;
+
+-- X010-A durable upload-attempt recovery, isolation, substitution, and workflow gates.
+insert into public.deliverables (
+  id, tenant_id, client_id, name, type, status, progress_percentage,
+  idempotency_key, requires_internal_approval, requires_client_approval
+) values (
+  '21000000-0000-4000-8000-000000009610',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  'Durable upload safety item', 'post', 'internally_approved', 70,
+  's015-durable-upload-item', true, true
+);
+insert into public.deliverable_versions (
+  id, tenant_id, client_id, deliverable_id, version_number, status, caption
+) values (
+  '21000000-0000-4000-8000-000000009611',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000009610',
+  1, 'internally_approved', 'Exact durable upload payload'
+);
+update public.deliverables
+set current_version_id = '21000000-0000-4000-8000-000000009611'
+where id = '21000000-0000-4000-8000-000000009610';
+insert into public.file_assets (
+  id, tenant_id, client_id, deliverable_id, version_id, owner_user_id,
+  visibility, bucket_id, storage_path, file_name, file_type, file_size,
+  version_number, is_final, upload_idempotency_key, upload_state
+) values (
+  '21000000-0000-4000-8000-000000009612',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000009610',
+  '21000000-0000-4000-8000-000000009611',
+  '21000000-0000-4000-8000-000000000207',
+  'client_visible', 'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000009610/21000000-0000-4000-8000-000000009611/old.png',
+  'old.png', 'image/png', 10, 1, false, 's015-old-ready-file', 'ready'
+);
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select results_eq(
+  $$select public.s015_begin_file_upload_attempt(
+    '21000000-0000-4000-8000-000000009613',
+    '21000000-0000-4000-8000-000000009614',
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000009610',
+    '21000000-0000-4000-8000-000000009611',
+    'deliverable-assets',
+    '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000009610/21000000-0000-4000-8000-000000009611/replacement.png',
+    'replacement.png', 'image/png', 20, 'client_visible', false,
+    '21000000-0000-4000-8000-000000009612',
+    's015-durable-run-one', 's015-durable-attempt-one', gen_random_uuid())$$,
+  $$values ('21000000-0000-4000-8000-000000009613'::uuid)$$,
+  'upload attempt is durable before Storage transfer'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select is(
+  (select status from public.s015_list_unsettled_file_upload_attempts(
+     '21000000-0000-4000-8000-000000000301',
+     '21000000-0000-4000-8000-000000009610',
+     '21000000-0000-4000-8000-000000009611')
+   where id = '21000000-0000-4000-8000-000000009613'),
+  'pending',
+  'a second session reload reads the pending attempt'
+);
+select lives_ok(
+  $$select public.s015_fail_file_upload_attempt(
+    '21000000-0000-4000-8000-000000009613',
+    'synthetic_transfer_failure', 40, gen_random_uuid())$$,
+  'failed transfer persists failure state'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select is(
+  (select status from public.s015_list_unsettled_file_upload_attempts(
+     '21000000-0000-4000-8000-000000000301',
+     '21000000-0000-4000-8000-000000009610',
+     '21000000-0000-4000-8000-000000009611')
+   where id = '21000000-0000-4000-8000-000000009613'),
+  'failed',
+  'a later reload reads the failed attempt'
+);
+select throws_ok(
+  $$select * from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000009610',
+    '21000000-0000-4000-8000-000000009611',
+    'send_to_client', null, null, gen_random_uuid(), gen_random_uuid(),
+    's015-send-blocked-by-upload')$$,
+  'P0001', 'unsettled exact-version upload attempt',
+  'failed replacement blocks old-file substitution during client send'
+);
+select throws_ok(
+  $$select public.s015_begin_file_upload_attempt(
+    gen_random_uuid(), gen_random_uuid(),
+    '21000000-0000-4000-8000-000000000302',
+    '21000000-0000-4000-8000-000000009610',
+    '21000000-0000-4000-8000-000000009611',
+    'deliverable-assets',
+    '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000302/21000000-0000-4000-8000-000000009610/21000000-0000-4000-8000-000000009611/cross.png',
+    'cross.png', 'image/png', 20, 'internal_only', false, null,
+    's015-cross-client-run', 's015-cross-client-attempt', gen_random_uuid())$$,
+  '42501', null,
+  'cross-client upload attempt is denied'
+);
+select throws_ok(
+  $$select public.s015_begin_file_upload_attempt(
+    gen_random_uuid(), gen_random_uuid(),
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000009610',
+    '21000000-0000-4000-8000-000000000601',
+    'deliverable-assets',
+    '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000009610/21000000-0000-4000-8000-000000000601/stale.png',
+    'stale.png', 'image/png', 20, 'internal_only', false, null,
+    's015-stale-version-run', 's015-stale-version-attempt', gen_random_uuid())$$,
+  '42501', null,
+  'stale and cross-deliverable version attempt is denied'
+);
+select results_eq(
+  $$select public.s015_retry_file_upload_attempt(
+    '21000000-0000-4000-8000-000000009613',
+    '21000000-0000-4000-8000-000000009615',
+    '21000000-0000-4000-8000-000000009616',
+    '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000009610/21000000-0000-4000-8000-000000009611/replacement-retry.png',
+    's015-durable-retry-run', 's015-durable-retry-attempt',
+    gen_random_uuid(), gen_random_uuid())$$,
+  $$values ('21000000-0000-4000-8000-000000009615'::uuid)$$,
+  'failed upload can be retried as a new durable pending attempt'
+);
+reset role;
+
+insert into storage.objects (id, bucket_id, name, owner_id)
+values (
+  '21000000-0000-4000-8000-000000009617',
+  'deliverable-assets',
+  '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000009610/21000000-0000-4000-8000-000000009611/replacement-retry.png',
+  '21000000-0000-4000-8000-000000000207'
+);
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select results_eq(
+  $$select public.s015_complete_file_upload_attempt(
+    '21000000-0000-4000-8000-000000009615',
+    gen_random_uuid(), gen_random_uuid())$$,
+  $$values ('21000000-0000-4000-8000-000000009616'::uuid)$$,
+  'retry succeeds only after the exact Storage object exists'
+);
+select is(
+  (select visibility from public.file_assets
+   where id = '21000000-0000-4000-8000-000000009612'),
+  'internal_only',
+  'successful replacement atomically removes the old file from client payload'
+);
+select is(
+  (select count(*)::integer from public.file_assets
+   where deliverable_id = '21000000-0000-4000-8000-000000009610'
+     and version_id = '21000000-0000-4000-8000-000000009611'
+     and upload_state = 'ready'
+     and visibility in ('client_visible','final_delivery')),
+  1,
+  'confirmation can expose only the correct replacement file'
+);
+select is(
+  (select count(*)::integer from public.audit_events
+   where action in ('FileUploadAttemptRetried','FileUploadAttemptReady')
+     and target_id in (
+       '21000000-0000-4000-8000-000000009615',
+       '21000000-0000-4000-8000-000000009615'
+     )),
+  2,
+  'retry and successful completion are both audited'
+);
+
+select lives_ok(
+  $$select public.s015_begin_file_upload_attempt(
+    '21000000-0000-4000-8000-000000009618',
+    '21000000-0000-4000-8000-000000009619',
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000009610',
+    '21000000-0000-4000-8000-000000009611',
+    'deliverable-assets',
+    '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000009610/21000000-0000-4000-8000-000000009611/cancelled.png',
+    'cancelled.png', 'image/png', 20, 'client_visible', false,
+    '21000000-0000-4000-8000-000000009616',
+    's015-cancelled-run', 's015-cancelled-attempt', gen_random_uuid())$$,
+  'a second replacement attempt is persisted'
+);
+select lives_ok(
+  $$select public.s015_fail_file_upload_attempt(
+    '21000000-0000-4000-8000-000000009618',
+    'synthetic_second_failure', 10, gen_random_uuid())$$,
+  'second replacement failure persists'
+);
+select lives_ok(
+  $$select public.s015_cancel_file_upload_attempt(
+    '21000000-0000-4000-8000-000000009618',
+    'authorized_explicit_ignore', gen_random_uuid())$$,
+  'authorized actor can explicitly cancel the failed attempt'
+);
+select is(
+  (select count(*)::integer from public.audit_events
+   where action = 'FileUploadAttemptCancelled'
+     and target_id = '21000000-0000-4000-8000-000000009618'),
+  1,
+  'explicit cancellation is audited exactly once'
+);
+select lives_ok(
+  $$select * from public.s015_execute_internal_workflow(
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000009610',
+    '21000000-0000-4000-8000-000000009611',
+    'send_to_client', null, null, gen_random_uuid(), gen_random_uuid(),
+    's015-send-after-upload-cancel')$$,
+  'only authorized cancellation removes the client-send blocker'
+);
+
+reset role;
+update public.deliverables
+set status = 'client_approved', progress_percentage = 90
+where id = '21000000-0000-4000-8000-000000009610';
+update public.deliverable_versions
+set status = 'client_approved'
+where id = '21000000-0000-4000-8000-000000009611';
+insert into public.approval_decisions (
+  id, tenant_id, client_id, deliverable_id, version_id,
+  approval_kind, decision, actor_user_id
+) values (
+  '21000000-0000-4000-8000-000000009620',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000009610',
+  '21000000-0000-4000-8000-000000009611',
+  'client', 'approved', '21000000-0000-4000-8000-000000000206'
+);
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select lives_ok(
+  $$select public.s015_begin_file_upload_attempt(
+    '21000000-0000-4000-8000-000000009621',
+    '21000000-0000-4000-8000-000000009622',
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000009610',
+    '21000000-0000-4000-8000-000000009611',
+    'deliverable-assets',
+    '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000009610/21000000-0000-4000-8000-000000009611/preparation-block.png',
+    'preparation-block.png', 'image/png', 20, 'final_delivery', true, null,
+    's015-prepare-block-run', 's015-prepare-block-attempt', gen_random_uuid())$$,
+  'pending final file attempt is persisted'
+);
+select throws_ok(
+  $$select * from public.s015_prepare_delivery(
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000009610',
+    '21000000-0000-4000-8000-000000009611',
+    gen_random_uuid(), gen_random_uuid(), 's015-prepare-blocked')$$,
+  'P0001', 'unsettled exact-version upload attempt',
+  'prepare delivery is denied server-side by a pending attempt'
+);
+select lives_ok(
+  $$select public.s015_cancel_file_upload_attempt(
+    '21000000-0000-4000-8000-000000009621',
+    'authorized_prepare_unblock', gen_random_uuid())$$,
+  'pending preparation attempt can be explicitly cancelled'
+);
+select lives_ok(
+  $$select * from public.s015_prepare_delivery(
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000009610',
+    '21000000-0000-4000-8000-000000009611',
+    gen_random_uuid(), gen_random_uuid(), 's015-prepare-after-cancel')$$,
+  'prepare delivery succeeds after audited cancellation'
+);
+select lives_ok(
+  $$select public.s015_begin_file_upload_attempt(
+    '21000000-0000-4000-8000-000000009623',
+    '21000000-0000-4000-8000-000000009624',
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000009610',
+    '21000000-0000-4000-8000-000000009611',
+    'deliverable-assets',
+    '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000009610/21000000-0000-4000-8000-000000009611/delivery-block.png',
+    'delivery-block.png', 'image/png', 20, 'final_delivery', true, null,
+    's015-delivery-block-run', 's015-delivery-block-attempt', gen_random_uuid())$$,
+  'pending final-delivery attempt is persisted'
+);
+select throws_ok(
+  $$select * from public.s015_deliver_ready_version(
+    '21000000-0000-4000-8000-000000000301',
+    '21000000-0000-4000-8000-000000009610',
+    '21000000-0000-4000-8000-000000009611',
+    gen_random_uuid(), gen_random_uuid(), 's015-delivery-blocked')$$,
+  'P0001', 'unsettled exact-version upload attempt',
+  'final delivery is denied server-side by a pending attempt'
 );
 reset role;
 

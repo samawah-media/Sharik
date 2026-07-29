@@ -331,14 +331,56 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
     .eq("file_name", failedVideoName);
   expect(failedVideoRows.error).toBeNull();
   expect(failedVideoRows.data).toHaveLength(0);
+  const failedAttempts = await seeded.client
+    .from("file_upload_attempts")
+    .select("id, status, version_id, storage_path")
+    .eq("deliverable_id", seed.mainDeliverableId)
+    .eq("file_name", failedVideoName)
+    .eq("status", "failed");
+  expect(failedAttempts.error).toBeNull();
+  expect(failedAttempts.data).toHaveLength(1);
+  expect(failedAttempts.data?.[0]?.version_id).toBe(version2.id);
+  const failedAttemptId = failedAttempts.data?.[0]?.id;
+  expect(failedAttemptId).toBeTruthy();
   await page.unroute("**/storage/v1/upload/resumable*");
-  await reviewDrawer
-    .locator("button.uppy-Dashboard-Item-action--remove")
+  await page.reload({ waitUntil: "domcontentloaded" });
+  managementCard = cardFor(page, persistentDeliverableNames.main);
+  const restoredDrawer = await openDrawer(managementCard);
+  await expect(
+    restoredDrawer.getByText(failedVideoName),
+  ).toBeVisible();
+  await expect(
+    restoredDrawer.getByRole("button", { name: "راجعت النسخة والملفات" }),
+  ).toBeDisabled();
+  await restoredDrawer
+    .getByRole("button", { name: "إلغاء المحاولة وتسجيل القرار" })
     .click();
   await expect(
-    reviewDrawer.getByText(`أُلغي الملف ${failedVideoName} ولم يُربط بالمخرج.`),
+    restoredDrawer.getByText(
+      `أُلغيت محاولة رفع ${failedVideoName} وسُجل القرار في سجل التدقيق.`,
+    ),
   ).toBeVisible();
-  await reviewDrawer.getByRole("button", { name: "إغلاق" }).click();
+  const cancelledAttempt = await seeded.client
+    .from("file_upload_attempts")
+    .select("status")
+    .eq("id", failedAttemptId!)
+    .single();
+  expect(cancelledAttempt.error).toBeNull();
+  expect(cancelledAttempt.data?.status).toBe("cancelled");
+  const cancellationAudit = await seeded.client
+    .from("audit_events")
+    .select("id", { count: "exact", head: true })
+    .eq("action", "FileUploadAttemptCancelled")
+    .eq("target_id", failedAttemptId!);
+  expect(cancellationAudit.count).toBe(1);
+  const exactVersionFiles = restoredDrawer.getByRole("list", {
+    name: "ملفات النسخة الدقيقة",
+  });
+  await expect(
+    exactVersionFiles.getByText("review.png", { exact: true }),
+  ).toBeVisible();
+  await expect(exactVersionFiles.getByText(failedVideoName)).toHaveCount(0);
+  await restoredDrawer.getByRole("button", { name: "إغلاق" }).click();
   await runManagementStep({ card: managementCard, step: "send_to_client" });
   await expectBoardSaved(page);
   await assertDeliverable(seed.mainDeliverableId, {

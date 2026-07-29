@@ -39,6 +39,26 @@ export type DeliverableFileWorkspace = {
   createdAt: string;
 };
 
+export type DeliverableUploadAttemptWorkspace = {
+  id: string;
+  fileId: string;
+  name: string;
+  fileType: string;
+  fileSize: number;
+  storagePath: string;
+  visibility: "internal_only" | "client_visible" | "client_uploaded" | "final_delivery";
+  status: "pending" | "ready" | "failed" | "cancelled";
+  progressPercentage: number;
+  versionId: string;
+  runId: string;
+  retryOfId?: string;
+  replacesFileId?: string;
+  failureCode?: string;
+  cancellationReason?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type DeliverableCommentWorkspace = {
   id: string;
   versionId?: string;
@@ -86,6 +106,7 @@ export type DeliverableWorkspace = {
   versions: DeliverableVersionWorkspace[];
   tasks: DeliverableTaskWorkspace[];
   files: DeliverableFileWorkspace[];
+  uploadAttempts: DeliverableUploadAttemptWorkspace[];
   comments: DeliverableCommentWorkspace[];
   qualityChecks: DeliverableQualityWorkspace[];
   activity: DeliverableActivityWorkspace[];
@@ -95,6 +116,7 @@ export type DeliverableWorkspace = {
     versions: number;
     tasks: number;
     files: number;
+    uploadAttempts?: number;
     comments: number;
   };
 };

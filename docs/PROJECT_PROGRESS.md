@@ -1,5 +1,33 @@
 # Project Progress
 
+## Spec 015 X010-A durable upload local correction — 2026-07-29
+
+Status: `X010_A_LOCAL_GREEN_HOSTED_HOLD`.
+
+The mandatory `2f72f175b41f23b753deef5f701dab481a9a7c11` starting tree now
+contains a bounded Spec 015 durable-upload correction. Additive migration
+`202607290002_s015_durable_upload_attempts.sql` records the exact scoped
+attempt before transport, restores pending/failed state after reload, audits
+retry/cancel, verifies Storage before atomic exact-version readiness, and
+server-side blocks send, prepare delivery, and final delivery while an attempt
+is unsettled. Failed replacements cannot silently substitute an older file.
+No new technology or ADR was introduced, and no service-role credential is
+used in browser or Next.js runtime.
+
+The complete local matrix passes: lint; typecheck; unit 61 files / 275 tests;
+integration 28 / 112; component 24 / 88; RLS simulator 8 / 24; clean Supabase
+reset; pgTAP 8 files / 535 tests; fixture E2E 126 passed / 6 configured skips;
+persistent E2E 16/16; secret scan; diff check; and production build. The
+persistent journey proves failed replacement upload, reload restoration,
+blocked client send, audited explicit cancel, exact-file confirmation/client
+visibility, approval, prepare delivery, and final delivery.
+
+X010-A-1/2/8 and S015-P1-100/101 remain open. The next mandatory evidence is a
+new commit, exact-HEAD CI, the correct `samawahs-projects/shrik` Preview, one
+shared allowlisted synthetic non-Production lifecycle, and rollback/no-op
+proof. No GREEN is declared; Production, real data, and external invitations
+remain untouched.
+
 ## Spec 015 X010-A critical workflow safety closure — 2026-07-29
 
 Status: `X010_A_BLOCKED_DURABLE_UPLOAD_AND_HOSTED_CLIENT_FIXTURE`.

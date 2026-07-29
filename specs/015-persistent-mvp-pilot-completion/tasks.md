@@ -142,6 +142,7 @@ Independent review fixed S015-P1-094, corrective exact-head CI run `29852802208`
   - [x] X010-A-6 Correct Kanban state-to-column mapping and retain fixed-width, RTL/mobile/keyboard-accessible horizontal scrolling with protected commands outside drag/drop.
   - [x] X010-A-7 Remove numeric spinners, enforce integer validation for count quantities, preserve the existing UAT value `11.93`, and record it for owner correction through the audited adjustment path.
   - [ ] X010-A-8 Pass the complete local matrix, exact-HEAD CI, correct-project Preview deployment, and bounded hosted synthetic smoke before declaring GREEN.
+    - Local durable-upload checkpoint passed on the mandatory `2f72f17` starting tree: clean reset; pgTAP 8 files / 535 tests; unit 61 / 275; integration 28 / 112; component 24 / 88; RLS simulator 8 / 24; fixture E2E 126 passed / 6 configured skips; persistent E2E 16/16; lint; typecheck; secret scan; diff check; and production build. X010-A-1/2/8 remain open until the resulting commit passes exact-HEAD CI, the correct `samawahs-projects/shrik` Preview, the shared synthetic hosted lifecycle, and rollback/no-op proof.
 
 
 ## Correction note: task assignment authority (2026-07-15)

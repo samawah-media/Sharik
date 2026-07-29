@@ -6,15 +6,22 @@ import Dashboard from "@uppy/react/dashboard";
 import "@uppy/core/css/style.min.css";
 import "@uppy/dashboard/css/style.min.css";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableFileWorkspace } from "@/modules/deliverables/deliverable-workspace";
+import type { DeliverableUploadAttemptWorkspace } from "@/modules/deliverables/deliverable-workspace";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
   createWorkspaceFileDownload,
   createWorkspaceFilePreview,
+  beginWorkspaceFileUpload,
+  cancelWorkspaceFileUpload,
+  failWorkspaceFileUpload,
+  listWorkspaceFileUploadAttempts,
   registerWorkspaceFile,
+  retryWorkspaceFileUpload,
   stageWorkspaceFileForClientReview,
+  updateWorkspaceFileUploadProgress,
 } from "@/server/actions/deliverable-workspace-actions";
 import { Button } from "@/ui/core/button";
 
@@ -22,6 +29,7 @@ const allowedTypes = [
   "image/jpeg", "image/png", "image/webp", "image/gif",
   "video/mp4", "video/webm", "application/pdf", "text/plain",
 ] as const;
+const noUploadAttempts: DeliverableUploadAttemptWorkspace[] = [];
 
 const arabicUppyLocale = {
   pluralize: (count: number) => {
@@ -136,6 +144,13 @@ type UploadRowStatus =
 
 type UploadRow = {
   id: string;
+  attemptId?: string;
+  fileId?: string;
+  storagePath?: string;
+  runId?: string;
+  idempotencyKey?: string;
+  retryOfId?: string;
+  replacesFileId?: string;
   name: string;
   type: string;
   size: number;
@@ -163,19 +178,41 @@ export function WorkspaceFileUpload({
   deliverable,
   currentVersionId,
   canPublishClientFile,
+  files,
+  uploadAttempts,
+  onMutated,
+  onUploadAttemptCancelled,
   onSafetyStateChange,
 }: {
   deliverable: DeliverableSafeSummary;
   currentVersionId?: string;
   canPublishClientFile: boolean;
+  files?: DeliverableFileWorkspace[];
+  uploadAttempts?: DeliverableUploadAttemptWorkspace[];
+  onMutated?: () => void;
+  onUploadAttemptCancelled?: (attemptId: string) => void;
   onSafetyStateChange?: (state: WorkspaceUploadSafetyState) => void;
 }) {
   const router = useRouter();
   const [uppy, setUppy] = useState<Uppy>();
   const [feedback, setFeedback] = useState<string>();
   const [uploadRows, setUploadRows] = useState<UploadRow[]>([]);
+  const [dismissedAttemptIds, setDismissedAttemptIds] = useState<string[]>([]);
+  const [recoveredAttempts, setRecoveredAttempts] =
+    useState<DeliverableUploadAttemptWorkspace[]>();
   const [visibility, setVisibility] = useState<"internal_only" | "client_visible" | "final_delivery">("internal_only");
+  const [replacesFileId, setReplacesFileId] = useState("");
+  const [retrySource, setRetrySource] =
+    useState<DeliverableUploadAttemptWorkspace>();
   const visibilityRef = useRef(visibility);
+  const replacesFileIdRef = useRef(replacesFileId);
+  const retrySourceRef = useRef(retrySource);
+  const persistedProgressRef = useRef(new Map<string, number>());
+  const persistedAttemptIdsRef = useRef(new Set<string>());
+  const failedAttemptIdsRef = useRef(new Set<string>());
+  const failurePromisesRef = useRef(new Map<string, Promise<boolean>>());
+  const effectiveUploadAttempts =
+    recoveredAttempts ?? uploadAttempts ?? noUploadAttempts;
   const canUploadClientVisible = [
     "waiting_client_approval",
     "client_approved",
@@ -193,15 +230,81 @@ export function WorkspaceFileUpload({
   }, [visibility]);
 
   useEffect(() => {
-    const state: WorkspaceUploadSafetyState = uploadRows.some((row) =>
+    replacesFileIdRef.current = replacesFileId;
+  }, [replacesFileId]);
+
+  useEffect(() => {
+    retrySourceRef.current = retrySource;
+  }, [retrySource]);
+
+  useEffect(() => {
+    if (!currentVersionId) return;
+    let active = true;
+    void listWorkspaceFileUploadAttempts({
+      clientId: deliverable.clientId,
+      deliverableId: deliverable.id,
+      versionId: currentVersionId,
+    }).then((result) => {
+      if (active && result.ok) {
+        setRecoveredAttempts(
+          result.attempts as DeliverableUploadAttemptWorkspace[],
+        );
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [currentVersionId, deliverable.clientId, deliverable.id]);
+
+  const restoredUploadRows = useMemo(
+    () =>
+      effectiveUploadAttempts
+        .filter(
+          (attempt) =>
+            attempt.versionId === currentVersionId &&
+            ["pending", "failed"].includes(attempt.status) &&
+            !dismissedAttemptIds.includes(attempt.id),
+        )
+        .map<UploadRow>((attempt) => ({
+          id: `persistent-${attempt.id}`,
+          attemptId: attempt.id,
+          fileId: attempt.fileId,
+          storagePath: attempt.storagePath,
+          runId: attempt.runId,
+          retryOfId: attempt.retryOfId,
+          replacesFileId: attempt.replacesFileId,
+          name: attempt.name,
+          type: attempt.fileType,
+          size: attempt.fileSize,
+          progress: attempt.progressPercentage,
+          status: attempt.status === "pending" ? "uploading" : "failed",
+        })),
+    [currentVersionId, dismissedAttemptIds, effectiveUploadAttempts],
+  );
+  const displayedUploadRows = useMemo(
+    () => [
+      ...restoredUploadRows,
+      ...uploadRows.filter(
+        (row) =>
+          !row.attemptId ||
+          !restoredUploadRows.some(
+            (restored) => restored.attemptId === row.attemptId,
+          ),
+      ),
+    ],
+    [restoredUploadRows, uploadRows],
+  );
+
+  useEffect(() => {
+    const state: WorkspaceUploadSafetyState = displayedUploadRows.some((row) =>
       ["queued", "uploading", "registering"].includes(row.status),
     )
       ? "uploading"
-      : uploadRows.some((row) => row.status === "failed")
+      : displayedUploadRows.some((row) => row.status === "failed")
         ? "failed"
         : "settled";
     onSafetyStateChange?.(state);
-  }, [onSafetyStateChange, uploadRows]);
+  }, [displayedUploadRows, onSafetyStateChange]);
 
   useEffect(() => {
     if (!currentVersionId) return;
@@ -222,6 +325,18 @@ export function WorkspaceFileUpload({
         locale: arabicUppyLocale,
         restrictions: { maxFileSize: 104_857_600, maxNumberOfFiles: 5, allowedFileTypes: [...allowedTypes] },
         onBeforeFileAdded: (file) => {
+          const retry = retrySourceRef.current;
+          if (
+            retry &&
+            (retry.name !== file.name ||
+              retry.fileType !== file.type ||
+              retry.fileSize !== file.size)
+          ) {
+            setFeedback(
+              "اختر الملف نفسه بالاسم والنوع والحجم لإعادة المحاولة، أو ألغِ المحاولة القديمة صراحةً.",
+            );
+            return false;
+          }
           const extension = file.name.includes(".") ? `.${file.name.split(".").pop()?.replace(/[^a-zA-Z0-9]/g, "")}` : "";
           const objectName = `${deliverable.tenantId}/${deliverable.clientId}/${deliverable.id}/${currentVersionId}/${crypto.randomUUID()}${extension}`;
           return {
@@ -232,7 +347,13 @@ export function WorkspaceFileUpload({
               objectName,
               contentType: file.type,
               cacheControl: "3600",
-              uploadId: crypto.randomUUID(),
+              attemptId: crypto.randomUUID(),
+              fileId: crypto.randomUUID(),
+              runId: `s015-upload-run-${crypto.randomUUID()}`,
+              idempotencyKey: `s015-upload-${crypto.randomUUID()}`,
+              retryOfId: retry?.id ?? "",
+              replacesFileId:
+                retry?.replacesFileId ?? replacesFileIdRef.current,
             },
           };
         },
@@ -243,12 +364,124 @@ export function WorkspaceFileUpload({
         retryDelays: [0, 1_000, 3_000, 5_000],
       });
       instance = created;
+      const persistFailure = async (
+        attemptId: string,
+        failureCode: string,
+        progressPercentage: number,
+      ) => {
+        if (
+          !persistedAttemptIdsRef.current.has(attemptId) ||
+          failedAttemptIdsRef.current.has(attemptId)
+        ) {
+          return failedAttemptIdsRef.current.has(attemptId);
+        }
+        const pendingFailure = failurePromisesRef.current.get(attemptId);
+        if (pendingFailure) {
+          return pendingFailure;
+        }
+        const failurePromise = failWorkspaceFileUpload({
+          attemptId,
+          failureCode,
+          progressPercentage,
+        })
+          .then((failure) => {
+            if (failure.ok) {
+              failedAttemptIdsRef.current.add(attemptId);
+            }
+            return failure.ok;
+          })
+          .finally(() => {
+            failurePromisesRef.current.delete(attemptId);
+          });
+        failurePromisesRef.current.set(attemptId, failurePromise);
+        return failurePromise;
+      };
+      created.addPreProcessor(async (fileIds) => {
+        for (const fileIdToUpload of fileIds) {
+          const file = created.getFile(fileIdToUpload);
+          const attemptId = String(file.meta.attemptId ?? "");
+          const fileId = String(file.meta.fileId ?? "");
+          const storagePath = String(file.meta.objectName ?? "");
+          const runId = String(file.meta.runId ?? "");
+          const idempotencyKey = String(file.meta.idempotencyKey ?? "");
+          const retryOfId = String(file.meta.retryOfId ?? "");
+          const replacementId = String(file.meta.replacesFileId ?? "");
+          const persisted = retryOfId
+            ? await retryWorkspaceFileUpload({
+                failedAttemptId: retryOfId,
+                attemptId,
+                fileId,
+                storagePath,
+                runId,
+                idempotencyKey,
+              })
+            : await beginWorkspaceFileUpload({
+                attemptId,
+                fileId,
+                clientId: deliverable.clientId,
+                deliverableId: deliverable.id,
+                versionId: currentVersionId,
+                bucketId: "deliverable-assets",
+                storagePath,
+                fileName: file.name,
+                fileType: file.type as (typeof allowedTypes)[number],
+                fileSize: file.size ?? 0,
+                visibility: visibilityRef.current,
+                isFinal: visibilityRef.current === "final_delivery",
+                replacesFileId: replacementId || null,
+                runId,
+                idempotencyKey,
+              });
+          if (!persisted.ok) {
+            onSafetyStateChange?.("failed");
+            setUploadRows((rows) =>
+              rows.map((row) =>
+                row.id === file.id ? { ...row, status: "failed" } : row,
+              ),
+            );
+            setFeedback(
+              `تعذر تسجيل محاولة رفع ${file.name} قبل النقل؛ لم يبدأ إرسال الملف.`,
+            );
+            throw new Error("durable_upload_attempt_required");
+          }
+          if (retryOfId) {
+            setDismissedAttemptIds((ids) => [...ids, retryOfId]);
+          }
+          persistedAttemptIdsRef.current.add(attemptId);
+          setUploadRows((rows) =>
+            rows.map((row) =>
+              row.id === file.id
+                ? {
+                    ...row,
+                    attemptId,
+                    fileId,
+                    storagePath,
+                    runId,
+                    idempotencyKey,
+                    retryOfId: retryOfId || undefined,
+                    replacesFileId: replacementId || undefined,
+                    status: "uploading",
+                  }
+                : row,
+            ),
+          );
+        }
+        setRetrySource(undefined);
+      });
       created.on("file-added", (file) => {
         setFeedback(undefined);
         setUploadRows((rows) => [
           ...rows.filter((row) => row.id !== file.id),
           {
             id: file.id,
+            attemptId: String(file.meta.attemptId ?? ""),
+            fileId: String(file.meta.fileId ?? ""),
+            storagePath: String(file.meta.objectName ?? ""),
+            runId: String(file.meta.runId ?? ""),
+            idempotencyKey: String(file.meta.idempotencyKey ?? ""),
+            retryOfId: String(file.meta.retryOfId ?? "") || undefined,
+            replacesFileId:
+              String(file.meta.replacesFileId ?? "") || undefined,
             name: file.name,
             type: file.type || "نوع غير محدد",
             size: file.size ?? 0,
@@ -258,10 +491,27 @@ export function WorkspaceFileUpload({
         ]);
       });
       created.on("file-removed", (file) => {
+        const attemptId = String(file.meta.attemptId ?? "");
+        const storagePath = String(file.meta.objectName ?? "");
+        if (persistedAttemptIdsRef.current.has(attemptId)) {
+          void cancelWorkspaceFileUpload({
+            attemptId,
+            storagePath,
+            reason: "cancelled_from_upload_queue",
+          }).then((cancelled) => {
+            if (cancelled.ok) {
+              onMutated?.();
+              router.refresh();
+            }
+          });
+          setFeedback(`أُلغيت محاولة رفع ${file.name} وسُجل الإلغاء.`);
+        } else {
+          setFeedback(`أزيل الملف ${file.name} قبل بدء النقل.`);
+        }
         setUploadRows((rows) => rows.filter((row) => row.id !== file.id));
-        setFeedback(`أُلغي الملف ${file.name} ولم يُربط بالمخرج.`);
       });
       created.on("upload", () => {
+        onSafetyStateChange?.("uploading");
         setUploadRows((rows) =>
           rows.map((row) =>
             row.status === "queued" || row.status === "failed"
@@ -284,6 +534,22 @@ export function WorkspaceFileUpload({
               : row,
           ),
         );
+        const attemptId = String(file.meta.attemptId ?? "");
+        const persistedProgress = Math.min(
+          90,
+          Math.floor(percentage / 10) * 10,
+        );
+        if (
+          attemptId &&
+          persistedProgress >
+            (persistedProgressRef.current.get(attemptId) ?? -1)
+        ) {
+          persistedProgressRef.current.set(attemptId, persistedProgress);
+          void updateWorkspaceFileUploadProgress({
+            attemptId,
+            progressPercentage: persistedProgress,
+          });
+        }
       });
       created.on("upload-success", (file) => {
         if (!file) return;
@@ -297,11 +563,12 @@ export function WorkspaceFileUpload({
       });
       created.on("complete", async (result) => {
         let saved = 0;
+        let allFailuresPersisted = true;
         for (const file of result.successful ?? []) {
           const path = String(file.meta.objectName ?? "");
-          const uploadId = String(file.meta.uploadId ?? crypto.randomUUID());
+          const attemptId = String(file.meta.attemptId ?? "");
           const registered = await registerWorkspaceFile({
-            fileId: crypto.randomUUID(),
+            fileId: String(file.meta.fileId ?? ""),
             clientId: deliverable.clientId,
             deliverableId: deliverable.id,
             versionId: currentVersionId,
@@ -312,7 +579,7 @@ export function WorkspaceFileUpload({
             fileSize: file.size ?? 0,
             visibility: visibilityRef.current,
             isFinal: visibilityRef.current === "final_delivery",
-            idempotencyKey: `s015-upload-${uploadId}`,
+            idempotencyKey: String(file.meta.idempotencyKey ?? ""),
           });
           if (registered.ok) {
             saved += 1;
@@ -322,7 +589,11 @@ export function WorkspaceFileUpload({
               ),
             );
           } else {
-            await supabase.storage.from("deliverable-assets").remove([path]);
+            await persistFailure(
+              attemptId,
+              "metadata_registration_failed",
+              99,
+            );
             setUploadRows((rows) =>
               rows.map((row) =>
                 row.id === file.id ? { ...row, status: "failed" } : row,
@@ -332,6 +603,15 @@ export function WorkspaceFileUpload({
         }
         for (const file of result.failed ?? []) {
           if (!file) continue;
+          const failurePersisted = await persistFailure(
+            String(file.meta.attemptId ?? ""),
+            "storage_transfer_failed",
+            Math.min(
+              99,
+              Math.round(file.progress.percentage ?? 0),
+            ),
+          );
+          allFailuresPersisted = allFailuresPersisted && failurePersisted;
           setUploadRows((rows) =>
             rows.map((row) =>
               row.id === file.id ? { ...row, status: "failed" } : row,
@@ -340,33 +620,52 @@ export function WorkspaceFileUpload({
         }
         const failedFiles = (result.failed ?? []).filter(Boolean);
         if (failedFiles.length > 0) {
+          onSafetyStateChange?.("failed");
           const failedFile = failedFiles[0];
           setFeedback(
-            failedFile
+            failedFile && allFailuresPersisted
               ? `فشل رفع ${failedFile.name}. لم يُربط الملف بالمخرج؛ أعد المحاولة أو ألغِه بوضوح.`
-              : "فشل الرفع. لم يُربط أي ملف ناقص بالمخرج.",
+              : "تعذر تثبيت حالة الفشل؛ ما زالت المحاولة pending وتحجب الإرسال حتى إعادة المحاولة أو الإلغاء.",
           );
         } else {
+          onSafetyStateChange?.(
+            saved === (result.successful?.length ?? 0) ? "settled" : "failed",
+          );
           setFeedback(
             saved === (result.successful?.length ?? 0)
               ? `تم حفظ ${saved} ملف بنجاح.`
               : "تعذر حفظ بعض الملفات وحُذفت الرفوعات غير المسجلة تلقائيًا.",
           );
         }
-        router.refresh();
+        if (saved > 0) {
+          onMutated?.();
+          router.refresh();
+        }
       });
       created.on("upload-error", (file) => {
+        onSafetyStateChange?.("failed");
         if (!file) {
           setFeedback("فشل الرفع. لم يُربط أي ملف ناقص بالمخرج.");
           return;
         }
+        void persistFailure(
+          String(file.meta.attemptId ?? ""),
+          "storage_transfer_failed",
+          Math.min(
+            99,
+            Math.round(file.progress.percentage ?? 0),
+          ),
+        ).then((failurePersisted) => {
+          setFeedback(
+            failurePersisted
+              ? `فشل رفع ${file.name}. لم يُربط الملف بالمخرج؛ أعد المحاولة أو ألغِه بوضوح.`
+              : "تعذر تثبيت حالة الفشل؛ ما زالت المحاولة pending وتحجب الإرسال حتى إعادة المحاولة أو الإلغاء.",
+          );
+        });
         setUploadRows((rows) =>
           rows.map((row) =>
             row.id === file.id ? { ...row, status: "failed" } : row,
           ),
-        );
-        setFeedback(
-          `فشل رفع ${file.name}. لم يُربط الملف بالمخرج؛ أعد المحاولة أو ألغِه بوضوح.`,
         );
       });
       if (active) setUppy(created);
@@ -374,10 +673,55 @@ export function WorkspaceFileUpload({
     void setup();
     return () => {
       active = false;
-      void instance?.cancelAll();
       instance?.destroy();
     };
-  }, [currentVersionId, deliverable.clientId, deliverable.id, deliverable.tenantId, router]);
+  }, [
+    currentVersionId,
+    deliverable.clientId,
+    deliverable.id,
+    deliverable.tenantId,
+    onMutated,
+    onSafetyStateChange,
+    router,
+  ]);
+
+  const cancelAttempt = async (row: UploadRow) => {
+    if (!row.attemptId || !row.storagePath) return;
+    const result = await cancelWorkspaceFileUpload({
+      attemptId: row.attemptId,
+      storagePath: row.storagePath,
+      reason: "explicit_user_cancel_after_upload_interruption",
+    });
+    if (!result.ok) {
+      setFeedback("تعذر إلغاء محاولة الرفع. حدّث الصفحة وحاول مجددًا.");
+      return;
+    }
+    setUploadRows((rows) => rows.filter((candidate) => candidate.id !== row.id));
+    setDismissedAttemptIds((ids) =>
+      row.attemptId ? [...ids, row.attemptId] : ids,
+    );
+    setFeedback(`أُلغيت محاولة رفع ${row.name} وسُجل القرار في سجل التدقيق.`);
+    onUploadAttemptCancelled?.(row.attemptId);
+  };
+
+  const requestRetry = (row: UploadRow) => {
+    const restored = effectiveUploadAttempts.find(
+      (attempt) => attempt.id === row.attemptId && attempt.status === "failed",
+    );
+    if (!restored) {
+      setFeedback("حدّث الصفحة قبل إعادة المحاولة.");
+      return;
+    }
+    setRetrySource(restored);
+    setVisibility(
+      restored.visibility === "client_uploaded"
+        ? "internal_only"
+        : restored.visibility,
+    );
+    setFeedback(
+      `اختر ${restored.name} نفسه من أداة الرفع، ثم ابدأ الرفع لإكمال إعادة المحاولة المدققة.`,
+    );
+  };
 
   if (!currentVersionId) return <p className="text-sm text-muted">احفظ نسخة أولًا لرفع ملفات مرتبطة بها.</p>;
   return (
@@ -407,10 +751,33 @@ export function WorkspaceFileUpload({
           ) : null}
         </label>
       ) : null}
+      {files?.length ? (
+        <label className="grid gap-1 text-sm font-semibold">
+          استبدال ملف حالي (اختياري)
+          <select
+            className="min-h-11 rounded-lg border border-border bg-surface px-3"
+            onChange={(event) => setReplacesFileId(event.target.value)}
+            value={replacesFileId}
+          >
+            <option value="">إضافة ملف جديد دون استبدال</option>
+            {files
+              .filter((file) => file.versionId === currentVersionId)
+              .map((file) => (
+                <option key={file.id} value={file.id}>
+                  {file.name}
+                </option>
+              ))}
+          </select>
+          <span className="text-xs font-normal leading-5 text-muted">
+            عند نجاح البديل فقط، يُستبعد الملف القديم من تأكيد الإرسال. فشل البديل
+            يبقي الإرسال محجوبًا حتى إعادة المحاولة أو الإلغاء الصريح.
+          </span>
+        </label>
+      ) : null}
       {uppy ? <Dashboard height={300} proudlyDisplayPoweredByUppy={false} uppy={uppy} width="100%" /> : <p className="text-sm text-muted">جارٍ تجهيز الرفع الآمن…</p>}
-      {uploadRows.length ? (
+      {displayedUploadRows.length ? (
         <ul aria-label="حالة رفع الملفات" className="grid gap-2">
-          {uploadRows.map((row) => (
+          {displayedUploadRows.map((row) => (
             <li
               className="grid gap-2 rounded-lg border border-border bg-surface p-3 text-sm"
               key={row.id}
@@ -439,6 +806,23 @@ export function WorkspaceFileUpload({
                   style={{ width: `${row.progress}%` }}
                 />
               </div>
+              {row.attemptId &&
+              (row.status === "failed" || row.status === "uploading") ? (
+                <div className="flex flex-wrap gap-2">
+                  {row.status === "failed" ? (
+                    <Button onClick={() => requestRetry(row)} type="button" variant="secondary">
+                      إعادة المحاولة
+                    </Button>
+                  ) : null}
+                  <Button
+                    onClick={() => void cancelAttempt(row)}
+                    type="button"
+                    variant="secondary"
+                  >
+                    إلغاء المحاولة وتسجيل القرار
+                  </Button>
+                </div>
+              ) : null}
             </li>
           ))}
         </ul>

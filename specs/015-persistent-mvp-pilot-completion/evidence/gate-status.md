@@ -2,16 +2,29 @@
 
 ## Current X010-A checkpoint — 2026-07-29
 
-`X010_A_LOCAL_GREEN_CI_PENDING`.
+`X010_A_BLOCKED_HOSTED_CLIENT_FIXTURE`.
 
 The bounded workflow-safety implementation is complete and defects
-S015-P1-100 through S015-P1-106 are locally fixed. The complete local matrix
-passed: lint, typecheck, unit 265, integration 112, component 87, RLS simulator
-24, clean reset, pgTAP 499, fixture E2E 126 with 6 configured skips,
-persistent E2E 16/16, secret scan, diff check, and build. The gate remains open
-until exact-head CI, the correct `samawahs-projects/shrik` Preview, UAT-only
-additive migration application, and bounded hosted synthetic smoke pass. No
-GREEN or team-readiness claim is made here.
+S015-P1-100 through S015-P1-106 are fixed by code and the isolated exact-version
+acceptance coverage. The complete local matrix passed: lint, typecheck, unit
+265, integration 112, component 87, RLS simulator 24, clean reset, pgTAP 499,
+fixture E2E 126 with 6 configured skips, persistent E2E 16/16, secret scan,
+diff check, and build. Exact application head
+`096a90e98a1664053d499e08d7a15fbbdf85a449` passed F-001 run
+`30455939860`, Preview deployment `dpl_DhXioTQggg9ggAt9vJXKi5usqkvm` is
+Ready in `samawahs-projects/shrik`, and additive migration `202607290001`
+matches healthy non-Production UAT.
+
+The gate remains blocked on hosted client evidence. After Vercel protection was
+correctly bypassed, the bounded desktop Preview smoke passed 7/9 checks
+(boundary, admin, account manager, writer, designer, and unassigned denial).
+Both client personas authenticated, but their current scopes contain no pending
+approval detail, so the approver/viewer assertions cannot exercise an exact
+client payload. The mutation lifecycle harness also failed closed before seed
+because the current internal and client personas do not share one approved
+client scope. No UAT role, membership, owner record, or existing data was
+rewritten to manufacture a pass. X010-A-8 remains open and no GREEN or
+team-readiness claim is made.
 
 Production, merge, Production promotion, public signup, external invitations,
 real-data smoke, deletion of UAT history, and automatic rewriting of the

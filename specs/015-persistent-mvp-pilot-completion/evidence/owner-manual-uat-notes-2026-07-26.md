@@ -95,3 +95,17 @@ P1 release blockers until exact-head CI and the bounded Preview smoke pass:
 The bounded X010-A implementation addresses these observations without a broad
 visual redesign. Owner acceptance remains pending until the exact-head CI and
 non-Production Preview synthetic smoke evidence are attached.
+
+### X010-A verification update — 2026-07-29
+
+- Exact application head `096a90e98a1664053d499e08d7a15fbbdf85a449`
+  passed the complete F-001 matrix in run `30455939860`.
+- The correct `samawahs-projects/shrik` Preview is Ready and UAT contains only
+  the additive X010-A migration; the existing `11.93` value was not changed.
+- Protected desktop smoke passed the internal roles and isolation-negative
+  checks. The two client personas signed in but currently have no pending
+  approval item in their scopes, so exact client payload proof is still open.
+- No existing UAT client, membership, role assignment, or business record was
+  changed to force the fixture. The owner should create or explicitly nominate
+  one synthetic pending approval shared with the two approved client personas,
+  then rerun X010-A-8.

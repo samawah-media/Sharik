@@ -2,7 +2,7 @@
 
 ## Spec 015 X010-A critical workflow safety closure — 2026-07-29
 
-Status: `X010_A_LOCAL_GREEN_CI_PENDING`.
+Status: `X010_A_BLOCKED_HOSTED_CLIENT_FIXTURE`.
 
 Owner UAT P1 findings are now implemented inside Spec 015: explicit upload
 state and recovery, exact send/delivery summaries, enforced
@@ -16,9 +16,16 @@ The existing UAT value `11.93` remains unchanged and is flagged for an explicit
 reasoned owner adjustment through the audited ledger path. The complete local
 matrix passes: unit 265, integration 112, component 87, RLS simulator 24,
 pgTAP 499, fixture E2E 126, persistent E2E 16/16, lint, typecheck, secret scan,
-diff check, and build. Exact-head CI and the correct-project non-Production
-Preview smoke are still mandatory before X010-A can be GREEN. Production and
-merge remain untouched.
+diff check, and build. Exact application head `096a90e98a1664053d499e08d7a15fbbdf85a449`
+passed CI run `30455939860`; the correct-project Preview is Ready and additive
+migration `202607290001` is present in non-Production UAT.
+
+X010-A is not GREEN because hosted client proof remains unavailable: the
+existing client personas authenticated but their current scopes have no pending
+approval detail, while the synthetic lifecycle preflight correctly refused to
+combine mismatched internal/client scopes. The protected desktop Preview smoke
+passed 7/9 non-mutating checks. Existing UAT roles and records were not changed
+to manufacture the missing fixture. Production and merge remain untouched.
 
 ## Spec 015 X009-D owner image-only lifecycle closed — 2026-07-26
 

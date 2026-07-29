@@ -78,12 +78,8 @@ describe("package form and balance states", () => {
     expect(screen.getByLabelText("اسم الخدمة")).toBeRequired();
     expect(screen.getByLabelText("وحدة القياس")).toBeRequired();
     expect(screen.getByLabelText("الكمية المتفق عليها")).toHaveAttribute(
-      "pattern",
-      "[0-9]+",
-    );
-    expect(screen.getByLabelText("الكمية المتفق عليها")).toHaveAttribute(
       "inputmode",
-      "numeric",
+      "decimal",
     );
     expect(screen.getByLabelText("الكمية المتفق عليها")).toHaveAttribute(
       "type",

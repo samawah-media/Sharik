@@ -71,7 +71,7 @@ export const createDeliverableSchema = deliverableBaseSchema.extend({
   contractId: z.string().trim().min(1),
   packageId: z.string().trim().min(1),
   packageLineId: z.string().trim().min(1),
-  reservedQuantity: z.coerce.number().int().min(1).max(100000),
+  reservedQuantity: z.coerce.number().min(1).max(100000),
 });
 
 export const createApprovedExtraDeliverableSchema = deliverableBaseSchema.extend({

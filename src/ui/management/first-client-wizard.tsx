@@ -5,6 +5,7 @@ import { useFormStatus } from "react-dom";
 import type { MemberDisplay } from "@/modules/members/member-directory";
 import type { OnboardingFormState } from "@/modules/onboarding/onboarding-form-state";
 import { initialOnboardingFormState } from "@/modules/onboarding/onboarding-form-state";
+import { isCountUnitLabel } from "@/modules/packages/package-quantity";
 import { onboardFirstClientAction } from "@/server/actions/onboarding";
 import { Button } from "@/ui/core/button";
 
@@ -542,8 +543,12 @@ export function FirstClientWizard({
                     <input
                       aria-label={`الكمية المتفق عليها للسطر ${index + 1}`}
                       className={fieldClass}
-                      inputMode="numeric"
-                      pattern="[0-9]+"
+                      inputMode={
+                        isCountUnitLabel(line.unitLabel) ? "numeric" : "decimal"
+                      }
+                      pattern={
+                        isCountUnitLabel(line.unitLabel) ? "[0-9]+" : undefined
+                      }
                       onChange={(e) => updateLine(index, "committedQuantity", e.target.value)}
                       type="text"
                       value={line.committedQuantity}
@@ -684,8 +689,16 @@ export function FirstClientWizard({
               <input
                 aria-label="الكمية المحجوزة"
                 className={fieldClass}
-                inputMode="numeric"
-                pattern="[1-9][0-9]*"
+                inputMode={
+                  isCountUnitLabel(data.packageLines[0]?.unitLabel ?? "")
+                    ? "numeric"
+                    : "decimal"
+                }
+                pattern={
+                  isCountUnitLabel(data.packageLines[0]?.unitLabel ?? "")
+                    ? "[1-9][0-9]*"
+                    : undefined
+                }
                 onChange={(e) => update("reservedQuantity", e.target.value)}
                 type="text"
                 value={data.reservedQuantity}

@@ -60,6 +60,22 @@ describe("onboarding schema", () => {
     ).toBe(false);
   });
 
+  it("keeps fractional quantities for non-count service units", () => {
+    const result = onboardingSchema.safeParse({
+      ...validBase,
+      packageLines: [
+        {
+          ...validBase.packageLines[0],
+          unitLabel: "ساعة",
+          committedQuantity: 11.5,
+        },
+      ],
+      reservedQuantity: 1.5,
+    });
+
+    expect(result.success).toBe(true);
+  });
+
   it("accepts a complete valid input", () => {
     const result = onboardingSchema.safeParse(validBase);
     expect(result.success).toBe(true);

@@ -9,6 +9,7 @@ import {
   type DeliverableFormState,
 } from "@/modules/deliverables/deliverable-form-state";
 import type { PackageLineSafeSummary } from "@/modules/packages/package-repository";
+import { isCountUnitLabel } from "@/modules/packages/package-quantity";
 import type { MemberDisplay } from "@/modules/members/member-directory";
 import { Badge } from "@/ui/core/badge";
 import { Button } from "@/ui/core/button";
@@ -296,8 +297,16 @@ export function DeliverableForm({
                   className="rounded-md border border-border bg-background px-3 py-2"
                   name="reservedQuantity"
                   type="text"
-                  inputMode="numeric"
-                  pattern="[1-9][0-9]*"
+                  inputMode={
+                    isCountUnitLabel(selectedLine?.unitLabel ?? "")
+                      ? "numeric"
+                      : "decimal"
+                  }
+                  pattern={
+                    isCountUnitLabel(selectedLine?.unitLabel ?? "")
+                      ? "[1-9][0-9]*"
+                      : undefined
+                  }
                   required
                   defaultValue={state.values?.reservedQuantity ?? "1"}
                 />

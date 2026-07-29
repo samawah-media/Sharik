@@ -134,8 +134,8 @@ Independent review fixed S015-P1-094, corrective exact-head CI run `29852802208`
 ## Critical workflow safety closure X010-A — same Spec 015
 
 - [ ] X010-A Close the Owner UAT P1 workflow-safety defects before any broad visual redesign.
-  - [x] X010-A-1 Make upload state explicit (name, type, size, progress, success/failure/cancel/retry), prevent silent continuation while unsettled, and keep registration bound to the exact tenant/client/deliverable/current version.
-  - [x] X010-A-2 Add an exact-version client-send review summary and deny pending, failed, stale, cross-deliverable, or non-ready file payloads.
+  - [ ] X010-A-1 Make upload state explicit and durable across reload/session boundaries (name, type, size, progress, success/failure/cancel/retry), prevent silent continuation while unsettled, and keep registration bound to the exact tenant/client/deliverable/current version.
+  - [ ] X010-A-2 Add an exact-version client-send review summary and deny pending, failed, stale, cross-deliverable, non-ready, or unregistered upload-attempt payloads.
   - [x] X010-A-3 Enforce and expose `client_approved -> ready_for_delivery -> delivered` through audited, idempotent management workflow commands.
   - [x] X010-A-4 Add an exact-version/file final-delivery confirmation and preserve single audit/ledger/package consumption on replay.
   - [x] X010-A-5 Make each deliverable list item directly openable with the Arabic action `فتح العمل`.

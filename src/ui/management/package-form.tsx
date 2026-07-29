@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useId } from "react";
+import { useActionState, useEffect, useId, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { PackageBalanceProjection } from "@/modules/packages/package-ledger";
 import type { PackageSafeSummary } from "@/modules/packages/package-repository";
@@ -160,8 +160,7 @@ export function PackageForm({
                 className="rounded-md border border-border bg-background px-3 py-2"
                 name="lineCommittedQuantity"
                 type="text"
-                inputMode="numeric"
-                pattern="[0-9]+"
+                inputMode="decimal"
                 required
                 defaultValue={state.values?.lineCommittedQuantity}
               />
@@ -219,7 +218,23 @@ function PackageAdjustmentForm({
     action,
     initialPackageAdjustmentState,
   );
-  const idempotencyKey = `package-adjust-${packageLineId}-${useId()}`;
+  const formId = useId();
+  const [attempt, setAttempt] = useState(0);
+  const lastCompletedState = useRef<PackageAdjustmentState | undefined>(
+    undefined,
+  );
+
+  useEffect(() => {
+    if (
+      state.status === "success" &&
+      lastCompletedState.current !== state
+    ) {
+      lastCompletedState.current = state;
+      setAttempt((value) => value + 1);
+    }
+  }, [state]);
+
+  const idempotencyKey = `package-adjust-${packageLineId}-${formId}-${attempt}`;
 
   return (
     <details className="rounded-md border border-border p-3">

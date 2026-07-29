@@ -12,6 +12,7 @@ import {
   projectPackageBalance,
 } from "@/modules/packages/package-ledger";
 import type { PackageRepository } from "@/modules/packages/package-repository";
+import { isCountUnitLabel } from "@/modules/packages/package-quantity";
 import { runAuthorizedSensitiveOperation } from "@/server/authorization/server-authorization";
 import { createDeliverableSchema } from "./deliverable-schemas";
 
@@ -71,6 +72,23 @@ export const createDeliverableCommand = async ({
           reason: "package_line_scope_not_available",
         });
 
+        return { ok: false as const, error: safeDeniedError("ACCESS_DENIED") };
+      }
+
+      if (
+        isCountUnitLabel(packageLine.unitLabel) &&
+        !Number.isInteger(parsed.data.reservedQuantity)
+      ) {
+        await audit.append({
+          tenantId: packageLine.tenantId,
+          clientId: packageLine.clientId,
+          actorUserId: actor.userId,
+          action: "DeliverableReservationDenied",
+          decision: "denied",
+          targetType: "package_line",
+          targetId: packageLine.id,
+          reason: "count_unit_requires_integer_reservation",
+        });
         return { ok: false as const, error: safeDeniedError("ACCESS_DENIED") };
       }
 

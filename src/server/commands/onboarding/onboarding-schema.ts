@@ -2,6 +2,7 @@ import { z } from "zod";
 import { contractStatuses } from "@/modules/contracts/contract-repository";
 import { packageStatuses } from "@/modules/packages/package-repository";
 import { deliverablePriorities } from "@/modules/deliverables/deliverable-repository";
+import { isCountUnitLabel } from "@/modules/packages/package-quantity";
 
 const optionalText = (max: number) =>
   z
@@ -27,12 +28,25 @@ const optionalDate = z.preprocess(
     .optional(),
 );
 
-export const onboardingPackageLineSchema = z.object({
-  serviceLabel: z.string().trim().min(2).max(120),
-  deliverableTypeHint: optionalText(80),
-  unitLabel: z.string().trim().min(1).max(60),
-  committedQuantity: z.coerce.number().int().min(0).max(100000),
-});
+export const onboardingPackageLineSchema = z
+  .object({
+    serviceLabel: z.string().trim().min(2).max(120),
+    deliverableTypeHint: optionalText(80),
+    unitLabel: z.string().trim().min(1).max(60),
+    committedQuantity: z.coerce.number().min(0).max(100000),
+  })
+  .superRefine((value, context) => {
+    if (
+      isCountUnitLabel(value.unitLabel) &&
+      !Number.isInteger(value.committedQuantity)
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "count_unit_requires_integer_quantity",
+        path: ["committedQuantity"],
+      });
+    }
+  });
 
 export const onboardingSchema = z
   .object({
@@ -71,7 +85,7 @@ export const onboardingSchema = z
     finalDueDate: optionalDate,
     requiresInternalApproval: z.coerce.boolean().default(true),
     requiresClientApproval: z.coerce.boolean().default(true),
-    reservedQuantity: z.coerce.number().int().min(1).max(100000).default(1),
+    reservedQuantity: z.coerce.number().min(1).max(100000).default(1),
   })
   .superRefine((value, context) => {
     if (
@@ -114,6 +128,17 @@ export const onboardingSchema = z
     }
 
     const firstLineQuantity = value.packageLines[0]?.committedQuantity ?? 0;
+    const firstLineUnit = value.packageLines[0]?.unitLabel ?? "";
+    if (
+      isCountUnitLabel(firstLineUnit) &&
+      !Number.isInteger(value.reservedQuantity)
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "count_unit_requires_integer_reservation",
+        path: ["reservedQuantity"],
+      });
+    }
     if (value.reservedQuantity > firstLineQuantity) {
       context.addIssue({
         code: "custom",

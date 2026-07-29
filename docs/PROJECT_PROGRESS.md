@@ -2,10 +2,20 @@
 
 ## Spec 015 X010-A critical workflow safety closure — 2026-07-29
 
-Status: `X010_A_BLOCKED_HOSTED_CLIENT_FIXTURE`.
+Status: `X010_A_BLOCKED_DURABLE_UPLOAD_AND_HOSTED_CLIENT_FIXTURE`.
 
-Owner UAT P1 findings are now implemented inside Spec 015: explicit upload
-state and recovery, exact send/delivery summaries, enforced
+Reviewer verification reopened the upload-safety P1. The current component
+blocks a failed upload in the same browser session, but no durable database row
+exists before successful registration; reload can therefore forget a failed
+replacement attempt while an older ready file remains eligible. X010-A-1/2
+must remain open until upload attempts persist before transfer and recovery is
+proved across reload. The review also restored decimal support for non-count
+service units, fixed repeated package-adjustment idempotency, and corrected
+account-manager action visibility. Targeted typecheck and 37 tests pass;
+exact-head CI is pending.
+
+Most bounded Owner UAT P1 fixes are implemented inside Spec 015: same-session
+upload state and recovery, exact send/delivery summaries, enforced
 `client_approved -> ready_for_delivery -> delivered`, append-once delivery
 replay, direct deliverable-list access, corrected accessible Kanban lanes and
 scrolling, and safe integer entry for count quantities. One additive migration

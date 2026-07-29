@@ -1,5 +1,12 @@
 # Spec 015 execution log
 
+## 2026-07-29 — X010-A reviewer correction
+
+- Reopened S015-P1-100 after tracing the real upload sequence: failed or not-yet-registered upload intent is browser-local and disappears on reload, while PostgreSQL can only block attempts already represented by a `file_assets` row. X010-A-1/2 remain open pending durable upload-attempt persistence and reload recovery coverage.
+- Corrected the quantity overreach: count units remain spinner-free and integer-only, while hours and other divisible service units retain decimal support as required by the existing numeric data model.
+- Fixed repeated package-adjustment idempotency and removed management-only approval/client-publication controls from the account-manager deliverables list.
+- Targeted verification: typecheck PASS; 4 test files / 37 tests PASS. Exact-head CI and hosted client-fixture proof remain pending.
+
 ## 2026-07-29 — X010-A critical workflow safety closure
 
 - Registered Owner UAT defects S015-P1-100 through S015-P1-106 and kept the work inside Spec 015. No Spec 016, dependency, technology change, or ADR was introduced.

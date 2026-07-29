@@ -2,11 +2,23 @@
 
 ## Current X010-A checkpoint — 2026-07-29
 
-`X010_A_BLOCKED_HOSTED_CLIENT_FIXTURE`.
+`X010_A_BLOCKED_DURABLE_UPLOAD_AND_HOSTED_CLIENT_FIXTURE`.
 
-The bounded workflow-safety implementation is complete and defects
-S015-P1-100 through S015-P1-106 are fixed by code and the isolated exact-version
-acceptance coverage. The complete local matrix passed: lint, typecheck, unit
+Reviewer verification reopened S015-P1-100: failed/unregistered upload state is
+kept only in the current browser component, so a reload or second session can
+lose that intent while an older ready file remains eligible. The database gate
+correctly blocks persisted `pending`/`failed` file rows, but the current upload
+flow creates no row until storage upload succeeds. X010-A-1 and X010-A-2 cannot
+be closed until upload attempts are durable and reload-safe.
+
+The review also corrected the quantity implementation so only count units are
+integer-only; fractional service units remain supported by the existing
+numeric model. Repeated audited package corrections now receive a fresh
+idempotency key, and account managers no longer receive management-only
+approval/client-publication controls from the deliverables list. Targeted
+typecheck and 37 unit/component tests pass; exact-head CI is still required.
+
+Before this review, the complete local matrix passed: lint, typecheck, unit
 265, integration 112, component 87, RLS simulator 24, clean reset, pgTAP 499,
 fixture E2E 126 with 6 configured skips, persistent E2E 16/16, secret scan,
 diff check, and build. Exact application head
@@ -23,7 +35,7 @@ approval detail, so the approver/viewer assertions cannot exercise an exact
 client payload. The mutation lifecycle harness also failed closed before seed
 because the current internal and client personas do not share one approved
 client scope. No UAT role, membership, owner record, or existing data was
-rewritten to manufacture a pass. X010-A-8 remains open and no GREEN or
+rewritten to manufacture a pass. X010-A-1, X010-A-2, and X010-A-8 remain open and no GREEN or
 team-readiness claim is made.
 
 Production, merge, Production promotion, public signup, external invitations,

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
+import { isCountUnitLabel } from "@/modules/packages/package-quantity";
 import type { DeliverableFormState } from "@/modules/deliverables/deliverable-form-state";
 import { deliverableFormError } from "@/modules/deliverables/deliverable-form-state";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -98,6 +99,28 @@ export async function createDeliverableAction(
 
   if (!allowed) {
     return deliverableFormError({ message: permissionFailureMessage, values });
+  }
+
+  const { data: packageLine, error: packageLineError } = await supabase
+    .from("package_lines")
+    .select("unit_label")
+    .eq("tenant_id", client.tenantId)
+    .eq("client_id", client.id)
+    .eq("package_id", parsed.data.packageId)
+    .eq("id", parsed.data.packageLineId)
+    .limit(1)
+    .maybeSingle();
+
+  if (
+    packageLineError ||
+    !packageLine ||
+    (isCountUnitLabel(packageLine.unit_label) &&
+      !Number.isInteger(parsed.data.reservedQuantity))
+  ) {
+    return deliverableFormError({
+      message: validationFailureMessage,
+      values,
+    });
   }
 
   const result = await createDeliverableViaRpc({

@@ -300,6 +300,7 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
   const token = seed.runId.slice(-10);
   const internalComment = `تعليق داخلي اصطناعي ${token}`;
   const internalFileName = `internal-uat-${token}.txt`;
+  const failedReplacementName = `failed-replacement-${token}.mp4`;
   const finalFileName = `final-uat-${token}.mp4`;
 
   await withPersona({
@@ -514,6 +515,70 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
       });
       await page.goto("/work", { waitUntil: "domcontentloaded" });
       drawer = await openDeliverableWorkspace(page, seed.deliverableName);
+      await page.route("**/storage/v1/upload/resumable*", async (route) => {
+        await route.abort("failed");
+      });
+      const failedReplacementInput = drawer
+        .locator('input[type="file"]:not([webkitdirectory])')
+        .last();
+      await failedReplacementInput.setInputFiles({
+        name: failedReplacementName,
+        mimeType: "video/mp4",
+        buffer: Buffer.from("Synthetic hosted failed replacement", "utf8"),
+      });
+      await drawer
+        .locator("button.uppy-StatusBar-actionBtn--upload")
+        .click();
+      await expect(
+        drawer.getByText(
+          `فشل رفع ${failedReplacementName}. لم يُربط الملف بالمخرج؛ أعد المحاولة أو ألغِه بوضوح.`,
+        ),
+      ).toBeVisible({ timeout: 30_000 });
+      await expect(
+        drawer.getByRole("button", {
+          name: "راجعت النسخة والملفات",
+        }),
+      ).toBeDisabled();
+      const failedAttempts = await client
+        .from("file_upload_attempts")
+        .select("id, status, version_id")
+        .eq("deliverable_id", seed.deliverableId)
+        .eq("file_name", failedReplacementName)
+        .eq("status", "failed");
+      expect(failedAttempts.error).toBeNull();
+      expect(failedAttempts.data).toHaveLength(1);
+      expect(failedAttempts.data?.[0]?.version_id).toBe(version2.id);
+      const failedAttemptId = failedAttempts.data?.[0]?.id;
+      expect(failedAttemptId).toBeTruthy();
+
+      await page.unroute("**/storage/v1/upload/resumable*");
+      await page.reload({ waitUntil: "domcontentloaded" });
+      drawer = await openDeliverableWorkspace(page, seed.deliverableName);
+      await expect(drawer.getByText(failedReplacementName)).toBeVisible();
+      await expect(
+        drawer.getByRole("button", {
+          name: "راجعت النسخة والملفات",
+        }),
+      ).toBeDisabled();
+      await drawer
+        .getByRole("button", {
+          name: "إلغاء المحاولة وتسجيل القرار",
+        })
+        .click();
+      const cancelledAttempt = await client
+        .from("file_upload_attempts")
+        .select("status")
+        .eq("id", failedAttemptId!)
+        .single();
+      expect(cancelledAttempt.error).toBeNull();
+      expect(cancelledAttempt.data?.status).toBe("cancelled");
+      const cancellationAudit = await client
+        .from("audit_events")
+        .select("id", { count: "exact", head: true })
+        .eq("action", "FileUploadAttemptCancelled")
+        .eq("target_id", failedAttemptId!);
+      expect(cancellationAudit.error).toBeNull();
+      expect(cancellationAudit.count).toBe(1);
       await runManagementWorkflow({ drawer, step: "send_to_client" });
     },
   });

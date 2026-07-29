@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useId } from "react";
 import { useFormStatus } from "react-dom";
 import type { PackageBalanceProjection } from "@/modules/packages/package-ledger";
 import type { PackageSafeSummary } from "@/modules/packages/package-repository";
+import type { PackageAdjustmentState } from "@/server/actions/packages";
 import {
   initialPackageFormState,
   type PackageFormState,
@@ -17,6 +18,15 @@ type PackageFormAction = (
   previousState: PackageFormState,
   formData: FormData,
 ) => Promise<PackageFormState>;
+
+type PackageAdjustmentAction = (
+  previousState: PackageAdjustmentState,
+  formData: FormData,
+) => Promise<PackageAdjustmentState>;
+
+const initialPackageAdjustmentState: PackageAdjustmentState = {
+  status: "idle",
+};
 
 const statusLabels = {
   draft: "مسودة",
@@ -149,9 +159,9 @@ export function PackageForm({
               <input
                 className="rounded-md border border-border bg-background px-3 py-2"
                 name="lineCommittedQuantity"
-                type="number"
-                min="0"
-                step="0.01"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]+"
                 required
                 defaultValue={state.values?.lineCommittedQuantity}
               />
@@ -194,7 +204,86 @@ export function PackageBalanceSummary({
   );
 }
 
-export function PackageList({ packages }: { packages: PackageSafeSummary[] }) {
+function PackageAdjustmentForm({
+  action,
+  clientId,
+  contractId,
+  packageLineId,
+}: {
+  action: PackageAdjustmentAction;
+  clientId: string;
+  contractId: string;
+  packageLineId: string;
+}) {
+  const [state, formAction] = useActionState(
+    action,
+    initialPackageAdjustmentState,
+  );
+  const idempotencyKey = `package-adjust-${packageLineId}-${useId()}`;
+
+  return (
+    <details className="rounded-md border border-border p-3">
+      <summary className="cursor-pointer text-sm font-semibold">
+        تصحيح قيمة الباقة
+      </summary>
+      <form action={formAction} className="mt-3 grid gap-3">
+        <input name="clientId" type="hidden" value={clientId} />
+        <input name="contractId" type="hidden" value={contractId} />
+        <input name="packageLineId" type="hidden" value={packageLineId} />
+        <input
+          name="idempotencyKey"
+          type="hidden"
+          value={idempotencyKey}
+        />
+        <label className="grid gap-1 text-sm">
+          فرق الكمية
+          <input
+            className="rounded-md border border-border bg-background px-3 py-2"
+            inputMode="decimal"
+            name="adjustmentQuantity"
+            placeholder="مثال: -0.93"
+            required
+            type="text"
+          />
+        </label>
+        <label className="grid gap-1 text-sm">
+          سبب التصحيح
+          <textarea
+            className="min-h-20 rounded-md border border-border bg-background px-3 py-2"
+            minLength={3}
+            name="reason"
+            required
+          />
+        </label>
+        {state.message ? (
+          <p
+            aria-live="polite"
+            className={
+              state.status === "success" ? "text-success" : "text-danger"
+            }
+          >
+            {state.message}
+          </p>
+        ) : null}
+        <Button type="submit" variant="secondary">
+          تسجيل التصحيح
+        </Button>
+      </form>
+    </details>
+  );
+}
+
+export function PackageList({
+  packages,
+  adjustmentAction,
+  clientId,
+  contractId,
+}: {
+  packages: PackageSafeSummary[];
+  adjustmentAction?: PackageAdjustmentAction;
+  clientId?: string;
+  contractId?: string;
+}) {
   return (
     <section aria-label="قائمة الباقات" className="grid gap-3" dir="rtl">
       {packages.map((packageItem) => (
@@ -228,6 +317,14 @@ export function PackageList({ packages }: { packages: PackageSafeSummary[] }) {
                   <span>المتاح: {line.balance.available}</span>
                 </div>
                 <PackageBalanceSummary balance={line.balance} />
+                {adjustmentAction && clientId && contractId ? (
+                  <PackageAdjustmentForm
+                    action={adjustmentAction}
+                    clientId={clientId}
+                    contractId={contractId}
+                    packageLineId={line.id}
+                  />
+                ) : null}
               </SectionPanel>
             ))}
           </div>

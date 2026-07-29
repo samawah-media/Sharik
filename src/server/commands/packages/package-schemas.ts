@@ -29,7 +29,7 @@ export const createPackageLineSchema = z.object({
   serviceLabel: z.string().trim().min(2).max(120),
   deliverableTypeHint: optionalText(80),
   unitLabel: z.string().trim().min(1).max(60),
-  committedQuantity: z.coerce.number().min(0).max(100000),
+  committedQuantity: z.coerce.number().int().min(0).max(100000),
 });
 
 export const createPackageSchema = z

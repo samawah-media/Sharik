@@ -1,5 +1,25 @@
 # Project Progress
 
+## Spec 015 X010-A critical workflow safety closure — 2026-07-29
+
+Status: `X010_A_LOCAL_GREEN_CI_PENDING`.
+
+Owner UAT P1 findings are now implemented inside Spec 015: explicit upload
+state and recovery, exact send/delivery summaries, enforced
+`client_approved -> ready_for_delivery -> delivered`, append-once delivery
+replay, direct deliverable-list access, corrected accessible Kanban lanes and
+scrolling, and safe integer entry for count quantities. One additive migration
+adds the protected delivery-preparation/finalization commands; no technology or
+ADR change was required.
+
+The existing UAT value `11.93` remains unchanged and is flagged for an explicit
+reasoned owner adjustment through the audited ledger path. The complete local
+matrix passes: unit 265, integration 112, component 87, RLS simulator 24,
+pgTAP 499, fixture E2E 126, persistent E2E 16/16, lint, typecheck, secret scan,
+diff check, and build. Exact-head CI and the correct-project non-Production
+Preview smoke are still mandatory before X010-A can be GREEN. Production and
+merge remain untouched.
+
 ## Spec 015 X009-D owner image-only lifecycle closed — 2026-07-26
 
 Status: `X009_D_GREEN_OWNER_CORE_LIFECYCLE_COMPLETE`.

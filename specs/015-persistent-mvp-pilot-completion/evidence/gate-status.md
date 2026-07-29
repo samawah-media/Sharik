@@ -1,5 +1,22 @@
 # Spec 015 gate status
 
+## Current X010-A checkpoint — 2026-07-29
+
+`X010_A_LOCAL_GREEN_CI_PENDING`.
+
+The bounded workflow-safety implementation is complete and defects
+S015-P1-100 through S015-P1-106 are locally fixed. The complete local matrix
+passed: lint, typecheck, unit 265, integration 112, component 87, RLS simulator
+24, clean reset, pgTAP 499, fixture E2E 126 with 6 configured skips,
+persistent E2E 16/16, secret scan, diff check, and build. The gate remains open
+until exact-head CI, the correct `samawahs-projects/shrik` Preview, UAT-only
+additive migration application, and bounded hosted synthetic smoke pass. No
+GREEN or team-readiness claim is made here.
+
+Production, merge, Production promotion, public signup, external invitations,
+real-data smoke, deletion of UAT history, and automatic rewriting of the
+existing `11.93` value remain outside the authorized boundary.
+
 ## Authoritative current decision — 2026-07-26
 
 `X009_D_GREEN_OWNER_CORE_LIFECYCLE_COMPLETE`. The owner's image-only deliverable completed the full protected Preview/UAT journey: management rendered the real 1600x1600 current-version image, staged the exact file through an audited idempotent command, proved both client personas could not read it before send, sent it to the client, verified approver/viewer role separation and internal-data secrecy, recorded exact-version client approval, delivered it, and verified the client final-files route exposes one `final_delivery` file with preview/download while the approval inbox is empty. Client UAT personas were attached only to the owner-created client through a guarded run-ID-scoped UAT tool with dry-run, idempotent replay, status, rollback, audit, target-category, hostname, and Production refusal controls.

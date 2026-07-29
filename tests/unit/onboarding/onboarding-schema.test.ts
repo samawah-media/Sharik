@@ -43,6 +43,23 @@ const validBase = {
 };
 
 describe("onboarding schema", () => {
+  it("rejects fractional count quantities without rewriting stored data", () => {
+    expect(
+      onboardingSchema.safeParse({
+        ...validBase,
+        packageLines: [
+          { ...validBase.packageLines[0], committedQuantity: 11.93 },
+        ],
+      }).success,
+    ).toBe(false);
+    expect(
+      onboardingSchema.safeParse({
+        ...validBase,
+        reservedQuantity: 1.5,
+      }).success,
+    ).toBe(false);
+  });
+
   it("accepts a complete valid input", () => {
     const result = onboardingSchema.safeParse(validBase);
     expect(result.success).toBe(true);

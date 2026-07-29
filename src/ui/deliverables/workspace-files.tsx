@@ -127,18 +127,53 @@ const arabicUppyLocale = {
   },
 };
 
+type UploadRowStatus =
+  | "queued"
+  | "uploading"
+  | "registering"
+  | "ready"
+  | "failed";
+
+type UploadRow = {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  progress: number;
+  status: UploadRowStatus;
+};
+
+export type WorkspaceUploadSafetyState = "settled" | "uploading" | "failed";
+
+const uploadStatusLabel: Record<UploadRowStatus, string> = {
+  queued: "جاهز للرفع",
+  uploading: "جارٍ الرفع",
+  registering: "جارٍ ربط الملف بالنسخة",
+  ready: "تم الرفع والربط",
+  failed: "فشل الرفع أو الربط",
+};
+
+const formatFileSize = (bytes: number) => {
+  if (bytes < 1024) return `${bytes} بايت`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} كيلوبايت`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} ميجابايت`;
+};
+
 export function WorkspaceFileUpload({
   deliverable,
   currentVersionId,
   canPublishClientFile,
+  onSafetyStateChange,
 }: {
   deliverable: DeliverableSafeSummary;
   currentVersionId?: string;
   canPublishClientFile: boolean;
+  onSafetyStateChange?: (state: WorkspaceUploadSafetyState) => void;
 }) {
   const router = useRouter();
   const [uppy, setUppy] = useState<Uppy>();
   const [feedback, setFeedback] = useState<string>();
+  const [uploadRows, setUploadRows] = useState<UploadRow[]>([]);
   const [visibility, setVisibility] = useState<"internal_only" | "client_visible" | "final_delivery">("internal_only");
   const visibilityRef = useRef(visibility);
   const canUploadClientVisible = [
@@ -156,6 +191,17 @@ export function WorkspaceFileUpload({
   useEffect(() => {
     visibilityRef.current = visibility;
   }, [visibility]);
+
+  useEffect(() => {
+    const state: WorkspaceUploadSafetyState = uploadRows.some((row) =>
+      ["queued", "uploading", "registering"].includes(row.status),
+    )
+      ? "uploading"
+      : uploadRows.some((row) => row.status === "failed")
+        ? "failed"
+        : "settled";
+    onSafetyStateChange?.(state);
+  }, [onSafetyStateChange, uploadRows]);
 
   useEffect(() => {
     if (!currentVersionId) return;
@@ -197,6 +243,58 @@ export function WorkspaceFileUpload({
         retryDelays: [0, 1_000, 3_000, 5_000],
       });
       instance = created;
+      created.on("file-added", (file) => {
+        setFeedback(undefined);
+        setUploadRows((rows) => [
+          ...rows.filter((row) => row.id !== file.id),
+          {
+            id: file.id,
+            name: file.name,
+            type: file.type || "نوع غير محدد",
+            size: file.size ?? 0,
+            progress: 0,
+            status: "queued",
+          },
+        ]);
+      });
+      created.on("file-removed", (file) => {
+        setUploadRows((rows) => rows.filter((row) => row.id !== file.id));
+        setFeedback(`أُلغي الملف ${file.name} ولم يُربط بالمخرج.`);
+      });
+      created.on("upload", () => {
+        setUploadRows((rows) =>
+          rows.map((row) =>
+            row.status === "queued" || row.status === "failed"
+              ? { ...row, status: "uploading" }
+              : row,
+          ),
+        );
+      });
+      created.on("upload-progress", (file, progress) => {
+        if (!file) return;
+        const bytesTotal = progress.bytesTotal ?? 0;
+        const percentage =
+          bytesTotal > 0
+            ? Math.round((progress.bytesUploaded / bytesTotal) * 100)
+            : 0;
+        setUploadRows((rows) =>
+          rows.map((row) =>
+            row.id === file.id
+              ? { ...row, progress: percentage, status: "uploading" }
+              : row,
+          ),
+        );
+      });
+      created.on("upload-success", (file) => {
+        if (!file) return;
+        setUploadRows((rows) =>
+          rows.map((row) =>
+            row.id === file.id
+              ? { ...row, progress: 100, status: "registering" }
+              : row,
+          ),
+        );
+      });
       created.on("complete", async (result) => {
         let saved = 0;
         for (const file of result.successful ?? []) {
@@ -218,14 +316,59 @@ export function WorkspaceFileUpload({
           });
           if (registered.ok) {
             saved += 1;
+            setUploadRows((rows) =>
+              rows.map((row) =>
+                row.id === file.id ? { ...row, status: "ready" } : row,
+              ),
+            );
           } else {
             await supabase.storage.from("deliverable-assets").remove([path]);
+            setUploadRows((rows) =>
+              rows.map((row) =>
+                row.id === file.id ? { ...row, status: "failed" } : row,
+              ),
+            );
           }
         }
-        setFeedback(saved === (result.successful?.length ?? 0) ? `تم حفظ ${saved} ملف بنجاح.` : "تعذر حفظ بعض الملفات وحُذفت الرفوعات غير المسجلة تلقائيًا.");
+        for (const file of result.failed ?? []) {
+          if (!file) continue;
+          setUploadRows((rows) =>
+            rows.map((row) =>
+              row.id === file.id ? { ...row, status: "failed" } : row,
+            ),
+          );
+        }
+        const failedFiles = (result.failed ?? []).filter(Boolean);
+        if (failedFiles.length > 0) {
+          const failedFile = failedFiles[0];
+          setFeedback(
+            failedFile
+              ? `فشل رفع ${failedFile.name}. لم يُربط الملف بالمخرج؛ أعد المحاولة أو ألغِه بوضوح.`
+              : "فشل الرفع. لم يُربط أي ملف ناقص بالمخرج.",
+          );
+        } else {
+          setFeedback(
+            saved === (result.successful?.length ?? 0)
+              ? `تم حفظ ${saved} ملف بنجاح.`
+              : "تعذر حفظ بعض الملفات وحُذفت الرفوعات غير المسجلة تلقائيًا.",
+          );
+        }
         router.refresh();
       });
-      created.on("upload-error", () => setFeedback("فشل الرفع. لم تُسجل بيانات ملف ناقصة."));
+      created.on("upload-error", (file) => {
+        if (!file) {
+          setFeedback("فشل الرفع. لم يُربط أي ملف ناقص بالمخرج.");
+          return;
+        }
+        setUploadRows((rows) =>
+          rows.map((row) =>
+            row.id === file.id ? { ...row, status: "failed" } : row,
+          ),
+        );
+        setFeedback(
+          `فشل رفع ${file.name}. لم يُربط الملف بالمخرج؛ أعد المحاولة أو ألغِه بوضوح.`,
+        );
+      });
       if (active) setUppy(created);
     };
     void setup();
@@ -265,6 +408,41 @@ export function WorkspaceFileUpload({
         </label>
       ) : null}
       {uppy ? <Dashboard height={300} proudlyDisplayPoweredByUppy={false} uppy={uppy} width="100%" /> : <p className="text-sm text-muted">جارٍ تجهيز الرفع الآمن…</p>}
+      {uploadRows.length ? (
+        <ul aria-label="حالة رفع الملفات" className="grid gap-2">
+          {uploadRows.map((row) => (
+            <li
+              className="grid gap-2 rounded-lg border border-border bg-surface p-3 text-sm"
+              key={row.id}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="min-w-0 break-all font-semibold" dir="auto">
+                  {row.name}
+                </span>
+                <span className={row.status === "failed" ? "text-danger" : "text-muted"}>
+                  {uploadStatusLabel[row.status]}
+                </span>
+              </div>
+              <p className="text-xs text-muted">
+                {row.type} · {formatFileSize(row.size)} · {row.progress}%
+              </p>
+              <div
+                aria-label={`تقدم رفع ${row.name}`}
+                aria-valuemax={100}
+                aria-valuemin={0}
+                aria-valuenow={row.progress}
+                className="h-2 overflow-hidden rounded-full bg-border"
+                role="progressbar"
+              >
+                <div
+                  className={`h-full ${row.status === "failed" ? "bg-danger" : "bg-accent"}`}
+                  style={{ width: `${row.progress}%` }}
+                />
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       {feedback ? <p aria-live="polite" className="text-sm text-muted">{feedback}</p> : null}
     </div>
   );

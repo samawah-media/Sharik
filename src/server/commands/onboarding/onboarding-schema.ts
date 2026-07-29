@@ -31,7 +31,7 @@ export const onboardingPackageLineSchema = z.object({
   serviceLabel: z.string().trim().min(2).max(120),
   deliverableTypeHint: optionalText(80),
   unitLabel: z.string().trim().min(1).max(60),
-  committedQuantity: z.coerce.number().min(0).max(100000),
+  committedQuantity: z.coerce.number().int().min(0).max(100000),
 });
 
 export const onboardingSchema = z
@@ -71,7 +71,7 @@ export const onboardingSchema = z
     finalDueDate: optionalDate,
     requiresInternalApproval: z.coerce.boolean().default(true),
     requiresClientApproval: z.coerce.boolean().default(true),
-    reservedQuantity: z.coerce.number().min(1).max(100000).default(1),
+    reservedQuantity: z.coerce.number().int().min(1).max(100000).default(1),
   })
   .superRefine((value, context) => {
     if (

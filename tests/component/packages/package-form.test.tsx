@@ -1,5 +1,5 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PackageSafeSummary } from "@/modules/packages/package-repository";
 import {
   PackageBalanceSummary,
@@ -78,8 +78,16 @@ describe("package form and balance states", () => {
     expect(screen.getByLabelText("اسم الخدمة")).toBeRequired();
     expect(screen.getByLabelText("وحدة القياس")).toBeRequired();
     expect(screen.getByLabelText("الكمية المتفق عليها")).toHaveAttribute(
-      "min",
-      "0",
+      "pattern",
+      "[0-9]+",
+    );
+    expect(screen.getByLabelText("الكمية المتفق عليها")).toHaveAttribute(
+      "inputmode",
+      "numeric",
+    );
+    expect(screen.getByLabelText("الكمية المتفق عليها")).toHaveAttribute(
+      "type",
+      "text",
     );
     expect(document.querySelector('input[name="clientId"]')).toHaveValue(
       "client_a",
@@ -107,6 +115,25 @@ describe("package form and balance states", () => {
     expect(within(list).queryByText("internal")).not.toBeInTheDocument();
     expect(within(list).queryByText("reason")).not.toBeInTheDocument();
     expect(within(list).queryByText("Client B")).not.toBeInTheDocument();
+  });
+
+  it("offers an audited decimal correction path without a number spinner", () => {
+    render(
+      <PackageList
+        adjustmentAction={vi.fn(async () => ({ status: "idle" as const }))}
+        clientId="client_a"
+        contractId="contract_a"
+        packages={[packageSummary]}
+      />,
+    );
+
+    expect(screen.getByText("تصحيح قيمة الباقة")).toBeInTheDocument();
+    expect(screen.getByLabelText("فرق الكمية")).toHaveAttribute("type", "text");
+    expect(screen.getByLabelText("فرق الكمية")).toHaveAttribute(
+      "inputmode",
+      "decimal",
+    );
+    expect(screen.getByLabelText("سبب التصحيح")).toBeRequired();
   });
 
   it("renders a compact balance summary for a package line", () => {

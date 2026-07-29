@@ -11,6 +11,7 @@ import {
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
 import { cancelNotStartedDeliverableAction } from "@/server/actions/deliverable-cancellations";
+import { updateDeliverableStatusAction } from "@/server/actions/deliverable-status";
 import { listScopedDeliverables } from "@/server/actions/deliverable-read";
 import { listScopedDeliverableWorkspaceSummaries } from "@/server/actions/deliverable-workspace-read";
 import {
@@ -194,6 +195,9 @@ export default async function ClientDeliverablesPage({
       {deliverableList.deliverables.length > 0 ? (
         <DeliverableList
           cancellationAction={cancelNotStartedDeliverableAction}
+          approvalAction={
+            canUpdateDeliverableStatus ? updateDeliverableStatusAction : undefined
+          }
           clientName={displayClientName}
           deliverables={deliverableList.deliverables}
           workspaces={workspaces}

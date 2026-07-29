@@ -1,5 +1,14 @@
 # Spec 015 execution log
 
+## 2026-07-29 — X010-A critical workflow safety closure
+
+- Registered Owner UAT defects S015-P1-100 through S015-P1-106 and kept the work inside Spec 015. No Spec 016, dependency, technology change, or ADR was introduced.
+- Added explicit Uppy file metadata/progress/terminal state and fail-closed drawer/send behavior; exact current-version payload summaries for client send and final delivery; a dedicated client-approved Kanban lane; direct `فتح العمل` access from the deliverables list; and fixed-width mouse/touch/keyboard horizontal board navigation.
+- Added additive migration `202607290001_s015_x010a_workflow_safety.sql`. It makes `ready_for_delivery` mandatory, adds audited/idempotent prepare and final-delivery commands, validates the exact approved current version and ready scoped files, preserves SLA completion, and keeps ledger/audit/package consumption append-once on replay.
+- Count-based create/reservation inputs are spinner-free and integer-validated. Existing UAT value `11.93` was not changed; the package surface exposes the existing reason-required, idempotent, append-only audited administrative adjustment path.
+- Complete local matrix PASS: lint; typecheck; unit 59 files / 265 tests; integration 28 / 112; component 24 / 87; RLS simulator 8 / 24; local Supabase reset; pgTAP 8 files / 499 tests; fixture E2E 126 passed / 6 configured skips; persistent E2E 16/16; secret scan; `git diff --check`; and production build. Exact-head CI, Preview deployment, and hosted synthetic smoke remain required before GREEN.
+- Production, merge, Production promotion, UAT data deletion, and automatic correction of owner data remain prohibited and were not performed.
+
 ## 2026-07-26 — X009-D image-only owner lifecycle closure
 
 - Corrected the image-only deadlock with a real signed current-version preview and an exact-file management staging RPC that is audited, idempotent, tenant/client/version scoped, and client-secret until explicit send.

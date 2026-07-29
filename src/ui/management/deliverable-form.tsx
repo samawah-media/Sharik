@@ -16,6 +16,7 @@ import { Card, CardHeader, CardTitle, SectionPanel } from "@/ui/core/card";
 import { EmptyState, ErrorState } from "@/ui/core/states";
 import { DeliverableCancellationControl } from "./deliverable-actions";
 import { DeliverableContentCard } from "@/ui/deliverables/deliverable-content-card";
+import { UniversalDeliverableDrawer } from "@/ui/deliverables/universal-deliverable-drawer";
 
 type DeliverableFormAction = (
   previousState: DeliverableFormState,
@@ -294,9 +295,9 @@ export function DeliverableForm({
                 <input
                   className="rounded-md border border-border bg-background px-3 py-2"
                   name="reservedQuantity"
-                  type="number"
-                  min="1"
-                  step="0.01"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[1-9][0-9]*"
                   required
                   defaultValue={state.values?.reservedQuantity ?? "1"}
                 />
@@ -433,11 +434,13 @@ export function DeliverableList({
   clientName,
   workspaces = {},
   cancellationAction,
+  approvalAction,
 }: {
   deliverables: DeliverableSafeSummary[];
   clientName?: string;
   workspaces?: Record<string, DeliverableWorkspaceSummary>;
   cancellationAction?: (formData: FormData) => void | Promise<void>;
+  approvalAction?: (formData: FormData) => void | Promise<void>;
 }) {
   return (
     <section aria-label="قائمة المخرجات" className="grid gap-3" dir="rtl">
@@ -505,6 +508,16 @@ export function DeliverableList({
                 {deliverable.approvedExtra ? (
                   <Badge tone="warning">إضافي معتمد</Badge>
                 ) : null}
+              </div>
+              <div className="mt-3">
+                <UniversalDeliverableDrawer
+                  approvalAction={approvalAction}
+                  buttonLabel="فتح العمل"
+                  canPublishClientComment={Boolean(approvalAction)}
+                  clientName={clientName}
+                  deliverable={deliverable}
+                  summary={workspaces[deliverable.id]}
+                />
               </div>
               <DeliverableCancellationControl
                 action={cancellationAction}

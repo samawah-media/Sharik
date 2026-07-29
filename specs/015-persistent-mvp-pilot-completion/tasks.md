@@ -131,6 +131,18 @@ Independent review fixed S015-P1-094, corrective exact-head CI run `29852802208`
   - [x] X009-D-4 Prove exact-version scope, tenant/client isolation, unauthorized-role denial, pre-send client secrecy, replay safety, audit evidence, successful image-only send, and atomic promotion to final delivery with pgTAP and component/browser regressions.
   - [x] X009-D-5 Exact-head F-001 run `30214571221` passed the complete matrix on `fbee205`; additive migrations `202607260001` and `202607260002` match approved non-Production `sharik-uat`; the official protected Preview proved real 1600x1600 media, pre-send client secrecy, approver/viewer role separation, exact-version approval, delivery, final-file preview/download, and empty post-decision inbox. Production remains untouched.
 
+## Critical workflow safety closure X010-A — same Spec 015
+
+- [ ] X010-A Close the Owner UAT P1 workflow-safety defects before any broad visual redesign.
+  - [x] X010-A-1 Make upload state explicit (name, type, size, progress, success/failure/cancel/retry), prevent silent continuation while unsettled, and keep registration bound to the exact tenant/client/deliverable/current version.
+  - [x] X010-A-2 Add an exact-version client-send review summary and deny pending, failed, stale, cross-deliverable, or non-ready file payloads.
+  - [x] X010-A-3 Enforce and expose `client_approved -> ready_for_delivery -> delivered` through audited, idempotent management workflow commands.
+  - [x] X010-A-4 Add an exact-version/file final-delivery confirmation and preserve single audit/ledger/package consumption on replay.
+  - [x] X010-A-5 Make each deliverable list item directly openable with the Arabic action `فتح العمل`.
+  - [x] X010-A-6 Correct Kanban state-to-column mapping and retain fixed-width, RTL/mobile/keyboard-accessible horizontal scrolling with protected commands outside drag/drop.
+  - [x] X010-A-7 Remove numeric spinners, enforce integer validation for count quantities, preserve the existing UAT value `11.93`, and record it for owner correction through the audited adjustment path.
+  - [ ] X010-A-8 Pass the complete local matrix, exact-HEAD CI, correct-project Preview deployment, and bounded hosted synthetic smoke before declaring GREEN.
+
 
 ## Correction note: task assignment authority (2026-07-15)
 

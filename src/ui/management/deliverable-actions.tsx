@@ -1,4 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
+import type { DeliverableFileWorkspace, DeliverableVersionWorkspace } from "@/modules/deliverables/deliverable-workspace";
 import {
   r007WorkflowStepTargets,
   type R007WorkflowStep,
@@ -12,6 +16,7 @@ type ManagementWorkflowStep = Extract<
   | "approve_internally"
   | "request_internal_changes"
   | "send_to_client"
+  | "prepare_for_delivery"
   | "deliver_after_client_approval"
 >;
 
@@ -67,9 +72,20 @@ const getApprovalWorkflowActions = (
   ) {
     return [
       {
+        step: "prepare_for_delivery",
+        label: "تجهيز للتسليم",
+        defaultReason: "prepare_exact_approved_version_for_delivery",
+        variant: "primary",
+      },
+    ];
+  }
+
+  if (deliverable.status === "ready_for_delivery") {
+    return [
+      {
         step: "deliver_after_client_approval",
-        label: "تسليم المخرج",
-        defaultReason: "delivery_after_required_approval",
+        label: "تأكيد التسليم النهائي",
+        defaultReason: "delivery_after_exact_version_confirmation",
         variant: "primary",
       },
     ];
@@ -132,11 +148,20 @@ export function DeliverableApprovalWorkflowControl({
   deliverable,
   action,
   clientReviewReady = true,
+  clientName,
+  currentVersion,
+  files = [],
+  uploadBlocked = false,
 }: {
   deliverable: DeliverableSafeSummary;
   action?: ManagementDeliverableAction;
   clientReviewReady?: boolean;
+  clientName?: string;
+  currentVersion?: DeliverableVersionWorkspace;
+  files?: DeliverableFileWorkspace[];
+  uploadBlocked?: boolean;
 }) {
+  const [confirmedStep, setConfirmedStep] = useState<ManagementWorkflowStep>();
   if (!action) {
     return null;
   }
@@ -158,13 +183,85 @@ export function DeliverableApprovalWorkflowControl({
         {workflows.map((workflow) => {
           const reviewPayloadMissing =
             workflow.step === "send_to_client" && !clientReviewReady;
+          const isConfirmationStep =
+            workflow.step === "send_to_client" ||
+            workflow.step === "deliver_after_client_approval";
+          const exactFiles = files.filter(
+            (file) =>
+              file.versionId === deliverable.currentVersionId &&
+              file.fileSize > 0 &&
+              (workflow.step === "send_to_client"
+                ? file.visibility === "client_visible"
+                : ["client_visible", "final_delivery"].includes(
+                    file.visibility,
+                  )),
+          );
+          const blocked = reviewPayloadMissing || uploadBlocked;
           return (
-            <form
-              action={action}
-              aria-label={`${workflow.label} ${deliverable.name}`}
-              className="grid gap-2"
-              key={workflow.step}
-            >
+            <div className="grid gap-2" key={workflow.step}>
+              {isConfirmationStep ? (
+                <section
+                  aria-label={
+                    workflow.step === "send_to_client"
+                      ? "ملخص ما سيراه العميل"
+                      : "تأكيد بيانات التسليم النهائي"
+                  }
+                  className="grid gap-2 rounded-lg border border-border bg-surface p-3 text-sm"
+                >
+                  <p className="font-semibold">
+                    {workflow.step === "send_to_client"
+                      ? "راجع ما سيراه العميل"
+                      : "راجع التسليم قبل إغلاق المخرج"}
+                  </p>
+                  <dl className="grid gap-2 sm:grid-cols-2">
+                    <div><dt className="font-semibold">المخرج</dt><dd>{deliverable.name}</dd></div>
+                    {clientName ? <div><dt className="font-semibold">العميل</dt><dd>{clientName}</dd></div> : null}
+                    <div><dt className="font-semibold">النسخة</dt><dd>{currentVersion ? `النسخة ${currentVersion.versionNumber}` : "غير متاحة"}</dd></div>
+                    <div><dt className="font-semibold">عدد الملفات</dt><dd>{exactFiles.length}</dd></div>
+                  </dl>
+                  {currentVersion?.caption ? <div><p className="font-semibold">الكابشن</p><p className="whitespace-pre-wrap">{currentVersion.caption}</p></div> : null}
+                  {currentVersion?.body ? <div><p className="font-semibold">المحتوى</p><p className="whitespace-pre-wrap">{currentVersion.body}</p></div> : null}
+                  {exactFiles.length ? (
+                    <ul aria-label="ملفات النسخة الدقيقة" className="list-inside list-disc">
+                      {exactFiles.map((file) => <li key={file.id}>{file.name}</li>)}
+                    </ul>
+                  ) : null}
+                  {workflow.step === "deliver_after_client_approval" ? (
+                    <p className="font-semibold text-warning">
+                      سيغلق التسليم هذا المخرج ويستهلك الكمية المحجوزة من الباقة.
+                    </p>
+                  ) : null}
+                </section>
+              ) : null}
+              {reviewPayloadMissing ? (
+                <p className="text-xs leading-5 text-warning">
+                  أضف نصًا فعليًا أو جهّز ملف النسخة الحالية للعميل قبل
+                  الإرسال.
+                </p>
+              ) : null}
+              {uploadBlocked ? (
+                <p className="text-xs leading-5 text-danger">
+                  لا يمكن المتابعة قبل اكتمال الرفع أو إلغاء الملف المتعثر.
+                </p>
+              ) : null}
+              {isConfirmationStep && confirmedStep !== workflow.step ? (
+                <Button
+                  disabled={blocked}
+                  onClick={() => setConfirmedStep(workflow.step)}
+                  size="sm"
+                  type="button"
+                  variant="secondary"
+                >
+                  {workflow.step === "send_to_client"
+                    ? "راجعت النسخة والملفات"
+                    : "راجعت بيانات التسليم"}
+                </Button>
+              ) : (
+                <form
+                  action={action}
+                  aria-label={`${workflow.label} ${deliverable.name}`}
+                  className="grid gap-2"
+                >
               <input
                 name="clientId"
                 type="hidden"
@@ -215,21 +312,17 @@ export function DeliverableApprovalWorkflowControl({
                   value={workflow.defaultReason}
                 />
               )}
-              {reviewPayloadMissing ? (
-                <p className="text-xs leading-5 text-warning">
-                  أضف نصًا فعليًا أو جهّز ملف النسخة الحالية للعميل قبل
-                  الإرسال.
-                </p>
-              ) : null}
               <Button
-                disabled={reviewPayloadMissing}
+                disabled={blocked}
                 size="sm"
                 type="submit"
                 variant={workflow.variant}
               >
                 {workflow.label}
               </Button>
-            </form>
+                </form>
+              )}
+            </div>
           );
         })}
       </div>

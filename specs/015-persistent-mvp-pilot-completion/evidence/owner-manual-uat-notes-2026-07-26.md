@@ -68,3 +68,30 @@ Open the created client's workspace and verify:
 3. Every package service and its total/remaining quantity are understandable.
 4. The first deliverable is visible with its responsible team member and next action.
 5. Existing client, contract, package, and deliverable data can be corrected through an obvious route.
+
+## X010-A critical workflow-safety observations — 2026-07-29
+
+The following Owner UAT observations are recorded in Spec 015 and are treated as
+P1 release blockers until exact-head CI and the bounded Preview smoke pass:
+
+1. Uploads did not expose a dependable per-file name/type/size/progress/terminal
+   state, and a failed replacement could leave the operator uncertain which file
+   would be sent.
+2. Client send did not provide a final summary of the exact current version,
+   caption/body, and client-visible files.
+3. Client approval flowed visually into the client-review lane and delivery could
+   skip an explicit management preparation checkpoint.
+4. Final delivery lacked an exact version/file/consequence confirmation at the
+   protected action.
+5. Deliverable details were discoverable from Kanban but not directly from the
+   deliverables list.
+6. Kanban needed corrected post-approval mapping and explicit horizontal
+   mouse/touch/keyboard affordances without weakening protected commands.
+7. Count inputs exposed browser number spinners and accepted fractional new
+   quantities. The existing UAT value `11.93` is preserved as owner data requiring
+   an explicit, reasoned, audited administrative correction; it is not rounded or
+   rewritten automatically.
+
+The bounded X010-A implementation addresses these observations without a broad
+visual redesign. Owner acceptance remains pending until the exact-head CI and
+non-Production Preview synthetic smoke evidence are attached.

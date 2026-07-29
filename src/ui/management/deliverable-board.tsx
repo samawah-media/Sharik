@@ -115,8 +115,9 @@ const macroLanes: readonly MacroLane[] = [
   {
     id: "client-review",
     label: "مراجعة العميل",
-    statuses: ["waiting_client_approval", "client_approved"],
+    statuses: ["waiting_client_approval"],
   },
+  { id: "client-approved", label: "معتمد من العميل", statuses: ["client_approved"] },
   { id: "delivery", label: "جاهز للتسليم", statuses: ["ready_for_delivery"] },
   { id: "completed", label: "تم التسليم", statuses: ["delivered"] },
 ];
@@ -288,6 +289,7 @@ function DeliverableCard({
         <UniversalDeliverableDrawer
           approvalAction={approvalAction}
           canPublishClientComment={canPublishClientComment}
+          clientName={clientName}
           deliverable={deliverable}
           summary={summary}
         />
@@ -408,6 +410,23 @@ export function DeliverableBoard({
     }),
   );
   const activeDeliverable = items.find((item) => item.id === activeId);
+  const scrollBoardWithKeyboard = (
+    event: React.KeyboardEvent<HTMLElement>,
+  ) => {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
+    event.currentTarget.scrollBy({
+      left: event.key === "ArrowLeft" ? -320 : 320,
+      behavior: "smooth",
+    });
+  };
+  const scrollBoardWithMouseWheel = (
+    event: React.WheelEvent<HTMLElement>,
+  ) => {
+    if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
+    event.preventDefault();
+    event.currentTarget.scrollLeft += event.deltaY;
+  };
 
   if (deliverables.length === 0) {
     return <DeliverableBoardEmptyState />;
@@ -472,9 +491,12 @@ export function DeliverableBoard({
   return (
     <section
       aria-label="لوحة العمل"
-      className="-mx-4 overflow-x-auto px-4 pb-4"
+      className="-mx-4 overflow-x-auto overscroll-x-contain px-4 pb-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
       data-testid="kanban-board-scroll"
       dir="rtl"
+      onKeyDown={scrollBoardWithKeyboard}
+      onWheel={scrollBoardWithMouseWheel}
+      tabIndex={0}
     >
       {dragFeedback ? (
         <p

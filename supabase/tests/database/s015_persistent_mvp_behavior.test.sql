@@ -904,20 +904,68 @@ select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202
 select is((select count(*)::integer from public.file_assets where deliverable_id = '21000000-0000-4000-8000-000000000520'), 0, 'journey files remain hidden from client before final delivery');
 reset role;
 
+insert into public.file_assets (
+  id, tenant_id, client_id, deliverable_id, version_id, owner_user_id,
+  visibility, storage_path, file_name, file_type, file_size, version_number,
+  is_final, upload_state
+) values (
+  '21000000-0000-4000-8000-000000000911',
+  '21000000-0000-4000-8000-000000000001',
+  '21000000-0000-4000-8000-000000000301',
+  '21000000-0000-4000-8000-000000000520',
+  '21000000-0000-4000-8000-000000000622',
+  '21000000-0000-4000-8000-000000000203',
+  'internal_only', 'failed/s015/final.mp4', 'failed-final.mp4',
+  'video/mp4', 10, 1, false, 'failed'
+);
+
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
-select results_eq(
+select throws_ok(
+  $$select deliverable_status from public.s015_prepare_delivery(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000622',
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-prepare-failed-file')$$,
+  'P0001',
+  'unsettled exact-version file',
+  'failed exact-version upload blocks delivery preparation'
+);
+reset role;
+
+delete from public.file_assets
+where id = '21000000-0000-4000-8000-000000000911';
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
+select throws_ok(
   $$select deliverable_status from public.s015_execute_internal_workflow(
     '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
-    '21000000-0000-4000-8000-000000000622', 'deliver', null, 'final delivery',
+    '21000000-0000-4000-8000-000000000622', 'deliver', null, 'unsafe direct delivery',
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-direct-delivery-denied')$$,
+  'P0001',
+  'ready_for_delivery required before delivered',
+  'direct client_approved to delivered transition is denied'
+);
+select results_eq(
+  $$select deliverable_status from public.s015_prepare_delivery(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000622',
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-prepare-final')$$,
+  $$values ('ready_for_delivery'::text)$$,
+  'management prepares the exact approved version for delivery'
+);
+select results_eq(
+  $$select deliverable_status from public.s015_deliver_ready_version(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000622',
     '21000000-0000-4000-8000-000000000909', gen_random_uuid(), 's015-journey-deliver-final')$$,
   $$values ('delivered'::text)$$,
   'journey final delivery uses approved exact version'
 );
 select results_eq(
-  $$select deliverable_status from public.s015_execute_internal_workflow(
+  $$select deliverable_status from public.s015_deliver_ready_version(
     '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
-    '21000000-0000-4000-8000-000000000622', 'deliver', null, 'replay final delivery',
+    '21000000-0000-4000-8000-000000000622',
     gen_random_uuid(), gen_random_uuid(), 's015-journey-deliver-final')$$,
   $$values ('delivered'::text)$$,
   'journey final delivery replay is idempotent'
@@ -931,6 +979,15 @@ reset role;
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000202', true);
+select throws_ok(
+  $$select deliverable_status from public.s015_deliver_ready_version(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000520',
+    '21000000-0000-4000-8000-000000000622',
+    gen_random_uuid(), gen_random_uuid(), 's015-journey-deliver-final')$$,
+  '42501',
+  'final delivery denied',
+  'client viewer cannot replay a management delivery command'
+);
 select is((select count(*)::integer from public.file_assets where deliverable_id = '21000000-0000-4000-8000-000000000520'), 1, 'journey client sees only final delivery file after delivery');
 select is((select visibility from public.file_assets where deliverable_id = '21000000-0000-4000-8000-000000000520'), 'final_delivery', 'journey internal file remains hidden after delivery');
 select is((select count(*)::integer from public.comments where body in ('first draft', 'replacement draft', 'final replacement', 'final delivery')), 0, 'journey internal comments remain hidden after delivery');
@@ -1244,6 +1301,8 @@ select is(private.s015_can_read_storage_object(
 ), false, 'Client A cannot read final delivery before delivery state');
 reset role;
 
+update public.deliverables set status = 'ready_for_delivery', progress_percentage = 95
+where id = '21000000-0000-4000-8000-000000000532';
 update public.deliverables set status = 'delivered', progress_percentage = 100
 where id = '21000000-0000-4000-8000-000000000532';
 update public.deliverable_versions set status = 'final'
@@ -2833,13 +2892,23 @@ set local role authenticated;
 select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000207', true);
 select results_eq(
   $$select deliverable_status
-    from public.s015_execute_internal_workflow(
+    from public.s015_prepare_delivery(
       '21000000-0000-4000-8000-000000000301',
       '21000000-0000-4000-8000-000000009501',
       '21000000-0000-4000-8000-000000009502',
-      'deliver',
-      null,
-      'image-only final delivery',
+      gen_random_uuid(),
+      gen_random_uuid(),
+      's015-prepare-image-only'
+    )$$,
+  $$values ('ready_for_delivery'::text)$$,
+  'management prepares the exact approved image-only version'
+);
+select results_eq(
+  $$select deliverable_status
+    from public.s015_deliver_ready_version(
+      '21000000-0000-4000-8000-000000000301',
+      '21000000-0000-4000-8000-000000009501',
+      '21000000-0000-4000-8000-000000009502',
       gen_random_uuid(),
       gen_random_uuid(),
       's015-deliver-image-only'

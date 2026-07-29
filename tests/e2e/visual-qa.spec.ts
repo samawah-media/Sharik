@@ -155,10 +155,10 @@ test("management exception dashboard and team work visual states are RTL and sta
 
   await page.getByRole("button", { name: "لوحة العمل" }).click();
   await expect(page.getByTestId("kanban-board-scroll")).toBeVisible();
-  await expect(page.getByTestId("kanban-column")).toHaveCount(6);
+  await expect(page.getByTestId("kanban-column")).toHaveCount(7);
   await expectMinimumTouchTargets(page);
   await expectNoUnexpectedHorizontalOverflow(page, "kanban-board-scroll");
-  await capture(page, testInfo, "assigned-team-six-lane-board");
+  await capture(page, testInfo, "assigned-team-seven-lane-board");
 
   expect(browserErrors).toEqual([]);
 });

@@ -81,8 +81,45 @@ describe("R-007 deliverable lifecycle readiness rules", () => {
       send_to_client: "waiting_client_approval",
       approve_as_client: "client_approved",
       request_client_changes: "client_changes_requested",
+      prepare_for_delivery: "ready_for_delivery",
       deliver_after_client_approval: "delivered",
     });
   });
-});
 
+  it("requires the explicit post-approval delivery checkpoint", () => {
+    const approvedVersion = {
+      ...currentVersion,
+      state: "client_visible",
+      internalApprovalState: "approved",
+      clientApprovalState: "approved",
+    } as const;
+
+    expect(
+      canPerformR007WorkflowStep({
+        step: "prepare_for_delivery",
+        status: "client_approved",
+        requiresClientApproval: true,
+        version: approvedVersion,
+      }),
+    ).toEqual({ allowed: true });
+    expect(
+      canPerformR007WorkflowStep({
+        step: "deliver_after_client_approval",
+        status: "client_approved",
+        requiresClientApproval: true,
+        version: approvedVersion,
+      }),
+    ).toEqual({
+      allowed: false,
+      reason: "client_approval_required_before_delivery",
+    });
+    expect(
+      canPerformR007WorkflowStep({
+        step: "deliver_after_client_approval",
+        status: "ready_for_delivery",
+        requiresClientApproval: true,
+        version: approvedVersion,
+      }),
+    ).toEqual({ allowed: true });
+  });
+});

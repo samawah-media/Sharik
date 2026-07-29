@@ -542,9 +542,10 @@ export function FirstClientWizard({
                     <input
                       aria-label={`الكمية المتفق عليها للسطر ${index + 1}`}
                       className={fieldClass}
-                      min="0"
+                      inputMode="numeric"
+                      pattern="[0-9]+"
                       onChange={(e) => updateLine(index, "committedQuantity", e.target.value)}
-                      type="number"
+                      type="text"
                       value={line.committedQuantity}
                     />
                   </label>
@@ -683,9 +684,10 @@ export function FirstClientWizard({
               <input
                 aria-label="الكمية المحجوزة"
                 className={fieldClass}
-                min="1"
+                inputMode="numeric"
+                pattern="[1-9][0-9]*"
                 onChange={(e) => update("reservedQuantity", e.target.value)}
-                type="number"
+                type="text"
                 value={data.reservedQuantity}
               />
             </label>

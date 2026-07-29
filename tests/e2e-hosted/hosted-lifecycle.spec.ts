@@ -206,8 +206,22 @@ const runManagementWorkflow = async ({
     | "approve_internally"
     | "request_internal_changes"
     | "send_to_client"
+    | "prepare_for_delivery"
     | "deliver_after_client_approval";
 }) => {
+  if (
+    step === "send_to_client" ||
+    step === "deliver_after_client_approval"
+  ) {
+    await drawer
+      .getByRole("button", {
+        name:
+          step === "send_to_client"
+            ? "راجعت النسخة والملفات"
+            : "راجعت بيانات التسليم",
+      })
+      .click();
+  }
   const form = drawer.locator(
     `form:has(input[name="workflowStep"][value="${step}"])`,
   );
@@ -236,7 +250,7 @@ const uploadWorkspaceFile = async ({
   await expect(input).toBeAttached({ timeout: 60_000 });
   await input.setInputFiles({
     name: fileName,
-    mimeType: "text/plain",
+    mimeType: fileName.endsWith(".mp4") ? "video/mp4" : "text/plain",
     buffer: Buffer.from(`Synthetic hosted UAT file: ${fileName}`, "utf8"),
   });
   const upload = drawer.locator("button.uppy-StatusBar-actionBtn--upload");
@@ -245,6 +259,13 @@ const uploadWorkspaceFile = async ({
   await expect(drawer.getByText("تم حفظ 1 ملف بنجاح.")).toBeVisible({
     timeout: 120_000,
   });
+  await expect(drawer.getByText(fileName, { exact: true })).toBeVisible();
+  await expect(drawer.getByText("تم الرفع والربط", { exact: true })).toBeVisible();
+  await expect(
+    drawer.getByText(
+      fileName.endsWith(".mp4") ? /video\/mp4.*100%/u : /text\/plain.*100%/u,
+    ),
+  ).toBeVisible();
 };
 
 const choosePendingDeliverable = async (page: Page, name: string) => {
@@ -279,7 +300,7 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
   const token = seed.runId.slice(-10);
   const internalComment = `تعليق داخلي اصطناعي ${token}`;
   const internalFileName = `internal-uat-${token}.txt`;
-  const finalFileName = `final-uat-${token}.txt`;
+  const finalFileName = `final-uat-${token}.mp4`;
 
   await withPersona({
     actor: seed.actors.ACCOUNT_MANAGER,
@@ -682,6 +703,16 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
       });
       await page.goto("/work", { waitUntil: "domcontentloaded" });
       drawer = await openDeliverableWorkspace(page, seed.deliverableName);
+      await runManagementWorkflow({
+        drawer,
+        step: "prepare_for_delivery",
+      });
+      await page.waitForURL(/saved=status-updated/u);
+      await page.goto("/work", { waitUntil: "domcontentloaded" });
+      drawer = await openDeliverableWorkspace(page, seed.deliverableName);
+      await drawer
+        .getByRole("button", { name: "راجعت بيانات التسليم" })
+        .click();
       const deliveryButton = drawer.locator(
         'form:has(input[name="workflowStep"][value="deliver_after_client_approval"]) button[type="submit"]',
       );
@@ -936,11 +967,9 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
       await expect(finalFile).toBeVisible({ timeout: 60_000 });
       await expect(page.getByText(internalFileName)).toHaveCount(0);
       await finalFile.getByRole("button", { name: "معاينة" }).click();
-      await expect(
-        finalFile.getByText(
-          "لا توجد معاينة مرئية لهذا النوع. استخدم التنزيل الآمن.",
-        ),
-      ).toBeVisible({ timeout: 60_000 });
+      await expect(finalFile.locator("video[controls]")).toBeVisible({
+        timeout: 60_000,
+      });
       await expectNoHorizontalOverflow(page);
     },
   });

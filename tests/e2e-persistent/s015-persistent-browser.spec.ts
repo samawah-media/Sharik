@@ -78,10 +78,24 @@ const runManagementStep = async ({
     | "approve_internally"
     | "request_internal_changes"
     | "send_to_client"
+    | "prepare_for_delivery"
     | "deliver_after_client_approval";
   reason?: string;
 }) => {
   const drawer = await openDrawer(card);
+  if (
+    step === "send_to_client" ||
+    step === "deliver_after_client_approval"
+  ) {
+    await drawer
+      .getByRole("button", {
+        name:
+          step === "send_to_client"
+            ? "راجعت النسخة والملفات"
+            : "راجعت بيانات التسليم",
+      })
+      .click();
+  }
   const form = drawer.locator(
     `form:has(input[name="workflowStep"][value="${step}"])`,
   );
@@ -289,6 +303,42 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
     .single();
   expect(stagedReviewFile.error).toBeNull();
   expect(stagedReviewFile.data?.visibility).toBe("client_visible");
+  const failedVideoName = `failed-${seed.mainDeliverableId.slice(-8)}.mp4`;
+  await page.route("**/storage/v1/upload/resumable*", async (route) => {
+    await route.abort("failed");
+  });
+  const failedVideoInput = reviewDrawer
+    .locator('input[type="file"]:not([webkitdirectory])')
+    .last();
+  await failedVideoInput.setInputFiles({
+    name: failedVideoName,
+    mimeType: "video/mp4",
+    buffer: Buffer.from("synthetic failed video"),
+  });
+  await reviewDrawer
+    .locator("button.uppy-StatusBar-actionBtn--upload")
+    .click();
+  await expect(
+    reviewDrawer.getByText(`فشل رفع ${failedVideoName}. لم يُربط الملف بالمخرج؛ أعد المحاولة أو ألغِه بوضوح.`),
+  ).toBeVisible({ timeout: 30_000 });
+  await expect(
+    reviewDrawer.getByRole("button", { name: "راجعت النسخة والملفات" }),
+  ).toBeDisabled();
+  const failedVideoRows = await seeded.client
+    .from("file_assets")
+    .select("id")
+    .eq("deliverable_id", seed.mainDeliverableId)
+    .eq("file_name", failedVideoName);
+  expect(failedVideoRows.error).toBeNull();
+  expect(failedVideoRows.data).toHaveLength(0);
+  await page.unroute("**/storage/v1/upload/resumable*");
+  await reviewDrawer
+    .locator("button.uppy-Dashboard-Item-action--remove")
+    .click();
+  await expect(
+    reviewDrawer.getByText(`أُلغي الملف ${failedVideoName} ولم يُربط بالمخرج.`),
+  ).toBeVisible();
+  await reviewDrawer.getByRole("button", { name: "إغلاق" }).click();
   await runManagementStep({ card: managementCard, step: "send_to_client" });
   await expectBoardSaved(page);
   await assertDeliverable(seed.mainDeliverableId, {
@@ -422,9 +472,23 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
 
   await signInViaUi(page, seed.actors.tenantAdmin);
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
+  await runManagementStep({
+    card: cardFor(page, persistentDeliverableNames.main),
+    step: "prepare_for_delivery",
+  });
+  await expectBoardSaved(page);
+  await assertDeliverable(seed.mainDeliverableId, {
+    status: "ready_for_delivery",
+    current_version_id: version3.id,
+  });
+
+  await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
   const deliveryDrawer = await openDrawer(
     cardFor(page, persistentDeliverableNames.main),
   );
+  await deliveryDrawer
+    .getByRole("button", { name: "راجعت بيانات التسليم" })
+    .click();
   const deliveryButton = deliveryDrawer.locator(
     'form:has(input[name="workflowStep"][value="deliver_after_client_approval"]) button[type="submit"]',
   );
@@ -462,7 +526,7 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
       .from("mvp_command_requests")
       .select("id", { count: "exact", head: true })
       .eq("deliverable_id", seed.mainDeliverableId)
-      .eq("command_name", "deliver"),
+      .eq("command_name", "deliver_ready_version"),
     seeded.client
       .from("deliverable_allocations")
       .select("status")

@@ -28,6 +28,7 @@ const r007WorkflowPermissions = {
   send_to_client: PERMISSIONS.DELIVERABLE_SEND_TO_CLIENT,
   approve_as_client: PERMISSIONS.DELIVERABLE_CLIENT_APPROVE,
   request_client_changes: PERMISSIONS.DELIVERABLE_CLIENT_APPROVE,
+  prepare_for_delivery: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
   deliver_after_client_approval: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
 } as const satisfies Record<R007WorkflowStep, (typeof PERMISSIONS)[keyof typeof PERMISSIONS]>;
 
@@ -45,6 +46,7 @@ const persistentCommandForStep = {
   approve_internally: "approve_internal",
   request_internal_changes: "request_internal_changes",
   send_to_client: "send_to_client",
+  prepare_for_delivery: "prepare_delivery",
   deliver_after_client_approval: "deliver",
 } as const;
 

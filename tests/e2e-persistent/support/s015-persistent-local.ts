@@ -1026,15 +1026,17 @@ export const signInViaUi = async (page: Page, actor: PersistentActor) => {
         state: "visible",
         timeout: 15_000,
       });
-      break;
+      await form.locator('input[name="email"]').fill(actor.email);
+      await form.locator('input[name="password"]').fill(actor.password);
+      await form.locator('button[type="submit"]').click();
+      await expect(page).not.toHaveURL(/\/sign-in(?:\?|$)/u, {
+        timeout: 20_000,
+      });
+      return;
     } catch (error) {
       if (attempt === 1) throw error;
     }
   }
-  await form.locator('input[name="email"]').fill(actor.email);
-  await form.locator('input[name="password"]').fill(actor.password);
-  await form.locator('button[type="submit"]').click();
-  await expect(page).not.toHaveURL(/\/sign-in(?:\?|$)/u);
 };
 
 export const expectNoHorizontalOverflow = async (page: Page) => {

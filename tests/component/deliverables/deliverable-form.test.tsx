@@ -102,8 +102,12 @@ describe("deliverable creation form and reservation preview", () => {
       "package_line_posts_a",
     );
     expect(screen.getByLabelText("الكمية المحجوزة")).toHaveAttribute(
-      "min",
-      "1",
+      "pattern",
+      "[1-9][0-9]*",
+    );
+    expect(screen.getByLabelText("الكمية المحجوزة")).toHaveAttribute(
+      "type",
+      "text",
     );
     expect(screen.getByLabelText("يتطلب تعميدًا داخليًا")).toBeChecked();
     expect(screen.getByLabelText("يتطلب اعتماد العميل")).toBeChecked();
@@ -174,6 +178,9 @@ describe("deliverable creation form and reservation preview", () => {
       within(list).getByText("مخرج متفق عليه ضمن الباقة."),
     ).toBeInTheDocument();
     expect(within(list).getByText("محجوز: 1")).toBeInTheDocument();
+    expect(
+      within(list).getByRole("button", { name: "فتح العمل" }),
+    ).toBeInTheDocument();
     expect(within(list).queryByText("approval log")).not.toBeInTheDocument();
     expect(
       within(list).queryByText("internal comment"),

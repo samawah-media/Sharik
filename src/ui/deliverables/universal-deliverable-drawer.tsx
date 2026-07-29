@@ -36,6 +36,7 @@ import {
   WorkspaceFilePreview,
   WorkspaceFileUpload,
   WorkspaceInlineMedia,
+  type WorkspaceUploadSafetyState,
 } from "./workspace-files";
 import { DeliverableApprovalWorkflowControl } from "@/ui/management/deliverable-actions";
 
@@ -135,12 +136,16 @@ export function UniversalDeliverableDrawer({
   workspace: preloadedWorkspace,
   canPublishClientComment = false,
   approvalAction,
+  buttonLabel = "فتح مساحة المخرج",
+  clientName,
 }: {
   deliverable: DeliverableSafeSummary;
   summary?: DeliverableWorkspaceSummary;
   workspace?: DeliverableWorkspace;
   canPublishClientComment?: boolean;
   approvalAction?: (formData: FormData) => void | Promise<void>;
+  buttonLabel?: string;
+  clientName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [workspace, setWorkspace] = useState<DeliverableWorkspace | undefined>(
@@ -148,6 +153,9 @@ export function UniversalDeliverableDrawer({
   );
   const [loading, setLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [uploadSafety, setUploadSafety] =
+    useState<WorkspaceUploadSafetyState>("settled");
+  const [closeFeedback, setCloseFeedback] = useState<string>();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLElement>(null);
@@ -161,6 +169,19 @@ export function UniversalDeliverableDrawer({
     if (!workspace) setLoading(true);
     setOpen(true);
   };
+
+  const requestClose = useCallback(() => {
+    if (uploadSafety === "uploading" || uploadSafety === "failed") {
+      setCloseFeedback(
+        uploadSafety === "uploading"
+          ? "الرفع ما زال جاريًا. انتظر اكتماله أو ألغِه بوضوح قبل الإغلاق."
+          : "يوجد ملف فشل رفعه. أعد المحاولة أو ألغِ الملف قبل الإغلاق.",
+      );
+      return;
+    }
+    setCloseFeedback(undefined);
+    setOpen(false);
+  }, [uploadSafety]);
 
   useEffect(() => {
     if (!open) return;
@@ -197,7 +218,7 @@ export function UniversalDeliverableDrawer({
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setOpen(false);
+        requestClose();
         return;
       }
       if (event.key === "Tab" && panelRef.current) {
@@ -224,7 +245,7 @@ export function UniversalDeliverableDrawer({
       window.removeEventListener("keydown", onKeyDown);
       trigger?.focus();
     };
-  }, [open]);
+  }, [open, requestClose]);
 
   const currentVersion =
     workspace?.versions.find(
@@ -256,14 +277,14 @@ export function UniversalDeliverableDrawer({
         ref={triggerRef}
         type="button"
       >
-        فتح مساحة المخرج
+        {buttonLabel}
       </button>
       {open ? (
         <div className="fixed inset-0 z-50" dir="rtl">
           <button
             aria-label="إغلاق مساحة المخرج"
             className="absolute inset-0 bg-foreground/30 motion-reduce:transition-none"
-            onClick={() => setOpen(false)}
+            onClick={requestClose}
             type="button"
           />
           <aside
@@ -292,13 +313,21 @@ export function UniversalDeliverableDrawer({
               <button
                 aria-label="إغلاق"
                 className="grid min-h-11 min-w-11 place-items-center rounded-lg border border-border bg-background text-foreground hover:bg-border/30"
-                onClick={() => setOpen(false)}
+                onClick={requestClose}
                 ref={closeRef}
                 type="button"
               >
                 <X aria-hidden="true" size={20} />
               </button>
             </header>
+            {closeFeedback ? (
+              <p
+                aria-live="assertive"
+                className="border-b border-danger/30 bg-danger/10 px-4 py-2 text-sm text-danger"
+              >
+                {closeFeedback}
+              </p>
+            ) : null}
 
             <div className="overflow-y-auto overscroll-contain p-4 sm:p-5">
               {loading ? (
@@ -471,7 +500,11 @@ export function UniversalDeliverableDrawer({
                     <DeliverableApprovalWorkflowControl
                       action={approvalAction}
                       clientReviewReady={clientReviewReady}
+                      clientName={clientName}
+                      currentVersion={currentVersion}
                       deliverable={deliverable}
+                      files={currentVersionFiles}
+                      uploadBlocked={uploadSafety !== "settled"}
                     />
                   </section>
 
@@ -564,6 +597,7 @@ export function UniversalDeliverableDrawer({
                       canPublishClientFile={canPublishClientComment}
                       currentVersionId={workspace?.currentVersionId}
                       deliverable={deliverable}
+                      onSafetyStateChange={setUploadSafety}
                     />
                   </section>
 

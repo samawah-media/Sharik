@@ -94,7 +94,11 @@ describe("internal deliverable work board", () => {
     expect(screen.getByTestId("kanban-board-scroll")).toHaveClass(
       "overflow-x-auto",
     );
-    expect(screen.getAllByTestId("kanban-column")).toHaveLength(6);
+    expect(screen.getByTestId("kanban-board-scroll")).toHaveAttribute(
+      "tabindex",
+      "0",
+    );
+    expect(screen.getAllByTestId("kanban-column")).toHaveLength(7);
     expect(screen.getAllByTestId("kanban-column")[0]).toHaveClass(
       "min-w-[20rem]",
     );

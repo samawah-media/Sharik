@@ -6,6 +6,7 @@ export const r007WorkflowStepTargets = {
   send_to_client: "waiting_client_approval",
   approve_as_client: "client_approved",
   request_client_changes: "client_changes_requested",
+  prepare_for_delivery: "ready_for_delivery",
   deliver_after_client_approval: "delivered",
 } as const satisfies Record<string, DeliverableLifecycleStatus>;
 
@@ -83,8 +84,14 @@ export const canPerformR007WorkflowStep = ({
         };
   }
 
-  if (step === "deliver_after_client_approval") {
+  if (step === "prepare_for_delivery") {
     return !requiresClientApproval || status === "client_approved"
+      ? { allowed: true }
+      : { allowed: false, reason: "client_approval_required_before_delivery" };
+  }
+
+  if (step === "deliver_after_client_approval") {
+    return status === "ready_for_delivery"
       ? { allowed: true }
       : { allowed: false, reason: "client_approval_required_before_delivery" };
   }
@@ -101,4 +108,3 @@ export const canPerformR007WorkflowStep = ({
     ? { allowed: true }
     : { allowed: false, reason: "client_decision_not_pending" };
 };
-

@@ -133,51 +133,69 @@ const resolveHostedScope = async (
     "hosted role inventory",
   ) as RoleRow[];
 
-  const roleFor = (key: HostedPersonaKey, allowedRoles: string[]) => {
+  const rolesFor = (key: HostedPersonaKey, allowedRoles: string[]) => {
     const membershipIds = memberships
       .filter((membership) => membership.auth_user_id === actors[key].id)
       .map((membership) => membership.id);
-    const role = roles.find(
+    const matchingRoles = roles.filter(
       (candidate) =>
         membershipIds.includes(candidate.membership_id) &&
         allowedRoles.includes(candidate.role_key),
     );
-    if (!role) throw new Error(`Hosted role mapping is missing ${key}.`);
-    return role;
+    if (matchingRoles.length === 0) {
+      throw new Error(`Hosted role mapping is missing ${key}.`);
+    }
+    return matchingRoles;
   };
 
-  const approverRole = roleFor("CLIENT_APPROVER", ["client_approver"]);
-  if (approverRole.scope_type !== "client") {
+  const approverRole = rolesFor("CLIENT_APPROVER", ["client_approver"]).find(
+    (role) => role.scope_type === "client",
+  );
+  if (!approverRole) {
     throw new Error("Hosted client approver is not client scoped.");
   }
   const tenantId = approverRole.tenant_id;
   const clientId = approverRole.scope_id;
 
-  const clientRoles: Array<[HostedPersonaKey, string[]]> = [
+  const internalRoles: Array<[HostedPersonaKey, string[]]> = [
     ["ACCOUNT_MANAGER", ["account_manager"]],
     ["CONTENT_WRITER", ["content_writer"]],
     ["DESIGNER", ["designer"]],
     ["UNASSIGNED", ["content_writer", "designer", "performance_specialist"]],
-    ["CLIENT_VIEWER", ["client_viewer"]],
   ];
-  for (const [key, expectedRoles] of clientRoles) {
-    const role = roleFor(key, expectedRoles);
-    if (
-      role.tenant_id !== tenantId ||
-      role.scope_type !== "client" ||
-      role.scope_id !== clientId
-    ) {
-      throw new Error(`Hosted persona ${key} does not share the approved client scope.`);
+  for (const [key, expectedRoles] of internalRoles) {
+    const role = rolesFor(key, expectedRoles).find(
+      (candidate) =>
+        candidate.tenant_id === tenantId &&
+        ((candidate.scope_type === "client" &&
+          candidate.scope_id === clientId) ||
+          (candidate.scope_type === "tenant" &&
+            candidate.scope_id === tenantId)),
+    );
+    if (!role) {
+      throw new Error(
+        `Hosted persona ${key} does not share the approved tenant/client boundary.`,
+      );
     }
   }
 
-  const managementRole = roleFor("ADMIN", [
+  const viewerRole = rolesFor("CLIENT_VIEWER", ["client_viewer"]).find(
+    (role) =>
+      role.tenant_id === tenantId &&
+      role.scope_type === "client" &&
+      role.scope_id === clientId,
+  );
+  if (!viewerRole) {
+    throw new Error("Hosted client viewer does not share the approved client scope.");
+  }
+
+  const managementRole = rolesFor("ADMIN", [
     "tenant_owner",
     "tenant_administrator",
     "project_manager",
     "marketing_manager",
-  ]);
-  if (managementRole.tenant_id !== tenantId) {
+  ]).find((role) => role.tenant_id === tenantId);
+  if (!managementRole) {
     throw new Error("Hosted management persona does not share the approved tenant.");
   }
 

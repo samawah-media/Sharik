@@ -83,13 +83,15 @@ update public.deliverables set current_version_id = '31000000-0000-4000-8000-000
 where id = '31000000-0000-4000-8000-000000000511';
 
 -- dS: sent to client (client_visible current version) -> client_visible and
--- client_uploaded are valid here for the correct roles.
+-- client_uploaded are valid here for the correct roles. Inserted at a neutral
+-- status first so the client-review-payload guard can validate the meaningful
+-- payload once the current version is wired.
 insert into public.deliverables (
   id, tenant_id, client_id, name, type, status, progress_percentage,
   idempotency_key, requires_internal_approval, requires_client_approval
 ) values (
   '31000000-0000-4000-8000-000000000512', '31000000-0000-4000-8000-000000000001',
-  '31000000-0000-4000-8000-000000000301', 'Hardening sent item', 'post', 'waiting_client_approval', 80,
+  '31000000-0000-4000-8000-000000000301', 'Hardening sent item', 'post', 'in_progress', 30,
   'x010a-sent', true, true
 );
 insert into public.deliverable_versions (
@@ -101,6 +103,8 @@ insert into public.deliverable_versions (
 );
 update public.deliverables set current_version_id = '31000000-0000-4000-8000-000000000612'
 where id = '31000000-0000-4000-8000-000000000512';
+update public.deliverables set status = 'waiting_client_approval', progress_percentage = 80
+where id = '31000000-0000-4000-8000-000000000512';
 
 -- dA: client-approved current version -> final_delivery is valid for management.
 insert into public.deliverables (
@@ -108,7 +112,7 @@ insert into public.deliverables (
   idempotency_key, requires_internal_approval, requires_client_approval
 ) values (
   '31000000-0000-4000-8000-000000000513', '31000000-0000-4000-8000-000000000001',
-  '31000000-0000-4000-8000-000000000301', 'Hardening approved item', 'post', 'client_approved', 90,
+  '31000000-0000-4000-8000-000000000301', 'Hardening approved item', 'post', 'in_progress', 30,
   'x010a-approved', true, true
 );
 insert into public.deliverable_versions (
@@ -119,6 +123,8 @@ insert into public.deliverable_versions (
   1, 'client_approved', 'approved payload'
 );
 update public.deliverables set current_version_id = '31000000-0000-4000-8000-000000000613'
+where id = '31000000-0000-4000-8000-000000000513';
+update public.deliverables set status = 'client_approved', progress_percentage = 90
 where id = '31000000-0000-4000-8000-000000000513';
 
 -- ===========================================================================

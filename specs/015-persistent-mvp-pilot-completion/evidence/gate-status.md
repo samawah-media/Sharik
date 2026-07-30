@@ -20,6 +20,17 @@ verification was attempted but blocked by failed local PostgreSQL connection
 (`LegacyDbConnectError`). Exact-head CI, Preview, and hosted UAT remain pending,
 so the recorded gate state does not advance beyond `X010_A_CORRECTIVE_HOSTED_BLOCKED`.
 
+Exact-head follow-up evidence: commit `c95cc0cab22ade90d879000c64827365ffbb1a92`
+passed F-001 Quality run `30550689619` (`https://github.com/samawah-media/Sharik/actions/runs/30550689619`).
+The run applied `202607300002_s015_x010a_cancel_authorization_followup.sql` during
+clean reset, pgTAP passed 9 files / 589 tests including the hardened upload test,
+and persistent E2E also replayed the new migration during its resets. PR #37 shows
+CodeRabbit success and Vercel success for
+`https://vercel.com/samawahs-projects/shrik/9h5w8wib3e4Cf4cDSjc5XMyNb78m`.
+Hosted UAT remains blocked because approved non-Production setup credentials and
+allowlist access are unavailable in this workstation; no hosted mutation or
+Production action occurred.
+
 Local non-DB matrix PASS (typecheck, lint, unit 61/279, integration 28/112,
 component 24/88, RLS simulator 8/24, secret scan, `git diff --check`, build).
 Exact-HEAD F-001 Quality run `30531382182` PASS on `b6462a3`: pgTAP 9 files /

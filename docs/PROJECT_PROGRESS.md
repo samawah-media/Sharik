@@ -16,7 +16,13 @@ manual cleanup is needed. Local non-DB verification passed: lint, typecheck,
 unit 62/284, integration 28/112, component 25/90, RLS simulator 8/24, secret
 scan, diff check, and production build. Local pgTAP/DB verification was attempted
 but blocked by failed local PostgreSQL connection (`LegacyDbConnectError`).
-Exact-head CI, Preview, and hosted UAT remain pending, so GREEN is not declared.
+Commit `c95cc0cab22ade90d879000c64827365ffbb1a92` passed exact-head F-001
+Quality run `30550689619`, including clean Supabase reset with migration
+`202607300002`, pgTAP 9/589, persistent E2E, fixture E2E, and build. PR #37
+shows Vercel success at `https://vercel.com/samawahs-projects/shrik/9h5w8wib3e4Cf4cDSjc5XMyNb78m`
+and CodeRabbit success. Hosted UAT remains blocked because approved UAT setup
+credentials and allowlist access are unavailable in this workstation. GREEN is
+not declared.
 
 - S015-P1-111 (upload authorization): the durable begin/retry/complete path
   relied only on `private.s015_upload_attempt_actor_allowed` and never

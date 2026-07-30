@@ -1,5 +1,14 @@
 # Spec 015 execution log
 
+## 2026-07-30 — X010-A final hosted UAT closure attempt
+
+- Starting HEAD `6c0386dac8e474ffe6d56cacf754bc0e6d1bc939` on `codex/015-persistent-mvp-pilot-completion`; code review, exact-HEAD CI (`30552777038`), Preview (`https://vercel.com/samawahs-projects/shrik/7LXuPgu2MUb8RJNbhXigi4ZipQhK`), and CodeRabbit were already approved before this attempt.
+- Goal: apply pending additive migrations `202607300001` and `202607300002` to the approved non-Production UAT and run the real hosted Auth cancel regression, then close S015-P1-111/S015-P1-112.
+- Outcome: BLOCKED, not failed open. Verified HEAD/branch/clean tree and probed the secure env file `.env.s015-team-uat.local` through the project's own read-only clean-workspace dry-run tooling, which enforces the owner-approved UAT hostname allowlist and target-category guard before any mutation.
+- Exact missing credentials/permissions (names only; no values printed or requested): `SUPABASE_ACCESS_TOKEN` (required to run `npx supabase link` + `npx supabase db push --linked` to apply pending migrations to the approved UAT project); `S015_UAT_SETUP_DATABASE_URL` (alternative direct service-role psql path for migration apply); `S015_UAT_SERVICE_ROLE_KEY` (required by the hosted regression/retire/clean-workspace scripts to operate against the UAT database); `S015_UAT_SUPABASE_URL` (required by `prepare-s015-clean-workspace.mjs`; the secure file defines only `S015_UAT_BASE_URL`, a different key); `S015_UAT_SUPABASE_HOSTNAME` (the allowlist key the clean-workspace script reads; the secure file defines `S015_UAT_ALLOWED_HOSTNAME` instead); `VERCEL_TOKEN` (required for protected Preview access / programmatic hosted Auth regression). No hosted migration was applied, no hosted regression was executed, and no Production action occurred.
+- The secure env file currently contains only the seven UAT persona accounts plus `S015_UAT_BASE_URL`, `S015_UAT_ALLOWED_HOSTNAME`, and `S015_UAT_TARGET_CATEGORY`; the database/service-role/access credentials above are absent.
+- State remains `X010_A_CORRECTIVE_HOSTED_BLOCKED`. S015-P1-111 and S015-P1-112 stay open until the corrective hosted UAT regression passes. Production, real data, merge, external invitations, public signup, and Production alias/environment remain outside the boundary.
+
 ## 2026-07-30 — X010-A cancel authorization follow-up
 
 - Status: `X010_A_CORRECTIVE_HOSTED_BLOCKED`. Follow-up review of S015-P1-111/S015-P1-112 found the prior cancel RPC still used broad deliverable actor authorization, and the action/UI could report cleanup success for missing coordinates or before inspecting Uppy removal cleanup.

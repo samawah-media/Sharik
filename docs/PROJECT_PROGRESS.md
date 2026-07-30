@@ -1,5 +1,23 @@
 # Project Progress
 
+## Spec 015 X010-A final hosted UAT closure attempt — 2026-07-30
+
+Status: `X010_A_CORRECTIVE_HOSTED_BLOCKED`. Final-head
+`6c0386dac8e474ffe6d56cacf754bc0e6d1bc939` on `codex/015-persistent-mvp-pilot-completion`.
+Code review, exact-HEAD CI (`30552777038`), Vercel Preview
+(`https://vercel.com/samawahs-projects/shrik/7LXuPgu2MUb8RJNbhXigi4ZipQhK`), and
+CodeRabbit were approved before the hosted closure attempt.
+
+Hosted closure BLOCKED, not failed open. Verified the secure env file through the
+project's read-only clean-workspace dry-run (which enforces the owner-approved UAT
+hostname allowlist and target-category guard). Required credentials unavailable in
+this workstation environment (names only, no values): `SUPABASE_ACCESS_TOKEN`,
+`S015_UAT_SETUP_DATABASE_URL`, `S015_UAT_SERVICE_ROLE_KEY`, `S015_UAT_SUPABASE_URL`,
+`S015_UAT_SUPABASE_HOSTNAME`, and `VERCEL_TOKEN`. No pending additive migration
+(`202607300001`, `202607300002`) was applied to hosted UAT, no hosted cancel
+regression ran, and no Production action occurred. S015-P1-111 and S015-P1-112
+remain open until the corrective hosted UAT regression passes. GREEN is not declared.
+
 ## Spec 015 X010-A corrective security closure — 2026-07-30
 
 Status: `X010_A_CORRECTIVE_HOSTED_BLOCKED`. Follow-up correction is underway for two P1

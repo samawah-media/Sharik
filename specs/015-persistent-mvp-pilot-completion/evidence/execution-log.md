@@ -1,5 +1,13 @@
 # Spec 015 execution log
 
+## 2026-07-30 — X010-A cancel authorization follow-up
+
+- Status: `X010_A_CORRECTIVE_HOSTED_BLOCKED`. Follow-up review of S015-P1-111/S015-P1-112 found the prior cancel RPC still used broad deliverable actor authorization, and the action/UI could report cleanup success for missing coordinates or before inspecting Uppy removal cleanup.
+- Added additive migration `202607300002_s015_x010a_cancel_authorization_followup.sql`; no historical migration was edited. Cancel now requires current-version pending/failed scope, lets management cancel in-scope attempts, and restricts non-management cancellation to the original attempt actor with a fresh visibility/is_final authorization assertion.
+- Hardened `cancelWorkspaceFileUpload`: no fallback bucket, requires `deliverable-assets` and non-empty RPC-returned path, treats invalid coordinates as `cleanup: "failed"`, treats Storage 404 as already cleaned, and reports other Storage failures as cleanup failed. Updated both explicit cancel and Uppy `file-removed` feedback paths.
+- Added/extended regressions: pgTAP cancel authorization matrix in `s015_upload_authorization_hardening.test.sql`; unit action tests for exact path deletion, missing path, invalid bucket, Storage failure, and 404; component tests for cleanup-failure feedback on explicit and Uppy removal paths.
+- Local non-DB verification PASS: targeted unit action 5/5; targeted component 2/2; `npm run lint`; `npm run typecheck`; `npm run test:unit` 62 files / 284 tests; `npm run test:integration` 28 files / 112 tests; `npm run test:component` 25 files / 90 tests; `npm run test:rls:simulator` 8 files / 24 tests; `npm run secret:scan`; `git diff --check` (LF/CRLF warnings only); `npm run build`. Local pgTAP/DB verification attempted with `npm run test:rls:db` and remained environment-blocked by `LegacyDbConnectError` / failed local PostgreSQL connection. Exact-head CI, Preview, and hosted UAT are still pending; Production, merge, and hosted mutation remain untouched.
+
 ## 2026-07-30 — X010-A corrective security closure (S015-P1-111, S015-P1-112)
 
 - Status: `X010_A_CORRECTIVE_HOSTED_BLOCKED`. Mandatory starting HEAD `ead81c6a4c3490281c709d5672b3333f9a824540`; final HEAD `b6462a3449093cfd8d53622add162712ed29e679` on branch `codex/015-persistent-mvp-pilot-completion`, Draft PR #37 unmerged.

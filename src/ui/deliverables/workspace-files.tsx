@@ -168,6 +168,11 @@ const uploadStatusLabel: Record<UploadRowStatus, string> = {
   failed: "فشل الرفع أو الربط",
 };
 
+const cancelledWithCleanupFeedback = (name: string, cleanup?: "completed" | "failed") =>
+  cleanup === "failed"
+    ? `أُلغيت محاولة رفع ${name} وسُجل القرار، لكن تنظيف الملف المؤقت يحتاج متابعة يدوية.`
+    : `أُلغيت محاولة رفع ${name} وسُجل القرار في سجل التدقيق.`;
+
 const formatFileSize = (bytes: number) => {
   if (bytes < 1024) return `${bytes} بايت`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} كيلوبايت`;
@@ -498,11 +503,13 @@ export function WorkspaceFileUpload({
             reason: "cancelled_from_upload_queue",
           }).then((cancelled) => {
             if (cancelled.ok) {
+              setFeedback(cancelledWithCleanupFeedback(file.name, cancelled.cleanup));
               onMutated?.();
               router.refresh();
+            } else {
+              setFeedback("تعذر إلغاء محاولة الرفع. حدّث الصفحة وحاول مجددًا.");
             }
           });
-          setFeedback(`أُلغيت محاولة رفع ${file.name} وسُجل الإلغاء.`);
         } else {
           setFeedback(`أزيل الملف ${file.name} قبل بدء النقل.`);
         }
@@ -697,11 +704,7 @@ export function WorkspaceFileUpload({
     setDismissedAttemptIds((ids) =>
       row.attemptId ? [...ids, row.attemptId] : ids,
     );
-    setFeedback(
-      result.cleanup === "completed"
-        ? `أُلغيت محاولة رفع ${row.name} وسُجل القرار في سجل التدقيق.`
-        : `أُلغيت محاولة رفع ${row.name} وسُجل القرار، لكن تنظيف الملف المؤقت يحتاج متابعة يدوية.`,
-    );
+    setFeedback(cancelledWithCleanupFeedback(row.name, result.cleanup));
     onUploadAttemptCancelled?.(row.attemptId);
   };
 

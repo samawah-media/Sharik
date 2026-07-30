@@ -156,6 +156,21 @@ select throws_ok(
 );
 reset role;
 
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '31000000-0000-4000-8000-000000000204', true);
+select results_eq(
+  $$select public.s015_begin_file_upload_attempt(
+    '31000000-0000-4000-8000-000000000740', '31000000-0000-4000-8000-000000000840',
+    '31000000-0000-4000-8000-000000000301', '31000000-0000-4000-8000-000000000511',
+    '31000000-0000-4000-8000-000000000611', 'deliverable-assets',
+    '31000000-0000-4000-8000-000000000001/31000000-0000-4000-8000-000000000301/31000000-0000-4000-8000-000000000511/31000000-0000-4000-8000-000000000611/designer-internal.txt',
+    'designer-internal.txt', 'text/plain', 12, 'internal_only', false, null,
+    'x010a-designer-internal-run', 'x010a-designer-internal', gen_random_uuid())$$,
+  $$values ('31000000-0000-4000-8000-000000000740'::uuid)$$,
+  'assigned designer can persist an internal_only attempt on its deliverable'
+);
+reset role;
+
 -- ===========================================================================
 -- B. client_approver: only client_uploaded on the exact visible current version.
 -- ===========================================================================
@@ -514,6 +529,101 @@ select is(
   0,
   'denied cross-tenant cancel left no audit row'
 );
+
+-- A client approver cannot cancel management-owned client_visible/final_delivery
+-- attempts even on a version visible to that client.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '31000000-0000-4000-8000-000000000206', true);
+select throws_ok(
+  $$select * from public.s015_cancel_file_upload_attempt(
+    '31000000-0000-4000-8000-000000000760', 'client_cancel_mgmt_visible_blocked', gen_random_uuid())$$,
+  '42501', 'upload cancellation denied',
+  'client actor cannot cancel a management-owned client_visible attempt'
+);
+select throws_ok(
+  $$select * from public.s015_cancel_file_upload_attempt(
+    '31000000-0000-4000-8000-000000000761', 'client_cancel_mgmt_final_blocked', gen_random_uuid())$$,
+  '42501', 'upload cancellation denied',
+  'client actor cannot cancel a management-owned final_delivery attempt'
+);
+reset role;
+select is(
+  (select status from public.file_upload_attempts
+   where id = '31000000-0000-4000-8000-000000000760'),
+  'pending',
+  'denied client cancel of management client_visible attempt did not mutate status'
+);
+select is(
+  (select count(*)::integer from public.audit_events
+   where action = 'FileUploadAttemptCancelled'
+     and target_id in ('31000000-0000-4000-8000-000000000760','31000000-0000-4000-8000-000000000761')),
+  0,
+  'denied client cancellation of management attempts left no audit rows'
+);
+
+-- Non-management actors may cancel only attempts they originally created.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '31000000-0000-4000-8000-000000000204', true);
+select throws_ok(
+  $$select * from public.s015_cancel_file_upload_attempt(
+    '31000000-0000-4000-8000-000000000730', 'designer_cancel_writer_blocked', gen_random_uuid())$$,
+  '42501', 'upload cancellation denied',
+  'designer cannot cancel a writer-owned attempt'
+);
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '31000000-0000-4000-8000-000000000203', true);
+select throws_ok(
+  $$select * from public.s015_cancel_file_upload_attempt(
+    '31000000-0000-4000-8000-000000000740', 'writer_cancel_designer_blocked', gen_random_uuid())$$,
+  '42501', 'upload cancellation denied',
+  'writer cannot cancel a designer-owned attempt'
+);
+reset role;
+select is(
+  (select count(*)::integer from public.audit_events
+   where action = 'FileUploadAttemptCancelled'
+     and target_id in ('31000000-0000-4000-8000-000000000730','31000000-0000-4000-8000-000000000740')),
+  0,
+  'denied cross-actor cancellations left no audit rows'
+);
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '31000000-0000-4000-8000-000000000206', true);
+select results_eq(
+  $$select bucket_id, storage_path from public.s015_cancel_file_upload_attempt(
+    '31000000-0000-4000-8000-000000000720', 'client_actor_own_cancel', gen_random_uuid())$$,
+  $$values (
+    'deliverable-assets'::text,
+    '31000000-0000-4000-8000-000000000001/31000000-0000-4000-8000-000000000301/31000000-0000-4000-8000-000000000512/31000000-0000-4000-8000-000000000612/approver-upload.txt'::text
+  )$$,
+  'client actor can cancel its own client_uploaded attempt'
+);
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '31000000-0000-4000-8000-000000000203', true);
+select results_eq(
+  $$select bucket_id, storage_path from public.s015_cancel_file_upload_attempt(
+    '31000000-0000-4000-8000-000000000730', 'writer_actor_own_cancel', gen_random_uuid())$$,
+  $$values (
+    'deliverable-assets'::text,
+    '31000000-0000-4000-8000-000000000001/31000000-0000-4000-8000-000000000301/31000000-0000-4000-8000-000000000510/31000000-0000-4000-8000-000000000610/writer-internal.txt'::text
+  )$$,
+  'assigned team actor can cancel its own internal_only attempt'
+);
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '31000000-0000-4000-8000-000000000201', true);
+select results_eq(
+  $$select bucket_id, storage_path from public.s015_cancel_file_upload_attempt(
+    '31000000-0000-4000-8000-000000000740', 'management_cancel_in_scope', gen_random_uuid())$$,
+  $$values (
+    'deliverable-assets'::text,
+    '31000000-0000-4000-8000-000000000001/31000000-0000-4000-8000-000000000301/31000000-0000-4000-8000-000000000511/31000000-0000-4000-8000-000000000611/designer-internal.txt'::text
+  )$$,
+  'management can cancel an in-scope attempt regardless of original actor'
+);
+reset role;
 
 -- ===========================================================================
 -- G. complete re-validates authorization after a role or version-state change

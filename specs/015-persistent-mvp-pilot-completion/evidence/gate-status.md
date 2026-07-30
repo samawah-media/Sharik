@@ -2,11 +2,23 @@
 
 ## X010-A corrective security checkpoint — 2026-07-30
 
-`X010_A_CORRECTIVE_HOSTED_BLOCKED`. Bounded corrective slice for S015-P1-111
+`X010_A_CORRECTIVE_HOSTED_BLOCKED`. Follow-up correction is in progress on top
+of the earlier bounded corrective slice for S015-P1-111
 (durable upload authorization matrix) and S015-P1-112 (unsafe browser-supplied
 Storage cleanup on cancel). Mandatory starting HEAD was
 `ead81c6a4c3490281c709d5672b3333f9a824540`; final HEAD
 `b6462a3449093cfd8d53622add162712ed29e679`.
+
+Follow-up local code changes add `202607300002_s015_x010a_cancel_authorization_followup.sql`,
+which narrows cancel authorization to management-in-scope or original non-management
+attempt actor with fresh visibility/is_final authorization. The server action now
+fails cleanup for invalid RPC-returned coordinates and never falls back to a bucket;
+both UI cancel paths surface cleanup-failure feedback. Local non-DB verification
+passed: lint, typecheck, unit 62/284, integration 28/112, component 25/90, RLS
+simulator 8/24, secret scan, diff check, and production build. Local pgTAP/DB
+verification was attempted but blocked by failed local PostgreSQL connection
+(`LegacyDbConnectError`). Exact-head CI, Preview, and hosted UAT remain pending,
+so the recorded gate state does not advance beyond `X010_A_CORRECTIVE_HOSTED_BLOCKED`.
 
 Local non-DB matrix PASS (typecheck, lint, unit 61/279, integration 28/112,
 component 24/88, RLS simulator 8/24, secret scan, `git diff --check`, build).

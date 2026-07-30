@@ -2,10 +2,21 @@
 
 ## Spec 015 X010-A corrective security closure — 2026-07-30
 
-Status: `X010_A_CORRECTIVE_HOSTED_BLOCKED`. Bounded corrective slice for two P1
+Status: `X010_A_CORRECTIVE_HOSTED_BLOCKED`. Follow-up correction is underway for two P1
 defects reopened against the X010-A durable-upload path. Started from mandatory
 HEAD `ead81c6a4c3490281c709d5672b3333f9a824540`; final HEAD
 `b6462a3449093cfd8d53622add162712ed29e679` on Draft PR #37 (unmerged).
+
+Follow-up on 2026-07-30 found cancel still used broad actor authorization and
+cleanup could be falsely reported as successful for invalid RPC coordinates.
+Added additive migration `202607300002_s015_x010a_cancel_authorization_followup.sql`,
+hardened the server action to require the RPC-returned `deliverable-assets` bucket
+and non-empty path with no fallback, and made both UI cancel paths warn when
+manual cleanup is needed. Local non-DB verification passed: lint, typecheck,
+unit 62/284, integration 28/112, component 25/90, RLS simulator 8/24, secret
+scan, diff check, and production build. Local pgTAP/DB verification was attempted
+but blocked by failed local PostgreSQL connection (`LegacyDbConnectError`).
+Exact-head CI, Preview, and hosted UAT remain pending, so GREEN is not declared.
 
 - S015-P1-111 (upload authorization): the durable begin/retry/complete path
   relied only on `private.s015_upload_attempt_actor_allowed` and never

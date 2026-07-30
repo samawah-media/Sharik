@@ -343,11 +343,11 @@ export async function cancelWorkspaceFileUpload(
     | { bucket_id: string; storage_path: string }
     | null
     | undefined;
-  if (!row?.storage_path) {
-    return { ok: true as const, cleanup: "completed" as const };
+  if (row?.bucket_id !== "deliverable-assets" || !row.storage_path?.trim()) {
+    return { ok: true as const, cleanup: "failed" as const };
   }
   const removed = await supabase.storage
-    .from(row.bucket_id ?? "deliverable-assets")
+    .from(row.bucket_id)
     .remove([row.storage_path]);
   if (removed.error && removed.error.statusCode !== "404") {
     return { ok: true as const, cleanup: "failed" as const };

@@ -2,9 +2,10 @@
 
 ## Spec 015 X010-A corrective security closure — 2026-07-30
 
-Status: `X010_A_CORRECTIVE_LOCAL_GREEN_CI_PENDING`. Bounded corrective slice
-for two P1 defects reopened against the X010-A durable-upload path. Started
-from mandatory HEAD `ead81c6a4c3490281c709d5672b3333f9a824540`.
+Status: `X010_A_CORRECTIVE_HOSTED_BLOCKED`. Bounded corrective slice for two P1
+defects reopened against the X010-A durable-upload path. Started from mandatory
+HEAD `ead81c6a4c3490281c709d5672b3333f9a824540`; final HEAD
+`b6462a3449093cfd8d53622add162712ed29e679` on Draft PR #37 (unmerged).
 
 - S015-P1-111 (upload authorization): the durable begin/retry/complete path
   relied only on `private.s015_upload_attempt_actor_allowed` and never
@@ -12,14 +13,14 @@ from mandatory HEAD `ead81c6a4c3490281c709d5672b3333f9a824540`.
   version-state, or client_viewer/execution-member boundaries that
   `202607130006` enforced at registration. Additive migration
   `202607300001_s015_x010a_upload_authorization_cleanup_hardening.sql` adds
-  centralized helpers (`s015_upload_actor_kind`,
-  `s015_upload_visibility_allowed`, `s015_assert_upload_authorized`) applied at
-  begin, retry, and complete (re-checked at completion). `client_viewer` is
-  denied all uploads; clients are limited to `client_uploaded`/`is_final=false`
-  on the exact visible current version; execution members are limited to
-  `internal_only`; management-only `client_visible` (sent/approved/final
-  versions) and `final_delivery` (`is_final=true` + `client_approved`/`final`).
-  Any non-`final_delivery` visibility can never be marked final.
+  centralized helpers (`s015_upload_actor_kind`, `s015_upload_visibility_allowed`,
+  `s015_assert_upload_authorized`) applied at begin, retry, and complete
+  (re-checked at completion). `client_viewer` is denied all uploads; clients are
+  limited to `client_uploaded`/`is_final=false` on the exact visible current
+  version; execution members are limited to `internal_only`; management-only
+  `client_visible` (sent/approved/final versions) and `final_delivery`
+  (`is_final=true` + `client_approved`/`final`). Any non-`final_delivery`
+  visibility can never be marked final.
 - S015-P1-112 (unsafe storage cleanup): `cancelWorkspaceFileUpload` accepted a
   browser-supplied `storagePath`, deleted it after cancel, and ignored the
   `remove` result. `storagePath` was removed from the schema, the action input,
@@ -36,14 +37,21 @@ from mandatory HEAD `ead81c6a4c3490281c709d5672b3333f9a824540`.
   version (the prior `client_visible`-on-`internally_approved` begin encoded the
   bug being fixed).
 
-Local non-DB matrix passes: typecheck, lint, unit 61/279, integration 28/112,
-component 24/88, RLS simulator 8/24, secret scan, `git diff --check`, and
-production build. DB-backed gates (pgTAP, persistent E2E) and the full fixture
-E2E are deferred to exact-HEAD CI because Docker/Supabase cannot start in this
-workstation environment (same class as S015-P2-001/038). No GREEN is declared
-until exact-HEAD CI, the correct `samawahs-projects/shrik` Preview, and the
-corrective hosted UAT pass. Production, real data, merge, external invitations,
-and alias promotion remain outside the boundary.
+Gates passed: local non-DB matrix (typecheck, lint, unit 61/279, integration
+28/112, component 24/88, RLS simulator 8/24, secret scan, `git diff --check`,
+build). Exact-HEAD F-001 Quality run `30531382182` PASS on `b6462a3`: pgTAP 9
+files / 578 tests, persistent E2E, fixture E2E, and the full matrix. Vercel
+Preview deployment Ready in the correct `samawahs-projects/shrik` project.
+
+Hosted close condition BLOCKED: the corrective hosted UAT (apply the corrective
+migration to the approved non-Production UAT, run the failed-upload/cancel/retry
+hosted regression, exercise the negative role matrix with real hosted Auth)
+could not execute because the Supabase UAT setup credential and protected
+Preview access are unavailable in this workstation environment (same class as
+S015-P1-078/S015-P2-078). Per the task's explicit rule, GREEN is NOT declared
+and S015-P1-111/112 remain open until the corrective hosted UAT passes.
+Production, real data, merge, external invitations, public signup, and alias
+promotion remain outside the boundary; no Production action occurred.
 
 
 ## Spec 015 X010-A GREEN — 2026-07-29

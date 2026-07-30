@@ -2,18 +2,20 @@
 
 ## X010-A corrective security checkpoint — 2026-07-30
 
-`X010_A_CORRECTIVE_LOCAL_GREEN_CI_PENDING`. Bounded corrective slice for
-S015-P1-111 (durable upload authorization matrix) and S015-P1-112 (unsafe
-browser-supplied Storage cleanup on cancel). Mandatory starting HEAD was
-`ead81c6a4c3490281c709d5672b3333f9a824540`.
+`X010_A_CORRECTIVE_HOSTED_BLOCKED`. Bounded corrective slice for S015-P1-111
+(durable upload authorization matrix) and S015-P1-112 (unsafe browser-supplied
+Storage cleanup on cancel). Mandatory starting HEAD was
+`ead81c6a4c3490281c709d5672b3333f9a824540`; final HEAD
+`b6462a3449093cfd8d53622add162712ed29e679`.
 
-Changes are scoped to the two defects only: one additive migration
-(`202607300001_s015_x010a_upload_authorization_cleanup_hardening.sql`), the
-hardened `cancelWorkspaceFileUpload` server action + `cancelUploadAttemptSchema`,
-the two UI cancel call sites in `workspace-files.tsx`, the corrected durable
-pgTAP scenario, and a new `s015_upload_authorization_hardening.test.sql`. No
-Spec 016, parallel plan, ADR, dependency, or change to the already-applied
-`202607290002` migration.
+Local non-DB matrix PASS (typecheck, lint, unit 61/279, integration 28/112,
+component 24/88, RLS simulator 8/24, secret scan, `git diff --check`, build).
+Exact-HEAD F-001 Quality run `30531382182` PASS on `b6462a3`: pgTAP 9 files /
+578 tests (incl. the new `s015_upload_authorization_hardening` matrix and the
+corrected durable scenario), persistent E2E, fixture E2E, RLS simulator, unit,
+integration, component, lint, typecheck, secret scan, and build. Vercel
+Preview deployment completed Ready in the correct `samawahs-projects/shrik`
+project. The browser and Next.js runtime contain no service-role credential.
 
 Authorization matrix now enforced in PostgreSQL at begin, retry, and complete
 (re-checked at completion) via centralized `s015_upload_actor_kind` +
@@ -27,15 +29,18 @@ the attempt's true `bucket_id`+`storage_path` from the DB row after
 authorization; the server action deletes only that path, inspects `remove`, and
 returns `cleanup: "completed"|"failed"` without reverting the audited cancel.
 
-Local non-DB matrix PASS: typecheck, lint, unit 61 files/279 tests, integration
-28 files/112 tests, component 24 files/88 tests, RLS simulator 8 files/24 tests,
-secret scan, `git diff --check`, and production build. DB-backed gates (pgTAP,
-persistent E2E) and the full fixture E2E could not execute locally because
-Docker/Supabase cannot start in this workstation environment (same class as
-S015-P2-001/038); they are deferred to exact-HEAD CI. No GREEN is declared until
-exact-HEAD F-001 Quality, the correct `samawahs-projects/shrik` Preview, and the
-corrective hosted UAT pass. Production, real data, merge, external invitations,
-and alias promotion remain outside the boundary.
+Hosted close condition BLOCKED: the corrective hosted UAT required by section 9
+(apply the corrective migration to the approved non-Production UAT, run the
+failed-upload/cancel/retry hosted regression, and exercise the negative role
+matrix with real hosted Auth) could not be executed because the Supabase UAT
+setup credential and protected Preview access are not available in this
+workstation environment (same class as S015-P1-078 / S015-P2-078). Per the
+task's explicit rule, no GREEN is declared and S015-P1-111/112 remain open
+until the corrective hosted UAT passes. Recorded state:
+`X010_A_CORRECTIVE_HOSTED_BLOCKED`.
+
+Production, real data, merge, external invitations, public signup, and alias
+promotion remain outside the boundary. No Production action occurred.
 
 ## X010-A final gate — 2026-07-29
 

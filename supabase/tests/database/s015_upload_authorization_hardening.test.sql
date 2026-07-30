@@ -587,7 +587,7 @@ select results_eq(
 reset role;
 
 update public.role_assignments
-set status = 'inactive'
+set status = 'disabled'
 where id = '31000000-0000-4000-8000-000000000403';
 
 set local role authenticated;

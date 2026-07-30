@@ -249,7 +249,7 @@ function DeliverableCard({
   const statusLabel = kanbanStatusLabels[deliverable.status];
 
   return (
-    <article className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md">
+    <article className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface p-3 shadow-xs transition-shadow hover:shadow-md sm:p-4">
       <DeliverableContentCard
         clientName={clientName}
         deliverable={deliverable}
@@ -491,7 +491,7 @@ export function DeliverableBoard({
   return (
     <section
       aria-label="لوحة العمل"
-      className="-mx-4 overflow-x-auto overscroll-x-contain px-4 pb-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+      className="max-w-full overflow-x-auto overscroll-x-contain px-1 pb-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
       data-testid="kanban-board-scroll"
       dir="rtl"
       onKeyDown={scrollBoardWithKeyboard}

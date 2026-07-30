@@ -148,6 +148,30 @@ Independent review fixed S015-P1-094, corrective exact-head CI run `29852802208`
     - Follow-up correction adds `202607300002_s015_x010a_cancel_authorization_followup.sql` to narrow cancel authorization itself: management may cancel authorized in-scope current-version attempts, while non-management may cancel only its own attempt and must still satisfy the upload visibility/is_final matrix. `cancelWorkspaceFileUpload` now treats missing/invalid RPC coordinates as cleanup failure, never falls back to a bucket, and both UI cancel paths warn when manual cleanup is needed. Local non-DB matrix passes (lint, typecheck, unit 62/284, integration 28/112, component 25/90, RLS simulator 8/24, secret scan, diff check, build); local pgTAP is blocked by local PostgreSQL connection failure. Commit `c95cc0cab22ade90d879000c64827365ffbb1a92` passed exact-head F-001 `30550689619`, including clean reset with migration `202607300002`, pgTAP 9/589, persistent E2E, fixture E2E, and build; Vercel and CodeRabbit are green. Hosted UAT remains pending/blocked by unavailable approved UAT credentials.
     - State: `X010_A_CORRECTIVE_HOSTED_BLOCKED`. Final HEAD `b6462a3` passed exact-HEAD F-001 `30531382182` (pgTAP 9/578, persistent E2E, fixture E2E, full matrix) and the Vercel Preview is Ready in `samawahs-projects/shrik`. Remains open only for the corrective hosted UAT close condition (Supabase UAT setup credential / protected Preview access unavailable in this workstation environment, same class as S015-P1-078/S015-P2-078). S015-P1-111/112 stay open until that hosted UAT passes; GREEN is not declared.
 
+## Owner Experience Notes Consolidation and UX Rescue X010-B — same Spec 015
+
+Owner experience observations from the manual walkthroughs are consolidated in
+`evidence/owner-manual-uat-notes-2026-07-26.md` (X010-B section) and triaged into
+fixed / needs-recheck / open. X010-B stays inside Spec 015 only; it does not
+reopen X010-A, does not declare GREEN for the corrective hosted UAT, and does not
+invite the team. Parent disposition: X010-A-9 / S015-P1-111 / S015-P1-112 remain
+`code-fixed + CI-green + hosted-blocked` while X010-B proceeds on local + Preview.
+
+- [ ] X010-B Consolidate owner experience notes and rescue the UX without creating a new Spec or parallel plan.
+  - [x] X010-B-0 Consolidate all owner notes into one triaged source-of-truth list and correct documentation conflicts (HEAD `47b11e9`; exact-HEAD CI green; hosted corrective UAT blocked; X010-A parent not complete while X010-A-9 open).
+  - [ ] X010-B-1 Global density + navigation + clickability.
+    - [x] Unified readable density at 100% zoom: tighten shared core tokens (card, badge/StatCard, page-header) and the three target surfaces (management dashboard, client workspace, deliverables list/board) without breaking 44px touch targets or WCAG.
+    - [x] Make intended cards and rows clickable with visible focus and keyboard reach (exception-dashboard recent decisions now link to the deliverable).
+    - [x] Translate every visible technical state to Arabic (raw `item.status` leak fixed in the management dashboard).
+    - [x] Improve the visual hierarchy of the management dashboard, client workspace, and deliverables list.
+    - [x] Fix any horizontal overflow / hidden scroll in Kanban with mouse/touch/keyboard; no page-level overflow.
+    - [x] No business-workflow redesign in this slice.
+    - [ ] Pass exact-HEAD CI, Preview, and owner visual QA (before/after evidence).
+  - [ ] X010-B-2 Onboarding journey simplification: one obvious primary client-entry path; explicit company/contact labels; phone/WhatsApp; contract reference helper; consistent package lines; edit/resume recovery; team-assignment and quantity terminology.
+  - [ ] X010-B-3 Terminology and progressive disclosure: replace hard terms ("مخرجاتي"); keep client work visible after a change request as "عاد لفريق سماوة — قيد التعديل"; hide empty optional fields with progressive disclosure.
+  - [ ] X010-B-4 Understandable in-app notifications center (approval / change-request); no email integration without owner approval.
+  - [ ] X010-B-5 Files as a Drive-like experience (folders/classification/previews/Arabic names); simplify "تنزيل آمن" to "تنزيل"; refine upload progress/failure/retry/cancel clarity.
+  - [ ] X010-B-6 Drawer reorganization (logical sections/tabs); internal-quality explanation and a default editable checklist; owner/contributor/role display clarity with no `tenant_administrator` or synthetic-data leak; visual polish for client profile, admin dashboard, and team dashboard.
 
 
 ## Correction note: task assignment authority (2026-07-15)

@@ -1,4 +1,5 @@
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
+import { deliverableStatusLabel } from "@/modules/deliverables/domain-labels";
 import { deriveSlaStatus } from "@/modules/sla/sla-policy";
 import { Badge } from "@/ui/core/badge";
 import { ButtonLink } from "@/ui/core/button";
@@ -61,19 +62,19 @@ export function ManagementExceptionDashboard({
     .slice(0, 6);
 
   return (
-    <section className="grid gap-5" aria-labelledby="management-exceptions" dir="rtl">
+    <section className="grid gap-4" aria-labelledby="management-exceptions" dir="rtl">
       <div>
         <p className="text-sm font-semibold text-accent">مراقبة الاستثناءات</p>
-        <h1 className="mt-1 text-2xl font-semibold" id="management-exceptions">ما يحتاج تدخل الإدارة الآن</h1>
+        <h1 className="mt-1 text-xl font-semibold sm:text-2xl" id="management-exceptions">ما يحتاج تدخل الإدارة الآن</h1>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        {metrics.map(([label, count, tone]) => <article className="rounded-xl border border-border bg-surface p-4" key={label}><Badge tone={tone}>{label}</Badge><p className="mt-3 text-3xl font-semibold tabular-nums">{count}</p></article>)}
+        {metrics.map(([label, count, tone]) => <article className="rounded-xl border border-border bg-surface p-3 shadow-xs sm:p-4" key={label}><Badge tone={tone}>{label}</Badge><p className="mt-2 text-2xl font-semibold tabular-nums sm:text-3xl">{count}</p></article>)}
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-xl border border-border bg-surface p-4" aria-labelledby="workload-heading"><h2 className="font-semibold" id="workload-heading">ضغط الفريق</h2>{workload.length ? <ul className="mt-3 grid gap-2">{workload.slice(0, 8).map(([name, count]) => <li className="flex min-h-11 items-center justify-between rounded-lg bg-background px-3" key={name}><span>{name}</span><Badge tone={count >= 5 ? "warning" : "muted"}>{count} نشط</Badge></li>)}</ul> : <p className="mt-3 text-sm text-muted">لا توجد أعمال نشطة.</p>}</section>
-        <section className="rounded-xl border border-border bg-surface p-4" aria-labelledby="client-progress-heading"><h2 className="font-semibold" id="client-progress-heading">تقدم العملاء والباقات</h2><ul className="mt-3 grid gap-2">{clients.map((client) => <li className="grid gap-2 rounded-lg bg-background p-3" key={client.clientId}><div className="flex items-center justify-between gap-2"><span className="font-semibold">{client.name}</span><span className="text-sm tabular-nums">{client.progress}%</span></div><div className="h-2 overflow-hidden rounded-full bg-border"><div className="h-full bg-accent" style={{ width: `${client.progress}%` }} /></div><div className="flex items-center justify-between text-xs text-muted"><span>{client.delivered} من {client.total} تم تسليمه</span><ButtonLink href={`/clients/${client.clientId}/commercial`} size="sm">ملف العميل</ButtonLink></div></li>)}</ul></section>
+      <div className="grid gap-3 lg:grid-cols-2">
+        <section className="rounded-xl border border-border bg-surface p-3 shadow-xs sm:p-4" aria-labelledby="workload-heading"><h2 className="font-semibold" id="workload-heading">ضغط الفريق</h2>{workload.length ? <ul className="mt-2 grid gap-2">{workload.slice(0, 8).map(([name, count]) => <li className="flex min-h-11 items-center justify-between rounded-lg bg-background px-3" key={name}><span>{name}</span><Badge tone={count >= 5 ? "warning" : "muted"}>{count} نشط</Badge></li>)}</ul> : <p className="mt-2 text-sm text-muted">لا توجد أعمال نشطة.</p>}</section>
+        <section className="rounded-xl border border-border bg-surface p-3 shadow-xs sm:p-4" aria-labelledby="client-progress-heading"><h2 className="font-semibold" id="client-progress-heading">تقدم العملاء والباقات</h2><ul className="mt-2 grid gap-2">{clients.map((client) => <li className="grid gap-2 rounded-lg bg-background p-3" key={client.clientId}><div className="flex items-center justify-between gap-2"><span className="font-semibold">{client.name}</span><span className="text-sm tabular-nums">{client.progress}%</span></div><div className="h-2 overflow-hidden rounded-full bg-border"><div className="h-full bg-accent" style={{ width: `${client.progress}%` }} /></div><div className="flex items-center justify-between text-xs text-muted"><span>{client.delivered} من {client.total} تم تسليمه</span><ButtonLink href={`/clients/${client.clientId}/commercial`} size="sm">ملف العميل</ButtonLink></div></li>)}</ul></section>
       </div>
-      <section className="rounded-xl border border-border bg-surface p-4" aria-labelledby="recent-decisions"><h2 className="font-semibold" id="recent-decisions">أحدث القرارات والتسليمات</h2>{recent.length ? <ol className="mt-3 grid gap-2">{recent.map((item) => <li className="grid min-h-11 gap-1 rounded-lg bg-background px-3 py-2 sm:grid-cols-[minmax(0,1fr)_auto]" key={item.id}><span className="font-semibold">{item.name}</span><span className="text-xs text-muted">{clientNames[item.clientId]} · {item.status}</span></li>)}</ol> : <p className="mt-3 text-sm text-muted">لا توجد قرارات حديثة.</p>}</section>
+      <section className="rounded-xl border border-border bg-surface p-3 shadow-xs sm:p-4" aria-labelledby="recent-decisions"><h2 className="font-semibold" id="recent-decisions">أحدث القرارات والتسليمات</h2>{recent.length ? <ol className="mt-2 grid gap-2">{recent.map((item) => <li className="grid min-h-11 gap-1 rounded-lg bg-background px-3 py-2 sm:grid-cols-[minmax(0,1fr)_auto]" key={item.id}><ButtonLink className="justify-start !min-h-0 !px-0 !py-0 font-semibold hover:text-accent hover:underline" href={`/clients/${item.clientId}/deliverables`} size="sm" variant="ghost">{item.name}</ButtonLink><span className="text-xs text-muted">{clientNames[item.clientId]} · {deliverableStatusLabel(item.status)}</span></li>)}</ol> : <p className="mt-2 text-sm text-muted">لا توجد قرارات حديثة.</p>}</section>
     </section>
   );
 }

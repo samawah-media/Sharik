@@ -1,5 +1,102 @@
 # Owner Manual UAT Notes — 2026-07-26
 
+## X010-B owner experience consolidation — 2026-07-30
+
+This section consolidates every owner experience observation collected through
+the manual walkthroughs into one authoritative triaged list. Each observation is
+classified as: **fixed technically**, **needs manual recheck**, or **still open**.
+The single source of truth for current HEAD/CI/hosted status is
+`gate-status.md`; do not infer completion from any individual note below.
+
+### Source of truth (current)
+
+- Application HEAD: `6c0386dac8e474ffe6d56cacf754bc0e6d1bc939` (evidence HEAD
+  `47b11e9`). Exact-HEAD F-001 Quality `30552777038` passed; Vercel Preview
+  `https://vercel.com/samawahs-projects/shrik/7LXuPgu2MUb8RJNbhXigi4ZipQhK` is
+  Ready; CodeRabbit is green.
+- X010-A parent status: **not complete**. X010-A-9 remains open; S015-P1-111
+  and S015-P1-112 are `code-fixed + CI-green + hosted-blocked`. No GREEN is
+  declared for the corrective slice until the hosted UAT regression passes.
+- Hosted UAT is blocked by missing approved credentials (see `gate-status.md`).
+  Production, real data, merge, and external invitations remain outside the
+  boundary.
+
+### Consolidated observations
+
+#### A. Fixed technically (prior slices)
+
+| # | Observation | Disposition | Evidence |
+|---|---|---|---|
+| A1 | Image-only client review was blocked (circular guard) | fixed; S015-P1-099 / X009-D | real image renders, management stages, secrecy until send, delivery promotes |
+| A2 | Uploads did not expose dependable name/type/size/progress/terminal state | fixed; X010-A durable attempts | `202607290002`; persistent E2E |
+| A3 | Client send lacked a final exact-version summary | fixed; X010-A | `deliverable-actions.tsx` confirmation |
+| A4 | Delivery could skip explicit management preparation | fixed; X010-A `ready_for_delivery` mandatory | `202607290001` |
+| A5 | Final delivery lacked exact version/file confirmation | fixed; X010-A | confirmation section |
+| A6 | Deliverable not directly openable from the list | fixed; X010-A `فتح العمل` | deliverables page |
+| A7 | Kanban post-approval mapping incorrect | fixed; X010-A macro lanes | `deliverable-board.tsx` |
+| A8 | Count inputs exposed spinners and fractional quantities | fixed; X010-A | integer-only count units |
+| A9 | Raw technical enums in the universal drawer | fixed; S015-P1-073 | `domain-labels.ts` |
+| A10 | Client viewer instructed to approve | fixed; S015-P1-074 | role-aware copy |
+| A11 | Hosted-UAT synthetic seed visible in normal views | fixed; S015-P1-075 | `human-trial-visibility.ts` |
+| A12 | Uppy upload surface was English | fixed; S015-P2-076 | Arabic locale |
+| A13 | Cancel cleanup trusted browser path / false success | fixed; S015-P1-111/112 code + CI; hosted recheck pending | `202607300001`/`202607300002` |
+
+#### B. Fixed technically (X010-B-1 — this slice)
+
+| # | Observation | Disposition | Evidence |
+|---|---|---|---|
+| B1 | Interface density: oversized headings/cards/spacing at 100% zoom | fixed; X010-B-1 | shared core tokens tightened; component regression |
+| B2 | Non-clickable cards and recent-decision rows | fixed; X010-B-1 | exception-dashboard recent items are links |
+| B3 | Raw technical English status in management dashboard | fixed; X010-B-1 | `deliverableStatusLabel` applied |
+| B4 | Kanban page-level overflow risk | fixed; X010-B-1 | board scroll contained; no page overflow |
+
+#### C. Needs manual recheck (owner visual QA on Preview)
+
+| # | Observation | Why recheck |
+|---|---|---|
+| C1 | Density and visual hierarchy at 100% zoom on desktop 1440×900 | owner must confirm readability after token tightening |
+| C2 | Mobile Chromium density and no horizontal page overflow | owner must confirm stacked layout |
+| C3 | Kanban horizontal mouse/touch/keyboard navigation | owner must confirm scroll and full-card reach |
+| C4 | Arabic states everywhere (no raw enum leak) | owner must scan all surfaces |
+
+#### D. Still open (future X010-B slices)
+
+| # | Observation | Target slice |
+|---|---|---|
+| D1 | Onboarding journey difficulty (client/contract/package/deliverable) | X010-B-2 |
+| D2 | Company name vs contact person confusion | X010-B-2 |
+| D3 | Phone/WhatsApp missing from client entity | X010-B-2 |
+| D4 | Contract reference unexplained | X010-B-2 |
+| D5 | Package lines inconsistent across entry paths | X010-B-2 |
+| D6 | Correction/recovery unclear after input error | X010-B-2 |
+| D7 | Team assignment terminology unclear | X010-B-2 |
+| D8 | Hard terminology like "مخرجاتي" and English technical states in copy | X010-B-3 |
+| D9 | Client work disappears after change request; should stay visible as "عاد لفريق سماوة — قيد التعديل" | X010-B-3 |
+| D10 | Empty optional fields shown; needs progressive disclosure | X010-B-3 |
+| D11 | No understandable in-app notifications center (approval/change-request) | X010-B-4 |
+| D12 | Files not organized as a Drive-like experience (folders/classification/previews/Arabic names) | X010-B-5 |
+| D13 | "تنزيل آمن" should be simplified to "تنزيل" | X010-B-5 |
+| D14 | Upload progress/failure/retry/cancel clarity for images and video | X010-B-5 (refine) |
+| D15 | Universal drawer long and crowded; needs logical sections/tabs | X010-B-6 |
+| D16 | Internal quality not explained; no default editable checklist | X010-B-6 |
+| D17 | Owner/contributor/role display clarity; no `tenant_administrator` or synthetic data leak | X010-B-6 |
+| D18 | Client profile, admin dashboard, team dashboard visual improvement | X010-B-1 partial + X010-B-6 |
+
+### Counts
+
+- Fixed technically: 17 (A1–A13 prior, B1–B4 this slice).
+- Needs manual recheck: 4 (C1–C4).
+- Still open: 18 (D1–D18), distributed across X010-B-2 through X010-B-6.
+
+### Boundary
+
+- X010-B-1 implements only density + navigation + clickability + Arabic states +
+  Kanban containment. It does **not** redesign business workflow, onboarding,
+  notifications, or files in this round.
+- No hosted mutation, no Production access, no merge, no team invitation, and no
+  `TEAM_UAT_READY` declaration. X010-A-9 / S015-P1-111 / S015-P1-112 remain
+  `code-fixed + CI-green + hosted-blocked`.
+
 ## Durable upload correction update — 2026-07-29
 
 The local Spec 015 correction now persists every upload attempt before file

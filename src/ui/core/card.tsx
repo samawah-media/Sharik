@@ -5,7 +5,7 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLElement>) {
   return (
     <article
       className={cn(
-        "rounded-lg border border-border bg-surface p-4 shadow-sm",
+        "rounded-lg border border-border bg-surface p-3 shadow-xs sm:p-4",
         className,
       )}
       {...props}
@@ -27,7 +27,7 @@ export function CardTitle({
   return (
     <h2
       className={cn(
-        "text-base font-semibold leading-7 text-foreground",
+        "text-sm font-semibold leading-6 text-foreground sm:text-base",
         className,
       )}
       {...props}
@@ -48,7 +48,7 @@ export function CardContent({
   className,
   ...props
 }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("mt-4", className)} {...props} />;
+  return <div className={cn("mt-3", className)} {...props} />;
 }
 
 export function SectionPanel({
@@ -64,7 +64,7 @@ export function SectionPanel({
     <section
       aria-label={label}
       className={cn(
-        "rounded-lg border border-border bg-surface p-4 shadow-sm",
+        "rounded-lg border border-border bg-surface p-3 shadow-xs sm:p-4",
         className,
       )}
     >

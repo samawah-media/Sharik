@@ -1,5 +1,26 @@
 # Spec 015 gate status
 
+## X010-B-1 global density + navigation + clickability — 2026-07-30
+
+`X010_B1_LOCAL_GREEN_CI_PENDING`. First implementation slice of the Owner
+Experience Rescue (X010-B), inside Spec 015 only. Started from HEAD `47b11e9`.
+
+Phase 1 consolidated all owner notes into one triaged source-of-truth list,
+corrected the HEAD/CI/hosted/X010-A-parent documentation conflict, created
+X010-B + sub-tasks, and registered defects S015-P2-111 through S015-P2-123.
+
+Phase 2 (X010-B-1) tightened shared core density tokens, made dashboard cards
+clickable, fixed the raw technical status leak, contained the Kanban scroll
+region, and tightened the client workspace. Local non-DB matrix PASS: lint,
+typecheck, unit 62/284, integration 28/112, component 26/92, RLS simulator
+8/24, secret scan, diff check, and build. Exact-head CI, Preview, and owner
+visual QA remain pending.
+
+Parent disposition unchanged: X010-A-9 / S015-P1-111 / S015-P1-112 remain
+`code-fixed + CI-green + hosted-blocked`. No GREEN is declared for the
+corrective hosted UAT. No hosted mutation, Production access, merge, team
+invitation, or `TEAM_UAT_READY`.
+
 ## X010-A final hosted UAT closure attempt — 2026-07-30
 
 `X010_A_CORRECTIVE_HOSTED_BLOCKED`. Final-head `6c0386dac8e474ffe6d56cacf754bc0e6d1bc939`

@@ -1,5 +1,37 @@
 # Project Progress
 
+## Spec 015 X010-B-1 global density + navigation + clickability — 2026-07-30
+
+Status: `X010_B1_LOCAL_GREEN_CI_PENDING`. First implementation slice of the
+Owner Experience Rescue (X010-B), inside Spec 015 only. Started from HEAD
+`47b11e9` on `codex/015-persistent-mvp-pilot-completion`.
+
+Phase 1 consolidated every owner experience observation into one triaged
+source-of-truth list (`owner-manual-uat-notes-2026-07-26.md`): 17 fixed
+technically, 4 need manual recheck, 18 still open across X010-B-2 through
+X010-B-6. Documentation conflicts were corrected: current HEAD is the evidence
+HEAD, exact-HEAD CI is green, but the corrective hosted UAT remains blocked, and
+X010-A is not complete while X010-A-9 is open. Defects S015-P2-111 through
+S015-P2-123 were registered.
+
+Phase 2 (X010-B-1) implemented: tightened shared core density tokens
+(`card.tsx`, `badge.tsx` StatCard, `page-header.tsx`) for a unified readable
+density at 100% zoom without breaking 44px touch targets or WCAG; made
+exception-dashboard recent-decision titles clickable links with visible focus;
+fixed the raw technical `{item.status}` leak using `deliverableStatusLabel`;
+contained the Kanban scroll region to prevent page-level overflow; tightened
+client-home density and replaced the confusing "مخرجاتي" with "المخرجات". No
+business-workflow redesign in this slice.
+
+Local non-DB matrix PASS: lint, typecheck, unit 62/284, integration 28/112,
+component 26/92 (incl. new exception-dashboard regression), RLS simulator 8/24,
+secret scan, diff check, and build. Exact-head CI, Preview, and owner visual QA
+remain pending.
+
+Parent disposition unchanged: X010-A-9 / S015-P1-111 / S015-P1-112 remain
+`code-fixed + CI-green + hosted-blocked`. No hosted mutation, Production access,
+merge, team invitation, or `TEAM_UAT_READY`.
+
 ## Spec 015 X010-A final hosted UAT closure attempt — 2026-07-30
 
 Status: `X010_A_CORRECTIVE_HOSTED_BLOCKED`. Final-head

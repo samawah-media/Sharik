@@ -33,13 +33,13 @@ export function ClientHome({
     : "عرض ما هو قيد المراجعة";
 
   return (
-    <main className="mx-auto grid w-full max-w-5xl gap-6 px-4 py-6 sm:py-8">
-      <section className="grid gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-7">
+    <main className="mx-auto grid w-full max-w-5xl gap-5 px-4 py-5 sm:py-6">
+      <section className="grid gap-3 rounded-2xl border border-border bg-surface p-4 shadow-xs sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm font-semibold text-accent">بوابة العميل</p>
           <Badge tone="success">مساحتك الخاصة</Badge>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
           مساحة {displayClientName}
         </h1>
         <p className="max-w-2xl text-sm leading-6 text-muted">
@@ -56,15 +56,15 @@ export function ClientHome({
       </section>
       {stats ? <MvpSnapshotCards stats={stats} /> : null}
       {children ?? (
-        <section className="grid gap-3 rounded-lg border border-border p-5">
-          <h2 className="text-lg font-semibold">{reviewHeading}</h2>
+        <section className="grid gap-2 rounded-lg border border-border p-4">
+          <h2 className="text-base font-semibold">{reviewHeading}</h2>
           <p className="text-sm text-muted">{reviewDescription}</p>
         </section>
       )}
-      <section className="grid gap-3 rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
-        <h2 className="text-lg font-semibold">المخرجات والباقة</h2>
+      <section className="grid gap-2 rounded-2xl border border-border bg-surface p-4 shadow-xs sm:p-5">
+        <h2 className="text-base font-semibold">المخرجات والباقة</h2>
         <p className="text-sm text-muted">
-          افتح مخرجاتي لمراجعة الاسم والنوع والتاريخ والحالة والتقدم، وافتح
+          افتح المخرجات لمراجعة الاسم والنوع والتاريخ والحالة والتقدم، وافتح
           الباقة لمعرفة المتفق عليه والمتبقي.
         </p>
       </section>

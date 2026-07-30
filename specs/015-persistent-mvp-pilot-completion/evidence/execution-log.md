@@ -1,5 +1,14 @@
 # Spec 015 execution log
 
+## 2026-07-30 — X010-B-1 Global density + navigation + clickability
+
+- Started from HEAD `47b11e9` on `codex/015-persistent-mvp-pilot-completion`. This is the first implementation slice of X010-B (Owner Experience Notes Consolidation and UX Rescue), inside Spec 015 only.
+- Phase 1 (source-of-truth): consolidated all owner experience observations into `owner-manual-uat-notes-2026-07-26.md` with fixed / needs-recheck / open triage; corrected the documentation conflict (current HEAD `47b11e9`; exact-HEAD CI green but corrective hosted UAT blocked; X010-A parent not complete while X010-A-9 open); created X010-B + sub-tasks in `tasks.md`; registered defects S015-P2-111 through S015-P2-123.
+- Phase 2 (X010-B-1 implementation): tightened shared core tokens (`card.tsx` padding/shadow, `badge.tsx` StatCard, `page-header.tsx` headings) for a unified readable density at 100% zoom without breaking 44px touch targets or WCAG focus; made exception-dashboard recent-decision titles clickable links to the deliverables page with visible focus and keyboard reach; fixed the raw technical `{item.status}` leak by applying `deliverableStatusLabel`; contained the Kanban scroll region (`max-w-full overflow-x-auto`, removed `-mx-4`) to prevent page-level overflow; tightened client-home density and replaced the confusing "مخرجاتي" with "المخرجات".
+- New regression: `tests/component/management/exception-dashboard.test.tsx` asserts Arabic status labels (no raw enum) and clickable recent-decision links.
+- Local non-DB matrix PASS: lint; typecheck; unit 62 files / 284 tests; integration 28 files / 112 tests; component 26 files / 92 tests; RLS simulator 8 files / 24 tests; secret scan; `git diff --check` (LF/CRLF warnings only); production build.
+- Boundary: no business-workflow redesign in this slice. X010-A-9 / S015-P1-111 / S015-P1-112 remain `code-fixed + CI-green + hosted-blocked`. No hosted mutation, no Production access, no merge, no team invitation, no `TEAM_UAT_READY`. Exact-head CI, Preview, and owner visual QA remain pending.
+
 ## 2026-07-30 — X010-A final hosted UAT closure attempt
 
 - Starting HEAD `6c0386dac8e474ffe6d56cacf754bc0e6d1bc939` on `codex/015-persistent-mvp-pilot-completion`; code review, exact-HEAD CI (`30552777038`), Preview (`https://vercel.com/samawahs-projects/shrik/7LXuPgu2MUb8RJNbhXigi4ZipQhK`), and CodeRabbit were already approved before this attempt.

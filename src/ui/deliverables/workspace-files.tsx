@@ -492,11 +492,9 @@ export function WorkspaceFileUpload({
       });
       created.on("file-removed", (file) => {
         const attemptId = String(file.meta.attemptId ?? "");
-        const storagePath = String(file.meta.objectName ?? "");
         if (persistedAttemptIdsRef.current.has(attemptId)) {
           void cancelWorkspaceFileUpload({
             attemptId,
-            storagePath,
             reason: "cancelled_from_upload_queue",
           }).then((cancelled) => {
             if (cancelled.ok) {
@@ -686,10 +684,9 @@ export function WorkspaceFileUpload({
   ]);
 
   const cancelAttempt = async (row: UploadRow) => {
-    if (!row.attemptId || !row.storagePath) return;
+    if (!row.attemptId) return;
     const result = await cancelWorkspaceFileUpload({
       attemptId: row.attemptId,
-      storagePath: row.storagePath,
       reason: "explicit_user_cancel_after_upload_interruption",
     });
     if (!result.ok) {
@@ -700,7 +697,11 @@ export function WorkspaceFileUpload({
     setDismissedAttemptIds((ids) =>
       row.attemptId ? [...ids, row.attemptId] : ids,
     );
-    setFeedback(`أُلغيت محاولة رفع ${row.name} وسُجل القرار في سجل التدقيق.`);
+    setFeedback(
+      result.cleanup === "completed"
+        ? `أُلغيت محاولة رفع ${row.name} وسُجل القرار في سجل التدقيق.`
+        : `أُلغيت محاولة رفع ${row.name} وسُجل القرار، لكن تنظيف الملف المؤقت يحتاج متابعة يدوية.`,
+    );
     onUploadAttemptCancelled?.(row.attemptId);
   };
 

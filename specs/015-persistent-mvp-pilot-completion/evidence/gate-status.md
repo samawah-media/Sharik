@@ -1,6 +1,44 @@
 # Spec 015 gate status
 
+## X010-A corrective security checkpoint — 2026-07-30
+
+`X010_A_CORRECTIVE_LOCAL_GREEN_CI_PENDING`. Bounded corrective slice for
+S015-P1-111 (durable upload authorization matrix) and S015-P1-112 (unsafe
+browser-supplied Storage cleanup on cancel). Mandatory starting HEAD was
+`ead81c6a4c3490281c709d5672b3333f9a824540`.
+
+Changes are scoped to the two defects only: one additive migration
+(`202607300001_s015_x010a_upload_authorization_cleanup_hardening.sql`), the
+hardened `cancelWorkspaceFileUpload` server action + `cancelUploadAttemptSchema`,
+the two UI cancel call sites in `workspace-files.tsx`, the corrected durable
+pgTAP scenario, and a new `s015_upload_authorization_hardening.test.sql`. No
+Spec 016, parallel plan, ADR, dependency, or change to the already-applied
+`202607290002` migration.
+
+Authorization matrix now enforced in PostgreSQL at begin, retry, and complete
+(re-checked at completion) via centralized `s015_upload_actor_kind` +
+`s015_upload_visibility_allowed` + `s015_assert_upload_authorized`:
+client_viewer denied all; clients limited to `client_uploaded`/`is_final=false`
+on the exact visible current version; execution members limited to
+`internal_only`; management-only `client_visible` (client_visible/client_approved/
+final versions) and `final_delivery` (`is_final=true` + client_approved/final);
+any non-`final_delivery` visibility can never be marked final. Cancel returns
+the attempt's true `bucket_id`+`storage_path` from the DB row after
+authorization; the server action deletes only that path, inspects `remove`, and
+returns `cleanup: "completed"|"failed"` without reverting the audited cancel.
+
+Local non-DB matrix PASS: typecheck, lint, unit 61 files/279 tests, integration
+28 files/112 tests, component 24 files/88 tests, RLS simulator 8 files/24 tests,
+secret scan, `git diff --check`, and production build. DB-backed gates (pgTAP,
+persistent E2E) and the full fixture E2E could not execute locally because
+Docker/Supabase cannot start in this workstation environment (same class as
+S015-P2-001/038); they are deferred to exact-HEAD CI. No GREEN is declared until
+exact-HEAD F-001 Quality, the correct `samawahs-projects/shrik` Preview, and the
+corrective hosted UAT pass. Production, real data, merge, external invitations,
+and alias promotion remain outside the boundary.
+
 ## X010-A final gate — 2026-07-29
+
 
 `X010_A_GREEN`.
 

@@ -3042,11 +3042,11 @@ select results_eq(
     '21000000-0000-4000-8000-000000009611',
     'deliverable-assets',
     '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000009610/21000000-0000-4000-8000-000000009611/replacement.png',
-    'replacement.png', 'image/png', 20, 'client_visible', false,
+    'replacement.png', 'image/png', 20, 'internal_only', false,
     '21000000-0000-4000-8000-000000009612',
     's015-durable-run-one', 's015-durable-attempt-one', gen_random_uuid())$$,
   $$values ('21000000-0000-4000-8000-000000009613'::uuid)$$,
-  'upload attempt is durable before Storage transfer'
+  'internal upload attempt is durable before Storage transfer'
 );
 reset role;
 
@@ -3153,13 +3153,19 @@ select is(
   'successful replacement atomically removes the old file from client payload'
 );
 select is(
+  (select upload_state from public.file_assets
+   where id = '21000000-0000-4000-8000-000000009616'),
+  'ready',
+  'successful replacement registers the new ready file'
+);
+select is(
   (select count(*)::integer from public.file_assets
    where deliverable_id = '21000000-0000-4000-8000-000000009610'
      and version_id = '21000000-0000-4000-8000-000000009611'
      and upload_state = 'ready'
      and visibility in ('client_visible','final_delivery')),
-  1,
-  'confirmation can expose only the correct replacement file'
+  0,
+  'internal-only replacement never creates a client-visible file on an unsent version'
 );
 select is(
   (select count(*)::integer from public.audit_events
@@ -3181,7 +3187,7 @@ select lives_ok(
     '21000000-0000-4000-8000-000000009611',
     'deliverable-assets',
     '21000000-0000-4000-8000-000000000001/21000000-0000-4000-8000-000000000301/21000000-0000-4000-8000-000000009610/21000000-0000-4000-8000-000000009611/cancelled.png',
-    'cancelled.png', 'image/png', 20, 'client_visible', false,
+    'cancelled.png', 'image/png', 20, 'internal_only', false,
     '21000000-0000-4000-8000-000000009616',
     's015-cancelled-run', 's015-cancelled-attempt', gen_random_uuid())$$,
   'a second replacement attempt is persisted'

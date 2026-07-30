@@ -1,5 +1,51 @@
 # Project Progress
 
+## Spec 015 X010-A corrective security closure — 2026-07-30
+
+Status: `X010_A_CORRECTIVE_LOCAL_GREEN_CI_PENDING`. Bounded corrective slice
+for two P1 defects reopened against the X010-A durable-upload path. Started
+from mandatory HEAD `ead81c6a4c3490281c709d5672b3333f9a824540`.
+
+- S015-P1-111 (upload authorization): the durable begin/retry/complete path
+  relied only on `private.s015_upload_attempt_actor_allowed` and never
+  re-checked the role -> visibility, `is_final` <-> `final_delivery`,
+  version-state, or client_viewer/execution-member boundaries that
+  `202607130006` enforced at registration. Additive migration
+  `202607300001_s015_x010a_upload_authorization_cleanup_hardening.sql` adds
+  centralized helpers (`s015_upload_actor_kind`,
+  `s015_upload_visibility_allowed`, `s015_assert_upload_authorized`) applied at
+  begin, retry, and complete (re-checked at completion). `client_viewer` is
+  denied all uploads; clients are limited to `client_uploaded`/`is_final=false`
+  on the exact visible current version; execution members are limited to
+  `internal_only`; management-only `client_visible` (sent/approved/final
+  versions) and `final_delivery` (`is_final=true` + `client_approved`/`final`).
+  Any non-`final_delivery` visibility can never be marked final.
+- S015-P1-112 (unsafe storage cleanup): `cancelWorkspaceFileUpload` accepted a
+  browser-supplied `storagePath`, deleted it after cancel, and ignored the
+  `remove` result. `storagePath` was removed from the schema, the action input,
+  and all UI callers. `s015_cancel_file_upload_attempt` now returns the
+  attempt's true `bucket_id`+`storage_path` after authorization; the server
+  action deletes only that DB-returned path, inspects `remove`, and returns an
+  honest `cleanup: "completed"|"failed"` without reverting the audited cancel.
+- New pgTAP file `s015_upload_authorization_hardening.test.sql` covers the full
+  negative matrix (viewer/approver/writer/designer/unassigned/management,
+  cross-tenant/client, stale version), complete re-validation after role and
+  version-state changes with no partial file_asset/audit, and the cancel
+  true-path / single-audit / cross-tenant-deny contract. The existing durable
+  scenario was corrected to use `internal_only` on the internally_approved
+  version (the prior `client_visible`-on-`internally_approved` begin encoded the
+  bug being fixed).
+
+Local non-DB matrix passes: typecheck, lint, unit 61/279, integration 28/112,
+component 24/88, RLS simulator 8/24, secret scan, `git diff --check`, and
+production build. DB-backed gates (pgTAP, persistent E2E) and the full fixture
+E2E are deferred to exact-HEAD CI because Docker/Supabase cannot start in this
+workstation environment (same class as S015-P2-001/038). No GREEN is declared
+until exact-HEAD CI, the correct `samawahs-projects/shrik` Preview, and the
+corrective hosted UAT pass. Production, real data, merge, external invitations,
+and alias promotion remain outside the boundary.
+
+
 ## Spec 015 X010-A GREEN — 2026-07-29
 
 Status: `X010_A_GREEN`.

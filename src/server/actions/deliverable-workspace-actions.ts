@@ -58,7 +58,6 @@ const failUploadAttemptSchema = uploadAttemptProgressSchema.extend({
 const cancelUploadAttemptSchema = z.object({
   attemptId: z.string().uuid(),
   reason: z.string().trim().min(3).max(200),
-  storagePath: z.string().min(10).max(1_000),
 });
 
 const retryUploadAttemptSchema = z.object({
@@ -334,14 +333,26 @@ export async function cancelWorkspaceFileUpload(
     return { ok: false as const, reason: "invalid_input" as const };
   }
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.rpc("s015_cancel_file_upload_attempt", {
+  const { data, error } = await supabase.rpc("s015_cancel_file_upload_attempt", {
     target_attempt_id: parsed.data.attemptId,
     target_reason: parsed.data.reason,
     audit_event_id: crypto.randomUUID(),
   });
   if (error) return { ok: false as const, reason: "denied" as const };
-  await supabase.storage.from("deliverable-assets").remove([parsed.data.storagePath]);
-  return { ok: true as const };
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | { bucket_id: string; storage_path: string }
+    | null
+    | undefined;
+  if (!row?.storage_path) {
+    return { ok: true as const, cleanup: "completed" as const };
+  }
+  const removed = await supabase.storage
+    .from(row.bucket_id ?? "deliverable-assets")
+    .remove([row.storage_path]);
+  if (removed.error && removed.error.statusCode !== "404") {
+    return { ok: true as const, cleanup: "failed" as const };
+  }
+  return { ok: true as const, cleanup: "completed" as const };
 }
 
 export async function retryWorkspaceFileUpload(

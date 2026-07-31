@@ -182,6 +182,36 @@ describe("onboarding schema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("normalizes and accepts a valid contact phone", () => {
+    const result = onboardingSchema.safeParse({
+      ...validBase,
+      clientContactPhone: "+966 50 123 4567",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.clientContactPhone).toBe("+966501234567");
+    }
+  });
+
+  it("rejects an invalid contact phone", () => {
+    const result = onboardingSchema.safeParse({
+      ...validBase,
+      clientContactPhone: "not-a-phone",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts an empty optional contact phone", () => {
+    const result = onboardingSchema.safeParse({
+      ...validBase,
+      clientContactPhone: "",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.clientContactPhone).toBeUndefined();
+    }
+  });
+
   it("rejects missing runId", () => {
     const result = onboardingSchema.safeParse({
       ...validBase,

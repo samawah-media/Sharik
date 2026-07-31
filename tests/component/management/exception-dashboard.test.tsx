@@ -59,7 +59,7 @@ describe("ManagementExceptionDashboard — X010-B-1", () => {
     expect(within(recent).queryByText(/^delivered$/)).not.toBeInTheDocument();
   });
 
-  it("makes recent-decision titles clickable links to the deliverables page", () => {
+  it("makes the whole recent-decision row a single clickable link to the deliverables page", () => {
     const deliverables = [
       baseDeliverable({ id: "d1", name: "منشور الهوية", status: "delivered" }),
     ];
@@ -72,7 +72,9 @@ describe("ManagementExceptionDashboard — X010-B-1", () => {
       />,
     );
 
-    const link = screen.getByRole("link", { name: "منشور الهوية" });
+    const link = screen.getByRole("link", { name: /منشور الهوية/u });
     expect(link).toHaveAttribute("href", "/clients/c1/deliverables");
+    expect(within(link).getByText(/شركة النور/u)).toBeInTheDocument();
+    expect(within(link).getByText(/تم التسليم/u)).toBeInTheDocument();
   });
 });

@@ -3,6 +3,10 @@ import { contractStatuses } from "@/modules/contracts/contract-repository";
 import { packageStatuses } from "@/modules/packages/package-repository";
 import { deliverablePriorities } from "@/modules/deliverables/deliverable-repository";
 import { isCountUnitLabel } from "@/modules/packages/package-quantity";
+import {
+  isValidContactPhone,
+  normalizeContactPhone,
+} from "@/modules/clients/contact-phone";
 
 const optionalText = (max: number) =>
   z
@@ -27,6 +31,20 @@ const optionalDate = z.preprocess(
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .optional(),
 );
+
+const optionalPhone = z
+  .preprocess(
+    (value) => (typeof value === "string" ? normalizeContactPhone(value) : value),
+    z
+      .string()
+      .max(40)
+      .refine((value) => isValidContactPhone(value), {
+        message: "invalid_contact_phone",
+      }),
+  )
+  .optional()
+  .or(z.literal(""))
+  .transform((value) => (value ? value : undefined));
 
 export const onboardingPackageLineSchema = z
   .object({
@@ -59,6 +77,7 @@ export const onboardingSchema = z
       .email()
       .optional()
       .or(z.literal("")),
+    clientContactPhone: optionalPhone,
     contractName: z.string().trim().min(2).max(160),
     contractReference: optionalText(80),
     contractSummary: optionalText(500),

@@ -72,10 +72,7 @@ export default async function ClientsPage({
           writeAccess.allowed ? (
             <div className="flex flex-wrap gap-2">
               <ButtonLink href="/clients/onboard" variant="primary">
-                إضافة أول عميل
-              </ButtonLink>
-              <ButtonLink href="/clients/new" variant="secondary">
-                إضافة عميل
+                إضافة عميل جديد
               </ButtonLink>
             </div>
           ) : null

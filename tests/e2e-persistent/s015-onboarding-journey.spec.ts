@@ -37,20 +37,26 @@ test("management can onboard a complete first client through the wizard", async 
   await signInViaUi(page, freshSeed.actors.tenantAdmin);
   await page.goto(onboardPath, { waitUntil: "domcontentloaded" });
 
-  const form = page.getByRole("form", { name: "معالج إضافة أول عميل" });
+  const form = page.getByRole("form", { name: "معالج إضافة عميل جديد" });
   await expect(form).toBeVisible();
   await expect(form).toHaveAttribute("data-hydrated", "true");
 
-  await replaceText(form.locator('input[aria-label="اسم العميل"]'), clientName);
   await replaceText(
-    form.locator('input[aria-label="اسم جهة التواصل"]'),
+    form.locator('input[aria-label="اسم الشركة أو الجهة"]'),
+    clientName,
+  );
+  await replaceText(
+    form.locator('input[aria-label="اسم مسؤول التواصل"]'),
     "جهة التواصل التجريبية",
+  );
+  await replaceText(
+    form.locator('input[aria-label="رقم الهاتف / واتساب"]'),
+    "+966 50 123 4567",
   );
   await form.getByRole("button", { name: "التالي" }).click();
 
   await expect(form.locator('input[aria-label="اسم العقد"]')).toBeVisible();
   await replaceText(form.locator('input[aria-label="اسم العقد"]'), contractName);
-  await replaceText(form.locator('input[aria-label="مرجع العقد"]'), "X009C-E2E");
   await form.getByRole("button", { name: "التالي" }).click();
 
   await expect(form.locator('input[aria-label="اسم الباقة"]')).toBeVisible();
@@ -59,11 +65,18 @@ test("management can onboard a complete first client through the wizard", async 
     form.locator('input[aria-label="اسم الخدمة للسطر 1"]'),
     "منشورات تجريبية",
   );
+  await form.getByRole("button", { name: "إضافة خدمة" }).click();
+  await replaceText(
+    form.locator('input[aria-label="اسم الخدمة للسطر 2"]'),
+    "ريلز تجريبية",
+  );
   await form.getByRole("button", { name: "التالي" }).click();
 
-  await expect(form.locator('select[aria-label="المسؤول"]')).toBeVisible();
+  await expect(
+    form.locator('select[aria-label="المسؤول الرئيسي عن العمل"]'),
+  ).toBeVisible();
   await form
-    .locator('select[aria-label="المسؤول"]')
+    .locator('select[aria-label="المسؤول الرئيسي عن العمل"]')
     .selectOption(freshSeed.actors.assignedWriter.id);
   await form
     .locator(
@@ -91,12 +104,15 @@ test("management can onboard a complete first client through the wizard", async 
 
   const persistedClient = await seeded.client
     .from("clients")
-    .select("id, name, slug, status")
+    .select("id, name, slug, status, primary_contact_phone")
     .eq("tenant_id", freshSeed.tenantA)
     .eq("name", clientName)
     .single();
   expect(persistedClient.error).toBeNull();
-  expect(persistedClient.data).toMatchObject({ status: "active" });
+  expect(persistedClient.data).toMatchObject({
+    status: "active",
+    primary_contact_phone: "+966501234567",
+  });
   const clientId = persistedClient.data!.id;
 
   const persistedContract = await seeded.client
@@ -120,19 +136,19 @@ test("management can onboard a complete first client through the wizard", async 
   expect(persistedPackage.data).toMatchObject({ status: "active" });
   const packageId = persistedPackage.data!.id;
 
-  const persistedLine = await seeded.client
+  const persistedLines = await seeded.client
     .from("package_lines")
     .select("id, service_label, committed_quantity")
     .eq("tenant_id", freshSeed.tenantA)
     .eq("client_id", clientId)
     .eq("package_id", packageId)
-    .eq("status", "active")
-    .single();
-  expect(persistedLine.error).toBeNull();
-  expect(persistedLine.data).toMatchObject({
-    service_label: "منشورات تجريبية",
-    committed_quantity: 1,
-  });
+    .eq("status", "active");
+  expect(persistedLines.error).toBeNull();
+  expect(persistedLines.data).toHaveLength(2);
+  expect(persistedLines.data!.map((l) => l.service_label).sort()).toEqual([
+    "ريلز تجريبية",
+    "منشورات تجريبية",
+  ]);
 
   const persistedDeliverable = await seeded.client
     .from("deliverables")
@@ -183,6 +199,12 @@ test("management can onboard a complete first client through the wizard", async 
     .eq("scope_id", clientId)
     .in("role_key", ["content_writer", "designer"]);
   expect(scopedTeamRoleCount ?? 0).toBe(2);
+
+  await page.goto(`/clients/${clientId}/edit`, { waitUntil: "domcontentloaded" });
+  const editPhone = page.locator('input[name="primaryContactPhone"]');
+  await expect(editPhone).toHaveValue("+966501234567");
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(editPhone).toHaveValue("+966501234567");
 });
 
 test("account manager cannot access the onboarding wizard", async ({
@@ -192,23 +214,25 @@ test("account manager cannot access the onboarding wizard", async ({
   await page.goto(onboardPath, { waitUntil: "domcontentloaded" });
 
   await expect(
-    page.getByRole("form", { name: "معالج إضافة أول عميل" }),
+    page.getByRole("form", { name: "معالج إضافة عميل جديد" }),
   ).toHaveCount(0);
 });
 
-test("wizard prevents advancing with empty required client name", async ({
+test("wizard prevents advancing with empty required company name", async ({
   page,
 }) => {
   await signInViaUi(page, freshSeed.actors.tenantAdmin);
   await page.goto(onboardPath, { waitUntil: "domcontentloaded" });
 
-  const form = page.getByRole("form", { name: "معالج إضافة أول عميل" });
+  const form = page.getByRole("form", { name: "معالج إضافة عميل جديد" });
   await expect(form).toHaveAttribute("data-hydrated", "true");
   await form.getByRole("button", { name: "التالي" }).click();
 
-  await expect(page.getByText(/اسم العميل مطلوب/u)).toBeVisible();
+  await expect(page.getByText(/اسم الشركة أو الجهة مطلوب/u)).toBeVisible();
   await expect(form.locator('input[aria-label="اسم العقد"]')).toHaveCount(0);
-  await expect(form.locator('input[aria-label="اسم العميل"]')).toBeVisible();
+  await expect(
+    form.locator('input[aria-label="اسم الشركة أو الجهة"]'),
+  ).toBeVisible();
 });
 
 test("idempotent replay with same run-id does not duplicate entities", async () => {

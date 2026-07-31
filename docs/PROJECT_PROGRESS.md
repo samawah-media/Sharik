@@ -1,5 +1,64 @@
 # Project Progress
 
+## Spec 015 X010-B-2 onboarding journey simplification — corrective pass — 2026-07-31
+
+Status: `X010_B2_CORRECTIVE_IN_PROGRESS` (corrected from the initial inaccurate
+`X010_B2_TECHNICAL_GREEN`). The corrective changes are **committed locally at
+`0e6b64d`** on `codex/015-persistent-mvp-pilot-completion`; exact-HEAD CI has not
+run, DB-backed gates are environment-blocked, and the Preview migration
+`202607310001` has not been applied to UAT. **X010_B2_GREEN is NOT declared.**
+
+Two defects found in self-review and fixed in place (no new migration):
+1. `client_contact_phone_input` moved to the **end** of `s015_onboard_first_client`
+   (it was a defaulted param before mandatory params). DROP/CREATE/REVOKE/GRANT
+   and pgTAP signatures updated.
+2. `normalizeContactPhone` now converts **only** a leading `00` to `+` (the
+   prior logic corrupted `01000012345`); `isValidContactPhone` uses
+   `^\+?[0-9]{7,15}$`. A DB `CHECK` constraint enforces the same shape and is
+   covered by pgTAP (direct-insert + RPC rejection of invalid phones).
+
+Value-preservation accuracy: values are preserved within the **current in-memory
+session** after a validation error — not a durable draft after refresh; no PII in
+localStorage.
+
+Local non-DB matrix run after the corrective edits: lint, typecheck, unit,
+integration, component, RLS simulator, secret scan, diff check, build — see the
+session report for counts. DB-backed gates (pgTAP, persistent E2E) remain
+environment-blocked locally (`LegacyDbConnectError` / no Docker) and run in
+exact-HEAD CI before any GREEN claim. Hosted Preview is **not** green against the
+new schema until `202607310001` is applied to UAT. No Production, merge, push, or
+deploy. X010-A-9 / S015-P1-111 / S015-P1-112 remain `code-fixed + CI-green +
+hosted-blocked`.
+
+## Spec 015 X010-B-2 onboarding journey simplification — 2026-07-31 (initial draft)
+`2c03bca0138614860090c8905d46813ad56874cf` on
+`codex/015-persistent-mvp-pilot-completion`. Implements the bounded onboarding
+simplification inside Spec 015 only.
+
+Delivered: one primary CTA «إضافة عميل جديد» on `/clients` → the unified wizard
+(secondary button removed); explicit Arabic company/contact/phone labels;
+additive `primary_contact_phone` column (`202607310001`) threaded through the
+audited, atomic, tenant-scoped, idempotent client create/update and onboarding
+RPCs; phone normalization + Zod validation (never in localStorage/logs);
+multi-service package lines with integer/fractional semantics and committed/
+reserved/consumed/remaining helper copy; «المسؤول الرئيسي عن العمل» /
+«أعضاء الفريق المشاركون» with Arabic role labels; progressive disclosure for
+optional details; value preservation + focus-on-error; idempotency preventing
+duplicate creation.
+
+B1 documented closure recorded as `technical-green + owner-final-UAT-pending`:
+exact-HEAD F-001 CI `30552777038` passed; Preview
+`7LXuPgu2MUb8RJNbhXigi4ZipQhK` Ready; CodeRabbit `skipped` = Draft PR (not a
+review pass); recent-decision row is a single honest link to the scoped
+deliverables page.
+
+Local non-DB matrix PASS: lint, typecheck, unit 63/293, integration 28/112,
+component 26/97, RLS simulator 8/24, secret scan, diff check, build. DB-backed
+gates (pgTAP, persistent E2E) environment-blocked locally and run in exact-HEAD
+CI. Hosted Preview apply of `202607310001` and owner final UAT remain pending;
+no Production, merge, or team invitation. X010-A-9 / S015-P1-111 / S015-P1-112
+remain `code-fixed + CI-green + hosted-blocked`.
+
 ## Spec 015 X010-B-1 global density + navigation + clickability — 2026-07-30
 
 Status: `X010_B1_LOCAL_GREEN_CI_PENDING`. First implementation slice of the

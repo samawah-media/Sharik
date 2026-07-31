@@ -1,5 +1,122 @@
 # Spec 015 gate status
 
+## X010-B-2 onboarding journey simplification — corrective pass — 2026-07-31
+
+`X010_B2_CORRECTIVE_IN_PROGRESS`. The first draft set the state to
+`X010_B2_TECHNICAL_GREEN`, which was **not** accurate: the corrective changes are
+**committed locally at `0e6b64d`** but had not passed exact-HEAD CI, the
+pgTAP/persistent-DB gates were environment-blocked, and the Preview migration
+`202607310001` had not been applied to UAT. The state stays
+`CORRECTIVE_IN_PROGRESS` until the gates actually pass. **X010_B2_GREEN is NOT
+declared.**
+
+Two real defects found in self-review and fixed in this corrective pass (no new
+migration; the uncommitted `202607310001` was edited in place, then committed):
+
+1. **PostgreSQL function signature.** `client_contact_phone_input` (a defaulted
+   parameter) was declared before mandatory parameters of
+   `s015_onboard_first_client`. It is moved to the **end** of the parameter list
+   (after `reserved_quantity_input`), still with `default null` for backward
+   compatibility with named-notation callers. DROP/CREATE/REVOKE/GRANT
+   signatures and the pgTAP `regprocedure` assertion are updated to the
+   40-param signature (trailing `text`).
+2. **Phone normalization corrupted legitimate numbers.** The prior `00`-replace
+   matched `00` after any digit, corrupting numbers like `01000012345`.
+   `normalizeContactPhone` now converts **only** a leading `00` prefix (`/^00/`)
+   to `+`, leaves `00` elsewhere untouched, and `isValidContactPhone` uses
+   `^\+?[0-9]{7,15}$`. A DB `CHECK` constraint
+   (`clients_primary_contact_phone_format`) enforces the same shape at the
+   column level and is covered by pgTAP (direct-insert rejection and audited-RPC
+   rejection of invalid phones).
+
+Value-preservation accuracy: the wizard preserves entered values **within the
+current in-memory session** after a validation error (React state + hidden
+inputs). This is **not** a durable draft that survives a page refresh; no PII is
+written to localStorage.
+
+Local non-DB matrix (run after the corrective edits): lint, typecheck, unit,
+integration, component, RLS simulator, secret scan, diff check, build — see the
+report below for exact counts. DB-backed gates (pgTAP, persistent E2E) remain
+environment-blocked locally (`LegacyDbConnectError` / no Docker daemon) and must
+run in exact-HEAD CI before any GREEN claim.
+
+Hosted boundary: `202607310001` has **not** been applied to the approved
+non-Production UAT, so the Preview is **not** asserted green against the new
+schema. No Production access, no merge, no push, no deploy, no team invitation,
+no `TEAM_UAT_READY`. Pushing before applying the migration to UAT would break
+the Preview; the commit stays local until UAT migration + CI pass.
+
+## X010-B-2 onboarding journey simplification — 2026-07-31 (initial draft)
+
+`X010_B2_CORRECTIVE_IN_PROGRESS` (corrected from the initial `TECHNICAL_GREEN`).
+on `codex/015-persistent-mvp-pilot-completion`. Implements the bounded onboarding
+simplification inside Spec 015 only; does not touch X010-A-9, the corrective
+hosted UAT, or any Production boundary.
+
+Scope delivered:
+- One primary CTA «إضافة عميل جديد» on `/clients` → the unified wizard at
+  `/clients/onboard`. The competing secondary «إضافة عميل» header button is
+  removed. The standalone `/clients/new` route remains for direct edit/access
+  but is not the primary journey.
+- Explicit Arabic labels: «اسم الشركة أو الجهة», «اسم مسؤول التواصل»,
+  «البريد الإلكتروني», «رقم الهاتف / واتساب», «اسم العقد», «مرجع العقد —
+  اختياري» (with helper copy), «تاريخ بداية/نهاية العقد». No technical names
+  or UUIDs.
+- Phone/WhatsApp: additive migration `202607310001_s015_x010b2_client_contact_phone.sql`
+  adds `primary_contact_phone text` to `public.clients` and recreates
+  `f001_create_client_write` (7-param), `f001_update_client_write` (8-param),
+  and `s015_onboard_first_client` (with `client_contact_phone_input`) to thread
+  the phone through the audited, atomic, tenant-scoped, idempotent write path.
+  RLS already protects `public.clients`, so the new column inherits isolation.
+  Zod normalization + validation; phone is never stored in localStorage/logs.
+- Package: multiple services in one package (add/remove); integer-only for
+  count units, fractional allowed for divisible units; helper copy distinguishes
+  committed/reserved/consumed/remaining.
+- Team: «المسؤول الرئيسي عن العمل» and «أعضاء الفريق المشاركون» with Arabic
+  role labels + helper text; exact tenant/client eligibility preserved.
+- Progressive disclosure: optional contract/package details behind a toggle;
+  review hides empty optionals; values preserved across validation errors with
+  focus on the invalid field.
+
+Verification (local, non-DB): lint PASS; typecheck PASS; unit 63 files / 293
+tests PASS; integration 28 files / 112 tests PASS; component 26 files / 97 tests
+PASS; RLS simulator 8 files / 24 tests PASS; secret scan PASS; `git diff --check`
+(LF/CRLF warnings only); production build PASS.
+
+DB-backed gates (pgTAP `s015_x010b2_client_contact_phone.test.sql` and the
+persistent onboarding E2E with multi-line package + phone + edit/reload) are
+environment-blocked locally by `LegacyDbConnectError` / failed local PostgreSQL
+connection and run in exact-HEAD CI (same class as prior slices).
+
+Hosted boundary: no Preview migration apply, no Production access, no merge, no
+team invitation, and no `TEAM_UAT_READY`. The Preview cannot be asserted green
+for the new migration until `202607310001` is applied to the approved
+non-Production UAT; the Preview will not be claimed green against an old schema.
+Parent disposition unchanged: X010-A-9 / S015-P1-111 / S015-P1-112 remain
+`code-fixed + CI-green + hosted-blocked`.
+
+## X010-B-1 global density + navigation + clickability — 2026-07-31
+
+`X010_B1_TECHNICAL_GREEN_OWNER_FINAL_UAT_PENDING`. B1 is **not** owner-accepted;
+it is `technical-green + owner-final-UAT-pending`. Exact-HEAD F-001 CI run
+`30552777038` passed and the Vercel Preview deployment
+`7LXuPgu2MUb8RJNbhXigi4ZipQhK` is Ready in the correct `samawahs-projects/shrik`
+project.
+
+CodeRabbit showed `skipped` because the PR is a **Draft** — that is a skipped
+review, not a review pass. No CodeRabbit review approval is claimed.
+
+The whole exception-dashboard recent-decision row is now a single clickable link
+to the scoped deliverables page (`/clients/{clientId}/deliverables`). There is
+no URL deep-link that opens a specific deliverable drawer yet, so the closest
+honest link is used; no claim is made that the row opens a specific deliverable
+directly.
+
+Local non-DB matrix PASS: lint, typecheck, unit 62/284, integration 28/112,
+component 26/97, RLS simulator 8/24, secret scan, diff check, build. Hosted
+corrective UAT remains blocked by missing approved UAT credentials; no GREEN is
+declared for the corrective hosted slice.
+
 ## X010-B-1 global density + navigation + clickability — 2026-07-30
 
 `X010_B1_LOCAL_GREEN_CI_PENDING`. First implementation slice of the Owner

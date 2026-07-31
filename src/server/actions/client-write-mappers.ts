@@ -6,6 +6,7 @@ export const clientValuesFromFormData = (
   name: String(formData.get("name") ?? ""),
   primaryContactName: String(formData.get("primaryContactName") ?? ""),
   primaryContactEmail: String(formData.get("primaryContactEmail") ?? ""),
+  primaryContactPhone: String(formData.get("primaryContactPhone") ?? ""),
 });
 
 export const optionalFormValue = (value: string | undefined) => {

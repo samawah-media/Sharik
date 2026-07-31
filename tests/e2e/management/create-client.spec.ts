@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("shows Arabic Hadna client list and create-client form", async ({
+test("shows Arabic client list with a single primary onboarding CTA and the standalone form", async ({
   page,
 }) => {
   await page.goto("/clients", { waitUntil: "domcontentloaded" });
@@ -10,10 +10,15 @@ test("shows Arabic Hadna client list and create-client form", async ({
     page.getByRole("link", { name: "فتح المساحة" }).first(),
   ).toBeVisible();
 
-  await Promise.all([
-    page.waitForURL("**/clients/new", { waitUntil: "domcontentloaded" }),
-    page.getByRole("link", { name: "إضافة عميل" }).click(),
-  ]);
+  await expect(
+    page.getByRole("link", { name: "إضافة عميل جديد" }),
+  ).toHaveAttribute("href", "/clients/onboard");
+  await expect(
+    page.getByRole("link", { name: "إضافة عميل", exact: true }),
+  ).toHaveCount(0);
+
+  await page.goto("/clients/new", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: "إضافة عميل" })).toBeVisible();
-  await expect(page.getByLabel("اسم العميل")).toBeVisible();
+  await expect(page.getByLabel("اسم الشركة أو الجهة")).toBeVisible();
+  await expect(page.getByLabel("رقم الهاتف / واتساب")).toBeVisible();
 });

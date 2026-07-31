@@ -3,6 +3,7 @@ export type OnboardingFormValues = {
   clientName?: string;
   clientContactName?: string;
   clientContactEmail?: string;
+  clientContactPhone?: string;
   contractName?: string;
   contractReference?: string;
   contractSummary?: string;

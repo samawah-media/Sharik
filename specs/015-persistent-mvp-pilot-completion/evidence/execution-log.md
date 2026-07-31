@@ -1,5 +1,44 @@
 # Spec 015 execution log
 
+## 2026-07-31 — X010-B-2 corrective pass (migration signature + phone normalization)
+
+- Status corrected to `X010_B2_CORRECTIVE_IN_PROGRESS`. The initial draft's
+  `X010_B2_TECHNICAL_GREEN` was inaccurate: the corrective changes are
+  **committed locally at `0e6b64d`**, exact-HEAD CI had not run, DB-backed gates
+  were blocked, and the Preview migration was not applied to UAT.
+  **X010_B2_GREEN is NOT declared.**
+- Migration fix (edited the `202607310001` migration in place; no new file):
+  moved `client_contact_phone_input text default null` to the **end** of
+  `s015_onboard_first_client` (it was before mandatory parameters). Updated
+  DROP/CREATE/REVOKE/GRANT to the 40-param signature with the trailing `text`.
+  Added a DB `CHECK` constraint `clients_primary_contact_phone_format`
+  (`primary_contact_phone IS NULL OR ~ '^\+?[0-9]{7,15}$'`).
+- Phone normalization fix: `normalizeContactPhone` now converts **only** a
+  leading `00` prefix to `+` (previously it corrupted numbers like
+  `01000012345` by replacing `00` after a digit). `isValidContactPhone` uses
+  `^\+?[0-9]{7,15}$`; a `+` in the middle or more than one `+` is rejected.
+- pgTAP updated: `regprocedure` assertion matches the trailing-phone signature;
+  added `col_has_check` plus direct-insert and audited-RPC rejection of invalid
+  phones (`23514`).
+- Value-preservation wording corrected: the wizard preserves entered values
+  within the **current in-memory session** after a validation error; it is **not**
+  a durable draft that survives refresh, and no PII is stored in localStorage.
+- Boundary unchanged: `202607310001` has **not** been applied to UAT, so the
+  Preview is not green against the new schema. Commit stays local; no push/deploy.
+
+## 2026-07-31 — X010-B-2 Onboarding journey simplification (initial draft)
+
+- Started from HEAD `2c03bca0138614860090c8905d46813ad56874cf` on `codex/015-persistent-mvp-pilot-completion`. Bounded onboarding simplification inside Spec 015 only; does not touch X010-A-9, the corrective hosted UAT, or any Production boundary.
+- One primary CTA «إضافة عميل جديد» on `/clients` → the unified wizard; the competing secondary «إضافة عميل» header button removed (the standalone `/clients/new` route remains for direct edit/access).
+- Explicit Arabic labels throughout the wizard and standalone forms: «اسم الشركة أو الجهة», «اسم مسؤول التواصل», «البريد الإلكتروني», «رقم الهاتف / واتساب», «اسم العقد», «مرجع العقد — اختياري» (with helper copy), «تاريخ بداية/نهاية العقد».
+- Phone/WhatsApp: additive migration `202607310001_s015_x010b2_client_contact_phone.sql` adds `primary_contact_phone text` to `public.clients` and recreates `f001_create_client_write` (7-param), `f001_update_client_write` (8-param), and `s015_onboard_first_client` (with `client_contact_phone_input`, defaulted for backward-compatible callers) to thread phone through the atomic, tenant-scoped, audited, idempotent onboarding path. The new column inherits the existing `clients` RLS. Shared `contact-phone.ts` normalizes and validates via Zod; phone is never stored in localStorage/logs.
+- Package: multiple services per package with add/remove; integer-only for count units, fractional for divisible units; helper copy distinguishes committed/reserved/consumed/remaining. Team: «المسؤول الرئيسي عن العمل» + «أعضاء الفريق المشاركون» with Arabic role labels and helper text; exact eligibility preserved. Progressive disclosure for optional contract/package details; review hides empty optionals; values preserved on validation error with focus on the invalid field.
+- B1 documented closure: `technical-green + owner-final-UAT-pending`. Exact-HEAD F-001 CI `30552777038` passed and Preview `7LXuPgu2MUb8RJNbhXigi4ZipQhK` is Ready. CodeRabbit `skipped` = Draft PR, not a review pass. Recent-decision row is now a single honest link to the scoped deliverables page (no drawer deep-link exists yet).
+- New/updated regressions: `tests/unit/clients/contact-phone.test.ts` (normalization/validation); extended `onboarding-schema.test.ts` (phone valid/invalid/empty); rewritten `first-client-wizard.test.tsx` (clear labels, phone, multi-service add/remove, value preservation after error, progressive disclosure, review hides empty); new `supabase/tests/database/s015_x010b2_client_contact_phone.test.sql` (column + recreated RPC signatures/privileges, phone persistence, cross-tenant RLS isolation, unauthorized denial, atomic onboarding with phone, idempotent replay, conflict on different phone); updated persistent `s015-onboarding-journey.spec.ts` (multi-line package + phone + edit/reload) and `create-client.spec.ts` (single CTA, new labels).
+- Local non-DB matrix PASS: lint; typecheck; unit 63 files / 293 tests; integration 28 files / 112 tests; component 26 files / 97 tests; RLS simulator 8 files / 24 tests; secret scan; `git diff --check` (LF/CRLF warnings only); production build. DB-backed gates (pgTAP, persistent E2E) are environment-blocked locally (`LegacyDbConnectError`) and run in exact-HEAD CI.
+- Registered five open owner notes as defects S015-P2-124 through S015-P2-128 (post-approval return to internal edit; protected drag vs status-action clarity; add/invite team members; email notifications decision; trial data cleanup without deleting Audit/Ledger) and added X010-B-7 as the final structured owner acceptance trial after B2–B6.
+- Boundary: no hosted migration apply, no Production access, no merge, no team invitation, no `TEAM_UAT_READY`. The Preview cannot be claimed green for the new migration until `202607310001` is applied to the approved non-Production UAT. X010-A-9 / S015-P1-111 / S015-P1-112 remain `code-fixed + CI-green + hosted-blocked`.
+
 ## 2026-07-30 — X010-B-1 Global density + navigation + clickability
 
 - Started from HEAD `47b11e9` on `codex/015-persistent-mvp-pilot-completion`. This is the first implementation slice of X010-B (Owner Experience Notes Consolidation and UX Rescue), inside Spec 015 only.

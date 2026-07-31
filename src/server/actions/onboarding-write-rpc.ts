@@ -42,6 +42,7 @@ export const onboardFirstClientViaRpc = async ({
       client_slug_input: toClientSlug(data.clientName),
       client_contact_name_input: nullable(data.clientContactName),
       client_contact_email_input: nullable(data.clientContactEmail),
+      client_contact_phone_input: nullable(data.clientContactPhone),
       contract_id_input: crypto.randomUUID(),
       contract_audit_event_id: crypto.randomUUID(),
       contract_name_input: data.contractName,

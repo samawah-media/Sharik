@@ -6,6 +6,7 @@ import type { MemberDisplay } from "@/modules/members/member-directory";
 import type { OnboardingFormState } from "@/modules/onboarding/onboarding-form-state";
 import { initialOnboardingFormState } from "@/modules/onboarding/onboarding-form-state";
 import { isCountUnitLabel } from "@/modules/packages/package-quantity";
+import { isValidContactPhone, normalizeContactPhone } from "@/modules/clients/contact-phone";
 import { onboardFirstClientAction } from "@/server/actions/onboarding";
 import { Button } from "@/ui/core/button";
 
@@ -20,6 +21,7 @@ type WizardData = {
   clientName: string;
   clientContactName: string;
   clientContactEmail: string;
+  clientContactPhone: string;
   contractName: string;
   contractReference: string;
   contractSummary: string;
@@ -75,6 +77,7 @@ const initialData: WizardData = {
   clientName: "",
   clientContactName: "",
   clientContactEmail: "",
+  clientContactPhone: "",
   contractName: "",
   contractReference: "",
   contractSummary: "",
@@ -108,6 +111,8 @@ const initialData: WizardData = {
 
 const fieldClass =
   "rounded-md border border-border bg-background px-3 py-2";
+
+const helperClass = "text-xs text-muted";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -172,7 +177,10 @@ export function FirstClientWizard({
   const [data, setData] = useState<WizardData>(initialData);
   const dataRef = useRef<WizardData>(initialData);
   const formRef = useRef<HTMLFormElement | null>(null);
+  const errorFieldRef = useRef<HTMLFieldSetElement | null>(null);
   const [stepError, setStepError] = useState<string | null>(null);
+  const [showContractDetails, setShowContractDetails] = useState(false);
+  const [showPackageDetails, setShowPackageDetails] = useState(false);
   const [state, formAction] = useActionState(
     action ?? onboardFirstClientAction,
     initialOnboardingFormState,
@@ -234,12 +242,28 @@ export function FirstClientWizard({
     setData(nextData);
   };
 
+  const focusFirstError = () => {
+    const fieldset = errorFieldRef.current;
+    if (!fieldset) {
+      return;
+    }
+    const focusable = fieldset.querySelector<HTMLElement>(
+      "input, select, textarea",
+    );
+    focusable?.focus();
+  };
+
   const validateStep = (target: number): string | null => {
     const currentData = dataRef.current;
 
     if (target === 0) {
       if (currentData.clientName.trim().length < 2)
-        return "اسم العميل مطلوب (حرفان على الأقل).";
+        return "اسم الشركة أو الجهة مطلوب (حرفان على الأقل).";
+      if (
+        currentData.clientContactPhone.trim().length > 0 &&
+        !isValidContactPhone(currentData.clientContactPhone)
+      )
+        return "رقم الهاتف / واتساب غير صحيح. استخدم رمز الدولة والأرقام فقط.";
     }
 
     if (target === 1) {
@@ -250,7 +274,7 @@ export function FirstClientWizard({
         currentData.contractPeriodEnd &&
         currentData.contractPeriodStart > currentData.contractPeriodEnd
       )
-        return "بداية فترة العقد بعد نهايتها.";
+        return "تاريخ بداية العقد بعد تاريخ نهايته.";
     }
 
     if (target === 2) {
@@ -264,12 +288,17 @@ export function FirstClientWizard({
         return "بداية فترة الباقة بعد نهايتها.";
       for (const line of currentData.packageLines) {
         if (line.serviceLabel.trim().length < 2)
-          return "كل سطر باقة يحتاج اسم خدمة (حرفان على الأقل).";
+          return "كل خدمة في الباقة تحتاج اسمًا (حرفان على الأقل).";
         if (line.unitLabel.trim().length < 1)
-          return "وحدة القياس مطلوبة لكل سطر.";
+          return "وحدة القياس مطلوبة لكل خدمة.";
         const qty = Number(line.committedQuantity);
         if (!Number.isFinite(qty) || qty < 0)
           return "الكمية المتفق عليها يجب أن تكون صفر أو أكثر.";
+        if (
+          isCountUnitLabel(line.unitLabel) &&
+          !Number.isInteger(qty)
+        )
+          return "الكمية لوحدات العدّ (مثل منشور) يجب أن تكون عددًا صحيحًا بدون كسور.";
       }
     }
 
@@ -293,7 +322,14 @@ export function FirstClientWizard({
       );
       const reserved = Number(currentData.reservedQuantity);
       if (Number.isFinite(reserved) && reserved > firstLineQty)
-        return "الكمية المحجوزة أكبر من سعة أول سطر باقة.";
+        return "الكمية المحجوزة أكبر من سعة أول خدمة في الباقة.";
+      const firstLineUnit = currentData.packageLines[0]?.unitLabel ?? "";
+      if (
+        isCountUnitLabel(firstLineUnit) &&
+        Number.isFinite(reserved) &&
+        !Number.isInteger(reserved)
+      )
+        return "الكمية المحجوزة لوحدات العدّ يجب أن تكون عددًا صحيحًا.";
     }
 
     return null;
@@ -303,6 +339,7 @@ export function FirstClientWizard({
     const error = validateStep(step);
     if (error) {
       setStepError(error);
+      requestAnimationFrame(focusFirstError);
       return;
     }
     setStepError(null);
@@ -334,10 +371,12 @@ export function FirstClientWizard({
     })),
   );
 
+  const normalizedPhone = normalizeContactPhone(data.clientContactPhone);
+
   return (
     <form
       action={formAction}
-      aria-label="معالج إضافة أول عميل"
+      aria-label="معالج إضافة عميل جديد"
       data-hydrated="false"
       dir="rtl"
       ref={formRef}
@@ -346,6 +385,7 @@ export function FirstClientWizard({
       <input name="clientName" type="hidden" value={data.clientName} />
       <input name="clientContactName" type="hidden" value={data.clientContactName} />
       <input name="clientContactEmail" type="hidden" value={data.clientContactEmail} />
+      <input name="clientContactPhone" type="hidden" value={normalizedPhone} />
       <input name="contractName" type="hidden" value={data.contractName} />
       <input name="contractReference" type="hidden" value={data.contractReference} />
       <input name="contractSummary" type="hidden" value={data.contractSummary} />
@@ -377,31 +417,49 @@ export function FirstClientWizard({
         <StepIndicator current={step} total={stepLabels.length} />
 
         {step === 0 ? (
-          <fieldset className="grid gap-4" aria-label="بيانات العميل">
+          <fieldset className="grid gap-4" aria-label="بيانات العميل" ref={errorFieldRef}>
             <legend className="sr-only">بيانات العميل</legend>
+            <p className={helperClass}>
+              أدخل اسم الجهة التي ستتولى العمل معها. هذا الاسم يظهر في كل المساحة.
+            </p>
             <label className="grid gap-2 text-sm font-medium">
-              اسم العميل
+              اسم الشركة أو الجهة
               <input
-                aria-label="اسم العميل"
+                aria-label="اسم الشركة أو الجهة"
                 className={fieldClass}
                 onChange={(e) => update("clientName", e.target.value)}
                 value={data.clientName}
               />
             </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-2 text-sm font-medium">
+                اسم مسؤول التواصل
+                <input
+                  aria-label="اسم مسؤول التواصل"
+                  className={fieldClass}
+                  onChange={(e) => update("clientContactName", e.target.value)}
+                  value={data.clientContactName}
+                />
+              </label>
+              <label className="grid gap-2 text-sm font-medium">
+                رقم الهاتف / واتساب
+                <input
+                  aria-label="رقم الهاتف / واتساب"
+                  className={fieldClass}
+                  dir="ltr"
+                  inputMode="tel"
+                  onChange={(e) => update("clientContactPhone", e.target.value)}
+                  placeholder="+9665XXXXXXXX"
+                  value={data.clientContactPhone}
+                />
+              </label>
+            </div>
             <label className="grid gap-2 text-sm font-medium">
-              اسم جهة التواصل
+              البريد الإلكتروني
               <input
-                aria-label="اسم جهة التواصل"
+                aria-label="البريد الإلكتروني"
                 className={fieldClass}
-                onChange={(e) => update("clientContactName", e.target.value)}
-                value={data.clientContactName}
-              />
-            </label>
-            <label className="grid gap-2 text-sm font-medium">
-              بريد جهة التواصل
-              <input
-                aria-label="بريد جهة التواصل"
-                className={fieldClass}
+                dir="ltr"
                 onChange={(e) => update("clientContactEmail", e.target.value)}
                 type="email"
                 value={data.clientContactEmail}
@@ -411,7 +469,7 @@ export function FirstClientWizard({
         ) : null}
 
         {step === 1 ? (
-          <fieldset className="grid gap-4" aria-label="بيانات العقد">
+          <fieldset className="grid gap-4" aria-label="بيانات العقد" ref={errorFieldRef}>
             <legend className="sr-only">بيانات العقد</legend>
             <label className="grid gap-2 text-sm font-medium">
               اسم العقد
@@ -422,29 +480,11 @@ export function FirstClientWizard({
                 value={data.contractName}
               />
             </label>
-            <label className="grid gap-2 text-sm font-medium">
-              مرجع العقد
-              <input
-                aria-label="مرجع العقد"
-                className={fieldClass}
-                onChange={(e) => update("contractReference", e.target.value)}
-                value={data.contractReference}
-              />
-            </label>
-            <label className="grid gap-2 text-sm font-medium">
-              ملخص العقد
-              <textarea
-                aria-label="ملخص العقد"
-                className={`${fieldClass} min-h-24`}
-                onChange={(e) => update("contractSummary", e.target.value)}
-                value={data.contractSummary}
-              />
-            </label>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="grid gap-2 text-sm font-medium">
-                بداية الفترة
+                تاريخ بداية العقد
                 <input
-                  aria-label="بداية فترة العقد"
+                  aria-label="تاريخ بداية العقد"
                   className={fieldClass}
                   onChange={(e) => update("contractPeriodStart", e.target.value)}
                   type="date"
@@ -452,9 +492,9 @@ export function FirstClientWizard({
                 />
               </label>
               <label className="grid gap-2 text-sm font-medium">
-                نهاية الفترة
+                تاريخ نهاية العقد
                 <input
-                  aria-label="نهاية فترة العقد"
+                  aria-label="تاريخ نهاية العقد"
                   className={fieldClass}
                   onChange={(e) => update("contractPeriodEnd", e.target.value)}
                   type="date"
@@ -462,12 +502,51 @@ export function FirstClientWizard({
                 />
               </label>
             </div>
+            <div className="rounded-lg border border-border p-3">
+              <button
+                aria-expanded={showContractDetails}
+                aria-controls="contract-details"
+                className="text-sm font-semibold text-accent"
+                onClick={() => setShowContractDetails((prev) => !prev)}
+                type="button"
+              >
+                {showContractDetails ? "إخفاء تفاصيل إضافية" : "تفاصيل إضافية (اختياري)"}
+              </button>
+              {showContractDetails ? (
+                <div id="contract-details" className="mt-3 grid gap-4">
+                  <label className="grid gap-2 text-sm font-medium">
+                    مرجع العقد — اختياري
+                    <input
+                      aria-label="مرجع العقد"
+                      className={fieldClass}
+                      onChange={(e) => update("contractReference", e.target.value)}
+                      value={data.contractReference}
+                    />
+                    <span className={helperClass}>
+                      مرجع داخلي يساعدك على تمييز العقد لاحقًا (مثل رقم اتفاقية أو كود). يظهر للفريق فقط ولا يُرسل للعميل.
+                    </span>
+                  </label>
+                  <label className="grid gap-2 text-sm font-medium">
+                    ملخص العقد
+                    <textarea
+                      aria-label="ملخص العقد"
+                      className={`${fieldClass} min-h-24`}
+                      onChange={(e) => update("contractSummary", e.target.value)}
+                      value={data.contractSummary}
+                    />
+                  </label>
+                </div>
+              ) : null}
+            </div>
           </fieldset>
         ) : null}
 
         {step === 2 ? (
-          <fieldset className="grid gap-4" aria-label="بيانات الباقة">
+          <fieldset className="grid gap-4" aria-label="بيانات الباقة" ref={errorFieldRef}>
             <legend className="sr-only">بيانات الباقة</legend>
+            <p className={helperClass}>
+              الباقة تجمع كل الخدمات المتفق عليها مع العميل في عقد واحد. يمكنك إضافة أكثر من خدمة دون الحاجة لإنشاء باقة لكل خدمة.
+            </p>
             <label className="grid gap-2 text-sm font-medium">
               اسم الباقة
               <input
@@ -477,107 +556,125 @@ export function FirstClientWizard({
                 value={data.packageName}
               />
             </label>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="grid gap-2 text-sm font-medium">
-                بداية فترة الباقة
-                <input
-                  aria-label="بداية فترة الباقة"
-                  className={fieldClass}
-                  onChange={(e) => update("packagePeriodStart", e.target.value)}
-                  type="date"
-                  value={data.packagePeriodStart}
-                />
-              </label>
-              <label className="grid gap-2 text-sm font-medium">
-                نهاية فترة الباقة
-                <input
-                  aria-label="نهاية فترة الباقة"
-                  className={fieldClass}
-                  onChange={(e) => update("packagePeriodEnd", e.target.value)}
-                  type="date"
-                  value={data.packagePeriodEnd}
-                />
-              </label>
+            <div className="rounded-lg border border-border p-3">
+              <button
+                aria-expanded={showPackageDetails}
+                aria-controls="package-details"
+                className="text-sm font-semibold text-accent"
+                onClick={() => setShowPackageDetails((prev) => !prev)}
+                type="button"
+              >
+                {showPackageDetails ? "إخفاء فترة الباقة" : "تحديد فترة الباقة (اختياري)"}
+              </button>
+              {showPackageDetails ? (
+                <div id="package-details" className="mt-3 grid gap-4 sm:grid-cols-2">
+                  <label className="grid gap-2 text-sm font-medium">
+                    بداية فترة الباقة
+                    <input
+                      aria-label="بداية فترة الباقة"
+                      className={fieldClass}
+                      onChange={(e) => update("packagePeriodStart", e.target.value)}
+                      type="date"
+                      value={data.packagePeriodStart}
+                    />
+                  </label>
+                  <label className="grid gap-2 text-sm font-medium">
+                    نهاية فترة الباقة
+                    <input
+                      aria-label="نهاية فترة الباقة"
+                      className={fieldClass}
+                      onChange={(e) => update("packagePeriodEnd", e.target.value)}
+                      type="date"
+                      value={data.packagePeriodEnd}
+                    />
+                  </label>
+                </div>
+              ) : null}
             </div>
             <div className="grid gap-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold">بنود الباقة</span>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-sm font-semibold">خدمات الباقة</span>
                 <Button onClick={addLine} size="sm" type="button" variant="secondary">
-                  إضافة سطر
+                  إضافة خدمة
                 </Button>
               </div>
-              {data.packageLines.map((line, index) => (
-                <div
-                  key={index}
-                  className="grid gap-3 rounded-lg border border-border p-3 sm:grid-cols-2"
-                >
-                  <label className="grid gap-1.5 text-sm font-medium">
-                    اسم الخدمة
-                    <input
-                      aria-label={`اسم الخدمة للسطر ${index + 1}`}
-                      className={fieldClass}
-                      onChange={(e) => updateLine(index, "serviceLabel", e.target.value)}
-                      value={line.serviceLabel}
-                    />
-                  </label>
-                  <label className="grid gap-1.5 text-sm font-medium">
-                    نوع المخرج
-                    <input
-                      aria-label={`نوع المخرج للسطر ${index + 1}`}
-                      className={fieldClass}
-                      onChange={(e) => updateLine(index, "deliverableTypeHint", e.target.value)}
-                      value={line.deliverableTypeHint}
-                    />
-                  </label>
-                  <label className="grid gap-1.5 text-sm font-medium">
-                    وحدة القياس
-                    <input
-                      aria-label={`وحدة القياس للسطر ${index + 1}`}
-                      className={fieldClass}
-                      onChange={(e) => updateLine(index, "unitLabel", e.target.value)}
-                      value={line.unitLabel}
-                    />
-                  </label>
-                  <label className="grid gap-1.5 text-sm font-medium">
-                    الكمية المتفق عليها
-                    <input
-                      aria-label={`الكمية المتفق عليها للسطر ${index + 1}`}
-                      className={fieldClass}
-                      inputMode={
-                        isCountUnitLabel(line.unitLabel) ? "numeric" : "decimal"
-                      }
-                      pattern={
-                        isCountUnitLabel(line.unitLabel) ? "[0-9]+" : undefined
-                      }
-                      onChange={(e) => updateLine(index, "committedQuantity", e.target.value)}
-                      type="text"
-                      value={line.committedQuantity}
-                    />
-                  </label>
-                  {data.packageLines.length > 1 ? (
-                    <Button
-                      className="sm:col-span-2"
-                      onClick={() => removeLine(index)}
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                    >
-                      حذف السطر
-                    </Button>
-                  ) : null}
-                </div>
-              ))}
+              <p className={helperClass}>
+                «الكمية المتفق عليها» هي إجمالي ما اتفقتم عليه. يُخصم منها المسلّم فقط عند التسليم. وحدات العدّ (مثل منشور) تقبل أعدادًا صحيحة فقط، أما الساعات والوحدات القابلة للتجزئة فتقبل الكسور.
+              </p>
+              {data.packageLines.map((line, index) => {
+                const isCount = isCountUnitLabel(line.unitLabel);
+                return (
+                  <div
+                    key={index}
+                    className="grid gap-3 rounded-lg border border-border p-3 sm:grid-cols-2"
+                  >
+                    <label className="grid gap-1.5 text-sm font-medium">
+                      اسم الخدمة
+                      <input
+                        aria-label={`اسم الخدمة للسطر ${index + 1}`}
+                        className={fieldClass}
+                        onChange={(e) => updateLine(index, "serviceLabel", e.target.value)}
+                        value={line.serviceLabel}
+                      />
+                    </label>
+                    <label className="grid gap-1.5 text-sm font-medium">
+                      وحدة القياس
+                      <input
+                        aria-label={`وحدة القياس للسطر ${index + 1}`}
+                        className={fieldClass}
+                        onChange={(e) => updateLine(index, "unitLabel", e.target.value)}
+                        value={line.unitLabel}
+                      />
+                    </label>
+                    <label className="grid gap-1.5 text-sm font-medium">
+                      الكمية المتفق عليها
+                      <input
+                        aria-label={`الكمية المتفق عليها للسطر ${index + 1}`}
+                        className={fieldClass}
+                        inputMode={isCount ? "numeric" : "decimal"}
+                        pattern={isCount ? "[0-9]+" : undefined}
+                        onChange={(e) => updateLine(index, "committedQuantity", e.target.value)}
+                        type="text"
+                        value={line.committedQuantity}
+                      />
+                      {isCount ? (
+                        <span className={helperClass}>عدد صحيح فقط (وحدة عدّ).</span>
+                      ) : null}
+                    </label>
+                    <label className="grid gap-1.5 text-sm font-medium">
+                      نوع المخرج — اختياري
+                      <input
+                        aria-label={`نوع المخرج للسطر ${index + 1}`}
+                        className={fieldClass}
+                        onChange={(e) => updateLine(index, "deliverableTypeHint", e.target.value)}
+                        value={line.deliverableTypeHint}
+                      />
+                    </label>
+                    {data.packageLines.length > 1 ? (
+                      <Button
+                        className="sm:col-span-2"
+                        onClick={() => removeLine(index)}
+                        size="sm"
+                        type="button"
+                        variant="ghost"
+                      >
+                        حذف هذه الخدمة
+                      </Button>
+                    ) : null}
+                  </div>
+                );
+              })}
             </div>
           </fieldset>
         ) : null}
 
         {step === 3 ? (
-          <fieldset className="grid gap-4" aria-label="تعيين الفريق">
+          <fieldset className="grid gap-4" aria-label="تعيين الفريق" ref={errorFieldRef}>
             <legend className="sr-only">تعيين الفريق</legend>
             <label className="grid gap-2 text-sm font-medium">
-              المسؤول
+              المسؤول الرئيسي عن العمل
               <select
-                aria-label="المسؤول"
+                aria-label="المسؤول الرئيسي عن العمل"
                 className={fieldClass}
                 onChange={(e) => update("ownerUserId", e.target.value)}
                 value={data.ownerUserId}
@@ -590,9 +687,15 @@ export function FirstClientWizard({
                   </option>
                 ))}
               </select>
+              <span className={helperClass}>
+                المسؤول هو من يقود تنفيذ المخرج ويظهر كمالك للعمل ضمن نطاق هذا العميل فقط.
+              </span>
             </label>
             <fieldset className="grid gap-2 text-sm font-medium">
-              <legend>المساهمون</legend>
+              <legend>أعضاء الفريق المشاركون</legend>
+              <span className={helperClass}>
+                يساعدون في التنفيذ ضمن نطاق هذا العميل. لا يرسلون العمل للعميل مباشرةً.
+              </span>
               <div className="grid max-h-60 gap-2 overflow-y-auto rounded-md border border-border bg-background p-3">
                 {memberDirectoryAvailable && eligibleMembers.length > 0 ? (
                   eligibleMembers.map((member) => (
@@ -601,7 +704,7 @@ export function FirstClientWizard({
                       key={member.userId}
                     >
                       <input
-                        aria-label={`إضافة ${member.displayName} كمساهم`}
+                        aria-label={`إضافة ${member.displayName} كعضو فريق مشارك`}
                         checked={data.contributorUserIds.includes(member.userId)}
                         onChange={() => toggleContributor(member.userId)}
                         type="checkbox"
@@ -627,7 +730,7 @@ export function FirstClientWizard({
         ) : null}
 
         {step === 4 ? (
-          <fieldset className="grid gap-4" aria-label="أول مخرج">
+          <fieldset className="grid gap-4" aria-label="أول مخرج" ref={errorFieldRef}>
             <legend className="sr-only">أول مخرج</legend>
             <label className="grid gap-2 text-sm font-medium">
               اسم المخرج
@@ -685,7 +788,7 @@ export function FirstClientWizard({
               </label>
             </div>
             <label className="grid gap-2 text-sm font-medium">
-              الكمية المحجوزة من سطر الباقة الأول
+              الكمية المحجوزة من أول خدمة في الباقة
               <input
                 aria-label="الكمية المحجوزة"
                 className={fieldClass}
@@ -703,6 +806,9 @@ export function FirstClientWizard({
                 type="text"
                 value={data.reservedQuantity}
               />
+              <span className={helperClass}>
+                تُحجز من الكمية المتفق عليها عند إنشاء المخرج وتُستهلك عند التسليم.
+              </span>
             </label>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <label className="grid gap-2 text-sm font-medium">
@@ -772,15 +878,28 @@ export function FirstClientWizard({
             <div className="rounded-lg border border-border p-4">
               <h3 className="font-semibold">العميل</h3>
               <dl className="mt-2 grid gap-1 text-sm text-muted">
-                <div><dt className="inline font-medium text-foreground">الاسم: </dt><dd className="inline">{data.clientName || "—"}</dd></div>
-                <div><dt className="inline font-medium text-foreground">جهة التواصل: </dt><dd className="inline">{data.clientContactName || "—"}</dd></div>
+                <div><dt className="inline font-medium text-foreground">الجهة: </dt><dd className="inline">{data.clientName || "—"}</dd></div>
+                {data.clientContactName ? (
+                  <div><dt className="inline font-medium text-foreground">مسؤول التواصل: </dt><dd className="inline">{data.clientContactName}</dd></div>
+                ) : null}
+                {data.clientContactPhone ? (
+                  <div><dt className="inline font-medium text-foreground">الهاتف / واتساب: </dt><dd className="inline" dir="ltr">{data.clientContactPhone}</dd></div>
+                ) : null}
+                {data.clientContactEmail ? (
+                  <div><dt className="inline font-medium text-foreground">البريد: </dt><dd className="inline" dir="ltr">{data.clientContactEmail}</dd></div>
+                ) : null}
               </dl>
             </div>
             <div className="rounded-lg border border-border p-4">
               <h3 className="font-semibold">العقد</h3>
               <dl className="mt-2 grid gap-1 text-sm text-muted">
                 <div><dt className="inline font-medium text-foreground">الاسم: </dt><dd className="inline">{data.contractName || "—"}</dd></div>
-                <div><dt className="inline font-medium text-foreground">الفترة: </dt><dd className="inline">{data.contractPeriodStart || "—"}</dd> — <dd className="inline">{data.contractPeriodEnd || "—"}</dd></div>
+                {data.contractReference ? (
+                  <div><dt className="inline font-medium text-foreground">المرجع: </dt><dd className="inline">{data.contractReference}</dd></div>
+                ) : null}
+                {data.contractPeriodStart || data.contractPeriodEnd ? (
+                  <div><dt className="inline font-medium text-foreground">الفترة: </dt><dd className="inline">{data.contractPeriodStart || "—"}</dd> — <dd className="inline">{data.contractPeriodEnd || "—"}</dd></div>
+                ) : null}
               </dl>
             </div>
             <div className="rounded-lg border border-border p-4">

@@ -157,21 +157,32 @@ reopen X010-A, does not declare GREEN for the corrective hosted UAT, and does no
 invite the team. Parent disposition: X010-A-9 / S015-P1-111 / S015-P1-112 remain
 `code-fixed + CI-green + hosted-blocked` while X010-B proceeds on local + Preview.
 
-- [ ] X010-B Consolidate owner experience notes and rescue the UX without creating a new Spec or parallel plan.
+  - [ ] X010-B Consolidate owner experience notes and rescue the UX without creating a new Spec or parallel plan.
   - [x] X010-B-0 Consolidate all owner notes into one triaged source-of-truth list and correct documentation conflicts (HEAD `47b11e9`; exact-HEAD CI green; hosted corrective UAT blocked; X010-A parent not complete while X010-A-9 open).
-  - [ ] X010-B-1 Global density + navigation + clickability.
+  - [x] X010-B-1 Global density + navigation + clickability.
     - [x] Unified readable density at 100% zoom: tighten shared core tokens (card, badge/StatCard, page-header) and the three target surfaces (management dashboard, client workspace, deliverables list/board) without breaking 44px touch targets or WCAG.
     - [x] Make intended cards and rows clickable with visible focus and keyboard reach (exception-dashboard recent decisions now link to the deliverable).
     - [x] Translate every visible technical state to Arabic (raw `item.status` leak fixed in the management dashboard).
     - [x] Improve the visual hierarchy of the management dashboard, client workspace, and deliverables list.
     - [x] Fix any horizontal overflow / hidden scroll in Kanban with mouse/touch/keyboard; no page-level overflow.
     - [x] No business-workflow redesign in this slice.
-    - [ ] Pass exact-HEAD CI, Preview, and owner visual QA (before/after evidence).
-  - [ ] X010-B-2 Onboarding journey simplification: one obvious primary client-entry path; explicit company/contact labels; phone/WhatsApp; contract reference helper; consistent package lines; edit/resume recovery; team-assignment and quantity terminology.
+    - [x] Pass exact-HEAD CI, Preview, and owner visual QA (before/after evidence).
+      - B1 documented closure: `technical-green + owner-final-UAT-pending`. Exact-HEAD F-001 CI `30552777038` passed and Vercel Preview `7LXuPgu2MUb8RJNbhXigi4ZipQhK` is Ready in `samawahs-projects/shrik`. CodeRabbit showed `skipped` because the PR is a Draft (not a review outcome); no review pass is claimed. The whole recent-decision row is now a single link to the scoped deliverables page (no deep-link to a specific drawer exists yet, so the closest honest link is used). B1 is not owner-accepted; only technical-green + Preview-ready. Local matrix PASS: lint, typecheck, unit 62/284, integration 28/112, component 26/97, RLS simulator 8/24, secret scan, diff check, build. Hosted UAT remains blocked by missing approved UAT credentials; no GREEN is declared for the corrective hosted slice.
+  - [x] X010-B-2 Onboarding journey simplification: one obvious primary client-entry path; explicit company/contact labels; phone/WhatsApp; contract reference helper; consistent package lines; edit/resume recovery; team-assignment and quantity terminology.
+    - One primary CTA «إضافة عميل جديد» on `/clients` → the unified wizard at `/clients/onboard`; the competing `/clients/new` button is removed from the header (the standalone form route remains for direct edit/access but is not the primary journey).
+    - Arabic labels: «اسم الشركة أو الجهة», «اسم مسؤول التواصل», «البريد الإلكتروني», «رقم الهاتف / واتساب», «اسم العقد», «مرجع العقد — اختياري» (with helper copy explaining it is an internal code), «تاريخ بداية/نهاية العقد». No technical names or UUIDs.
+    - Phone/WhatsApp: additive migration `202607310001_s015_x010b2_client_contact_phone.sql` adds `primary_contact_phone` to `public.clients` and threads it through `f001_create_client_write`, `f001_update_client_write`, and `s015_onboard_first_client` (atomic, tenant-scoped, audited, idempotent). Zod normalization + validation; phone is never stored in localStorage/logs.
+    - Package: multiple services in one package with add/remove; integer-only for count units, fractional allowed for divisible units; helper copy distinguishes committed/reserved/consumed/remaining.
+    - Team: «المسؤول الرئيسي عن العمل» and «أعضاء الفريق المشاركون» with Arabic role labels and helper text; exact tenant/client eligibility preserved (no permission expansion).
+    - Progressive disclosure: required fields first; optional contract/package details behind a disclosure toggle; review hides empty optionals.
+    - Correction/recovery: wizard state preserved within the current in-memory session after validation errors (NOT a durable draft after refresh; no PII in localStorage); the invalid field is focused; idempotency key prevents duplicate creation on resubmit; the client edit page provides a clear correction route.
+    - Tests: unit (phone normalization/validation, onboarding schema phone), component (multi-service add/remove, value preservation after error, progressive disclosure, RTL/keyboard, review hides empty), pgTAP (column + CHECK constraint + recreated RPC signatures/privileges, phone persistence, cross-tenant RLS isolation, unauthorized denial, atomic onboarding with phone, idempotent replay, conflict on different phone, invalid-phone RPC rejection), persistent E2E (multi-line package + phone + edit/reload).
+    - Local non-DB matrix PASS: lint, typecheck, unit 63/293, integration 28/112, component 26/97, RLS simulator 8/24, secret scan, diff check, build. DB-backed gates (pgTAP, persistent E2E) are environment-blocked locally (`LegacyDbConnectError`) and run in exact-HEAD CI. Status: `X010_B2_CORRECTIVE_IN_PROGRESS` (corrected from an inaccurate `TECHNICAL_GREEN`); the migration signature + phone-normalization defects were fixed in place, but exact-HEAD CI, DB-backed gates, hosted Preview apply of `202607310001`, and owner final UAT remain pending. X010_B2_GREEN is NOT declared.
   - [ ] X010-B-3 Terminology and progressive disclosure: replace hard terms ("مخرجاتي"); keep client work visible after a change request as "عاد لفريق سماوة — قيد التعديل"; hide empty optional fields with progressive disclosure.
   - [ ] X010-B-4 Understandable in-app notifications center (approval / change-request); no email integration without owner approval.
   - [ ] X010-B-5 Files as a Drive-like experience (folders/classification/previews/Arabic names); simplify "تنزيل آمن" to "تنزيل"; refine upload progress/failure/retry/cancel clarity.
   - [ ] X010-B-6 Drawer reorganization (logical sections/tabs); internal-quality explanation and a default editable checklist; owner/contributor/role display clarity with no `tenant_administrator` or synthetic-data leak; visual polish for client profile, admin dashboard, and team dashboard.
+  - [ ] X010-B-7 Final structured owner acceptance trial after B2–B6: bounded owner walkthrough of the simplified onboarding, terminology, notifications, files, and drawer experience on the corrected Preview; close only on explicit owner PASS. No Production, merge, or team invitation before owner PASS.
 
 
 ## Correction note: task assignment authority (2026-07-15)

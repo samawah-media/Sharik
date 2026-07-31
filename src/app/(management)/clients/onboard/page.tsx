@@ -69,9 +69,9 @@ export default async function OnboardFirstClientPage({
   return (
     <main className="grid max-w-3xl gap-6" dir="rtl">
       <div>
-        <h1 className="text-2xl font-semibold">إضافة أول عميل</h1>
+        <h1 className="text-2xl font-semibold">إضافة عميل جديد</h1>
         <p className="mt-2 text-sm text-muted">
-          أنشئ العميل والعقد والباقة وأول مخرج في رحلة واحدة متصلة.
+          أنشئ العميل والعقد والباقة وأول مخرج في رحلة واحدة متصلة. يمكنك تعديل أي بيانات لاحقًا من صفحة العميل.
         </p>
       </div>
       <FirstClientWizard

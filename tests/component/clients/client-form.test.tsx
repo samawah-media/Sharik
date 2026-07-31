@@ -9,13 +9,14 @@ import {
 afterEach(cleanup);
 
 describe("client form and states", () => {
-  it("renders Arabic RTL-ready create fields", () => {
+  it("renders Arabic RTL-ready create fields including phone", () => {
     render(<ClientForm />);
 
     expect(
       screen.getByRole("form", { name: "إنشاء عميل" }),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText("اسم العميل")).toBeRequired();
+    expect(screen.getByLabelText("اسم الشركة أو الجهة")).toBeRequired();
+    expect(screen.getByLabelText("رقم الهاتف / واتساب")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "حفظ العميل" }),
     ).toBeInTheDocument();

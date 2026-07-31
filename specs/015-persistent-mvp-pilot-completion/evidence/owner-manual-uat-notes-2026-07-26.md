@@ -1,5 +1,40 @@
 # Owner Manual UAT Notes — 2026-07-26
 
+## X010-B-2 onboarding journey simplification + B1 documented closure — 2026-07-31
+
+B1 is **not** owner-accepted. It is recorded as `technical-green +
+owner-final-UAT-pending`: exact-HEAD F-001 CI `30552777038` passed and the
+Vercel Preview deployment `7LXuPgu2MUb8RJNbhXigi4ZipQhK` is Ready in
+`samawahs-projects/shrik`. **CodeRabbit showed `skipped` because the PR is a
+Draft — that is a skipped review, not a review pass; no review approval is
+claimed.** The exception-dashboard recent-decision row is now a single
+clickable link to the scoped deliverables page. There is no URL deep-link that
+opens a specific deliverable drawer yet, so the closest honest link is used and
+no claim is made that it opens a specific deliverable directly.
+
+X010-B-2 implemented: one primary CTA «إضافة عميل جديد» → the unified wizard;
+explicit Arabic company/contact/phone labels; additive `primary_contact_phone`
+column; phone normalization + Zod validation; multi-service package lines with
+integer/fractional semantics; «المسؤول الرئيسي عن العمل» / «أعضاء الفريق
+المشاركون»; progressive disclosure; value preservation + focus-on-error. All
+onboarding mutations remain atomic, tenant-scoped, audited, and idempotent.
+
+### Newly registered open owner notes (technical-fixed for the B2 items; the
+following remain open as explicit owner decisions / future slices)
+
+| # | Note | Status | Target |
+|---|---|---|---|
+| N1 | Ability to return a deliverable to internal correction after it was internally approved or already sent to the client (post-approval reopen) | open — S015-P2-124 | X010-B-6/7 |
+| N2 | Clarity on protected drag-and-drop moves versus explicit status actions (which Kanban moves are protected workflow transitions vs. cosmetic) | open — S015-P2-125 | X010-B-6 |
+| N3 | Adding and inviting team members to a tenant/client scope from inside the product shell | open — S015-P2-126 | X010-B-6 |
+| N4 | Decision on whether the platform sends email notifications for approvals/change-requests (owner decision required before any email integration) | open — S015-P2-127 | owner decision → X010-B-4 |
+| N5 | Cleaning trial/pilot operational data before go-live without deleting append-only Audit/Ledger history | open — S015-P2-128 | X010-B-7 |
+
+These open notes are **not** closed by X010-B-2. They are classified
+`technical-fixed` only where B2 resolved them; the five above remain open and
+will be rechecked in the final structured owner acceptance trial (X010-B-7)
+after B3–B6.
+
 ## X010-B owner experience consolidation — 2026-07-30
 
 This section consolidates every owner experience observation collected through
@@ -63,13 +98,13 @@ The single source of truth for current HEAD/CI/hosted status is
 
 | # | Observation | Target slice |
 |---|---|---|
-| D1 | Onboarding journey difficulty (client/contract/package/deliverable) | X010-B-2 |
-| D2 | Company name vs contact person confusion | X010-B-2 |
-| D3 | Phone/WhatsApp missing from client entity | X010-B-2 |
-| D4 | Contract reference unexplained | X010-B-2 |
-| D5 | Package lines inconsistent across entry paths | X010-B-2 |
-| D6 | Correction/recovery unclear after input error | X010-B-2 |
-| D7 | Team assignment terminology unclear | X010-B-2 |
+| D1 | Onboarding journey difficulty (client/contract/package/deliverable) | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
+| D2 | Company name vs contact person confusion | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
+| D3 | Phone/WhatsApp missing from client entity | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
+| D4 | Contract reference unexplained | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
+| D5 | Package lines inconsistent across entry paths | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
+| D6 | Correction/recovery unclear after input error | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
+| D7 | Team assignment terminology unclear | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
 | D8 | Hard terminology like "مخرجاتي" and English technical states in copy | X010-B-3 |
 | D9 | Client work disappears after change request; should stay visible as "عاد لفريق سماوة — قيد التعديل" | X010-B-3 |
 | D10 | Empty optional fields shown; needs progressive disclosure | X010-B-3 |
@@ -84,9 +119,9 @@ The single source of truth for current HEAD/CI/hosted status is
 
 ### Counts
 
-- Fixed technically: 17 (A1–A13 prior, B1–B4 this slice).
-- Needs manual recheck: 4 (C1–C4).
-- Still open: 18 (D1–D18), distributed across X010-B-2 through X010-B-6.
+- Fixed technically: 24 (A1–A13 prior, B1–B4 density slice, D1–D7 onboarding slice).
+- Needs manual recheck: 4 (C1–C4) + owner final UAT for the onboarding labels/phone/multi-service flow.
+- Still open: 11 (D8–D18), distributed across X010-B-3 through X010-B-6, plus 5 newly registered open notes (N1–N5 above).
 
 ### Boundary
 

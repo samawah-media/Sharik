@@ -71,8 +71,8 @@ test("client viewer A sees Hadna only through the client portal", async ({
   const clientSnapshot = page.getByRole("region", {
     name: "ملخص مساحة العميل",
   });
-  await expect(clientSnapshot.getByText("عدد المخرجات")).toBeVisible();
-  await expect(clientSnapshot.getByText("17", { exact: true })).toBeVisible();
+  await expect(clientSnapshot.getByText("عدد الأعمال")).toBeVisible();
+  await expect(clientSnapshot.getByText("21", { exact: true })).toBeVisible();
   await expect(page.getByText("لوحة الإدارة")).toHaveCount(0);
   await expect(page.getByText("client_b")).toHaveCount(0);
 });
@@ -87,7 +87,7 @@ test("viewer B does not see Hadna or client data", async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByText("هدنة")).toHaveCount(0);
   await expect(page.getByText("52")).toHaveCount(0);
-  await expect(page.getByText("عدد المخرجات")).toHaveCount(0);
+  await expect(page.getByText("عدد الأعمال")).toHaveCount(0);
 });
 
 test("client-only roles cannot enter the management portfolio", async ({

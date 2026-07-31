@@ -1,5 +1,81 @@
 # Owner Manual UAT Notes — 2026-07-26
 
+## X010-B-3 corrective pass — 2026-07-31
+
+A bounded corrective pass from B3 HEAD `351f370`, inside Spec 015 only. Status
+`X010_B3_CORRECTIVE_LOCAL_COMPLETE_CI_UAT_PENDING` — **not** owner-accepted;
+GREEN / TEAM_UAT_READY are **not** declared. Local non-DB gates green; exact-HEAD
+CI, DB-backed gates, Preview, and owner final UAT pending.
+
+Corrections (no workflow/permissions/RLS change):
+- **Decision date honesty.** The approximate client-decision date (from
+  `deliverable.updated_at`) was **removed**; `updated_at` is any update, not a
+  decision. A reliable timestamp needs a scoped `approval_decisions` query + RLS
+  read verification, so the date is **deferred**. No approximate date is shown.
+- **Real work opening.** Each «أعمالي» card now opens the actual work at
+  `/client/work/[deliverableId]` (not a general page): client-visible statuses
+  only, client-visible version/files/comments only, no internal data, approver
+  decision buttons only while waiting, viewer read-only, deliverable ID used in
+  the link only (never shown as text).
+- **Role copy.** Next action is role-aware (approver: «راجع النسخة ثم اعتمدها
+  أو اطلب تعديلًا»; viewer: «يمكنك الاطلاع على النسخة، والقرار لدى المسؤول
+  عن الاعتماد»); viewer never sees «بانتظار قرارك» (uses «قيد المراجعة»);
+  «تم اعتمادك» → «تم اعتماد العمل».
+- **Form clarity.** The create/edit form is split into البيانات الأساسية /
+  تفاصيل إضافية اختيارية / إعدادات سير العمل; the approval flags are a
+  visible fieldset with impact explanations (not hidden as unimportant).
+- **Error vs empty.** «أعمالي» shows «تعذر تحميل أعمالك الآن. حاول مرة أخرى.»
+  on read failure and a useful empty state when there is genuinely no work.
+
+Owner recheck focus on the corrected Preview: open a work card to its own
+detail; confirm the viewer sees read-only copy and no decision buttons; confirm
+duplicate-named works open the correct one; confirm Client B cannot open
+Client A work.
+
+## X010-B-3 client terminology + أعمالي + change-request visibility + progressive disclosure — 2026-07-31
+
+B3 is **not** owner-accepted. It is recorded as
+`X010_B3_LOCAL_COMPLETE_CI_UAT_PENDING`: local non-DB gates are green on the
+reviewed changes; exact-HEAD CI, DB-backed gates, the corrected Preview, and
+owner final UAT remain pending. **GREEN / TEAM_UAT_READY are NOT declared.**
+No migration was added (no schema change), so there is no UAT-migration blocker
+as with B2.
+
+What B3 changed, mapped to the owner notes it addresses:
+
+- **D8 — hard terminology.** A central client mapper
+  (`client-labels.ts`) now drives every client-facing status: `waiting_client_approval`
+  → «بانتظار قرارك», `client_changes_requested` → «قيد التعديل لدى فريق سماوة»,
+  `client_approved` → «تم اعتمادك», `ready_for_delivery` → «جارٍ تجهيز التسليم»,
+  `delivered` → «تم التسليم». «المخرجات»/«مخرجاتي» became «الأعمال»/«أعمالي» on
+  client surfaces and the shared summary cards. No raw enum, UUID, or internal
+  term («التعميد الداخلي»/internal_only) reaches the client.
+- **D9 — work vanishes after a change request.** Root cause was that
+  `client_changes_requested` was excluded from the client-visible status set, so
+  the item disappeared the moment the client asked for edits. It is now kept
+  visible in the new «أعمالي» page (`/client/work`) with the message
+  «استلم فريق سماوة ملاحظاتك، والعمل الآن قيد التعديل», while it correctly
+  leaves «بانتظار موافقتي» (no decision is owed while the team edits). The
+  client's last decision date («تاريخ آخر قرار لك») is shown on those cards
+  when present. Only client-safe summary fields are exposed.
+- **D10 — empty optional fields.** The deliverable create/edit form now shows
+  essential fields first and moves optionals (priority, contributors, extra
+  dates, approval flags) behind a disclosure «تفاصيل إضافية — اختيارية». No
+  field, value, validation, or workflow was removed; values are preserved when
+  the section is opened/closed.
+
+Client journey before/after (what the owner should recheck on the corrected
+Preview): the home page now has three clickable section cards (بانتظار
+موافقتي / أعمالي / الباقة والمتبقي) with clear CTAs; a new «أعمالي» nav entry
+opens all the client's work grouped by stage with keyboard-accessible cards;
+after requesting a change the work no longer disappears — it shows as
+«قيد التعديل لدى فريق سماوة» and returns to «بانتظار قرارك» once a new version
+is sent.
+
+These open notes are **not** closed by X010-B-3 beyond the technical fix above;
+D8/D9/D10 are `technical-fixed; final-owner-UAT-pending`, and the remaining
+D11–D18 (notifications, files, drawer, etc.) stay open for B4–B6.
+
 ## X010-B-2 onboarding journey simplification + B1 documented closure — 2026-07-31
 
 B1 is **not** owner-accepted. It is recorded as `technical-green +
@@ -105,9 +181,9 @@ The single source of truth for current HEAD/CI/hosted status is
 | D5 | Package lines inconsistent across entry paths | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
 | D6 | Correction/recovery unclear after input error | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
 | D7 | Team assignment terminology unclear | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
-| D8 | Hard terminology like "مخرجاتي" and English technical states in copy | X010-B-3 |
-| D9 | Client work disappears after change request; should stay visible as "عاد لفريق سماوة — قيد التعديل" | X010-B-3 |
-| D10 | Empty optional fields shown; needs progressive disclosure | X010-B-3 |
+| D8 | Hard terminology like "مخرجاتي" and English technical states in copy | X010-B-3 — **technical-fixed; final-owner-UAT-pending** |
+| D9 | Client work disappears after change request; should stay visible as "عاد لفريق سماوة — قيد التعديل" | X010-B-3 — **technical-fixed; final-owner-UAT-pending** |
+| D10 | Empty optional fields shown; needs progressive disclosure | X010-B-3 — **technical-fixed; final-owner-UAT-pending** |
 | D11 | No understandable in-app notifications center (approval/change-request) | X010-B-4 |
 | D12 | Files not organized as a Drive-like experience (folders/classification/previews/Arabic names) | X010-B-5 |
 | D13 | "تنزيل آمن" should be simplified to "تنزيل" | X010-B-5 |
@@ -119,9 +195,9 @@ The single source of truth for current HEAD/CI/hosted status is
 
 ### Counts
 
-- Fixed technically: 24 (A1–A13 prior, B1–B4 density slice, D1–D7 onboarding slice).
-- Needs manual recheck: 4 (C1–C4) + owner final UAT for the onboarding labels/phone/multi-service flow.
-- Still open: 11 (D8–D18), distributed across X010-B-3 through X010-B-6, plus 5 newly registered open notes (N1–N5 above).
+- Fixed technically: 27 (A1–A13 prior, B1–B4 density slice, D1–D7 onboarding slice, D8–D10 terminology/visibility/progressive-disclosure slice).
+- Needs manual recheck: 4 (C1–C4) + owner final UAT for the onboarding labels/phone/multi-service flow and the B3 terminology/أعمالي/change-request flow.
+- Still open: 8 (D11–D18), distributed across X010-B-4 through X010-B-6, plus 5 newly registered open notes (N1–N5 above).
 
 ### Boundary
 

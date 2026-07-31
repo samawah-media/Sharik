@@ -1,5 +1,143 @@
 # Spec 015 execution log
 
+## 2026-07-31 — X010-B-3 corrective pass (real work detail, role copy, form split, error state, decision-date deferral)
+
+- Started from the B3 HEAD `351f370`. Bounded corrective pass inside Spec 015
+  only; no new Spec/ADR/dependency/migration; no push/deploy. Status set to
+  `X010_B3_CORRECTIVE_LOCAL_COMPLETE_CI_UAT_PENDING`. GREEN / TEAM_UAT_READY
+  are **not** declared.
+- **Decision-date deferral (honesty correction).** The B3 `lastDecisionAt`
+  derived from `deliverable.updated_at` was **removed** because `updated_at`
+  reflects any deliverable update, not specifically a client decision — it was
+  an approximate date. A reliable client-decision timestamp requires a new
+  batched query against `approval_decisions` (same tenant/client/deliverable/
+  version, decision `client_approved`/`client_changes_requested`) plus client
+  RLS read verification, which is a meaningful expansion with security
+  implications. Per the owner instruction, the approximate date was deleted and
+  no date is shown; the decision-date feature is **deferred** to a later slice.
+- **Real work opening.** Cards on «أعمالي» now open the actual work, not a
+  general page. New route `/client/work/[deliverableId]` + new
+  `readPersistentClientWorkDetail` reader: tenant/client guard + RLS; only
+  client-visible statuses (`waiting_client_approval`, `client_changes_requested`,
+  `client_approved`, `ready_for_delivery`, `delivered`); only the current
+  client-allowed version; only `client_visible`/`client_uploaded`/`final_delivery`
+  files and `client_visible` comments; no internal comments/files/quality/version
+  history; decision buttons for the client approver **only** at
+  `waiting_client_approval`; viewer read-only; deliverable ID used as a stable
+  key and inside the href only, never rendered as text. Added `id` to
+  `DeliverableClientSafeSummary` (route key only). Duplicate deliverable names
+  are kept distinct via `id`-based React keys and per-card hrefs.
+- **Role copy correction.** `clientNextAction` is now role-aware (approver:
+  «راجع النسخة ثم اعتمدها أو اطلب تعديلًا»; viewer: «يمكنك الاطلاع على النسخة،
+  والقرار لدى المسؤول عن الاعتماد»). Home/work never show the viewer
+  «بانتظار قرارك»; viewer sees «قيد المراجعة». «تم اعتمادك» →
+  «تم اعتماد العمل». The pending-inbox viewer label stays «قيد المراجعة»
+  (consistent single viewer term).
+- **Form split into three clear sections.** The deliverable create/edit form no
+  longer hides workflow-changing fields as "optional and don't affect". It now
+  has: (1) البيانات الأساسية (name/type/owner/date/description/package line+
+  quantity), (2) تفاصيل إضافية اختيارية (priority/contributors/extra dates),
+  (3) إعدادات سير العمل — a visible fieldset with `requiresInternalApproval`
+  and `requiresClientApproval`, each with an impact explanation. No
+  field/data/validation/workflow removed; values preserved on open/close.
+- **Error vs empty state.** `/client/work` now distinguishes a true empty list
+  from a `readCommercialSummary` failure: on failure it shows «تعذر تحميل أعمالك
+  الآن. حاول مرة أخرى.» (ErrorState); an empty successful read shows the
+  EmptyState. Read errors are no longer converted to an empty list.
+- **New/updated regressions:** extended `client-labels.test.ts` (role-aware
+  action, viewer term, section headings); rewrote `client-work-board.test.tsx`
+  (per-card detail href, duplicate-name distinct keys/links, viewer/approver
+  next-action copy, no UUID-as-text); updated `deliverable-form.test.tsx`
+  (workflow-settings fieldset) and `commercial-summary.test.tsx` (client
+  summary `id`); rewrote `client-work-experience.spec.ts` (each card opens its
+  own detail, change-requested detail stays openable, viewer detail read-only,
+  Client A cannot open Client B work, no UUID/enum/internal leak, home
+  sections, mobile viewport).
+- Local non-DB matrix PASS: lint; typecheck; unit 64/303; integration 28/112;
+  component 27/106; RLS simulator 8/24; fixture E2E 154 passed / 8 skipped;
+  secret scan; `git diff --check`; production build (`/client/work` and
+  `/client/work/[deliverableId]` present). DB-backed gates (pgTAP, persistent
+  E2E) are environment-blocked locally (`LegacyDbConnectError`) and run in
+  exact-HEAD CI; the environmental block is **not** converted to a PASS.
+- Boundary unchanged: no push, no deploy, no Production, no hosted migration
+  apply, no merge, no team invitation. X010-A-9 / S015-P1-111 / S015-P1-112
+  remain `code-fixed + CI-green + hosted-blocked`.
+
+## 2026-07-31 — X010-B-3 Client terminology, أعمالي page, change-request visibility, progressive disclosure
+
+- Started from mandatory HEAD `7a7787236af2ad81ebbf44747c3ecac1ea0e00cd`; worktree
+  verified clean; X010-B-2 commit preserved (no reset/rewrite); no push/deploy.
+  Bounded to Spec 015 only; no new Spec/ADR/dependency/migration. Goal: an
+  understandable client experience, keep work visible after a change request, and
+  reduce form clutter — without changing workflow or permissions.
+- **Central client mapper** (`src/modules/deliverables/client-labels.ts`):
+  `clientStatusLabel` (`waiting_client_approval` → «بانتظار قرارك»,
+  `client_changes_requested` → «قيد التعديل لدى فريق سماوة», `client_approved`
+  → «تم اعتمادك», `ready_for_delivery` → «جارٍ تجهيز التسليم», `delivered` →
+  «تم التسليم», `in_progress` → «قيد العمل»), `clientVisibleStatusLabel`
+  (viewer-neutral «قيد المراجعة» for decision-pending work), `clientNextAction`,
+  and the ordered `clientWorkSections`. Replaces the scattered/duplicated inline
+  maps in `commercial-summary.tsx`, `persistent-client-approval.ts`,
+  `client-deliverable-detail.tsx`, and the hardcoded fixture strings. Raw status
+  enum is now carried on `ClientApprovalPanelItem.status` /
+  `ClientSafeDeliverableDetail.status` so viewer transformations use the enum,
+  not Arabic string comparison.
+- **أعمالي page** (`/client/work`): new client route + `ClientWorkBoard` that
+  groups the client's work into five role-aware sections (بانتظار قرارك / قيد
+  التعديل / تم اعتمادك / جارٍ تجهيز التسليم / تم التسليم). Each card is a
+  keyboard-focusable `<Link>` showing name, type, Arabic status, date, progress,
+  and next action; waiting cards link to `/client/pending`, delivered to
+  `/client/files`. Added «أعمالي» to the client shell and navigation resolver.
+- **Change-request visibility (D9 root cause):** `clientVisibleStatuses` in
+  `commercial-summary-read.ts` now includes `client_changes_requested`, so work
+  the client asked to edit **stays visible** in أعمالي with the message
+  «استلم فريق سماوة ملاحظاتك، والعمل الآن قيد التعديل» while it is **removed**
+  from بانتظار موافقتي (the inbox still reads only `waiting_client_approval`).
+  The client's **last decision date** (`lastDecisionAt`, derived from the
+  deliverable `updated_at` for client-decision statuses) is shown on the
+  change-request/approved cards as «تاريخ آخر قرار لك» when present. No internal
+  comments, files, versions, or quality data are exposed; only the client-safe
+  summary fields.
+- **Client home:** the three sections (بانتظار موافقتي / أعمالي / الباقة
+  والمتبقي) are now clickable `ButtonLink` cards with CTAs and useful empty
+  states instead of static text.
+- **Progressive disclosure:** the deliverable create/edit form now shows the
+  essential fields first (اسم العمل، النوع، المسؤول، الموعد، الوصف الأساسي،
+  سطر الباقة/الكمية) and moves optional fields (الأولوية، المساهمون، تواريخ
+  إضافية، أعلام الاعتماد) behind a native `<details>` «تفاصيل إضافية —
+  اختيارية». No field/data/validation/workflow removed; values preserved on
+  open/close; count inputs remain integer-only text (no spinners).
+- **Terminology sweep:** «المخرجات»/«مخرجاتي» → «الأعمال»/«أعمالي» on client
+  surfaces and the shared snapshot cards; no raw enum/UUID/internal term
+  («التعميد الداخلي»/internal_only) reaches the client.
+- **New/updated regressions:** `tests/unit/deliverables/client-labels.test.ts`
+  (mapper, viewer neutrality, no enum leak, section order);
+  `tests/component/client/client-work-board.test.tsx` (grouping, clickable
+  cards, change-request message + note isolation, empty state, viewer copy, no
+  enum/UUID/internal leak); updated `client-pending-inbox`,
+  `client-onboarding`, `r007-client-approval-panel`, `deliverable-form`,
+  `navigation-resolver`, and `hadna-mvp-summary` tests for the new labels;
+  new `tests/e2e/client/client-work-experience.spec.ts` (أعمالي grouping +
+  keyboard cards, change-request stays visible, not in pending inbox, viewer
+  neutrality, no enum/UUID/internal leak, clickable home sections, mobile
+  viewport).
+- **Permissions preserved (unchanged):** client viewer is read-only with no
+  decision buttons; client approver decides only when the exact current version
+  is awaiting their decision; no internal comments/quality/internal files leak;
+  Client A cannot see Client B work (RLS + tenant/client scope untouched).
+- Local non-DB matrix PASS: lint; typecheck; unit 64 files / 303 tests;
+  integration 28 files / 112 tests; component 27 files / 105 tests; RLS
+  simulator 8 files / 24 tests; fixture E2E 144 passed / 8 skipped (1 mobile
+  visual-QA was flaky and passed on isolated re-run); secret scan; `git diff
+  --check` (LF/CRLF warnings only); production build (new `/client/work` route
+  present). DB-backed gates (pgTAP, persistent E2E) are environment-blocked
+  locally (`LegacyDbConnectError`) and run in exact-HEAD CI; the environmental
+  block is **not** converted to a PASS.
+- Status: `X010_B3_LOCAL_COMPLETE_CI_UAT_PENDING`. GREEN / TEAM_UAT_READY are
+  **not** declared. No push, no deploy, no Production, no hosted migration
+  apply, no merge, no team invitation. X010-A-9 / S015-P1-111 / S015-P1-112
+  remain `code-fixed + CI-green + hosted-blocked`.
+
 ## 2026-07-31 — X010-B-2 corrective pass (migration signature + phone normalization)
 
 - Status corrected to `X010_B2_CORRECTIVE_IN_PROGRESS`. The initial draft's

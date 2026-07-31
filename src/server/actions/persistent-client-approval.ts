@@ -5,6 +5,7 @@ import { z } from "zod";
 import type { ClientSafeDeliverableDetail } from "@/ui/client/client-deliverable-detail";
 import { isHumanTrialDeliverable } from "@/modules/deliverables/human-trial-visibility";
 import { hasClientReviewPayload } from "@/modules/approvals/client-review-readiness";
+import { clientStatusLabel } from "@/modules/deliverables/client-labels";
 
 const decisionSchema = z.object({
   clientId: z.string().uuid(),
@@ -21,9 +22,16 @@ export type PersistentClientApprovalInboxItem = ClientSafeDeliverableDetail;
 
 const clientVisibleDeliverableStatuses = [
   "waiting_client_approval",
+  "client_changes_requested",
   "client_approved",
   "ready_for_delivery",
   "delivered",
+] as const;
+
+const clientVisibleVersionStatuses = [
+  "client_visible",
+  "client_approved",
+  "final",
 ] as const;
 
 type ClientVisibleDeliverable = {
@@ -102,7 +110,7 @@ async function readClientApprovalDetailForDeliverable(
         .eq("client_id", clientId)
         .eq("deliverable_id", deliverable.id)
         .eq("id", deliverable.current_version_id)
-        .in("status", ["client_visible", "client_approved", "final"])
+        .in("status", clientVisibleVersionStatuses)
         .maybeSingle(),
       supabase
         .from("file_assets")
@@ -170,6 +178,7 @@ async function readClientApprovalDetailForDeliverable(
   });
   const waitingForDecision =
     !delivered && deliverable.status === "waiting_client_approval";
+  const resolvedStatusLabel = clientStatusLabel(deliverable.status);
   return {
     clientName,
     approvalItem: {
@@ -184,19 +193,13 @@ async function readClientApprovalDetailForDeliverable(
           : undefined,
       displayName: deliverable.name,
       typeLabel: deliverable.type,
-      statusLabel: delivered
-        ? "تم التسليم"
-        : deliverable.status === "waiting_client_approval"
-          ? "بانتظار موافقتك"
-          : "قيد التسليم",
+      status: deliverable.status,
+      statusLabel: resolvedStatusLabel,
       versionLabel: `النسخة ${version.version_number}`,
       dueDateLabel: deliverable.client_due_date ?? undefined,
     },
-    statusLabel: delivered
-      ? "تم التسليم"
-      : deliverable.status === "waiting_client_approval"
-        ? "بانتظار موافقتك"
-        : "قيد التسليم",
+    status: deliverable.status,
+    statusLabel: resolvedStatusLabel,
     progressPercentage: deliverable.progress_percentage,
     content: {
       brief: version.brief ?? undefined,
@@ -274,6 +277,47 @@ export async function readPersistentClientApprovalDetail({
     clientName,
   );
   return details[0];
+}
+
+export async function readPersistentClientWorkDetail({
+  supabase,
+  tenantId,
+  clientId,
+  deliverableId,
+  clientName,
+}: {
+  supabase: SupabaseClient;
+  tenantId: string;
+  clientId: string;
+  deliverableId: string;
+  clientName?: string;
+}): Promise<ClientSafeDeliverableDetail | undefined> {
+  const { data, error } = await supabase
+    .from("deliverables")
+    .select(
+      "id, client_id, name, type, status, progress_percentage, client_due_date, revision, current_version_id, import_run_id",
+    )
+    .eq("tenant_id", tenantId)
+    .eq("client_id", clientId)
+    .eq("id", deliverableId)
+    .not("current_version_id", "is", null)
+    .maybeSingle();
+
+  if (error || !data) return undefined;
+
+  const deliverable = data as ClientVisibleDeliverable;
+  if (!isHumanTrialDeliverable(deliverable)) return undefined;
+  if (!clientVisibleDeliverableStatuses.includes(deliverable.status as never)) {
+    return undefined;
+  }
+
+  return readClientApprovalDetailForDeliverable(
+    supabase,
+    tenantId,
+    clientId,
+    deliverable,
+    clientName,
+  );
 }
 
 export async function decidePersistentClientVersion({

@@ -13,6 +13,7 @@ export type ClientApprovalPanelItem = {
   isActionable?: boolean;
   displayName: string;
   typeLabel: string;
+  status?: string;
   statusLabel: string;
   versionLabel: string;
   dueDateLabel?: string;
@@ -78,7 +79,7 @@ export function ClientApprovalPanel({
         <>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="grid gap-1">
-              <p className="text-sm text-muted">بانتظار موافقتك</p>
+              <p className="text-sm text-muted">بانتظار قرارك</p>
               <h2 className="text-base font-semibold leading-7">
                 {item.displayName}
               </h2>

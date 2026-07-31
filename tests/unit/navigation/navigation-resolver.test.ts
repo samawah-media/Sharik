@@ -64,12 +64,12 @@ describe("role-aware navigation resolver", () => {
 
     expect(viewerNavigation.items.map((item) => item.id)).toEqual([
       "client.home",
-      "client.deliverables",
+      "client.work",
       "client.package",
     ]);
     expect(approverNavigation.items.map((item) => item.id)).toEqual([
       "client.home",
-      "client.deliverables",
+      "client.work",
       "client.package",
       "client.pendingApprovals",
     ]);

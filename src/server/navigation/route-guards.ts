@@ -19,6 +19,7 @@ export type RouteActorKey =
   | "client_viewer_a"
   | "client_approver_a"
   | "client_viewer_b"
+  | "client_approver_b"
   | "disabled_member_a";
 
 export type RouteAccessDecision =
@@ -40,6 +41,17 @@ export const routeClients: ClientRecord[] = [
     tenantId: "tenant_a",
     name: "هدنة",
     slug: "hadna",
+    status: "active",
+    createdBy: "tenant_admin_a",
+    createdAt: "2026-06-24T00:00:00.000Z",
+    updatedAt: "2026-06-24T00:00:00.000Z",
+    revision: 1,
+  },
+  {
+    id: "client_b",
+    tenantId: "tenant_a",
+    name: "عميل تجريبي ب",
+    slug: "client-b",
     status: "active",
     createdBy: "tenant_admin_a",
     createdAt: "2026-06-24T00:00:00.000Z",
@@ -124,6 +136,19 @@ export const resolveRouteActor = (
   if (key === "client_viewer_b") {
     const membership = tenantMembership("tm_client_viewer_b", key);
     return actor(key, membership, []);
+  }
+
+  if (key === "client_approver_b") {
+    const membership = tenantMembership("tm_client_approver_b", key);
+    return actor(key, membership, [
+      role({
+        id: "ra_client_approver_b",
+        membershipId: membership.id,
+        roleKey: "client_approver",
+        scopeType: "client",
+        scopeId: "client_b",
+      }),
+    ]);
   }
 
   if (key === "client_viewer_a" || key === "client_approver_a") {

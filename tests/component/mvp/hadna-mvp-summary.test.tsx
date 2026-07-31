@@ -23,7 +23,7 @@ describe("Hadna MVP summary", () => {
     );
 
     const region = screen.getByRole("region", { name: "ملخص مساحة العميل" });
-    expect(within(region).getByText("عدد المخرجات")).toBeInTheDocument();
+    expect(within(region).getByText("عدد الأعمال")).toBeInTheDocument();
     expect(within(region).getByText("52")).toBeInTheDocument();
     expect(within(region).getByText("الباقة")).toBeInTheDocument();
     expect(within(region).getByText("5 بنود")).toBeInTheDocument();

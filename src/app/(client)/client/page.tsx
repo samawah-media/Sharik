@@ -1,6 +1,7 @@
 import { ClientHome } from "@/ui/client/client-home";
 import { ClientDeliverableDetail } from "@/ui/client/client-deliverable-detail";
 import type { ClientSafeDeliverableDetail } from "@/ui/client/client-deliverable-detail";
+import { clientStatusLabel } from "@/modules/deliverables/client-labels";
 import { InMemoryAuditSink } from "@/modules/audit/audit-service";
 import {
   InMemoryApprovalRepository,
@@ -212,11 +213,13 @@ const buildR007ClientPortalDetail = ({
       expectedRevision: r007ClientPortalDeliverable.revision,
       displayName: r007ClientPortalDeliverable.name,
       typeLabel: "منشور",
-      statusLabel: "بانتظار موافقتك",
+      status: r007ClientPortalDeliverable.status,
+      statusLabel: clientStatusLabel(r007ClientPortalDeliverable.status),
       versionLabel: "النسخة المعتمدة للعميل",
       dueDateLabel: r007ClientPortalDeliverable.clientDueDate,
     },
-    statusLabel: "بانتظار موافقتك",
+    status: r007ClientPortalDeliverable.status,
+    statusLabel: clientStatusLabel(r007ClientPortalDeliverable.status),
     progressPercentage: r007ClientPortalDeliverable.progressPercentage,
     files,
     comments,
@@ -359,7 +362,7 @@ export default async function ClientPage({
 
   return (
     <>
-      <ClientHome canApprove={canApprove} clientName={primaryClient.name} stats={stats}>
+      <ClientHome canApprove={canApprove} clientName={primaryClient.name} pendingCount={pendingDetails.length} stats={stats}>
         {portalDetail ? (
           <ClientDeliverableDetail
             approveAction={

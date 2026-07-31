@@ -1,33 +1,8 @@
 import type { ClientCommercialSummary } from "@/modules/commercial/commercial-summary";
-
-const typeLabels: Record<string, string> = {
-  post: "منشور",
-  reel: "ريلز",
-  story: "ستوري",
-  design: "تصميم",
-  report: "تقرير",
-  video: "فيديو",
-  campaign: "حملة",
-  article: "مقال",
-};
-
-const statusLabels = {
-  draft: "مسودة",
-  active: "نشط",
-  completed: "مكتمل",
-  cancelled: "ملغي",
-  archived: "مؤرشف",
-  not_started: "لم يبدأ",
-  in_progress: "قيد التنفيذ",
-  ready_for_internal_review: "قيد المراجعة",
-  internal_changes_requested: "قيد التعديل",
-  internally_approved: "معتمد داخليًا",
-  waiting_client_approval: "بانتظار موافقتك",
-  client_changes_requested: "قيد التعديل",
-  client_approved: "معتمد",
-  ready_for_delivery: "جاهز للتسليم",
-  delivered: "تم التسليم",
-} as const;
+import {
+  clientStatusLabel,
+} from "@/modules/deliverables/client-labels";
+import { deliverableTypeLabel } from "@/modules/deliverables/domain-labels";
 
 const formatDate = (value?: string) => {
   if (!value) {
@@ -79,20 +54,20 @@ export function ClientCommercialSummaryCards({
         )}
       </div>
       <div className="grid gap-3" id="deliverables">
-        <h2 className="text-lg font-semibold">مخرجاتي</h2>
+        <h2 className="text-lg font-semibold">الأعمال</h2>
         {summary.deliverables.map((deliverable) => (
           <article className="rounded-lg border border-border bg-card p-4" key={deliverable.name}>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-base font-semibold">{deliverable.name}</h2>
               <span className="rounded-md border border-border px-2 py-1 text-xs text-muted">
-                {statusLabels[deliverable.status]}
+                {clientStatusLabel(deliverable.status)}
               </span>
             </div>
             <dl className="mt-3 grid gap-3 text-sm text-muted sm:grid-cols-4">
               <div className="rounded-md bg-background px-3 py-2">
                 <dt className="font-semibold text-foreground">النوع</dt>
                 <dd className="mt-1">
-                  {typeLabels[deliverable.type] ?? deliverable.type}
+                  {deliverableTypeLabel(deliverable.type)}
                 </dd>
               </div>
               <div className="rounded-md bg-background px-3 py-2">
@@ -105,7 +80,7 @@ export function ClientCommercialSummaryCards({
               </div>
               <div className="rounded-md bg-background px-3 py-2">
                 <dt className="font-semibold text-foreground">الحالة</dt>
-                <dd className="mt-1">{statusLabels[deliverable.status]}</dd>
+                <dd className="mt-1">{clientStatusLabel(deliverable.status)}</dd>
               </div>
               <div className="rounded-md bg-background px-3 py-2">
                 <dt className="font-semibold text-foreground">التقدم</dt>

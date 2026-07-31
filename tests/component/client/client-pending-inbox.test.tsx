@@ -1,13 +1,16 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ClientPendingInbox } from "@/ui/client/client-pending-inbox";
+import { clientStatusLabel } from "@/modules/deliverables/client-labels";
 import type { ClientSafeDeliverableDetail } from "@/ui/client/client-deliverable-detail";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),
 }));
 
-afterEach(() => cleanup());
+afterEach(cleanup);
+
+const waitingLabel = clientStatusLabel("waiting_client_approval");
 
 const detail = (id: string): ClientSafeDeliverableDetail => ({
   approvalItem: {
@@ -18,10 +21,12 @@ const detail = (id: string): ClientSafeDeliverableDetail => ({
     isActionable: true,
     displayName: id === "d1" ? "فيديو الحملة" : "منشور الأسبوع",
     typeLabel: "منشور",
-    statusLabel: "بانتظار موافقتك",
+    status: "waiting_client_approval",
+    statusLabel: waitingLabel,
     versionLabel: "النسخة 2",
   },
-  statusLabel: "بانتظار موافقتك",
+  status: "waiting_client_approval",
+  statusLabel: waitingLabel,
   progressPercentage: 80,
   content: {
     caption: id === "d1" ? "نص فيديو الحملة" : "كابشن منشور الأسبوع",
@@ -67,7 +72,7 @@ describe("client pending inbox", () => {
   it("gives the approver an approve-oriented empty state", () => {
     render(<ClientPendingInbox canApprove details={[]} />);
     expect(
-      screen.getByRole("heading", { name: "لا توجد مخرجات بانتظار موافقتك" }),
+      screen.getByRole("heading", { name: "لا توجد أعمال بانتظار قرارك" }),
     ).toBeInTheDocument();
   });
 
@@ -104,7 +109,7 @@ describe("client pending inbox", () => {
     expect(screen.getByRole("main")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
-        name: "لا توجد مخرجات قيد المراجعة الآن",
+        name: "لا توجد أعمال قيد المراجعة الآن",
       }),
     ).toBeInTheDocument();
   });

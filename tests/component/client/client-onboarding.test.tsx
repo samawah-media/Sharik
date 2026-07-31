@@ -49,8 +49,12 @@ describe("client onboarding UI", () => {
       "href",
       "/client/files",
     );
-    expect(screen.getByText("المخرجات والباقة")).toBeInTheDocument();
-    expect(screen.getByText("عدد المخرجات")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "فتح أعمالي" })).toHaveAttribute(
+      "href",
+      "/client/work",
+    );
+    expect(screen.getByText("الباقة والمتبقي")).toBeInTheDocument();
+    expect(screen.getByText("عدد الأعمال")).toBeInTheDocument();
     expect(screen.getByText("52")).toBeInTheDocument();
     expect(screen.queryByText("Client B")).not.toBeInTheDocument();
     expect(screen.queryByText("لوحة الإدارة")).not.toBeInTheDocument();

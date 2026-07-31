@@ -1,5 +1,6 @@
 import type { FileAssetVisibility } from "@/modules/files/file-visibility-rules";
 import { firstMeaningfulReviewText } from "@/modules/approvals/client-review-readiness";
+import { clientVisibleStatusLabel } from "@/modules/deliverables/client-labels";
 import type { ClientApprovalFormAction } from "./client-approval-panel";
 import {
   ClientApprovalPanel,
@@ -34,6 +35,7 @@ export type ClientPortalCommentSummary = {
 export type ClientSafeDeliverableDetail = {
   clientName?: string;
   approvalItem: ClientApprovalPanelItem;
+  status?: string;
   statusLabel: string;
   progressPercentage: number;
   files: ClientPortalFileSummary[];
@@ -82,26 +84,26 @@ export function ClientDeliverableDetail({
       ? "قرارك مطلوب"
       : detail.approvalItem.actionabilityReason === "missing_review_payload"
         ? "نسخة غير مكتملة"
-        : "تفاصيل المخرج"
+        : "تفاصيل العمل"
     : "للاطلاع";
-  const visibleStatusLabel = canApprove
-    ? detail.statusLabel
-    : detail.statusLabel === "بانتظار موافقتك"
-      ? "قيد المراجعة"
-      : detail.statusLabel;
+  const resolvedStatus = detail.status ?? detail.approvalItem.status;
+  const visibleStatusLabel = clientVisibleStatusLabel(
+    resolvedStatus ?? "",
+    canApprove,
+  );
   const visibleApprovalItem = canApprove
     ? detail.approvalItem
     : {
         ...detail.approvalItem,
-        statusLabel:
-          detail.approvalItem.statusLabel === "بانتظار موافقتك"
-            ? "قيد المراجعة"
-            : detail.approvalItem.statusLabel,
+        statusLabel: clientVisibleStatusLabel(
+          detail.approvalItem.status ?? "",
+          canApprove,
+        ),
       };
 
   return (
     <section
-      aria-label="تفاصيل مخرج العميل"
+      aria-label="تفاصيل عمل العميل"
       className="grid w-full min-w-0 max-w-[calc(100vw-2rem)] gap-5 sm:max-w-full"
       data-testid="client-approval-detail"
       data-review-ready={

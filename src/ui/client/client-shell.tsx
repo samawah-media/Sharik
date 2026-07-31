@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, FolderOpen, LayoutDashboard, PackageCheck, UserRound } from "lucide-react";
+import { BriefcaseBusiness, FileText, FolderOpen, LayoutDashboard, PackageCheck, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SignOutButton } from "@/ui/auth/sign-out-button";
@@ -8,6 +8,7 @@ import { cn } from "@/ui/core/utils";
 
 const items = [
   { href: "/client", label: "الرئيسية", icon: LayoutDashboard },
+  { href: "/client/work", label: "أعمالي", icon: BriefcaseBusiness },
   { href: "/client/pending", label: "بانتظار موافقتي", icon: PackageCheck },
   { href: "/client/files", label: "الملفات", icon: FolderOpen },
   { href: "/client/commercial", label: "العقد والمتابعة", icon: FileText },

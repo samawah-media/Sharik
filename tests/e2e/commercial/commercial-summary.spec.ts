@@ -42,7 +42,7 @@ test("client commercial summary hides internal fields and other-client identifie
     clientRegion.getByRole("heading", { name: "الباقة والمتبقي" }),
   ).toBeVisible();
   await expect(
-    clientRegion.getByRole("heading", { name: "مخرجاتي" }),
+    clientRegion.getByRole("heading", { name: "الأعمال" }),
   ).toBeVisible();
   await expect(page.getByText("tenant_a")).toHaveCount(0);
   await expect(page.getByText("client_b")).toHaveCount(0);

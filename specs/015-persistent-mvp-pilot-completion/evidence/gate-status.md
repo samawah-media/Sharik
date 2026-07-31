@@ -1,5 +1,78 @@
 # Spec 015 gate status
 
+## X010-B-3 corrective pass — 2026-07-31
+
+`X010_B3_CORRECTIVE_LOCAL_COMPLETE_CI_UAT_PENDING`. Corrective pass from B3 HEAD
+`351f370`, inside Spec 015 only; no new Spec/ADR/dependency/migration. Local
+non-DB gates green; exact-HEAD CI, DB-backed gates, Preview, and owner final UAT
+pending. **GREEN / TEAM_UAT_READY are NOT declared.**
+
+Corrections delivered (no workflow/permissions/RLS change):
+- **Decision date removed.** The approximate `lastDecisionAt` (from
+  `deliverable.updated_at`) was deleted; no date is shown. A reliable
+  client-decision timestamp needs a scoped `approval_decisions` query + client
+  RLS read verification, so it is **deferred** (no approximate dates).
+- **Real work detail route** `/client/work/[deliverableId]` + new
+  `readPersistentClientWorkDetail` (tenant/client guard + RLS; client-visible
+  statuses only; client-visible version/files/comments only; no internal data;
+  approver decision buttons only at `waiting_client_approval`; viewer
+  read-only; deliverable ID in href/key only, never as text).
+- **Role-aware copy:** next-action depends on `canApprove`; viewer never sees
+  «بانتظار قرارك» (uses «قيد المراجعة»); «تم اعتمادك» → «تم اعتماد العمل».
+- **Form split** into البيانات الأساسية / تفاصيل إضافية اختيارية / إعدادات
+  سير العمل (the two approval flags are now a visible fieldset with impact
+  explanations, not hidden as unimportant).
+- **Error vs empty:** `/client/work` shows an ErrorState on read failure and an
+  EmptyState on a successful empty read; errors are not converted to empty.
+
+Local non-DB matrix PASS: lint; typecheck; unit 64/303; integration 28/112;
+component 27/106; RLS simulator 8/24; fixture E2E 154 passed / 8 skipped;
+secret scan; `git diff --check`; build (`/client/work` + `/client/work/
+[deliverableId]`). DB-backed gates (pgTAP, persistent E2E) environment-blocked
+locally (`LegacyDbConnectError`) → exact-HEAD CI; **not** converted to PASS.
+
+Defects: S015-P2-116/117/118 remain `technical-fixed; final-owner-UAT-pending`
+(the decision-date sub-item of 117 is **deferred**, not approximated).
+
+Boundary: no push/deploy/Production/hosted-migration/merge/invitation.
+X010-A-9 / S015-P1-111 / S015-P1-112 remain `code-fixed + CI-green +
+hosted-blocked`.
+
+## X010-B-3 client terminology + أعمالي + change-request visibility + progressive disclosure — 2026-07-31
+
+`X010_B3_LOCAL_COMPLETE_CI_UAT_PENDING`. Local non-DB gates are green on the
+reviewed changes; exact-HEAD CI, DB-backed gates, Preview, and owner final UAT
+remain pending. **GREEN and TEAM_UAT_READY are NOT declared.** No migration was
+added or applied (no schema change), so there is no UAT-migration blocker as
+with B2; the hosted boundary is unchanged.
+
+Scope (Spec 015 only; no new Spec/ADR/dependency): a central client status
+mapper (`client-labels.ts`); a new `/client/work` «أعمالي» page with clickable,
+keyboard-accessible, role-aware work cards; change-requested work now **stays
+visible** in أعمالي (root-cause fix: `client_changes_requested` added to the
+client-visible status set) while leaving بانتظار موافقتي; clickable home
+sections with CTAs/empty states; progressive disclosure in the deliverable form
+(essential fields first, optional behind `<details>`); and a terminology sweep
+replacing «المخرجات»/«مخرجاتي» with «الأعمال»/«أعمالي» on client surfaces.
+Workflow, RLS, permissions, and audit boundaries are unchanged.
+
+Local non-DB matrix PASS: lint; typecheck; unit 64/303; integration 28/112;
+component 27/105; RLS simulator 8/24; fixture E2E 144 passed / 8 skipped (one
+mobile visual-QA case was flaky and passed on isolated re-run); secret scan;
+`git diff --check` (LF/CRLF warnings only); production build (`/client/work`
+route present). DB-backed gates (pgTAP, persistent E2E) are environment-blocked
+locally (`LegacyDbConnectError`) and run in exact-HEAD CI; the environmental
+block is **not** treated as a PASS.
+
+Defects dispositioned: S015-P2-116 (hard terminology), S015-P2-117 (work
+vanishes after change request), S015-P2-118 (empty optional fields) →
+`technical-fixed; final-owner-UAT-pending (X010-B-3)`. Owner notes D8/D9/D10
+mirror the same state.
+
+Boundary: no push, no deploy, no Production, no hosted migration apply, no
+merge, no team invitation. X010-A-9 / S015-P1-111 / S015-P1-112 remain
+`code-fixed + CI-green + hosted-blocked`.
+
 ## X010-B-2 onboarding journey simplification — corrective pass — 2026-07-31
 
 `X010_B2_CORRECTIVE_IN_PROGRESS`. The first draft set the state to

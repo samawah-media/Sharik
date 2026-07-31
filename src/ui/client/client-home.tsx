@@ -1,5 +1,6 @@
 import { ButtonLink } from "@/ui/core/button";
 import { Badge } from "@/ui/core/badge";
+import { ArrowLeft, BriefcaseBusiness, PackageCheck, Wallet } from "lucide-react";
 import type { ReactNode } from "react";
 import {
   formatMvpClientName,
@@ -12,6 +13,7 @@ type ClientHomeProps = {
   children?: ReactNode;
   clientName?: string;
   stats?: MvpSnapshotStats;
+  pendingCount?: number;
 };
 
 export function ClientHome({
@@ -19,15 +21,13 @@ export function ClientHome({
   children,
   clientName = "العميل",
   stats,
+  pendingCount = 0,
 }: ClientHomeProps) {
   const displayClientName = formatMvpClientName(clientName);
   const reviewHeading = canApprove ? "بانتظار موافقتي" : "قيد المراجعة";
-  const reviewDescription = canApprove
-    ? "لا توجد عناصر تحتاج قرارك الآن. سنعرض هنا فقط النسخ التي اعتمدها فريق سماوة وأرسلها لك رسميًا."
-    : "هذا الحساب للاطلاع فقط. ستظهر هنا النسخ قيد المراجعة بمجرد أن يعتمدها فريق سماوة للجهة المختصة بالاعتماد.";
   const heroDescription = canApprove
-    ? "هنا تجد ما يحتاج قرارك، وما تم تسليمه، وحالة المخرجات المتفق عليها في مكان واحد واضح."
-    : "هنا تتابع ما هو قيد المراجعة، وما تم تسليمه، وحالة المخرجات المتفق عليها في مكان واحد واضح.";
+    ? "هنا تجد ما يحتاج قرارك، وما تم تسليمه، وحالة أعمالك المتفق عليها في مكان واحد واضح."
+    : "هنا تتابع ما هو قيد المراجعة، وما تم تسليمه، وحالة أعمالك المتفق عليها في مكان واحد واضح.";
   const pendingLinkLabel = canApprove
     ? "مراجعة ما ينتظرني"
     : "عرض ما هو قيد المراجعة";
@@ -49,26 +49,81 @@ export function ClientHome({
           <ButtonLink href="/client/pending" variant="primary">
             {pendingLinkLabel}
           </ButtonLink>
+          <ButtonLink href="/client/work" variant="secondary">
+            فتح أعمالي
+          </ButtonLink>
           <ButtonLink href="/client/files" variant="secondary">
             فتح الملفات
           </ButtonLink>
         </div>
       </section>
       {stats ? <MvpSnapshotCards stats={stats} /> : null}
-      {children ?? (
-        <section className="grid gap-2 rounded-lg border border-border p-4">
-          <h2 className="text-base font-semibold">{reviewHeading}</h2>
-          <p className="text-sm text-muted">{reviewDescription}</p>
-        </section>
-      )}
-      <section className="grid gap-2 rounded-2xl border border-border bg-surface p-4 shadow-xs sm:p-5">
-        <h2 className="text-base font-semibold">المخرجات والباقة</h2>
-        <p className="text-sm text-muted">
-          افتح المخرجات لمراجعة الاسم والنوع والتاريخ والحالة والتقدم، وافتح
-          الباقة لمعرفة المتفق عليه والمتبقي.
-        </p>
-      </section>
+      {children ?? null}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <HomeSectionCard
+          ctaLabel={pendingCount > 0 ? `${pendingCount} بانتظار قرارك` : "لا يوجد ما ينتظر قرارك الآن"}
+          description={
+            canApprove
+              ? "راجع الأعمال التي أرسلها فريق سماوة واعتمدها أو اطلب تعديلًا."
+              : "تابع الأعمال قيد المراجعة. هذا الحساب للاطلاع فقط."
+          }
+          heading={reviewHeading}
+          href="/client/pending"
+          icon={<PackageCheck aria-hidden="true" size={18} />}
+        />
+        <HomeSectionCard
+          ctaLabel="عرض كل الأعمال"
+          description="كل أعمالك: ما ينتظر قرارك، وما قيد التعديل، وما تم تسليمه."
+          heading="أعمالي"
+          href="/client/work"
+          icon={<BriefcaseBusiness aria-hidden="true" size={18} />}
+        />
+        <HomeSectionCard
+          ctaLabel="عرض الباقة"
+          description="ما تم الاتفاق عليه وما تبقى من أعمال الباقة."
+          heading="الباقة والمتبقي"
+          href="/client/commercial"
+          icon={<Wallet aria-hidden="true" size={18} />}
+        />
+      </div>
     </main>
+  );
+}
+
+function HomeSectionCard({
+  ctaLabel,
+  description,
+  heading,
+  href,
+  icon,
+}: {
+  ctaLabel: string;
+  description: string;
+  heading: string;
+  href: string;
+  icon: ReactNode;
+}) {
+  return (
+    <ButtonLink
+      aria-label={`${heading} — ${ctaLabel}`}
+      className="grid h-auto grid-rows-[auto_auto_auto] items-start gap-2 rounded-2xl !text-right"
+      href={href}
+      variant="secondary"
+    >
+      <span className="flex size-9 items-center justify-center rounded-lg border border-accent/20 bg-accent-soft text-accent">
+        {icon}
+      </span>
+      <span className="grid gap-1">
+        <span className="text-sm font-semibold text-foreground">{heading}</span>
+        <span className="text-xs font-normal leading-5 text-muted">
+          {description}
+        </span>
+      </span>
+      <span className="flex items-center gap-1 text-xs font-semibold text-accent">
+        <span>{ctaLabel}</span>
+        <ArrowLeft aria-hidden="true" size={14} />
+      </span>
+    </ButtonLink>
   );
 }
 

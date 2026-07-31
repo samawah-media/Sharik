@@ -116,9 +116,9 @@ export function buildEmptyMvpStats(): MvpSnapshotStats {
 
 const statCards = (stats: MvpSnapshotStats) => [
   {
-    label: "عدد المخرجات",
+    label: "عدد الأعمال",
     value: stats.deliverablesCount,
-    help: "كل المخرجات المتفق عليها ضمن النطاق",
+    help: "كل الأعمال المتفق عليها ضمن النطاق",
   },
   {
     label: "الباقة",
@@ -133,7 +133,7 @@ const statCards = (stats: MvpSnapshotStats) => [
   {
     label: "ما ينتظر العميل",
     value: stats.waitingClientCount,
-    help: "مخرجات مرسلة للعميل وتنتظر قرارًا",
+    help: "أعمال مرسلة للعميل وتنتظر قرارًا",
   },
 ];
 

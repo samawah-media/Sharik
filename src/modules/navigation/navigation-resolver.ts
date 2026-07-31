@@ -98,8 +98,8 @@ export const resolveRoleAwareNavigation = ({
       state: "ready",
       items: [
         item("client.home", "الرئيسية", "/client"),
-        item("client.deliverables", "مخرجاتي", "/client/commercial#deliverables"),
-        item("client.package", "الباقة والمتبقي", "/client/commercial#package"),
+        item("client.work", "أعمالي", "/client/work"),
+        item("client.package", "الباقة والمتبقي", "/client/commercial"),
         ...(hasApproverRole
           ? [item("client.pendingApprovals", "بانتظار موافقتي", "/client/pending")]
           : []),

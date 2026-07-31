@@ -216,7 +216,7 @@ export function DeliverableForm({
           value={String(approvedExtra)}
         />
         <label className="grid gap-2 text-sm font-medium">
-          اسم المخرج
+          اسم العمل
           <input
             className="rounded-md border border-border bg-background px-3 py-2"
             name="name"
@@ -226,40 +226,24 @@ export function DeliverableForm({
           />
         </label>
         <label className="grid gap-2 text-sm font-medium">
-          الوصف
+          الوصف الأساسي
           <textarea
             className="min-h-24 rounded-md border border-border bg-background px-3 py-2"
             name="description"
             defaultValue={state.values?.description}
           />
         </label>
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="grid gap-2 text-sm font-medium">
-            نوع المخرج
-            <input
-              className="rounded-md border border-border bg-background px-3 py-2"
-              name="type"
-              required
-              defaultValue={
-                state.values?.type ?? selectedLine?.deliverableTypeHint ?? ""
-              }
-            />
-          </label>
-          <label className="grid gap-2 text-sm font-medium">
-            الأولوية
-            <select
-              className="rounded-md border border-border bg-background px-3 py-2"
-              name="priority"
-              defaultValue={state.values?.priority ?? "normal"}
-            >
-              {Object.entries(priorityLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+        <label className="grid gap-2 text-sm font-medium">
+          نوع العمل
+          <input
+            className="rounded-md border border-border bg-background px-3 py-2"
+            name="type"
+            required
+            defaultValue={
+              state.values?.type ?? selectedLine?.deliverableTypeHint ?? ""
+            }
+          />
+        </label>
         {approvedExtra ? (
           <>
             <ApprovedExtraNotice />
@@ -318,25 +302,65 @@ export function DeliverableForm({
             />
           </>
         )}
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="grid gap-2 text-sm font-medium">
-            المسؤول
-            <select
-              className="rounded-md border border-border bg-background px-3 py-2"
-              name="ownerUserId"
-              defaultValue={state.values?.ownerUserId}
-            >
-              <option value="">بدون مسؤول حاليًا</option>
-              {eligibleMembers.map((member) => (
-                <option key={member.userId} value={member.userId}>
-                  {member.displayName}
-                  {member.roleLabel ? ` — ${member.roleLabel}` : ""}
-                </option>
-              ))}
-            </select>
-          </label>
+        <label className="grid gap-2 text-sm font-medium">
+          المسؤول
+          <select
+            className="rounded-md border border-border bg-background px-3 py-2"
+            name="ownerUserId"
+            defaultValue={state.values?.ownerUserId}
+          >
+            <option value="">بدون مسؤول حاليًا</option>
+            {eligibleMembers.map((member) => (
+              <option key={member.userId} value={member.userId}>
+                {member.displayName}
+                {member.roleLabel ? ` — ${member.roleLabel}` : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="grid gap-2 text-sm font-medium">
+          الموعد
+          <input
+            className="rounded-md border border-border bg-background px-3 py-2"
+            name="clientDueDate"
+            type="date"
+            defaultValue={state.values?.clientDueDate}
+          />
+        </label>
+        {!memberDirectoryAvailable ? (
+          <p className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+            تعذر تحميل قائمة الفريق. يمكنك حفظ العمل بدون إسناد والمحاولة لاحقًا.
+          </p>
+        ) : null}
+        <details className="grid gap-4 rounded-lg border border-border bg-surface p-4">
+          <summary className="cursor-pointer text-sm font-semibold text-foreground">
+            تفاصيل إضافية — اختيارية
+          </summary>
+          <p className="text-xs text-muted">
+            هذه الحقول اختيارية ولا تؤثر على الحفظ. يمكنك تعبئتها لاحقًا أو تركها
+            فارغة.
+          </p>
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="grid gap-2 text-sm font-medium">
+              الأولوية
+              <select
+                className="rounded-md border border-border bg-background px-3 py-2"
+                name="priority"
+                defaultValue={state.values?.priority ?? "normal"}
+              >
+                {Object.entries(priorityLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="text-sm text-muted">
+              <p className="font-medium text-foreground">المساهمون</p>
+              <p className="text-xs">أعضاء الفريق المشاركون في هذا العمل.</p>
+            </div>
+          </div>
           <fieldset className="grid gap-2 text-sm font-medium">
-            <legend>المساهمون</legend>
             <div className="grid max-h-40 gap-2 overflow-y-auto rounded-md border border-border bg-background p-3">
               {eligibleMembers.length > 0 ? (
                 eligibleMembers.map((member) => (
@@ -358,53 +382,52 @@ export function DeliverableForm({
               )}
             </div>
           </fieldset>
-        </div>
-        {!memberDirectoryAvailable ? (
-          <p className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-            تعذر تحميل قائمة الفريق. يمكنك حفظ المخرج بدون إسناد والمحاولة لاحقًا.
-          </p>
-        ) : null}
-        <div className="grid gap-4 md:grid-cols-4">
-          <label className="grid gap-2 text-sm font-medium">
-            تاريخ البدء
+          <div className="grid gap-4 md:grid-cols-3">
+            <label className="grid gap-2 text-sm font-medium">
+              تاريخ البدء
+              <input
+                className="rounded-md border border-border bg-background px-3 py-2"
+                name="startDate"
+                type="date"
+                defaultValue={state.values?.startDate}
+              />
+            </label>
+            <label className="grid gap-2 text-sm font-medium">
+              موعد داخلي
+              <input
+                className="rounded-md border border-border bg-background px-3 py-2"
+                name="internalDueDate"
+                type="date"
+                defaultValue={state.values?.internalDueDate}
+              />
+            </label>
+            <label className="grid gap-2 text-sm font-medium">
+              الموعد النهائي
+              <input
+                className="rounded-md border border-border bg-background px-3 py-2"
+                name="finalDueDate"
+                type="date"
+                defaultValue={state.values?.finalDueDate}
+              />
+            </label>
+          </div>
+        </details>
+        <fieldset
+          aria-label="إعدادات سير العمل"
+          className="grid gap-3 rounded-lg border border-border bg-surface p-4"
+        >
+          <div className="grid gap-1">
+            <p className="text-sm font-semibold text-foreground">
+              إعدادات سير العمل
+            </p>
+            <p className="text-xs text-muted">
+              هذه الإعدادات تحدد خطوات الاعتماد قبل أن يصل العمل إلى التسليم.
+              عدّلها بعناية لأنها تؤثر على مسار العمل.
+            </p>
+          </div>
+          <label className="flex min-h-11 items-start gap-3 rounded-md border border-border bg-background p-3 text-sm">
             <input
-              className="rounded-md border border-border bg-background px-3 py-2"
-              name="startDate"
-              type="date"
-              defaultValue={state.values?.startDate}
-            />
-          </label>
-          <label className="grid gap-2 text-sm font-medium">
-            موعد داخلي
-            <input
-              className="rounded-md border border-border bg-background px-3 py-2"
-              name="internalDueDate"
-              type="date"
-              defaultValue={state.values?.internalDueDate}
-            />
-          </label>
-          <label className="grid gap-2 text-sm font-medium">
-            موعد العميل
-            <input
-              className="rounded-md border border-border bg-background px-3 py-2"
-              name="clientDueDate"
-              type="date"
-              defaultValue={state.values?.clientDueDate}
-            />
-          </label>
-          <label className="grid gap-2 text-sm font-medium">
-            الموعد النهائي
-            <input
-              className="rounded-md border border-border bg-background px-3 py-2"
-              name="finalDueDate"
-              type="date"
-              defaultValue={state.values?.finalDueDate}
-            />
-          </label>
-        </div>
-        <div className="flex flex-wrap gap-4 text-sm">
-          <label className="inline-flex items-center gap-2">
-            <input
+              className="mt-0.5"
               name="requiresInternalApproval"
               type="checkbox"
               value="true"
@@ -412,18 +435,35 @@ export function DeliverableForm({
                 state.values?.requiresInternalApproval !== "false"
               }
             />
-            يتطلب تعميدًا داخليًا
+            <span className="grid gap-1">
+              <span className="font-semibold text-foreground">
+                يتطلب تعميدًا داخليًا
+              </span>
+              <span className="text-xs text-muted">
+                عند التفعيل يجب أن يعتمد العمل داخليًا قبل إرساله للعميل. أوقفه
+                فقط إذا كان العمل لا يحتاج مراجعة داخلية.
+              </span>
+            </span>
           </label>
-          <label className="inline-flex items-center gap-2">
+          <label className="flex min-h-11 items-start gap-3 rounded-md border border-border bg-background p-3 text-sm">
             <input
+              className="mt-0.5"
               name="requiresClientApproval"
               type="checkbox"
               value="true"
               defaultChecked={state.values?.requiresClientApproval !== "false"}
             />
-            يتطلب اعتماد العميل
+            <span className="grid gap-1">
+              <span className="font-semibold text-foreground">
+                يتطلب اعتماد العميل
+              </span>
+              <span className="text-xs text-muted">
+                عند التفعيل لا يمكن تسليم العمل إلا بعد اعتماد العميل للنسخة
+                المرسلة. أوقفه فقط إذا كان العمل لا يحتاج موافقة العميل.
+              </span>
+            </span>
           </label>
-        </div>
+        </fieldset>
         {state.status === "error" && state.message ? (
           <p
             aria-live="polite"

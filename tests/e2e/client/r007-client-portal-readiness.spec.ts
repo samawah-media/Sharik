@@ -12,7 +12,7 @@ test("client approver sees controlled approval actions and no internal content",
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: "مساحة هدنة" })).toBeVisible();
 
-  const detail = page.getByRole("region", { name: "تفاصيل مخرج العميل" });
+  const detail = page.getByRole("region", { name: "تفاصيل عمل العميل" });
   await expect(detail).toBeVisible();
   await expect(
     detail.getByRole("region", { name: "قرار اعتماد العميل" }),
@@ -38,7 +38,7 @@ test("client viewer can inspect allowed data but cannot submit approval", async 
     waitUntil: "domcontentloaded",
   });
 
-  const detail = page.getByRole("region", { name: "تفاصيل مخرج العميل" });
+  const detail = page.getByRole("region", { name: "تفاصيل عمل العميل" });
   await expect(detail).toBeVisible();
   await expect(
     detail.getByText(/لا يملك صلاحية الاعتماد أو طلب التعديل/),

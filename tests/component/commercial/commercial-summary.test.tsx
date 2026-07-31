@@ -126,6 +126,7 @@ const clientSummary: ClientCommercialSummary = {
   ],
   deliverables: [
     {
+      id: "commercial_fixture_deliverable",
       name: "منشور إطلاق الحملة",
       type: "post",
       status: "not_started",

@@ -1,6 +1,7 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ClientApprovalPanel } from "@/ui/client/client-approval-panel";
+import { clientStatusLabel } from "@/modules/deliverables/client-labels";
 
 afterEach(() => cleanup());
 
@@ -11,7 +12,8 @@ const approvalItem = {
   expectedRevision: 3,
   displayName: "مخرج تجريبي آمن",
   typeLabel: "منشور",
-  statusLabel: "بانتظار موافقتك",
+  status: "waiting_client_approval",
+  statusLabel: clientStatusLabel("waiting_client_approval"),
   versionLabel: "النسخة المعتمدة للعميل",
   dueDateLabel: "2026-07-12",
 };

@@ -9,6 +9,7 @@ import {
 } from "@/server/navigation/route-guards";
 import { readPersistentClientApprovalInbox } from "@/server/actions/persistent-client-approval";
 import { decidePersistentClientVersion } from "@/server/actions/persistent-client-approval";
+import { clientStatusLabel } from "@/modules/deliverables/client-labels";
 import type { ClientSafeDeliverableDetail } from "@/ui/client/client-deliverable-detail";
 import { ClientPendingInbox } from "@/ui/client/client-pending-inbox";
 import {
@@ -51,11 +52,13 @@ const fixturePendingDetail: ClientSafeDeliverableDetail = {
     isActionable: true,
     displayName: "مخرج تجريبي آمن",
     typeLabel: "منشور",
-    statusLabel: "بانتظار موافقتك",
+    status: "waiting_client_approval",
+    statusLabel: clientStatusLabel("waiting_client_approval"),
     versionLabel: "النسخة المعتمدة للعميل",
     dueDateLabel: "2026-07-12",
   },
-  statusLabel: "بانتظار موافقتك",
+  status: "waiting_client_approval",
+  statusLabel: clientStatusLabel("waiting_client_approval"),
   progressPercentage: 80,
   files: [],
   comments: [],

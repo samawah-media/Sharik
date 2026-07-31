@@ -95,8 +95,8 @@ describe("deliverable creation form and reservation preview", () => {
     expect(
       screen.getByRole("form", { name: "إنشاء مخرج" }),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText("اسم المخرج")).toBeRequired();
-    expect(screen.getByLabelText("نوع المخرج")).toBeRequired();
+    expect(screen.getByLabelText("اسم العمل")).toBeRequired();
+    expect(screen.getByLabelText("نوع العمل")).toBeRequired();
     expect(screen.getByLabelText("الأولوية")).toHaveValue("normal");
     expect(screen.getByLabelText("سطر الباقة")).toHaveValue(
       "package_line_posts_a",
@@ -109,8 +109,8 @@ describe("deliverable creation form and reservation preview", () => {
       "type",
       "text",
     );
-    expect(screen.getByLabelText("يتطلب تعميدًا داخليًا")).toBeChecked();
-    expect(screen.getByLabelText("يتطلب اعتماد العميل")).toBeChecked();
+    expect(screen.getByLabelText(/^يتطلب تعميدًا داخليًا/)).toBeChecked();
+    expect(screen.getByLabelText(/^يتطلب اعتماد العميل/)).toBeChecked();
     expect(screen.getByLabelText("المسؤول")).toHaveTextContent("سارة علي");
     expect(
       screen.getByRole("checkbox", { name: /سارة علي/u }),

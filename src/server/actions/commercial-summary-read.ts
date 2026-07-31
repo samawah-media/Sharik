@@ -131,6 +131,7 @@ const fixtureDeliverables: DeliverableSafeSummary[] = fixtureStatusPlan.map(
       progressPercentage: progressByStatus[status],
       currentVersionId: [
         "waiting_client_approval",
+        "client_changes_requested",
         "client_approved",
         "ready_for_delivery",
         "delivered",
@@ -151,6 +152,7 @@ const fixtureDeliverables: DeliverableSafeSummary[] = fixtureStatusPlan.map(
 
 const clientVisibleStatuses = new Set<DeliverableLifecycleStatus>([
   "waiting_client_approval",
+  "client_changes_requested",
   "client_approved",
   "ready_for_delivery",
   "delivered",

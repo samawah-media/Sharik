@@ -299,7 +299,7 @@ select throws_ok(
       'probe', 't', 'm', '/admin/internal-dashboard', 'bad-href-1'
     ) $$,
   '23514',
-  '.*notifications_action_href_allowed.*'
+  'new row for relation "notifications" violates check constraint "notifications_action_href_allowed"'
 );
 
 -- ============================================================================

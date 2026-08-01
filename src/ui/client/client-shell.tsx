@@ -5,6 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SignOutButton } from "@/ui/auth/sign-out-button";
 import { cn } from "@/ui/core/utils";
+import {
+  NotificationBell,
+  type NotificationBellData,
+} from "@/ui/notifications/notification-bell";
+
+const emptyNotifications: NotificationBellData = { unreadCount: 0, recent: [] };
 
 const items = [
   { href: "/client", label: "الرئيسية", icon: LayoutDashboard },
@@ -17,9 +23,11 @@ const items = [
 export function ClientShell({
   canApprove = true,
   children,
+  notifications = emptyNotifications,
 }: {
   canApprove?: boolean;
   children: React.ReactNode;
+  notifications?: NotificationBellData;
 }) {
   const pathname = usePathname() ?? "/client";
   const pendingLabel = canApprove ? "بانتظار موافقتي" : "قيد المراجعة";
@@ -44,7 +52,14 @@ export function ClientShell({
             <SignOutButton />
           </div>
         </aside>
-        <div className="min-w-0">{children}</div>
+        <div className="min-w-0">
+          <header className="sticky top-0 z-20 border-b border-border bg-background/90 px-4 py-3 backdrop-blur">
+            <div className="mx-auto flex max-w-7xl items-center justify-end gap-2">
+              <NotificationBell data={notifications} />
+            </div>
+          </header>
+          {children}
+        </div>
       </div>
     </section>
   );

@@ -1,5 +1,95 @@
 # Spec 015 execution log
 
+## 2026-08-01 — X010-B-4 independent corrective close
+
+- Reviewed local B4 commit `2003249` without pushing or deploying. Registered
+  S015-P1-129/130/131 and S015-P2-129/130; status is
+  `X010_B4_CORRECTIVE_LOCAL_COMPLETE_DB_CI_UAT_PENDING`, not GREEN.
+- Fixed the actor-dependent client-recipient resolver, stale-scope access through
+  SECURITY DEFINER list/count/mark RPCs, and the invalid PL/pgSQL loop terminator.
+  Added role-aware viewer/approver copy, separate management `/clients/{id}/deliverables`
+  versus execution `/work` links, mutation-aware task reassignment dedupe, and
+  stable relative-time hydration using one server timestamp.
+- Expanded pgTAP for active-member-without-role denial, Client A/B RPC isolation,
+  post-revocation list/count/mark denial, viewer/approver text, role-safe links,
+  and A→B→A→B reassignment. DB execution remains blocked by
+  `LegacyDbConnectError`; Docker Desktop is not installed, while the unrelated
+  system PostgreSQL instance is not used as a Supabase substitute.
+- Verification PASS: lint; typecheck; unit 66/333; integration 28/112; component
+  29/119; RLS simulator 8/24; focused notification components 13/13; notification
+  E2E 12/12 before the hydration correction and desktop 4/4 after it with no
+  hydration warning and an explicit page-error assertion. Secret scan, production
+  build (including `/notifications`), and final `git diff --check` also PASS.
+- No push, deploy, hosted migration, Production access, merge, invitation, new
+  dependency, ADR, or Spec was performed.
+
+## 2026-08-01 — X010-B-4 in-app notification center
+
+- Started from the mandatory HEAD `fc5b414397e730bc32f4a59c392195457ee819df`
+  with a clean worktree. Bounded to Spec 015 only; no new Spec/ADR/dependency;
+  no email/WhatsApp/push/cron in this slice; no push/deploy/Production/hosted
+  migration/merge/invitation. Status `X010_B4_LOCAL_COMPLETE_DB_CI_UAT_PENDING`.
+  GREEN / TEAM_UAT_READY are **not** declared.
+- Pre-flight inspection: read AGENTS.md, Spec 015 spec/plan/tasks, the owner
+  manual UAT notes, and the current data model. Audited the existing audited
+  workflow RPCs (`s015_execute_internal_workflow`, `s015_client_decide_version`,
+  `s015_prepare_delivery`, `s015_deliver_ready_version`, `s015_upsert_deliverable_task`)
+  and confirmed the exact audit action strings (`DeliverableVersionSubmitted`,
+  `DeliverableInternalChangesRequested`, `DeliverableVersionSentToClient`,
+  `ClientVersionDecision` with `reason = approved|changes_requested`,
+  `DeliverablePreparedForDelivery`, `DeliverableFinalDelivered`,
+  `DeliverableTaskCreated/Updated`). Reused the existing atomic audit-insert
+  path; no parallel notification system was created.
+- Data model: additive migration `202608010002_s015_x010b4_in_app_notifications.sql`
+  (after `202608010001`) creates `public.notifications` (id, tenant_id, client_id
+  nullable, recipient_user_id, event_type, title, message, action_href,
+  source_audit_event_id, source_task_id, dedupe_key, read_at, created_at),
+  unique `(recipient_user_id, dedupe_key)`, CHECK-enforced `action_href`
+  allowlist, read-only-except-read_at guard, and RLS policies (recipient +
+  active tenant member + client-scope defense-in-depth). No authenticated
+  INSERT/DELETE grant.
+- Emission (atomic with the audited operation): SECURITY DEFINER `AFTER INSERT`
+  trigger on `audit_events` resolves recipients per event and enqueues via
+  `s015_enqueue_notification(...)` with `ON CONFLICT DO NOTHING`. A second
+  SECURITY DEFINER trigger on `deliverable_tasks` (`AFTER INSERT OR UPDATE OF
+  assignee_user_id`) covers assignment/reassignment. The actor is excluded from
+  recipients. Recipient resolvers: `s015_notification_client_management_recipients`,
+  `s015_notification_deliverable_execution_recipients`,
+  `s015_notification_client_portal_recipients` (all SECURITY DEFINER).
+- Scoped RPCs (the only read/mark paths): `s015_notification_unread_count`,
+  `s015_list_notifications(p_filter, p_limit, p_offset)`,
+  `s015_mark_notification_read(p_notification_id)`,
+  `s015_mark_all_notifications_read()`. No service role in browser/runtime.
+- TypeScript/UI: `src/modules/notifications/notification-labels.ts` (category
+  map + TS mirror of the href allowlist + Arabic relative/absolute time),
+  `src/server/actions/notifications-read.ts` (unread count, list, bell payload),
+  `src/server/actions/notifications-write.ts` (mark-read server actions with
+  `revalidatePath`), `src/ui/notifications/{notification-item,notification-bell,notification-list}.tsx`,
+  and `src/app/notifications/page.tsx` (unified route wrapping in the correct
+  shell per actor). Bell wired into `ProductShell` and `ClientShell`.
+- Tests added: unit `tests/unit/notifications/{notification-labels,notifications-read}.test.ts`;
+  component `tests/component/notifications/{notification-bell,notification-list}.test.tsx`;
+  pgTAP `supabase/tests/database/s015_x010b4_in_app_notifications.test.sql`
+  (recipient routing per event, client-safe vs internal copy, dedupe, RLS
+  recipient-only, tenant + Client A/B isolation, disabled-membership denial,
+  mark-own-read + cross-recipient denial, href CHECK, read_at immutability,
+  authenticated INSERT denial, scoped unread count); fixture E2E
+  `tests/e2e/notifications/notifications-center.spec.ts`; persistent E2E
+  `tests/e2e-persistent/s015-notifications-journey.spec.ts`.
+- Local non-DB matrix PASS: lint; typecheck; unit 66/333; integration 28/112;
+  component 29/119; RLS simulator 8/24; fixture E2E 12/12 new + 17/17
+  regression (app-shell/client-work/pending-inbox/visual-qa); secret scan;
+  `git diff --check` (LF/CRLF warnings only); production build (`/notifications`
+  in the route manifest).
+- DB-backed gates BLOCKED locally (`LegacyDbConnectError`, Docker daemon down —
+  same class as S015-P2-036/prior slices): pgTAP `s015_x010b4...` and persistent
+  `s015-notifications-journey` did not execute. They run in exact-HEAD CI and
+  are **not** converted to PASS.
+- Decision: email notifications are deferred to a separate owner decision
+  (S015-P2-127). X010-B-4 ships in-app only. No email dependency or ADR added.
+- Parent disposition unchanged: X010-A-9 / S015-P1-111 / S015-P1-112 remain
+  `code-fixed + CI-green + hosted-blocked`.
+
 ## 2026-07-31 — X010-B-3 corrective pass (real work detail, role copy, form split, error state, decision-date deferral)
 
 - Started from the B3 HEAD `351f370`. Bounded corrective pass inside Spec 015

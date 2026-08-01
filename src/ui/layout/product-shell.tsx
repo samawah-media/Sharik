@@ -13,6 +13,12 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { cn } from "@/ui/core/utils";
 import { SignOutButton } from "@/ui/auth/sign-out-button";
+import {
+  NotificationBell,
+  type NotificationBellData,
+} from "@/ui/notifications/notification-bell";
+
+const emptyNotifications: NotificationBellData = { unreadCount: 0, recent: [] };
 
 const shellIcons = {
   briefcase: BriefcaseBusiness,
@@ -160,6 +166,7 @@ export function ProductShell({
   homeHref = "/clients",
   navigationItems = defaultNavigationItems,
   navigationLabel = "تنقل الإدارة",
+  notifications = emptyNotifications,
 }: {
   breadcrumbRootHref?: string;
   breadcrumbRootLabel?: string;
@@ -167,6 +174,7 @@ export function ProductShell({
   homeHref?: string;
   navigationItems?: ProductShellNavigationItem[];
   navigationLabel?: string;
+  notifications?: NotificationBellData;
 }) {
   const pathname = usePathname() ?? "/clients";
 
@@ -236,6 +244,7 @@ export function ProductShell({
                 rootLabel={breadcrumbRootLabel}
               />
               <div className="flex min-h-11 items-center gap-2 text-xs text-muted">
+                <NotificationBell data={notifications} />
                 <span>حساب الفريق</span>
                 <span className="lg:hidden">
                   <SignOutButton />

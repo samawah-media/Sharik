@@ -1,5 +1,58 @@
 # Owner Manual UAT Notes — 2026-07-26
 
+## X010-B-4 corrective local close — 2026-08-01
+
+B4 is **not** owner-accepted. It is recorded as
+`X010_B4_CORRECTIVE_LOCAL_COMPLETE_DB_CI_UAT_PENDING`: local non-DB gates are green on the
+reviewed changes; exact-HEAD CI, DB-backed gates (pgTAP, persistent E2E), the
+corrected Preview, and owner final UAT remain pending. **GREEN / TEAM_UAT_READY
+are NOT declared.** No email / WhatsApp / push / cron was added; email remains
+deferred to a separate owner decision (N4 / S015-P2-127).
+
+Before owner recheck, independent review corrected recipient qualification,
+post-revocation RPC isolation, a migration syntax blocker, viewer-versus-approver
+copy, team-versus-management links, repeated reassignment dedupe, and a
+relative-time hydration mismatch. These corrections are locally complete, but
+the database assertions still require exact-HEAD CI because local Supabase is
+unavailable.
+
+What B4 changed, mapped to the owner note it addresses:
+
+- **D11 — no understandable in-app notifications.** A persistent in-app
+  notification center now replaces raw technical event logs on dashboards. A
+  bell with an unread badge sits in the management/team shell and the client
+  shell; clicking it opens a short popover of the latest notifications with a
+  «عرض كل الإشعارات» link, and the unified `/notifications` route lists them all
+  with «الكل» / «غير المقروء» filters and «تعليم كمقروء» / «تعليم الكل كمقروء».
+  Notifications are persistent (survive reload), person-scoped, and de-duplicated.
+- **Routing by role (not a single global feed).** The client only ever receives
+  client-safe notifications (a new version awaiting their review, or a final
+  delivery) with Arabic copy such as «لديك نسخة جديدة بانتظار المراجعة» and a
+  link to «/client/pending» or «/client/files». Management and the assigned
+  account manager receive internal notifications (version submitted for review,
+  client approval / change request, delivery readiness). The assigned owner and
+  execution team receive internal change requests. The person who performed the
+  action is never notified unless they genuinely need to follow up.
+- **Secrecy preserved.** Client notifications never expose internal comments,
+  internal files, quality notes, version states, event types, UUIDs, or
+  administrative routes. `action_href` is generated server-side from a fixed
+  allowlist enforced by a PostgreSQL CHECK; the browser never supplies it.
+- **Atomic with the workflow.** Notifications are created in the same
+  transaction as the audited workflow command (a trigger on `audit_events` and a
+  trigger on `deliverable_tasks`), so an approval/change/send/delivery either
+  records its notification or rolls back together — no partial/lost
+  notifications, and replay is a no-op.
+
+Owner recheck focus on the corrected Preview: open the bell as each role and
+confirm the right notifications appear (client sees only client-safe items;
+management sees decisions; assigned team sees change requests); confirm a Client
+A user never sees a Client B notification; confirm «تعليم الكل كمقروء» clears
+the badge; confirm no technical terms leak.
+
+These open notes are **not** closed by X010-B-4 beyond the technical fix above;
+D11 is `technical-fixed; final-owner-UAT-pending`, and N4 (email decision)
+remains deferred to a separate owner decision.
+
 ## X010-B-3 corrective pass — 2026-07-31
 
 A bounded corrective pass from B3 HEAD `351f370`, inside Spec 015 only. Status
@@ -103,7 +156,7 @@ following remain open as explicit owner decisions / future slices)
 | N1 | Ability to return a deliverable to internal correction after it was internally approved or already sent to the client (post-approval reopen) | open — S015-P2-124 | X010-B-6/7 |
 | N2 | Clarity on protected drag-and-drop moves versus explicit status actions (which Kanban moves are protected workflow transitions vs. cosmetic) | open — S015-P2-125 | X010-B-6 |
 | N3 | Adding and inviting team members to a tenant/client scope from inside the product shell | open — S015-P2-126 | X010-B-6 |
-| N4 | Decision on whether the platform sends email notifications for approvals/change-requests (owner decision required before any email integration) | open — S015-P2-127 | owner decision → X010-B-4 |
+| N4 | Decision on whether the platform sends email notifications for approvals/change-requests (owner decision required before any email integration) | open — S015-P2-127 | owner decision — X010-B-4 shipped **in-app only**; email deferred |
 | N5 | Cleaning trial/pilot operational data before go-live without deleting append-only Audit/Ledger history | open — S015-P2-128 | X010-B-7 |
 
 These open notes are **not** closed by X010-B-2. They are classified
@@ -184,7 +237,7 @@ The single source of truth for current HEAD/CI/hosted status is
 | D8 | Hard terminology like "مخرجاتي" and English technical states in copy | X010-B-3 — **technical-fixed; final-owner-UAT-pending** |
 | D9 | Client work disappears after change request; should stay visible as "عاد لفريق سماوة — قيد التعديل" | X010-B-3 — **technical-fixed; final-owner-UAT-pending** |
 | D10 | Empty optional fields shown; needs progressive disclosure | X010-B-3 — **technical-fixed; final-owner-UAT-pending** |
-| D11 | No understandable in-app notifications center (approval/change-request) | X010-B-4 |
+| D11 | No understandable in-app notifications center (approval/change-request) | X010-B-4 — **technical-fixed; final-owner-UAT-pending** |
 | D12 | Files not organized as a Drive-like experience (folders/classification/previews/Arabic names) | X010-B-5 |
 | D13 | "تنزيل آمن" should be simplified to "تنزيل" | X010-B-5 |
 | D14 | Upload progress/failure/retry/cancel clarity for images and video | X010-B-5 (refine) |

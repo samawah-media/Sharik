@@ -1,5 +1,71 @@
 # Project Progress
 
+## Spec 015 X010-B-4 corrective local close — 2026-08-01
+
+Status: `X010_B4_CORRECTIVE_LOCAL_COMPLETE_DB_CI_UAT_PENDING`. Started from mandatory HEAD
+`fc5b414397e730bc32f4a59c392195457ee819df` (clean worktree). Bounded to Spec 015
+only; no new Spec/ADR/dependency; **no** email/WhatsApp/push/cron in this slice;
+no push/deploy/Production/hosted-migration/merge/invitation. **GREEN /
+TEAM_UAT_READY are NOT declared.**
+
+Independent review found and corrected five defects before handoff:
+S015-P1-129/130/131 and S015-P2-129/130. The correction makes recipient
+selection candidate-scoped, applies current tenant/client access to RLS and all
+SECURITY DEFINER notification RPCs, fixes a migration-blocking PL/pgSQL loop
+terminator, separates copy/routes by role, preserves legitimate repeated task
+reassignment notifications, and removes a relative-time hydration mismatch.
+Local implementation is closed; DB/CI/Preview/owner UAT remain pending.
+
+Delivered (S015-P2-119 → `technical-fixed; final-owner-UAT-pending`):
+- Additive migration `202608010002_s015_x010b4_in_app_notifications.sql` (after
+  `202608010001`) — persistent, person-scoped, deduped `public.notifications`
+  (id, tenant_id, client_id nullable, recipient_user_id, event_type, title,
+  message, action_href, source_audit_event_id, source_task_id, dedupe_key,
+  read_at, created_at). RLS: recipient-only + active-tenant-member + client-
+  scope defense-in-depth. CHECK-enforced `action_href` allowlist. Read-only-
+  except-read_at guard. No authenticated INSERT/DELETE.
+- Atomic emission with the existing audited workflow (no parallel system):
+  SECURITY DEFINER `AFTER INSERT` trigger on `audit_events` fans out the six
+  core events; a SECURITY DEFINER `AFTER INSERT/UPDATE of assignee_user_id`
+  trigger on `deliverable_tasks` covers assignment/reassignment. Both call
+  `s015_enqueue_notification` with `ON CONFLICT (recipient_user_id, dedupe_key)
+  DO NOTHING`. Actor excluded from recipients.
+- Routing: assignment/reassignment → assignee; submit version → management;
+  internal change request → owner + execution contributors; send to client →
+  client approver/viewer (client-safe copy, `/client/pending`); client change
+  request → management + account manager + assigned team; client approval →
+  management + account manager; prepare delivery → management; final delivery →
+  internal + client (`/client/files`).
+- Scoped RPCs only: `s015_notification_unread_count`, `s015_list_notifications`,
+  `s015_mark_notification_read`, `s015_mark_all_notifications_read`. No service
+  role in browser/runtime.
+- UI: bell + unread badge + popover (keyboard + RTL + Escape/click-outside) in
+  `ProductShell` and `ClientShell`; unified `/notifications` route with All /
+  Unread filters, Arabic human copy (no enums/UUIDs/internal terms), real
+  loading/error/empty states, per-item + mark-all-read.
+
+Local non-DB matrix PASS: lint; typecheck; unit 66/333 (new `notification-labels`
++ `notifications-read`); integration 28/112; component 29/119 (new
+`notification-bell` + `notification-list`); RLS simulator 8/24; fixture E2E 12/12
+new (`notifications-center.spec.ts`) + 17/17 regression
+(app-shell/client-work/pending-inbox/visual-qa); secret scan; `git diff --check`
+(LF/CRLF warnings only); production build (`/notifications` present).
+
+Corrective checks PASS: focused notification components 13/13 and desktop
+notification E2E 4/4 after the hydration correction, with no hydration warning.
+
+DB-backed gates BLOCKED locally (`LegacyDbConnectError`, Docker daemon down):
+pgTAP `s015_x010b4_in_app_notifications.test.sql` and persistent
+`s015-notifications-journey.spec.ts`. They run in exact-HEAD CI and are **not**
+converted to PASS.
+
+Decision: email notifications are **deferred** to a separate owner decision
+(S015-P2-127); X010-B-4 ships in-app only. No email dependency or ADR added.
+
+Boundary: no push/deploy/Production/hosted migration/merge/invitation.
+X010-A-9 / S015-P1-111 / S015-P1-112 remain `code-fixed + CI-green +
+hosted-blocked`.
+
 ## Spec 015 X010-B-3 corrective pass — 2026-07-31
 
 Status: `X010_B3_CORRECTIVE_LOCAL_COMPLETE_CI_UAT_PENDING`. Corrective pass from

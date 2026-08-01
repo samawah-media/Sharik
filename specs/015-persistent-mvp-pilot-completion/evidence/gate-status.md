@@ -1,5 +1,88 @@
 # Spec 015 gate status
 
+## X010-B-4 corrective local close — 2026-08-01
+
+`X010_B4_CORRECTIVE_LOCAL_COMPLETE_DB_CI_UAT_PENDING`. Started from mandatory HEAD
+`fc5b414397e730bc32f4a59c392195457ee819df`; clean worktree confirmed before
+work. Bounded to Spec 015 only; **no** new Spec/ADR/dependency, **no** email /
+WhatsApp / push / cron in this slice, **no** push/deploy/Production/hosted
+migration/merge/invitation. **GREEN / TEAM_UAT_READY are NOT declared.**
+
+Corrective review closed the local implementation defects S015-P1-129/130/131
+and S015-P2-129/130 in code and expanded regression coverage. Client recipients
+are now resolved from each candidate's active membership and role; one
+current-user scope predicate protects RLS plus all SECURITY DEFINER read/mark
+RPCs after client-scope revocation; the migration's invalid loop terminator was
+fixed; viewer/approver copy and management/execution action links are role-safe;
+legitimate repeated task reassignment is not suppressed; and relative times use
+one server render snapshot so hydration is stable. These P1 fixes remain
+`code-fixed; DB/CI verification pending` because local Supabase/pgTAP is blocked.
+
+Scope delivered (S015-P2-119 → `technical-fixed; final-owner-UAT-pending`):
+- Additive migration `202608010002_s015_x010b4_in_app_notifications.sql` (after
+  `202608010001`) — does not edit any historical migration file.
+- `public.notifications` table: `id, tenant_id, client_id (nullable),
+  recipient_user_id, event_type, title, message, action_href,
+  source_audit_event_id, source_task_id, dedupe_key, read_at, created_at`;
+  unique `(recipient_user_id, dedupe_key)`; CHECK-enforced `action_href`
+  allowlist (`s015_notification_href_is_allowed`); read-only-except-read_at
+  guard trigger; RLS recipient-only + active-tenant-member + client-scope
+  defense-in-depth; **no** authenticated INSERT/DELETE grant.
+- Atomic emission with the existing audited workflow: SECURITY DEFINER
+  `AFTER INSERT` trigger on `audit_events` fans out `DeliverableVersionSubmitted`
+  → management; `DeliverableInternalChangesRequested` → owner + execution
+  contributors; `DeliverableVersionSentToClient` → client approver/viewer
+  (client-safe copy, `/client/pending`); `ClientVersionDecision`
+  approved/changes_requested → management + account manager (+ execution team
+  on change request); `DeliverablePreparedForDelivery` → management;
+  `DeliverableFinalDelivered` → internal + client (`/client/files`).
+  SECURITY DEFINER `AFTER INSERT/UPDATE of assignee_user_id` trigger on
+  `deliverable_tasks` covers assignment/reassignment → assignee. Both call a
+  shared `s015_enqueue_notification` with `ON CONFLICT DO NOTHING`. The actor is
+  never a recipient unless follow-up is genuinely required.
+- Scoped RPCs only for read/mark: `s015_notification_unread_count`,
+  `s015_list_notifications(filter, limit, offset)`,
+  `s015_mark_notification_read(id)`, `s015_mark_all_notifications_read()`. No
+  service role in browser or Next.js runtime.
+- UI: bell + unread badge + popover (keyboard + RTL + click-outside + Escape)
+  wired into `ProductShell` (management/team) and `ClientShell` (client);
+  unified `/notifications` route with All/Unread filters, Arabic human copy
+  (no enums/UUIDs/technical terms), real loading/error/empty states,
+  per-item + mark-all-read. `action_href` is generated server-side from the
+  allowlist only.
+
+Isolation / RLS / dedupe (asserted by pgTAP `s015_x010b4_in_app_notifications.test.sql`,
+DB-blocked locally): recipient-only SELECT/UPDATE; tenant + Client A/B
+isolation (a Client B user cannot read a Client A notification even if one
+existed); client never receives an internal notification; disabled-membership
+denial (zero rows + zero unread); dedupe via `(recipient_user_id, dedupe_key)`;
+mark-own-read only (cross-recipient returns false, no mutation); CHECK rejects
+non-allowlisted href; read_at cannot be reverted; authenticated cannot INSERT
+directly.
+
+Local non-DB matrix PASS: lint; typecheck; unit 66/333 (new `notification-labels`
++ `notifications-read`); integration 28/112; component 29/119 (new
+`notification-bell` + `notification-list`); RLS simulator 8/24; fixture E2E
+12/12 new (`notifications-center.spec.ts`) + 17/17 regression
+(app-shell/client-work/pending-inbox/visual-qa); secret scan; `git diff --check`
+(LF/CRLF warnings only); production build (`/notifications` present).
+
+Corrective verification also PASS: focused notification components 13/13 and
+desktop notification E2E 4/4 after the hydration fix, with no hydration warning.
+
+DB-backed gates BLOCKED locally (`LegacyDbConnectError`, Docker daemon down —
+same class as prior slices): pgTAP `s015_x010b4_in_app_notifications.test.sql`
+and persistent `s015-notifications-journey.spec.ts`. They run in exact-HEAD CI
+and are **not** converted to PASS.
+
+Decision recorded: email notifications are **deferred** to a separate owner
+decision (S015-P2-127); X010-B-4 implements in-app only. No email dependency or
+ADR was introduced.
+
+Boundary: no push/deploy/Production/hosted-migration/merge/invitation.
+X010-A-9 / S015-P1-111 / S015-P1-112 remain `code-fixed + CI-green +
+hosted-blocked`.
+
 ## X010-B-3 corrective pass — 2026-07-31
 
 `X010_B3_CORRECTIVE_LOCAL_COMPLETE_CI_UAT_PENDING`. Corrective pass from B3 HEAD

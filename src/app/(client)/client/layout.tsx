@@ -7,12 +7,20 @@ import {
   canUseRouteActorFixtures,
   isClientPortalOnlyActor,
 } from "@/server/navigation/route-guards";
+import {
+  readNotificationBellData,
+  type NotificationBellPayload,
+} from "@/server/actions/notifications-read";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+const emptyBellData: NotificationBellPayload = { unreadCount: 0, recent: [] };
 
 export default async function ClientLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const usesFixtures = canUseRouteActorFixtures();
   let canApprove = usesFixtures;
+  let notifications: NotificationBellPayload = emptyBellData;
 
   if (!usesFixtures) {
     const runtime = await resolveRuntimeContext();
@@ -42,8 +50,16 @@ export default async function ClientLayout({
       } else {
         canApprove = false;
       }
+
+      notifications = await readNotificationBellData({
+        supabase: await createSupabaseServerClient(),
+      }).catch(() => emptyBellData);
     }
   }
 
-  return <ClientShell canApprove={canApprove}>{children}</ClientShell>;
+  return (
+    <ClientShell canApprove={canApprove} notifications={notifications}>
+      {children}
+    </ClientShell>
+  );
 }

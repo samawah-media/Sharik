@@ -4,6 +4,8 @@ import {
   canUseRouteActorFixtures,
   isClientPortalOnlyActor,
 } from "@/server/navigation/route-guards";
+import { readNotificationBellData } from "@/server/actions/notifications-read";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import {
   ProductShell,
@@ -56,12 +58,14 @@ export default async function ManagementLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let runtime = null;
+
   if (
     process.env.NODE_ENV !== "test" &&
     !canUseRouteActorFixtures() &&
     hasSupabasePublicRuntimeEnv()
   ) {
-    const runtime = await resolveRuntimeContext();
+    runtime = await resolveRuntimeContext();
 
     if (runtime.ok && isClientPortalOnlyActor(runtime.actor)) {
       redirect("/client");
@@ -74,6 +78,13 @@ export default async function ManagementLayout({
     label: "المساحة",
   };
 
+  const notifications =
+    runtime?.ok && !canUseRouteActorFixtures()
+      ? await readNotificationBellData({
+          supabase: await createSupabaseServerClient(),
+        }).catch(() => ({ unreadCount: 0, recent: [] }))
+      : { unreadCount: 0, recent: [] };
+
   return (
     <ProductShell
       breadcrumbRootHref={shellRoot.href}
@@ -81,6 +92,7 @@ export default async function ManagementLayout({
       homeHref={shellRoot.href}
       navigationItems={navigationItems}
       navigationLabel="تنقل مساحة الفريق"
+      notifications={notifications}
     >
       <section
         dir="rtl"

@@ -76,21 +76,45 @@ test("send-to-client notifies the client approver in-app (persistent)", async ({
     ).toBeVisible();
   }
 
-  // Approve internally then send to client (idempotent if already past a step).
-  for (const label of [
-    "اعتماد داخلي وإرسال للعميل",
-    "اعتماد داخلي",
-    "إرسال للعميل",
-  ]) {
-    const btn = drawer.getByRole("button", { name: label }).first();
-    if (await btn.isVisible({ timeout: 7_000 }).catch(() => false)) {
-      await btn.click();
-      // Dismiss any confirmation dialog if present.
-      const confirm = drawer.getByRole("button", { name: "تأكيد الإرسال للعميل" }).first();
-      if (await confirm.isVisible({ timeout: 7_000 }).catch(() => false)) {
-        await confirm.click();
-      }
+  // Approve internally then send to client, mirroring the proven
+  // workflowStep-form flow in s015-persistent-browser.spec.ts. The send action
+  // is gated behind a "راجعت النسخة والملفات" confirmation that reveals the
+  // actual send form, so a plain "إرسال للعميل" button lookup never finds it.
+
+  // 1b. Internal approval -> internally_approved (skip if already past it).
+  await page.goto(boardPath, { waitUntil: "domcontentloaded" });
+  {
+    const approveDrawer = await openDrawer(
+      page,
+      cardFor(page, persistentDeliverableNames.main),
+    );
+    const approveForm = approveDrawer.locator(
+      'form:has(input[name="workflowStep"][value="approve_internally"])',
+    );
+    if (await approveForm.isVisible({ timeout: 5_000 }).catch(() => false)) {
+      await approveForm.locator('button[type="submit"]').click();
+      await expect(page).toHaveURL(/saved=status-updated/u);
     }
+  }
+
+  // 1c. Send to client -> waiting_client_approval. Click the confirmation gate,
+  //     then submit the revealed send form.
+  await page.goto(boardPath, { waitUntil: "domcontentloaded" });
+  {
+    const sendDrawer = await openDrawer(
+      page,
+      cardFor(page, persistentDeliverableNames.main),
+    );
+    await sendDrawer
+      .getByRole("button", { name: "راجعت النسخة والملفات" })
+      .first()
+      .click();
+    const sendForm = sendDrawer.locator(
+      'form:has(input[name="workflowStep"][value="send_to_client"])',
+    );
+    await expect(sendForm).toBeVisible();
+    await sendForm.locator('button[type="submit"]').click();
+    await expect(page).toHaveURL(/saved=status-updated/u);
   }
 
   // 2. Database assertion: a notification row exists for the client approver.

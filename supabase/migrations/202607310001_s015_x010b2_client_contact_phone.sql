@@ -167,12 +167,14 @@ begin
   -- predicate below already prevent the write; this gives callers and audit a
   -- clear authorization signal instead of masking it as a stale-revision
   -- conflict. SECURITY DEFINER runs as the owner, so the existence check sees
-  -- the row regardless of the caller's tenant scope.
+  -- the row regardless of the caller's tenant scope. Columns are fully
+  -- qualified because the function's RETURNS TABLE also exposes id/tenant_id
+  -- output parameters, which would otherwise make the reference ambiguous.
   if not exists (
     select 1
     from public.clients
-    where id = target_client_id
-      and tenant_id = actor_tenant_id
+    where public.clients.id = target_client_id
+      and public.clients.tenant_id = actor_tenant_id
   ) then
     raise exception 'not authorized to update this client'
       using errcode = '42501';

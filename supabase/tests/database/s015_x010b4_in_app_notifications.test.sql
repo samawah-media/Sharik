@@ -299,7 +299,7 @@ select throws_ok(
       'probe', 't', 'm', '/admin/internal-dashboard', 'bad-href-1'
     ) $$,
   '23514',
-  'a non-allowlisted action_href is rejected by the CHECK constraint'
+  'notifications_action_href_allowed'
 );
 
 -- ============================================================================
@@ -494,7 +494,7 @@ select throws_ok(
   $$ update public.notifications set title = 'tampered'
      where recipient_user_id = 'b4000000-0000-4000-8000-000000000306' $$,
   '42501',
-  'notification columns other than read_at are immutable'
+  'notifications are read-only except for read_at'
 );
 
 -- Mark one read then attempt to revert read_at -> blocked.
@@ -506,7 +506,7 @@ select throws_ok(
      where recipient_user_id = 'b4000000-0000-4000-8000-000000000306'
        and dedupe_key = 'probe-dedupe-key-1' $$,
   '42501',
-  'a read notification cannot be reverted to unread'
+  'read notifications cannot be reverted'
 );
 
 -- ============================================================================
@@ -599,7 +599,7 @@ select throws_ok(
       'x', 't', 'm', 'direct-insert-probe'
     ) $$,
   '42501',
-  'authenticated cannot insert notifications directly (only triggers can)'
+  'permission denied for table notifications'
 );
 reset role;
 

@@ -915,6 +915,12 @@ grant execute on function public.s015_mark_all_notifications_read()
 -- 11. Grants. Authenticated may SELECT + UPDATE its own rows (RLS-scoped).
 --     INSERT / DELETE are intentionally NOT granted to authenticated; only the
 --     two SECURITY DEFINER triggers (table owner context) can create rows.
+--     service_role bypasses RLS and is server-only (never in the browser or
+--     Next.js runtime); it gets read-only access so the audited server actions
+--     and the persistent test harness can assert notification outcomes without
+--     exposing the table to any client. This mirrors the S015-P2-056 service-
+--     role read pattern on the other late-created workspace tables.
 -- ============================================================================
-revoke all on public.notifications from public, anon, authenticated;
+revoke all on public.notifications from public, anon, authenticated, service_role;
 grant select, update on public.notifications to authenticated;
+grant select on public.notifications to service_role;

@@ -320,7 +320,7 @@ select throws_ok(
   $$insert into public.clients (id, tenant_id, name, slug, primary_contact_phone)
     values ('41000000-0000-4000-8000-000000000990', '41000000-0000-4000-8000-000000000001', 'bad', 'bad', 'not-a-phone')$$,
   '23514',
-  'clients_primary_contact_phone_format'
+  '.*clients_primary_contact_phone_format.*'
 );
 
 -- A phone with a "+" in the middle is rejected.
@@ -328,7 +328,7 @@ select throws_ok(
   $$insert into public.clients (id, tenant_id, name, slug, primary_contact_phone)
     values ('41000000-0000-4000-8000-000000000991', '41000000-0000-4000-8000-000000000001', 'bad2', 'bad2', '966+501234567')$$,
   '23514',
-  'clients_primary_contact_phone_format'
+  '.*clients_primary_contact_phone_format.*'
 );
 
 -- A too-short phone is rejected.
@@ -336,7 +336,7 @@ select throws_ok(
   $$insert into public.clients (id, tenant_id, name, slug, primary_contact_phone)
     values ('41000000-0000-4000-8000-000000000992', '41000000-0000-4000-8000-000000000001', 'bad3', 'bad3', '12345')$$,
   '23514',
-  'clients_primary_contact_phone_format'
+  '.*clients_primary_contact_phone_format.*'
 );
 
 reset role;
@@ -357,7 +357,7 @@ select throws_ok(
     '966+501234567'
   )$$,
   '23514',
-  'clients_primary_contact_phone_format'
+  '.*clients_primary_contact_phone_format.*'
 );
 
 reset role;

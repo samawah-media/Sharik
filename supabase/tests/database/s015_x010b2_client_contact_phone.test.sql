@@ -142,7 +142,7 @@ select throws_ok(
     2
   )$$,
   '42501',
-  'tenant B cannot update tenant A client (not authorized)'
+  'not authorized to update this client'
 );
 
 reset role;
@@ -264,32 +264,32 @@ select results_eq(
 select throws_ok(
   $$select * from public.s015_onboard_first_client(
     request_idempotency_key => 'x010b2-onboarding-phone',
-    client_id_input => gen_random_uuid(),
-    client_audit_event_id => gen_random_uuid(),
+    client_id_input => '41000000-0000-4000-8000-000000000999',
+    client_audit_event_id => '41000000-0000-4000-8000-000000000998',
     client_name_input => 'X010B2 Onboarded Client',
     client_slug_input => 'x010b2-onboarded-client',
     client_contact_name_input => 'مسؤول التواصل',
     client_contact_email_input => 'onboard@example.test',
     client_contact_phone_input => '+966509998888',
-    contract_id_input => gen_random_uuid(),
-    contract_audit_event_id => gen_random_uuid(),
+    contract_id_input => '41000000-0000-4000-8000-000000000997',
+    contract_audit_event_id => '41000000-0000-4000-8000-000000000996',
     contract_name_input => 'X010B2 Contract',
     contract_reference_input => null,
     contract_summary_input => null,
     contract_period_start_input => null,
     contract_period_end_input => null,
     contract_status_input => 'active',
-    package_id_input => gen_random_uuid(),
-    package_audit_event_id => gen_random_uuid(),
+    package_id_input => '41000000-0000-4000-8000-000000000995',
+    package_audit_event_id => '41000000-0000-4000-8000-000000000994',
     package_name_input => 'X010B2 Package',
     package_status_input => 'active',
     package_period_start_input => null,
     package_period_end_input => null,
-    package_line_items_input => '[{"id":"' || gen_random_uuid() || '","ledger_entry_id":"' || gen_random_uuid() || '","service_label":"منشورات","deliverable_type_hint":"post","unit_label":"منشور","committed_quantity":3}]',
-    deliverable_id_input => gen_random_uuid(),
-    allocation_id_input => gen_random_uuid(),
-    deliverable_ledger_entry_id => gen_random_uuid(),
-    deliverable_audit_event_id => gen_random_uuid(),
+    package_line_items_input => '[{"id":"41000000-0000-4000-8000-000000000981","ledger_entry_id":"41000000-0000-4000-8000-000000000982","service_label":"منشورات","deliverable_type_hint":"post","unit_label":"منشور","committed_quantity":3}]',
+    deliverable_id_input => '41000000-0000-4000-8000-000000000983',
+    allocation_id_input => '41000000-0000-4000-8000-000000000984',
+    deliverable_ledger_entry_id => '41000000-0000-4000-8000-000000000985',
+    deliverable_audit_event_id => '41000000-0000-4000-8000-000000000986',
     deliverable_name_input => 'X010B2 Deliverable',
     deliverable_description_input => null,
     deliverable_type_input => 'post',
@@ -305,7 +305,7 @@ select throws_ok(
     reserved_quantity_input => 1
   )$$,
   'P0001',
-  'different phone on same key is an idempotency conflict'
+  'onboarding idempotency conflict'
 );
 
 reset role;
@@ -320,7 +320,7 @@ select throws_ok(
   $$insert into public.clients (id, tenant_id, name, slug, primary_contact_phone)
     values ('41000000-0000-4000-8000-000000000990', '41000000-0000-4000-8000-000000000001', 'bad', 'bad', 'not-a-phone')$$,
   '23514',
-  'CHECK constraint rejects a non-numeric phone on direct insert'
+  'clients_primary_contact_phone_format'
 );
 
 -- A phone with a "+" in the middle is rejected.
@@ -328,7 +328,7 @@ select throws_ok(
   $$insert into public.clients (id, tenant_id, name, slug, primary_contact_phone)
     values ('41000000-0000-4000-8000-000000000991', '41000000-0000-4000-8000-000000000001', 'bad2', 'bad2', '966+501234567')$$,
   '23514',
-  'CHECK constraint rejects a phone with a + in the middle'
+  'clients_primary_contact_phone_format'
 );
 
 -- A too-short phone is rejected.
@@ -336,7 +336,7 @@ select throws_ok(
   $$insert into public.clients (id, tenant_id, name, slug, primary_contact_phone)
     values ('41000000-0000-4000-8000-000000000992', '41000000-0000-4000-8000-000000000001', 'bad3', 'bad3', '12345')$$,
   '23514',
-  'CHECK constraint rejects a phone shorter than 7 digits'
+  'clients_primary_contact_phone_format'
 );
 
 reset role;
@@ -357,7 +357,7 @@ select throws_ok(
     '966+501234567'
   )$$,
   '23514',
-  'audited create RPC rejects an invalid phone via the CHECK constraint'
+  'clients_primary_contact_phone_format'
 );
 
 reset role;

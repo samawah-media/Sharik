@@ -60,18 +60,24 @@ insert into public.role_assignments (id, tenant_id, membership_id, role_key, sco
   ('b4000000-0000-4000-8000-000000000414', 'b4000000-0000-4000-8000-000000000001', 'b4000000-0000-4000-8000-000000000209', 'content_writer', 'client', 'b4000000-0000-4000-8000-000000000101', 'active');
 
 -- One deliverable in Client A owned by the account_manager (305), with a current version.
+-- Insert in a non-review status first so the client-review-payload guard does not fire
+-- before the version and its caption exist, then advance to the review state in one
+-- update that carries a meaningful client-review payload.
 insert into public.deliverables (
   id, tenant_id, client_id, name, type, status, progress_percentage,
   idempotency_key, owner_user_id, contributor_user_ids,
   requires_internal_approval, requires_client_approval
 ) values
-  ('b4000000-0000-4000-8000-000000000501', 'b4000000-0000-4000-8000-000000000001', 'b4000000-0000-4000-8000-000000000101', 'B4 post', 'post', 'waiting_client_approval', 80, 'b4-deliverable-a', 'b4000000-0000-4000-8000-000000000305', array['b4000000-0000-4000-8000-000000000310']::uuid[], true, true);
+  ('b4000000-0000-4000-8000-000000000501', 'b4000000-0000-4000-8000-000000000001', 'b4000000-0000-4000-8000-000000000101', 'B4 post', 'post', 'in_progress', 50, 'b4-deliverable-a', 'b4000000-0000-4000-8000-000000000305', array['b4000000-0000-4000-8000-000000000310']::uuid[], true, true);
 
 insert into public.deliverable_versions (
-  id, tenant_id, client_id, deliverable_id, version_number, status
+  id, tenant_id, client_id, deliverable_id, version_number, status, caption
 ) values
-  ('b4000000-0000-4000-8000-000000000601', 'b4000000-0000-4000-8000-000000000001', 'b4000000-0000-4000-8000-000000000101', 'b4000000-0000-4000-8000-000000000501', 1, 'client_visible');
-update public.deliverables set current_version_id = 'b4000000-0000-4000-8000-000000000601'
+  ('b4000000-0000-4000-8000-000000000601', 'b4000000-0000-4000-8000-000000000001', 'b4000000-0000-4000-8000-000000000101', 'b4000000-0000-4000-8000-000000000501', 1, 'client_visible', 'مراجعة العميل لمنشور B4');
+update public.deliverables
+  set current_version_id = 'b4000000-0000-4000-8000-000000000601',
+      status = 'waiting_client_approval',
+      progress_percentage = 80
   where id = 'b4000000-0000-4000-8000-000000000501';
 
 -- ============================================================================

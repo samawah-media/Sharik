@@ -116,6 +116,12 @@ test("management can create a deliverable through the real persistent browser fl
   await form
     .locator('select[name="ownerUserId"]')
     .selectOption(freshSeed.actors.assignedWriter.id);
+  // B3 moved the optional contributors fieldset behind a progressive-disclosure
+  // <details>; open it so the designer contributor checkbox becomes actionable.
+  await form
+    .locator("summary")
+    .filter({ hasText: "تفاصيل إضافية — اختيارية" })
+    .click();
   await form
     .getByRole("checkbox", { name: /المصمم المسند/u })
     .check();

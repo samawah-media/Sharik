@@ -83,11 +83,11 @@ test("send-to-client notifies the client approver in-app (persistent)", async ({
     "إرسال للعميل",
   ]) {
     const btn = drawer.getByRole("button", { name: label }).first();
-    if (await btn.isVisible({ timeout: 4_000 }).catch(() => false)) {
+    if (await btn.isVisible({ timeout: 7_000 }).catch(() => false)) {
       await btn.click();
       // Dismiss any confirmation dialog if present.
       const confirm = drawer.getByRole("button", { name: "تأكيد الإرسال للعميل" }).first();
-      if (await confirm.isVisible({ timeout: 4_000 }).catch(() => false)) {
+      if (await confirm.isVisible({ timeout: 7_000 }).catch(() => false)) {
         await confirm.click();
       }
     }

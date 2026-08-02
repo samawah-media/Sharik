@@ -57,31 +57,36 @@ test("send-to-client notifies the client approver in-app (persistent)", async ({
   const { seed } = seeded;
   const boardPath = `/clients/${seed.clientA}/deliverables/board`;
 
-  // 1. Management signs in and drives the main deliverable to waiting_client_approval.
-  await signInViaUi(page, seed.actors.tenantAdmin);
+  // 1. Drive the main deliverable to waiting_client_approval through the real
+  //    audited workflow, mirroring s015-persistent-browser.spec.ts. Version
+  //    submission is an assigned-team action (management has no version form);
+  //    internal approval and the send are management actions. The send action
+  //    is gated behind a "راجعت النسخة والملفات" confirmation that reveals the
+  //    actual workflowStep=send_to_client form.
+
+  // 1a. Assigned writer submits version 1 with a meaningful client-review body
+  //     (satisfies the client-review-payload guard without staging a file).
+  await signInViaUi(page, seed.actors.assignedWriter);
   await page.goto(boardPath, { waitUntil: "domcontentloaded" });
-
-  const card = cardFor(page, persistentDeliverableNames.main);
-  await expect(card).toBeVisible();
-  const drawer = await openDrawer(page, card);
-
-  // Submit a version if the control is available.
-  const versionInput = drawer.locator('input[name="versionNumber"]');
-  if (await versionInput.isVisible({ timeout: 5_000 }).catch(() => false)) {
-    await versionInput.fill("1");
-    await drawer.locator('textarea[name="contentBody"]').fill("نسخة مراجعة العميل");
-    await drawer.getByRole("button", { name: "حفظ وإرسال للمراجعة" }).click();
+  {
+    const writerDrawer = await openDrawer(
+      page,
+      cardFor(page, persistentDeliverableNames.main),
+    );
+    await writerDrawer.locator('input[name="versionNumber"]').fill("1");
+    await writerDrawer
+      .locator('textarea[name="contentBody"]')
+      .fill("نسخة مراجعة العميل");
+    await writerDrawer
+      .getByRole("button", { name: "حفظ وإرسال للمراجعة" })
+      .click();
     await expect(
-      drawer.getByText("تم إرسال النسخة للمراجعة الداخلية."),
-    ).toBeVisible();
+      writerDrawer.getByText("تم إرسال النسخة للمراجعة الداخلية."),
+    ).toBeVisible({ timeout: 15_000 });
   }
 
-  // Approve internally then send to client, mirroring the proven
-  // workflowStep-form flow in s015-persistent-browser.spec.ts. The send action
-  // is gated behind a "راجعت النسخة والملفات" confirmation that reveals the
-  // actual send form, so a plain "إرسال للعميل" button lookup never finds it.
-
-  // 1b. Internal approval -> internally_approved (skip if already past it).
+  // 1b. Management approves internally -> internally_approved.
+  await signInViaUi(page, seed.actors.tenantAdmin);
   await page.goto(boardPath, { waitUntil: "domcontentloaded" });
   {
     const approveDrawer = await openDrawer(
@@ -91,28 +96,27 @@ test("send-to-client notifies the client approver in-app (persistent)", async ({
     const approveForm = approveDrawer.locator(
       'form:has(input[name="workflowStep"][value="approve_internally"])',
     );
-    if (await approveForm.isVisible({ timeout: 5_000 }).catch(() => false)) {
-      await approveForm.locator('button[type="submit"]').click();
-      await expect(page).toHaveURL(/saved=status-updated/u);
-    }
+    await expect(approveForm).toBeVisible({ timeout: 15_000 });
+    await approveForm.locator('button[type="submit"]').click();
+    await expect(page).toHaveURL(/saved=status-updated/u);
   }
 
-  // 1c. Send to client -> waiting_client_approval. Click the confirmation gate,
-  //     then submit the revealed send form.
+  // 1c. Management sends the approved version -> waiting_client_approval.
   await page.goto(boardPath, { waitUntil: "domcontentloaded" });
   {
     const sendDrawer = await openDrawer(
       page,
       cardFor(page, persistentDeliverableNames.main),
     );
-    await sendDrawer
-      .getByRole("button", { name: "راجعت النسخة والملفات" })
-      .first()
-      .click();
+    const confirmBtn = sendDrawer.getByRole("button", {
+      name: "راجعت النسخة والملفات",
+    });
+    await expect(confirmBtn.first()).toBeVisible({ timeout: 15_000 });
+    await confirmBtn.first().click();
     const sendForm = sendDrawer.locator(
       'form:has(input[name="workflowStep"][value="send_to_client"])',
     );
-    await expect(sendForm).toBeVisible();
+    await expect(sendForm).toBeVisible({ timeout: 15_000 });
     await sendForm.locator('button[type="submit"]').click();
     await expect(page).toHaveURL(/saved=status-updated/u);
   }

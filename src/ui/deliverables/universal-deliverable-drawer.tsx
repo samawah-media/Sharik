@@ -20,6 +20,10 @@ import {
   versionStatusLabel,
 } from "@/modules/deliverables/domain-labels";
 import { fetchDeliverableWorkspace } from "@/server/actions/deliverable-workspace-actions";
+import {
+  groupTeamFiles,
+  type GroupedFile,
+} from "@/modules/files/file-groups";
 import { Badge } from "@/ui/core/badge";
 import { buttonStyles } from "@/ui/core/button";
 import {
@@ -66,6 +70,88 @@ function EmptySection({ children }: { children: string }) {
     <p className="rounded-lg border border-dashed border-border bg-background px-3 py-4 text-sm text-muted">
       {children}
     </p>
+  );
+}
+
+function TeamFilesGroups({
+  approvalAction,
+  deliverable,
+  files,
+  handleMutated,
+  versionId,
+}: {
+  approvalAction: boolean;
+  deliverable: DeliverableSafeSummary;
+  files: import("@/modules/deliverables/deliverable-workspace").DeliverableFileWorkspace[];
+  handleMutated: () => void;
+  versionId?: string;
+}) {
+  const grouped: GroupedFile[] = files.map((file) => ({
+    id: file.id,
+    name: file.name,
+    fileType: file.fileType,
+    fileSize: file.fileSize,
+    visibility: file.visibility as GroupedFile["visibility"],
+    versionNumber: file.versionNumber,
+    isFinal: file.isFinal,
+    createdAt: file.createdAt,
+  }));
+  const groups = groupTeamFiles(grouped);
+  return (
+    <div className="grid gap-4">
+      {groups.map((group) => (
+        <div className="grid gap-2" key={group.key}>
+          <div className="flex items-baseline justify-between gap-3">
+            <p className="text-xs font-semibold text-foreground">
+              {group.title}
+            </p>
+            <span className="text-xs text-muted">{group.files.length} ملف</span>
+          </div>
+          <ul className="grid gap-2">
+            {group.files.map((file) => {
+              const source = files.find((entry) => entry.id === file.id);
+              return (
+                <li
+                  className="grid min-h-11 gap-3 rounded-lg bg-background px-3 py-2"
+                  key={file.id}
+                >
+                  <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
+                    <span
+                      className="min-w-0 break-all text-sm font-semibold"
+                      dir="auto"
+                    >
+                      {file.name}
+                    </span>
+                    <span className="shrink-0 text-xs text-muted">
+                      {source &&
+                      source.visibility === "client_visible" &&
+                      deliverable.status === "internally_approved"
+                        ? "جاهز للإرسال للعميل"
+                        : fileVisibilityLabel(file.visibility)}
+                    </span>
+                    <WorkspaceFileDownload fileId={file.id} />
+                  </div>
+                  {source && versionId ? (
+                    <WorkspaceFileClientReviewControl
+                      canStage={approvalAction}
+                      deliverable={deliverable}
+                      file={source}
+                      onMutated={handleMutated}
+                      versionId={versionId}
+                    />
+                  ) : null}
+                  <WorkspaceFilePreview
+                    fileId={file.id}
+                    fileType={file.fileType}
+                    label={file.name}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -573,45 +659,13 @@ export function UniversalDeliverableDrawer({
                       الملفات
                     </h3>
                     {workspace?.files.length ? (
-                      <ul className="grid gap-2">
-                        {workspace.files.map((file) => (
-                          <li
-                            className="grid min-h-11 gap-3 rounded-lg bg-background px-3 py-2"
-                            key={file.id}
-                          >
-                            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
-                              <span
-                                className="min-w-0 break-all text-sm font-semibold"
-                                dir="auto"
-                              >
-                                {file.name}
-                              </span>
-                              <span className="shrink-0 text-xs text-muted">
-                                {file.visibility === "client_visible" &&
-                                deliverable.status ===
-                                  "internally_approved"
-                                  ? "جاهز للإرسال للعميل"
-                                  : fileVisibilityLabel(file.visibility)}
-                              </span>
-                              <WorkspaceFileDownload fileId={file.id} />
-                            </div>
-                            {workspace.currentVersionId ? (
-                              <WorkspaceFileClientReviewControl
-                                canStage={Boolean(approvalAction)}
-                                deliverable={deliverable}
-                                file={file}
-                                onMutated={handleMutated}
-                                versionId={workspace.currentVersionId}
-                              />
-                            ) : null}
-                            <WorkspaceFilePreview
-                              fileId={file.id}
-                              fileType={file.fileType}
-                              label={file.name}
-                            />
-                          </li>
-                        ))}
-                      </ul>
+                      <TeamFilesGroups
+                        approvalAction={Boolean(approvalAction)}
+                        deliverable={deliverable}
+                        files={workspace.files}
+                        handleMutated={handleMutated}
+                        versionId={workspace.currentVersionId}
+                      />
                     ) : (
                       <EmptySection>لا توجد ملفات مرتبطة بعد.</EmptySection>
                     )}

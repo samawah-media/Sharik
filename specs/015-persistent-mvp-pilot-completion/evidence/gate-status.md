@@ -1,5 +1,41 @@
 # Spec 015 gate status
 
+## X010-B-5 file experience local complete — 2026-08-02
+
+`X010_B5_LOCAL_COMPLETE_CI_UAT_PENDING`. Started from the B4 CI-green HEAD
+`6582f3e`. Bounded to Spec 015 only; no new Spec/ADR/dependency/migration; no
+workflow/RLS/permission/audit change — B5 is presentation only, and every file
+read path keeps its existing tenant/client scope + visibility filters. Local
+non-DB gates green; exact-HEAD CI (incl. the DB-backed pgTAP + persistent E2E)
+and owner UAT remain pending. **GREEN / TEAM_UAT_READY NOT declared.**
+
+Scope delivered (S015-P2-120 → `technical-fixed; final-owner-UAT-pending`):
+- Client files `/client/files` retitled «ملفاتي» and rebuilt as grouped folders
+  (final / review / uploaded / contract) with counters, empty states, image
+  thumbnails, safe inline video/PDF preview, honest fallback, keyboard-
+  openable cards, and «تنزيل» via a short-lived server-signed URL. No
+  Storage/bucket/UUID/visibility-enum leak.
+- Team/admin drawer files grouped by visibility context (internal / sent /
+  client-uploaded / final). Internal secrecy + final-delivery authorization +
+  stage-for-client unchanged.
+- Upload Arabic states incl. «أُلغي»; retry + audited cancel + X010-A durable
+  behavior preserved. «تنزيل آمن» → «تنزيل» everywhere.
+- Tests: unit `file-groups`, component `client-files-board`, fixture E2E
+  `client-files-experience`. File isolation/visibility/download remain covered
+  by existing pgTAP (`s015_persistent_mvp_behavior`,
+  `s015_upload_authorization_hardening`); the deliverable-name join inherits
+  `deliverables` RLS.
+
+Local non-DB matrix PASS: lint; typecheck; unit 67/342; integration 28/112;
+component 30/125; RLS simulator 8/24; secret scan; `git diff --check`
+(LF/CRLF warnings only); build; client-files E2E 3 passed / 1 mobile skip.
+DB-backed gates BLOCKED locally (`LegacyDbConnectError`, Docker down) →
+exact-HEAD CI; not converted to PASS.
+
+Boundary: no push/deploy/Production/hosted-migration/merge/invitation.
+X010-A-9 / S015-P1-111 / S015-P1-112 remain `code-fixed + CI-green +
+hosted-blocked`.
+
 ## X010-B-4 exact-HEAD CI GREEN — 2026-08-02
 
 `X010_B4_CI_GREEN_UAT_PENDING`. The first exact-HEAD CI run on the consolidated

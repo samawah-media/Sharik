@@ -140,7 +140,8 @@ type UploadRowStatus =
   | "uploading"
   | "registering"
   | "ready"
-  | "failed";
+  | "failed"
+  | "cancelled";
 
 type UploadRow = {
   id: string;
@@ -161,11 +162,12 @@ type UploadRow = {
 export type WorkspaceUploadSafetyState = "settled" | "uploading" | "failed";
 
 const uploadStatusLabel: Record<UploadRowStatus, string> = {
-  queued: "جاهز للرفع",
+  queued: "بانتظار الرفع",
   uploading: "جارٍ الرفع",
-  registering: "جارٍ ربط الملف بالنسخة",
-  ready: "تم الرفع والربط",
-  failed: "فشل الرفع أو الربط",
+  registering: "جارٍ التسجيل",
+  ready: "اكتمل الرفع",
+  failed: "تعذر الرفع",
+  cancelled: "أُلغي",
 };
 
 const cancelledWithCleanupFeedback = (name: string, cleanup?: "completed" | "failed") =>
@@ -700,7 +702,11 @@ export function WorkspaceFileUpload({
       setFeedback("تعذر إلغاء محاولة الرفع. حدّث الصفحة وحاول مجددًا.");
       return;
     }
-    setUploadRows((rows) => rows.filter((candidate) => candidate.id !== row.id));
+    setUploadRows((rows) =>
+      rows.map((candidate) =>
+        candidate.id === row.id ? { ...candidate, status: "cancelled" } : candidate,
+      ),
+    );
     setDismissedAttemptIds((ids) =>
       row.attemptId ? [...ids, row.attemptId] : ids,
     );
@@ -905,7 +911,7 @@ export function WorkspaceFileDownload({ fileId }: { fileId: string }) {
     }
     window.open(result.url, "_blank", "noopener,noreferrer");
   };
-  return <div><Button onClick={download} size="sm" type="button">تنزيل آمن</Button>{feedback ? <p aria-live="polite" className="mt-1 text-xs text-danger">{feedback}</p> : null}</div>;
+  return <div><Button onClick={download} size="sm" type="button">تنزيل</Button>{feedback ? <p aria-live="polite" className="mt-1 text-xs text-danger">{feedback}</p> : null}</div>;
 }
 
 export function WorkspaceFilePreview({
@@ -935,7 +941,7 @@ export function WorkspaceFilePreview({
       {url && fileType.startsWith("image/") ? <img alt={label} className="max-h-80 w-full rounded-lg border border-border object-contain" src={url} /> : null}
       {url && fileType.startsWith("video/") ? <video aria-label={label} className="max-h-80 w-full rounded-lg border border-border" controls preload="metadata" src={url} /> : null}
       {url && fileType === "application/pdf" ? <iframe className="h-80 w-full rounded-lg border border-border" src={url} title={label} /> : null}
-      {url && !fileType.startsWith("image/") && !fileType.startsWith("video/") && fileType !== "application/pdf" ? <p className="rounded-lg bg-surface p-3 text-sm text-muted">لا توجد معاينة مرئية لهذا النوع. استخدم التنزيل الآمن.</p> : null}
+      {url && !fileType.startsWith("image/") && !fileType.startsWith("video/") && fileType !== "application/pdf" ? <p className="rounded-lg bg-surface p-3 text-sm text-muted">لا توجد معاينة مرئية لهذا النوع. استخدم التنزيل.</p> : null}
       {feedback ? <p aria-live="polite" className="text-xs text-danger">{feedback}</p> : null}
     </div>
   );

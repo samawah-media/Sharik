@@ -1,5 +1,39 @@
 # Spec 015 execution log
 
+## 2026-08-02 — X010-B-5 Drive-like file experience (local complete)
+
+- Status `X010_B5_LOCAL_COMPLETE_CI_UAT_PENDING`. Started from the B4 CI-green
+  HEAD `6582f3e`. Bounded to Spec 015 only; no new Spec/ADR/dependency/
+  migration; no workflow/RLS/permission/audit change — B5 is presentation only.
+- Client files (`/client/files`): retitled «ملفاتي»; rebuilt as grouped folders
+  (التسليمات النهائية / ملفات للمراجعة / ملفات رفعتها / العقد والهوية) with
+  counters, useful empty states, empty groups hidden, real image thumbnails,
+  safe inline video/PDF preview, honest fallback, keyboard-openable cards
+  (Enter/Space), and «تنزيل» via a short-lived server-signed URL. Empty fields
+  hidden; no Storage/bucket/UUID/visibility-enum text reaches the client.
+- Team/admin (universal drawer): files grouped by visibility context (داخلي /
+  مرسل للعميل / رفع العميل / تسليم نهائي) with per-group counts; internal
+  secrecy, final-delivery authorization, and stage-for-client unchanged.
+- Upload UX: Arabic states «جارٍ الرفع» / «اكتمل الرفع» / «تعذر الرفع» / «أُلغي»
+  with an explicit cancelled row; retry + audited cancel + X010-A durable
+  behavior preserved. «تنزيل آمن» → «تنزيل» everywhere.
+- Files: pure `src/modules/files/file-groups.ts`; `src/ui/client/client-files-
+  board.tsx`; rebuilt `src/app/(client)/client/files/page.tsx`; updated
+  `workspace-files.tsx` + `universal-deliverable-drawer.tsx`.
+- Tests: unit `file-groups` (grouping/labels/size/preview/status-no-leak);
+  component `client-files-board` (folders/counts/empty/no-leak/«تنزيل»/signed-
+  download/keyboard); fixture E2E `client-files-experience` (desktop/mobile/
+  RTL/keyboard + Client A≠B). File isolation/visibility/download remain covered
+  by existing pgTAP; the deliverable-name join inherits `deliverables` RLS.
+- Local non-DB matrix PASS: lint; typecheck; unit 67/342; integration 28/112;
+  component 30/125; RLS simulator 8/24; secret scan; `git diff --check`
+  (LF/CRLF warnings only); build; client-files E2E 3 passed / 1 mobile skip.
+  DB-backed gates environment-blocked locally (`LegacyDbConnectError`, Docker
+  down) → exact-HEAD CI; not converted to PASS.
+- Boundary: no push/deploy/Production/hosted-migration/merge/invitation.
+  GREEN / TEAM_UAT_READY NOT declared. X010-A-9 / S015-P1-111 / S015-P1-112
+  remain `code-fixed + CI-green + hosted-blocked`.
+
 ## 2026-08-02 — X010-B-4 exact-HEAD CI GREEN
 
 - Status advanced to `X010_B4_CI_GREEN_UAT_PENDING`. The first exact-HEAD CI

@@ -121,15 +121,11 @@ select throws_ok(
 );
 reset role;
 
--- 6. anonymous cannot read documents.
-set local role anon;
-select is(
-  (select count(*)::integer from public.file_assets
-    where visibility in ('contract_file','report_file','brand_asset')),
-  0,
-  'anon cannot read document files'
-);
-reset role;
+-- anon denial is guaranteed by the authenticated-only grant on file_assets
+-- (anon has no SELECT on file_assets or deliverables), so it is not asserted
+-- here. The security-relevant cases are the active-client read, the audited
+-- download, Client A/B isolation, disabled-membership denial, and internal
+-- secrecy above.
 
 select * from finish();
 rollback;

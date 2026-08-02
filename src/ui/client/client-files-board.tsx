@@ -18,94 +18,167 @@ import {
 } from "@/server/actions/deliverable-workspace-actions";
 import { FileText, ImageIcon, PlayCircle } from "lucide-react";
 
-type BoardFile = GroupedFile & { deliverableName?: string };
-
-const useObjectUrl = (fileId: string | undefined) => {
+// Lazy, image-only thumbnail. Non-image files never request a signed URL on
+// render (they show a static icon), and image URLs are fetched only once the
+// thumbnail scrolls into view. This avoids N+1 preview requests and avoids
+// auto-requesting video/PDF previews when the page opens.
+const useLazyImageThumb = (fileId: string, fileType: string) => {
   const [url, setUrl] = useState<string>();
   const [unavailable, setUnavailable] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const startedRef = useRef(false);
   useEffect(() => {
-    if (!fileId) return;
-    let active = true;
-    void createWorkspaceFilePreview(fileId).then((result) => {
-      if (!active) return;
-      if (result.ok) setUrl(result.url);
-      else setUnavailable(true);
-    });
-    return () => {
-      active = false;
-    };
-  }, [fileId]);
-  return { url, unavailable };
+    if (!isPreviewableImage(fileType)) return;
+    if (typeof IntersectionObserver === "undefined") return;
+    const node = ref.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !startedRef.current) {
+            startedRef.current = true;
+            void createWorkspaceFilePreview(fileId).then((result) => {
+              if (result.ok) setUrl(result.url);
+              else setUnavailable(true);
+            });
+            observer.disconnect();
+          }
+        }
+      },
+      { rootMargin: "128px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [fileId, fileType]);
+  return { ref, url, unavailable };
 };
 
-const FileThumbnail = ({ file }: { file: BoardFile }) => {
-  const { url, unavailable } = useObjectUrl(file.id);
+const FileThumbnail = ({
+  fileId,
+  fileType,
+}: {
+  fileId: string;
+  fileType: string;
+}) => {
+  const { ref, url, unavailable } = useLazyImageThumb(fileId, fileType);
+  if (!isPreviewableImage(fileType)) {
+    return isPreviewableVideo(fileType) ? (
+      <PlayCircle aria-hidden="true" className="h-8 w-8 text-muted" />
+    ) : (
+      <FileText aria-hidden="true" className="h-8 w-8 text-muted" />
+    );
+  }
   if (unavailable) {
-    return <FileText aria-hidden="true" className="h-8 w-8 text-muted" />;
+    return <ImageIcon aria-hidden="true" className="h-8 w-8 text-muted" />;
   }
   if (!url) {
     return (
       <div
         aria-label="جارٍ تحميل المعاينة"
         className="h-16 w-16 animate-pulse rounded-lg bg-border/40 motion-reduce:animate-none"
+        ref={ref}
       />
     );
   }
-  if (isPreviewableImage(file.fileType)) {
-    return (
-      // Signed object URLs are short-lived and cannot use the image optimizer.
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        alt={file.name}
-        className="h-16 w-16 rounded-lg border border-border object-cover"
-        src={url}
-      />
-    );
-  }
-  if (isPreviewableVideo(file.fileType)) {
-    return <PlayCircle aria-hidden="true" className="h-8 w-8 text-muted" />;
-  }
-  return <ImageIcon aria-hidden="true" className="h-8 w-8 text-muted" />;
+  return (
+    // Signed object URLs are short-lived and cannot use the image optimizer.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      alt=""
+      className="h-16 w-16 rounded-lg border border-border object-cover"
+      loading="lazy"
+      src={url}
+    />
+  );
 };
 
-const PreviewOverlay = ({
+// Real modal: focus is moved in on open, trapped while open, and restored to
+// the trigger element on close. Escape closes. The signed preview URL is only
+// requested when the modal actually opens.
+const PreviewModal = ({
   file,
   open,
   onClose,
 }: {
-  file: BoardFile;
+  file: GroupedFile;
   open: boolean;
   onClose: () => void;
 }) => {
-  const { url, unavailable } = useObjectUrl(open ? file.id : undefined);
+  const [url, setUrl] = useState<string>();
+  const [unavailable, setUnavailable] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closerRef = useRef<HTMLButtonElement>(null);
+  const restoreRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
     if (!open) return;
+    restoreRef.current = (document.activeElement as HTMLElement) ?? null;
+    let active = true;
+    void createWorkspaceFilePreview(file.id).then((result) => {
+      if (!active) return;
+      if (result.ok) setUrl(result.url);
+      else setUnavailable(true);
+    });
+    // Move focus into the modal once it is painted.
+    const focusTimer = window.setTimeout(() => {
+      closerRef.current?.focus();
+    }, 0);
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const panel = panelRef.current;
+      if (!panel) return;
+      const focusable = Array.from(
+        panel.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((el) => !el.hasAttribute("disabled"));
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+    window.addEventListener("keydown", onKey, true);
+    return () => {
+      active = false;
+      window.clearTimeout(focusTimer);
+      window.removeEventListener("keydown", onKey, true);
+      restoreRef.current?.focus?.();
+    };
+  }, [open, file.id, onClose]);
+
   if (!open) return null;
   return (
-    <dialog
-      aria-label={`معاينة ${file.name}`}
+    <div
+      aria-modal="true"
       className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4"
       onClick={onClose}
-      open
+      role="dialog"
+      aria-label={`معاينة ${file.name}`}
     >
       <div
         className="grid max-h-[85vh] w-full max-w-3xl gap-3 overflow-auto rounded-xl bg-background p-4"
         onClick={(event) => event.stopPropagation()}
+        ref={panelRef}
       >
         <div className="flex items-center justify-between gap-3">
           <p className="break-words text-sm font-semibold" dir="auto">
             {file.name}
           </p>
           <button
-            autoFocus
             className="min-h-11 rounded-lg border border-border px-3 text-sm"
             onClick={onClose}
+            ref={closerRef}
             type="button"
           >
             إغلاق
@@ -137,24 +210,25 @@ const PreviewOverlay = ({
             title={file.name}
           />
         ) : (
-          <p className="grid place-items-center p-8 text-center text-sm text-muted">
-            لا توجد معاينة مرئية لهذا الملف. استخدم التنزيل.
-          </p>
+          <div className="grid place-items-center p-8">
+            <div className="h-8 w-8 animate-pulse rounded-full border-2 border-border border-t-accent motion-reduce:hidden" />
+            <span className="sr-only">جارٍ تحميل المعاينة</span>
+          </div>
         )}
       </div>
-    </dialog>
+    </div>
   );
 };
 
-const FileCard = ({ file }: { file: BoardFile }) => {
+const FileCard = ({ file }: { file: GroupedFile }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [pendingDownload, setPendingDownload] = useState(false);
   const [downloadError, setDownloadError] = useState(false);
   const status = clientFileStatus(file);
+  const previewable = canPreviewInline(file.fileType);
   const openPreview = useCallback(() => {
-    if (canPreviewInline(file.fileType)) setPreviewOpen(true);
-  }, [file.fileType]);
-  const cardRef = useRef<HTMLDivElement>(null);
+    if (previewable) setPreviewOpen(true);
+  }, [previewable]);
   const download = useCallback(async () => {
     setDownloadError(false);
     setPendingDownload(true);
@@ -166,54 +240,37 @@ const FileCard = ({ file }: { file: BoardFile }) => {
     }
     window.open(result.url, "_blank", "noopener,noreferrer");
   }, [file.id]);
+
   return (
     <>
       <article
         className="grid gap-3 rounded-xl border border-border bg-surface p-4 sm:grid-cols-[4rem_minmax(0,1fr)_auto] sm:items-center"
-        data-file-visibility={file.visibility}
+        data-testid="client-file-card"
       >
-        <button
-          className="grid h-16 w-16 place-items-center overflow-hidden rounded-lg border border-border bg-background disabled:cursor-default"
-          disabled={!canPreviewInline(file.fileType)}
-          onClick={openPreview}
-          type="button"
-        >
-          <FileThumbnail file={file} />
-        </button>
-        <div
-          className="min-w-0 cursor-pointer rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          onClick={openPreview}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              openPreview();
-            }
-          }}
-          ref={cardRef}
-          role="button"
-          tabIndex={0}
-          aria-label={`فتح معاينة ${file.name}`}
-        >
-          <p className="break-words text-sm font-semibold" dir="auto">
-            {file.name || "ملف"}
-          </p>
-          <p className="mt-1 text-xs text-muted">
-            {fileTypeLabel(file.fileType)}
-            {" · "}
-            {formatFileSize(file.fileSize)}
-            {" · "}
-            {formatDateArabic(file.createdAt) || "—"}
-          </p>
-          <p className="mt-1 text-xs text-muted">
-            {file.deliverableName ? `العمل: ${file.deliverableName}` : null}
-            {file.deliverableName && status ? " · " : null}
-            {status ? status : null}
-            {(file.deliverableName || status) && file.versionNumber
-              ? " · "
-              : null}
-            {file.versionNumber ? `نسخة ${file.versionNumber}` : null}
-          </p>
+        <div className="grid h-16 w-16 place-items-center overflow-hidden rounded-lg border border-border bg-background">
+          <FileThumbnail fileId={file.id} fileType={file.fileType} />
         </div>
+        {previewable ? (
+          <div
+            aria-label={`فتح معاينة ${file.name}`}
+            className="min-w-0 cursor-pointer rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            onClick={openPreview}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                openPreview();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+          >
+            <FileMetaBody file={file} status={status} />
+          </div>
+        ) : (
+          <div className="min-w-0">
+            <FileMetaBody file={file} status={status} />
+          </div>
+        )}
         <button
           className="min-h-11 rounded-lg border border-border px-4 text-sm font-semibold hover:bg-background disabled:opacity-60"
           disabled={pendingDownload}
@@ -228,14 +285,44 @@ const FileCard = ({ file }: { file: BoardFile }) => {
           </p>
         ) : null}
       </article>
-      <PreviewOverlay
-        file={file}
-        onClose={() => setPreviewOpen(false)}
-        open={previewOpen}
-      />
+      {previewable ? (
+        <PreviewModal
+          file={file}
+          onClose={() => setPreviewOpen(false)}
+          open={previewOpen}
+        />
+      ) : null}
     </>
   );
 };
+
+const FileMetaBody = ({
+  file,
+  status,
+}: {
+  file: GroupedFile;
+  status: string | null;
+}) => (
+  <>
+    <p className="break-words text-sm font-semibold" dir="auto">
+      {file.name || "ملف"}
+    </p>
+    <p className="mt-1 text-xs text-muted">
+      {fileTypeLabel(file.fileType)}
+      {" · "}
+      {formatFileSize(file.fileSize)}
+      {" · "}
+      {formatDateArabic(file.createdAt) || "—"}
+    </p>
+    <p className="mt-1 text-xs text-muted">
+      {file.deliverableName ? `العمل: ${file.deliverableName}` : null}
+      {file.deliverableName && status ? " · " : null}
+      {status ? status : null}
+      {(file.deliverableName || status) && file.versionNumber ? " · " : null}
+      {file.versionNumber ? `نسخة ${file.versionNumber}` : null}
+    </p>
+  </>
+);
 
 export type ClientFilesBoardProps = {
   files: GroupedFile[];
@@ -245,7 +332,10 @@ export function ClientFilesBoard({ files }: ClientFilesBoardProps) {
   const groups = groupClientFiles(files);
   if (groups.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border bg-surface p-8 text-center">
+      <div
+        className="rounded-xl border border-dashed border-border bg-surface p-8 text-center"
+        data-testid="client-files-empty"
+      >
         <p className="text-sm text-muted">
           لا توجد ملفات متاحة حاليًا. تظهر التسليمات النهائية والملفات المعتمدة
           هنا فور توفرها.

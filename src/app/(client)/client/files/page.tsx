@@ -6,6 +6,7 @@ import {
 } from "@/server/navigation/route-guards";
 import { PageHeader } from "@/ui/layout/page-header";
 import { ClientFilesBoard } from "@/ui/client/client-files-board";
+import { ErrorState } from "@/ui/core/states";
 import type { GroupedFile } from "@/modules/files/file-groups";
 import {
   AccessDeniedState,
@@ -77,7 +78,7 @@ export default async function ClientFilesPage({
   }
 
   const supabase = await createSupabaseServerClient();
-  const { data: rows } = await supabase
+  const { data: rows, error } = await supabase
     .from("file_assets")
     .select(
       "id, file_name, file_type, file_size, visibility, version_number, is_final, created_at, deliverable_id, deliverable:deliverables(name)",
@@ -95,6 +96,21 @@ export default async function ClientFilesPage({
     .eq("upload_state", "ready")
     .or("visibility.neq.final_delivery,is_final.eq.true")
     .order("created_at", { ascending: false });
+
+  // A read failure must surface as an honest error, never a silent empty list.
+  if (error) {
+    return (
+      <main className="grid gap-5" dir="rtl">
+        <PageHeader description="كل ملفاتك المعتمدة والتسليمات النهائية." title="ملفاتي" />
+        <ErrorState
+          title="تعذّر تحميل ملفاتك الآن"
+          description="حدث خطأ أثناء قراءة ملفاتك. حاول مرة أخرى بعد لحظات."
+          returnHref="/client/files"
+          actionLabel="إعادة المحاولة"
+        />
+      </main>
+    );
+  }
 
   const files: GroupedFile[] = (rows ?? []).map((row: ClientFileRow) => ({
     id: row.id,

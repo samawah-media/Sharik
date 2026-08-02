@@ -52,21 +52,29 @@ describe("ClientFilesBoard", () => {
 
   it("renders a useful empty state when there are no client files", () => {
     render(<ClientFilesBoard files={[]} />);
-    expect(
-      screen.getByText(/لا توجد ملفات متاحة حاليًا/),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("client-files-empty")).toBeInTheDocument();
   });
 
-  it("never leaks raw visibility enums, UUIDs, or storage terms", () => {
+  it("never leaks raw visibility enums, UUIDs, or storage terms into the HTML", () => {
     const { container } = render(
       <ClientFilesBoard
-        files={[file({ id: "uuid-leak-probe", visibility: "final_delivery" })]}
+        files={[
+          file({
+            id: "b5f1a2e0-0000-4000-8000-000000000001",
+            visibility: "final_delivery",
+            name: "ملف العميل",
+          }),
+          file({ id: "c2", visibility: "contract_file", name: "العقد" }),
+        ]}
       />,
     );
-    const text = container.textContent ?? "";
-    expect(text).not.toMatch(/final_delivery|internal_only|client_uploaded/);
-    expect(text).not.toMatch(/storage|bucket|deliverable-assets/i);
-    expect(text).not.toMatch(/uuid-leak-probe/);
+    const html = container.innerHTML;
+    // Check the full DOM serialisation, not just textContent.
+    expect(html).not.toMatch(/final_delivery|internal_only|client_uploaded|contract_file|report_file|brand_asset/);
+    expect(html).not.toMatch(/storage|bucket|deliverable-assets/i);
+    // The file UUID must not appear as an attribute or text.
+    expect(html).not.toMatch(/b5f1a2e0-0000-4000-8000-000000000001/);
+    expect(html).not.toMatch(/data-file-visibility/);
   });
 
   it("uses «تنزيل» and never «تنزيل آمن»", () => {
@@ -82,8 +90,7 @@ describe("ClientFilesBoard", () => {
     render(
       <ClientFilesBoard files={[file({ id: "d1", visibility: "final_delivery" })]} />,
     );
-    const btn = screen.getByRole("button", { name: "تنزيل" });
-    btn.click();
+    screen.getByRole("button", { name: "تنزيل" }).click();
     await waitFor(() => expect(download).toHaveBeenCalledWith("d1"));
     await waitFor(() =>
       expect(openSpy).toHaveBeenCalledWith(
@@ -95,15 +102,35 @@ describe("ClientFilesBoard", () => {
     openSpy.mockRestore();
   });
 
-  it("makes the whole card keyboard-openable for previewable types", () => {
+  it("makes only previewable cards keyboard-openable", () => {
     render(
       <ClientFilesBoard
-        files={[file({ id: "img", visibility: "client_visible", fileType: "image/png" })]}
+        files={[
+          file({ id: "img", visibility: "client_visible", fileType: "image/png", name: "صورة" }),
+          file({ id: "zip", visibility: "contract_file", fileType: "application/zip", name: "أرشيف" }),
+        ]}
       />,
     );
-    const card = screen.getByRole("button", {
-      name: /فتح معاينة ملف العميل/,
-    });
-    expect(card).toHaveAttribute("tabindex", "0");
+    // Image card is keyboard-openable.
+    expect(
+      screen.getByRole("button", { name: /فتح معاينة صورة/ }),
+    ).toHaveAttribute("tabindex", "0");
+    // Non-previewable archive has no openable control; only «تنزيل» is interactive.
+    expect(screen.queryByRole("button", { name: /فتح معاينة أرشيف/ })).toBeNull();
+  });
+
+  it("does not request a signed preview URL for any file on render", () => {
+    render(
+      <ClientFilesBoard
+        files={[
+          file({ id: "img", visibility: "client_visible", fileType: "image/png" }),
+          file({ id: "pdf", visibility: "contract_file", fileType: "application/pdf" }),
+          file({ id: "zip", visibility: "final_delivery", fileType: "application/zip" }),
+        ]}
+      />,
+    );
+    // No auto N+1 preview requests when the page opens (images are lazy-loaded
+    // only when visible; non-visual files never request a preview).
+    expect(preview).not.toHaveBeenCalled();
   });
 });

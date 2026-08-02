@@ -589,12 +589,13 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
 
   await signInViaUi(page, seed.actors.clientViewer);
   await page.goto("/client/files", { waitUntil: "domcontentloaded" });
+  // The delivered final file is the only client-visible card; the internal
+  // replacement content never leaks. (The board no longer exposes a raw
+  // visibility enum in the DOM — X010-B-5 — so assert by the neutral card
+  // testid and by the absence of internal text.)
   await expect(
-    page.locator('[data-file-visibility="final_delivery"]'),
+    page.locator('[data-testid="client-file-card"]'),
   ).toHaveCount(1);
-  await expect(
-    page.locator('[data-file-visibility="internal_only"]'),
-  ).toHaveCount(0);
   await expect(page.getByText("final replacement")).toHaveCount(0);
   await expectNoHorizontalOverflow(page);
 });

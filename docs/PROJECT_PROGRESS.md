@@ -2,11 +2,20 @@
 
 ## Spec 015 X010-B-5 Drive-like file experience — 2026-08-02
 
-Status: `X010_B5_LOCAL_COMPLETE_CI_UAT_PENDING`. Started from the B4 CI-green
-HEAD `6582f3e`. Bounded to Spec 015 only; no new Spec/ADR/dependency/migration;
-no workflow/RLS/permission/audit change — B5 is presentation only.
+Status: `X010_B5_CI_GREEN_UAT_PENDING`. Final HEAD
+`e47c810d57bb0346dcd975ef76bdc0f9075ea70b` on
+`codex/015-persistent-mvp-pilot-completion`. Bounded to Spec 015 only; no new
+Spec/ADR/dependency/migration; no workflow/RLS/permission/audit change — B5 is
+presentation only.
 
-Delivered (S015-P2-120 → `technical-fixed; final-owner-UAT-pending`):
+Exact-HEAD verification on `e47c810`: F-001 Quality run `30743491402` SUCCESS —
+lint, typecheck, unit 67/342, integration 28/112, RLS simulator 8/24, **pgTAP
+12/673**, component 30/125, **fixture E2E 178** (incl. the new
+`client-files-experience` spec), **persistent E2E 18/18**, secret scan, build.
+Vercel `2JGvwkkjYc4QRfH6JVFUeeN5aMSR` Ready in `samawahs-projects/shrik`;
+CodeRabbit SUCCESS.
+
+Delivered (S015-P2-120 → `technical-fixed; CI-verified; final-owner-UAT-pending`):
 - Client files `/client/files` retitled «ملفاتي» and rebuilt as grouped folders
   (final/review/uploaded/contract) with counters, empty states, image
   thumbnails, safe inline video/PDF preview, honest fallback, keyboard-
@@ -20,13 +29,7 @@ Delivered (S015-P2-120 → `technical-fixed; final-owner-UAT-pending`):
   `client-files-experience`. File isolation/visibility/download remain covered
   by existing pgTAP; the deliverable-name join inherits `deliverables` RLS.
 
-Local non-DB matrix PASS: lint; typecheck; unit 67/342; integration 28/112;
-component 30/125; RLS simulator 8/24; secret scan; `git diff --check`
-(LF/CRLF warnings only); build; client-files E2E 3 passed / 1 mobile skip.
-DB-backed gates environment-blocked locally → exact-HEAD CI; not converted to
-PASS.
-
-Boundary: no push/deploy/Production/hosted-migration/merge/invitation.
+Boundary: no Production/merge/hosted-migration/team-invitation.
 GREEN / TEAM_UAT_READY NOT declared. X010-A-9 / S015-P1-111 / S015-P1-112
 remain `code-fixed + CI-green + hosted-blocked`.
 

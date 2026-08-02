@@ -1,5 +1,17 @@
 # Spec 015 execution log
 
+## 2026-08-02 — X010-B-5 Drive-like file experience (CI green)
+
+- Status advanced to `X010_B5_CI_GREEN_UAT_PENDING` on final HEAD `e47c810`.
+  Exact-HEAD F-001 run `30743491402` PASS: lint, typecheck, unit 67/342,
+  integration 28/112, RLS simulator 8/24, **pgTAP 12/673**, component 30/125,
+  **fixture E2E 178** (incl. the new `client-files-experience` spec), **persistent
+  E2E 18/18**, secret scan, build. Vercel `2JGvwkkjYc4QRfH6JVFUeeN5aMSR` Ready in
+  `samawahs-projects/shrik`; CodeRabbit SUCCESS.
+- See the local-complete entry below for the full scope. No workflow/RLS/
+  permission/audit change; B5 is presentation only. GREEN / TEAM_UAT / Hosted
+  UAT NOT declared. X010-A-9 / S015-P1-111 / S015-P1-112 remain hosted-blocked.
+
 ## 2026-08-02 — X010-B-5 Drive-like file experience (local complete)
 
 - Status `X010_B5_LOCAL_COMPLETE_CI_UAT_PENDING`. Started from the B4 CI-green

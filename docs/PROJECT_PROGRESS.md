@@ -1,5 +1,41 @@
 # Project Progress
 
+## Spec 015 X010-B-4 exact-HEAD CI GREEN — 2026-08-02
+
+Status: `X010_B4_CI_GREEN_UAT_PENDING`. Final application HEAD
+`b4726cfa1b4c9f5a7d507d97549ac781af056777` on
+`codex/015-persistent-mvp-pilot-completion`. The first exact-HEAD CI run on the
+consolidated B2/B3/B4 head (`c79a2e1`) exposed a chain of pre-existing defects
+that had never reached CI (B2/B3 were local-complete only). Each was root-
+caused and fixed inside Spec 015 without weakening any security or correctness
+expectation; no P0/P1 was papered over.
+
+Exact-HEAD verification on `b4726cf`: F-001 Quality run `30741184814` SUCCESS —
+lint, typecheck, unit 66/333, integration 28/112, clean Supabase start + reset
+(all migrations through `202608010002`), RLS simulator 8/24, **pgTAP 12 files /
+673 tests** (incl. `s015_x010b4_in_app_notifications`), component 29/119,
+fixture E2E, **persistent E2E 18/18** (incl. the notifications and creation
+journeys), secret scan, build. Vercel `5fEXUfcYWVJREfMFE2eHmATJ8Fpd` Ready in
+`samawahs-projects/shrik`; CodeRabbit SUCCESS.
+
+CI proves the B4 acceptance points: migrations apply through `202608010002`;
+full notifications pgTAP; persistent notifications browser→PostgreSQL journey;
+tenant/client isolation; post-revocation list/count/mark denial; and
+viewer/approver recipient copy/route separation.
+
+CI-hardening fixes layered on `c79a2e1`: a1r legacy `f001_update_client_write`
+8-param call sites; B2 test expectations + a distinct cross-tenant 42501 in
+`202607310001`; B4 review-payload fixture caption; `service_role` SELECT on
+`public.notifications` (`202608010002`); persistent creation journey opens the
+B3 progressive-disclosure `<details>`; persistent notifications journey uses
+the proven writer-submits + management-approves-and-sends `workflowStep` flow.
+
+Boundary: no Production, no merge, no hosted migration apply, no team
+invitation, no `TEAM_UAT_READY`/Hosted-UAT claim. X010-A-9 / S015-P1-111 /
+S015-P1-112 remain `code-fixed + CI-green + hosted-blocked` (approved UAT
+credentials unavailable in this workstation). **GREEN for the corrective hosted
+slice is NOT declared.**
+
 ## Spec 015 X010-B-4 corrective local close — 2026-08-01
 
 Status: `X010_B4_CORRECTIVE_LOCAL_COMPLETE_DB_CI_UAT_PENDING`. Started from mandatory HEAD

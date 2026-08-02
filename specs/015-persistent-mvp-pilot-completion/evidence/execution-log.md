@@ -1,6 +1,52 @@
 # Spec 015 execution log
 
+## 2026-08-02 — X010-B-4 exact-HEAD CI GREEN
+
+- Status advanced to `X010_B4_CI_GREEN_UAT_PENDING`. The first exact-HEAD CI
+  run on the consolidated B2/B3/B4 head exposed a chain of pre-existing
+  defects that had never reached CI (B2/B3 were local-complete only).
+- Each defect was root-caused and fixed inside Spec 015; no security or
+  correctness expectation was weakened, and no P0/P1 was papered over:
+  1. `a1r_rls_foundation` called the old 7-param `f001_update_client_write`;
+     updated the three call sites to the 8-param signature B2 added (phone
+     arg = null for the legacy assertions).
+  2. `s015_x010b2_client_contact_phone`: aligned test expectations with real
+     behavior — cross-tenant update now expects the explicit 42501 signal;
+     the idempotency-conflict call uses a static package-line JSON so named-
+     notation type resolution succeeds; the four CHECK-constraint cases match
+     the real PostgreSQL message with SQLSTATE 23514.
+  3. `202607310001` migration: `f001_update_client_write` now raises a
+     distinct cross-tenant 42501 before the tenant-scoped update (columns
+     fully qualified to avoid ambiguity with the RETURNS TABLE output
+     params). Same-tenant stale revision still returns P0002.
+  4. `s015_x010b4` notifications test: fixture deliverable enters review in
+     two steps (insert in_progress → version with caption → update to
+     waiting_client_approval) so the existing client-review-payload guard
+     (`202607200001`) is satisfied.
+  5. B4 pgTAP `throws_ok` errmsg assertions corrected for pgTAP's exact-match
+     semantics.
+  6. `202608010002` migration: granted `service_role` SELECT on
+     `public.notifications` so the persistent test harness can assert
+     notification outcomes (matches the S015-P2-056 pattern; server-only,
+     RLS-unchanged).
+  7. Persistent creation journey: opens the B3 progressive-disclosure
+     `<details>` before checking the assigned-designer contributor checkbox
+     (previously hit the 600000ms per-test timeout).
+  8. Persistent notifications journey: replaced speculative button labels with
+     the proven `workflowStep`-form flow — assigned writer submits version 1,
+     management approves internally, management clicks the `راجعت النسخة
+     والملفات` confirmation and submits the send_to_client form.
+- Exact-HEAD verification on `b4726cf`: F-001 Quality run `30741184814`
+  SUCCESS (lint, typecheck, unit 66/333, integration 28/112, RLS simulator
+  8/24, pgTAP 12 files / 673 tests, component 29/119, fixture E2E, persistent
+  E2E 18/18, secret scan, build). Vercel `5fEXUfcYWVJREfMFE2eHmATJ8Fpd` Ready
+  in `samawahs-projects/shrik`. CodeRabbit SUCCESS.
+- No Production, no merge, no hosted migration apply, no team invitation, no
+  `TEAM_UAT_READY`/Hosted-UAT claim. X010-A-9 / S015-P1-111 / S015-P1-112
+  remain `code-fixed + CI-green + hosted-blocked`.
+
 ## 2026-08-01 — X010-B-4 independent corrective close
+
 
 - Reviewed local B4 commit `2003249` without pushing or deploying. Registered
   S015-P1-129/130/131 and S015-P2-129/130; status is

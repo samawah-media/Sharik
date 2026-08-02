@@ -1,6 +1,54 @@
 # Spec 015 gate status
 
-## X010-B-4 corrective local close — 2026-08-01
+## X010-B-4 exact-HEAD CI GREEN — 2026-08-02
+
+`X010_B4_CI_GREEN_UAT_PENDING`. The first exact-HEAD CI run on the consolidated
+B2/B3/B4 head (`c79a2e1`) exposed a chain of pre-existing DB-test/migration
+defects that had never reached CI before (B2 and B3 were local-complete only).
+Each was root-caused and fixed inside Spec 015 without weakening any security
+or correctness expectation; no P0/P1 was papered over. Final application HEAD
+`b4726cfa1b4c9f5a7d507d97549ac781af056777` on
+`codex/015-persistent-mvp-pilot-completion`.
+
+Exact-HEAD verification on `b4726cf`:
+- GitHub `F-001 Quality` run `30741184814` — SUCCESS. Full matrix: npm ci,
+  lint, typecheck, unit 66/333, integration 28/112, clean Supabase start +
+  `db reset --local` (all migrations through `202608010002` applied), RLS
+  simulator 8/24, **pgTAP 12 files / 673 tests** (incl.
+  `s015_x010b4_in_app_notifications`, `s015_x010b2_client_contact_phone`,
+  `s015_x010b3_client_change_request_visibility`, and the corrected
+  `a1r_rls_foundation`), component 29/119, fixture E2E, **persistent E2E
+  18/18** (incl. the `s015-notifications-journey` send-to-client + task
+  scenarios and the `s015-deliverable-creation-journey`), secret scan, build.
+- Vercel deployment `5fEXUfcYWVJREfMFE2eHmATJ8Fpd` — Ready/SUCCESS in the
+  correct `samawahs-projects/shrik` Preview project.
+- CodeRabbit — SUCCESS.
+
+CI specifically proves the B4 acceptance points the task required: migrations
+apply through `202608010002`; full pgTAP including
+`s015_x010b4_in_app_notifications`; the persistent notifications journey
+(real browser → PostgreSQL); tenant/client A/B isolation; revocation denial
+through the list/count/mark RPCs after client-scope revocation; and
+viewer/approver recipient copy/route separation.
+
+Corrective commits layered on top of `c79a2e1` (each pushed and re-verified on
+exact HEAD): `93fb737` (pgTAP drift: a1r 8-param signature, B2 expectations,
+B2 cross-tenant 42501, B4 review-payload fixture), `925416d` (ambiguous column
+qualification + B4 pgTAP errmsg), `2cc75a7`/`7986b96` (pgTAP errmsg
+exact-match), `2375ca3` (service_role SELECT grant on `public.notifications`),
+`bf44edf` (persistent creation journey opens the B3 progressive-disclosure
+`<details>`), `8be9182`/`b4726cf` (persistent notifications journey uses the
+proven assigned-writer-submits + management-approves-and-sends workflowStep
+flow with the `راجعت النسخة والملفات` confirmation gate).
+
+Boundary: no Production, no merge, no hosted migration apply, no team
+invitation, no `TEAM_UAT_READY` or Hosted-UAT claim. The approved non-
+Production UAT credentials remain unavailable in this workstation, so the B4
+corrective hosted UAT and X010-A-9 / S015-P1-111 / S015-P1-112 hosted closure
+remain `code-fixed + CI-green + hosted-blocked`. **GREEN for the corrective
+hosted slice is NOT declared.**
+
+
 
 `X010_B4_CORRECTIVE_LOCAL_COMPLETE_DB_CI_UAT_PENDING`. Started from mandatory HEAD
 `fc5b414397e730bc32f4a59c392195457ee819df`; clean worktree confirmed before

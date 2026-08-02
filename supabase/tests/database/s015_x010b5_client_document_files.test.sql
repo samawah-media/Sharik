@@ -28,8 +28,8 @@ insert into public.client_memberships (id, tenant_id, client_id, auth_user_id, s
 
 insert into public.role_assignments (id, tenant_id, membership_id, role_key, scope_type, scope_id, status) values
   ('b5000000-0000-4000-8000-000000000401', 'b5000000-0000-4000-8000-000000000001', 'b5000000-0000-4000-8000-000000000201', 'client_approver', 'client', 'b5000000-0000-4000-8000-000000000101', 'active'),
-  ('b5000000-0000-4000-8000-000000000402', 'b5000000-0000-4000-8000-000000000202', 'client_approver', 'client', 'b5000000-0000-4000-8000-000000000102', 'active'),
-  ('b5000000-0000-4000-8000-000000000403', 'b5000000-0000-4000-8000-000000000203', 'client_approver', 'client', 'b5000000-0000-4000-8000-000000000101', 'active');
+  ('b5000000-0000-4000-8000-000000000402', 'b5000000-0000-4000-8000-000000000001', 'b5000000-0000-4000-8000-000000000202', 'client_approver', 'client', 'b5000000-0000-4000-8000-000000000102', 'active'),
+  ('b5000000-0000-4000-8000-000000000403', 'b5000000-0000-4000-8000-000000000001', 'b5000000-0000-4000-8000-000000000203', 'client_approver', 'client', 'b5000000-0000-4000-8000-000000000101', 'active');
 
 -- Standalone Client A documents (no deliverable / version), plus one
 -- internal_only file that must never reach a client, plus one Client B doc.

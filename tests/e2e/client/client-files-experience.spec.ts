@@ -23,7 +23,6 @@ test("client files page renders the «ملفاتي» grouping with Arabic labels
 
   if (await board.isVisible().catch(() => false)) {
     // Never surface raw enums, UUIDs, or storage terms.
-    const body = board.locator("body");
     await expect(page.locator("body")).not.toContainText([
       /internal_only/,
       /final_delivery/,
@@ -32,10 +31,10 @@ test("client files page renders the «ملفاتي» grouping with Arabic labels
       /bucket/i,
       /deliverable-assets/i,
     ]);
-    // «تنزيل» only; never «تنزيل آمن».
-    await expect(page.getByRole("button", { name: "تنزيل" })).toHaveCount(
-      await page.getByRole("button", { name: "تنزيل" }).count(),
-    );
+    // «تنزيل» exists; «تنزيل آمن» never.
+    await expect(
+      page.getByRole("button", { name: "تنزيل" }).first(),
+    ).toBeVisible();
     await expect(page.locator("body")).not.toContainText(/تنزيل آمن/);
   }
 });

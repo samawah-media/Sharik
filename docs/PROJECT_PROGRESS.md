@@ -1,5 +1,42 @@
 # Project Progress
 
+## Spec 015 X010-B-5 corrective CI green, Preview pending — 2026-08-02
+
+Status: `X010_B5_CORRECTIVE_CI_GREEN_PREVIEW_PENDING_OWNER_UAT_PENDING`. Final
+application HEAD `8e5c3bd4a86da05dd7411d4352bac3c5f4fe614e` on
+`codex/015-persistent-mvp-pilot-completion`; mandatory starting HEAD
+`59c25eb2786158b0b45c88c9a694cbece6de23f6` is an ancestor. Bounded to Spec 015
+only; no new Spec/ADR/dependency, no historical migration edit, no B6 start.
+
+Exact-HEAD F-001 run `30755205688` SUCCESS: lint, typecheck, unit 67/342,
+integration 28/112, clean Supabase reset through additive migration
+`202608020001_s015_x010b5_client_document_files.sql`, RLS simulator 8/24, pgTAP
+13/682 including `s015_x010b5_client_document_files`, component 30/126, fixture
+E2E 178, persistent E2E 18/18, secret scan, and build. CodeRabbit SUCCESS.
+Vercel deployments for project `prj_OGVntLNpwvHd6XJoyXpjAgFWmSWO` under team
+`team_V2DB7cQmTZIGATfviARQwq4j` did not include an exact-head `8e5c3bd`
+deployment, so Preview remains `PREVIEW_PENDING` and Preview GREEN is not
+claimed.
+
+Delivered (S015-P2-120 -> `technical-fixed; CI-verified;
+final-owner-UAT-pending`):
+- Additive database/storage authorization for active same-tenant/same-client
+  client access to `contract_file`, `report_file`, and `brand_asset`; preserves
+  `internal_only` denial, Client A/B isolation, and disabled-membership denial.
+- `/client/files` separates Arabic read ErrorState from honest successful-empty
+  EmptyState.
+- Cards are interactive only for previewable files; non-previewable files expose
+  download only, without misleading `role=button` or aria copy.
+- No signed previews are requested on page open; image thumbnails lazy-load only
+  when visible; video/PDF/other files use static icons until user action.
+- Raw visibility enums and UUIDs are absent from the client board DOM, with HTML
+  assertions added.
+- Preview is a real modal with Escape close, focus trap, and focus restoration.
+
+Boundary: no merge, Production, hosted migration, hosted UAT mutation, team
+invitation, or B6 work. H008-H010, X007, T032, X010-A-9 / S015-P1-111 /
+S015-P1-112 remain open/hosted-blocked as previously recorded.
+
 ## Spec 015 X010-B-5 Drive-like file experience — 2026-08-02
 
 Status: `X010_B5_CI_GREEN_UAT_PENDING`. Final HEAD

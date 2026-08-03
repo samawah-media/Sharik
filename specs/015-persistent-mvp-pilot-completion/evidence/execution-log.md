@@ -1,5 +1,35 @@
 # Spec 015 execution log
 
+## 2026-08-02 — X010-B-5 corrective (client document files + honest states + lazy preview + modal) exact-HEAD CI GREEN
+
+- Status advanced to `X010_B5_CORRECTIVE_CI_GREEN_OWNER_UAT_PENDING`. Mandatory
+  starting HEAD `59c25eb`. Final application HEAD `8e5c3bd`. Exact-HEAD F-001
+  run `30755205688` SUCCESS — lint, typecheck, unit 67/342, integration 28/112,
+  clean reset through `202608020001`, RLS simulator 8/24, **pgTAP 13/682** (incl.
+  `s015_x010b5_client_document_files`), component 30/126, fixture E2E 178,
+  persistent E2E 18/18, secret scan, build. CodeRabbit SUCCESS. Vercel Preview
+  check via Vercel deployments found no deployment for exact head `8e5c3bd`;
+  record `PREVIEW_PENDING` and do not claim Preview GREEN. Authoritative CI is
+  green.
+- Corrective content, inside Spec 015 only: (1) additive migration
+  `202608020001_s015_x010b5_client_document_files.sql` lets an active client read
+  and download standalone document files (contract_file / report_file /
+  brand_asset) within their scope while keeping internal_only hidden, Client
+  A/B isolated, and disabled-membership denied; (2) /client/files shows an
+  Arabic ErrorState on read failure, keeping EmptyState for honest-empty reads;
+  (3) board cards are keyboard-openable only for previewable files; (4) no
+  signed preview is requested at page open (lazy image thumbnails only when
+  visible; static icons for video/PDF), avoiding N+1 and extra preview audits;
+  (5) raw visibility enums and UUIDs removed from the client board DOM (tests
+  assert innerHTML); (6) the preview is a real modal with focus-trap, Escape
+  close, and focus restore to the card.
+- Boundary unchanged: no Production/merge/hosted-migration/team-invitation.
+  S015-P2-120 → `technical-fixed; CI-verified; final-owner-UAT-pending`.
+  Final status is
+  `X010_B5_CORRECTIVE_CI_GREEN_PREVIEW_PENDING_OWNER_UAT_PENDING` until an exact
+  `8e5c3bd` Preview deployment appears.
+  S015-P1-063, X010-A-9 / S015-P1-111 / S015-P1-112 remain hosted-blocked.
+
 ## 2026-08-02 — X010-B-5 Drive-like file experience (CI green)
 
 - Status advanced to `X010_B5_CI_GREEN_UAT_PENDING` on final HEAD `e47c810`.

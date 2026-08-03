@@ -1,5 +1,53 @@
 # Spec 015 gate status
 
+## X010-B-5 corrective exact-HEAD CI GREEN — 2026-08-02
+
+`X010_B5_CORRECTIVE_CI_GREEN_OWNER_UAT_PENDING`. Mandatory starting HEAD was
+`59c25eb2786158b0b45c88c9a694cbece6de23f6`. Final application HEAD
+`8e5c3bd4a86da05dd7411d4352bac3c5f4fe614e` on
+`codex/015-persistent-mvp-pilot-completion`. Bounded to Spec 015 only; one
+additive migration (`202608020001_s015_x010b5_client_document_files.sql`); no
+historical migration edited; no Production/merge/hosted mutation.
+
+Exact-HEAD verification on `8e5c3bd`: F-001 Quality run `30755205688` SUCCESS —
+lint, typecheck, unit 67/342, integration 28/112, clean Supabase start + reset
+(all migrations through `202608020001`), RLS simulator 8/24, **pgTAP 13 files /
+682 tests** (incl. `s015_x010b5_client_document_files`), component 30/126,
+fixture E2E 178, persistent E2E 18/18 (incl. updated /client/files), secret
+scan, build. CodeRabbit SUCCESS. Vercel deployments were inspected for the
+project `prj_OGVntLNpwvHd6XJoyXpjAgFWmSWO` in team
+`team_V2DB7cQmTZIGATfviARQwq4j`; no deployment object for exact head `8e5c3bd`
+was present. Record `PREVIEW_PENDING`; do not claim Preview GREEN. The
+authoritative CI matrix is green and CodeRabbit reviewed.
+
+Corrective fixes inside Spec 015 (S015-P2-120 → `technical-fixed; CI-verified;
+final-owner-UAT-pending`):
+1. Client document files (`contract_file` / `report_file` / `brand_asset`)
+   become readable/downloadable for an active client in their scope. The additive
+   migration recreates `s015_files_select` with a document branch and recreates
+   `private.s015_can_read_storage_object` with a LEFT JOIN plus the same
+   document branch so `s015_authorize_file_download` works; internal_only
+   remains hidden, Client A/B isolation and disabled-membership denial are
+   preserved.
+2. /client/files now surfaces a real query error as an Arabic ErrorState; the
+   EmptyState is kept only when the read succeeds and the result is empty.
+3. Board cards are clickable/keyboard-openable only for previewable files; a
+   non-previewable file shows only «تنزيل».
+4. No signed preview is requested on page open; images lazy-load only when
+   visible; video/PDF/other use static icons. No N+1 or extra preview audit
+   events.
+5. Raw visibility enums and UUIDs removed from the client board DOM; the
+   component/E2E tests assert on innerHTML, not only textContent.
+6. Preview is a real modal with focus moved in, focus trap while open, Escape
+   close, and focus restored to the triggering card on close.
+
+Boundary unchanged: no Production deployment/merge/hosted-migration/team-
+invitation. S015-P1-063, X010-A-9 / S015-P1-111 / S015-P1-112, H008-H010, X007,
+T032 remain open; GREEN / TEAM_UAT_READY / Hosted UAT NOT declared. Final
+documentation status is
+`X010_B5_CORRECTIVE_CI_GREEN_PREVIEW_PENDING_OWNER_UAT_PENDING` unless an exact
+`8e5c3bd` Preview deployment appears later.
+
 ## X010-B-5 file experience local complete — 2026-08-02
 
 `X010_B5_CI_GREEN_UAT_PENDING`. Final application HEAD

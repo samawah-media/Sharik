@@ -50,6 +50,12 @@ const openDrawer = async (card: Locator) => {
   return drawer;
 };
 
+const openDrawerTab = async (drawer: Locator, name: string | RegExp) => {
+  const tab = drawer.getByRole("tab", { name }).first();
+  await expect(tab).toBeVisible();
+  await tab.click();
+};
+
 const submitVersion = async ({
   card,
   note,
@@ -60,6 +66,7 @@ const submitVersion = async ({
   versionNumber: number;
 }) => {
   const drawer = await openDrawer(card);
+  await openDrawerTab(drawer, "المحتوى والنسخ");
   await drawer.locator('input[name="versionNumber"]').fill(String(versionNumber));
   await drawer.locator('textarea[name="contentBody"]').fill(note);
   await drawer.getByRole("button", { name: "حفظ وإرسال للمراجعة" }).click();
@@ -83,6 +90,7 @@ const runManagementStep = async ({
   reason?: string;
 }) => {
   const drawer = await openDrawer(card);
+  await openDrawerTab(drawer, "المحتوى والنسخ");
   if (
     step === "send_to_client" ||
     step === "deliver_after_client_approval"
@@ -287,8 +295,9 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
   await page.goto(boardPath(seed), { waitUntil: "domcontentloaded" });
   managementCard = cardFor(page, persistentDeliverableNames.main);
   const reviewDrawer = await openDrawer(managementCard);
+  await openDrawerTab(reviewDrawer, "الملفات");
   await expect(
-    reviewDrawer.getByRole("img", { name: "review.png" }),
+    reviewDrawer.locator("li").filter({ hasText: "review.png" }).first(),
   ).toBeVisible();
   await reviewDrawer
     .getByRole("button", { name: "تجهيز للعميل" })
@@ -321,6 +330,7 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
   await expect(
     reviewDrawer.getByText(`فشل رفع ${failedVideoName}. لم يُربط الملف بالمخرج؛ أعد المحاولة أو ألغِه بوضوح.`),
   ).toBeVisible({ timeout: 30_000 });
+  await openDrawerTab(reviewDrawer, "المحتوى والنسخ");
   await expect(
     reviewDrawer.getByRole("button", { name: "راجعت النسخة والملفات" }),
   ).toBeDisabled();
@@ -346,12 +356,15 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
   await page.reload({ waitUntil: "domcontentloaded" });
   managementCard = cardFor(page, persistentDeliverableNames.main);
   const restoredDrawer = await openDrawer(managementCard);
+  await openDrawerTab(restoredDrawer, "الملفات");
   await expect(
     restoredDrawer.getByText(failedVideoName),
   ).toBeVisible();
+  await openDrawerTab(restoredDrawer, "المحتوى والنسخ");
   await expect(
     restoredDrawer.getByRole("button", { name: "راجعت النسخة والملفات" }),
   ).toBeDisabled();
+  await openDrawerTab(restoredDrawer, "الملفات");
   await restoredDrawer
     .getByRole("button", { name: "إلغاء المحاولة وتسجيل القرار" })
     .click();
@@ -373,13 +386,12 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
     .eq("action", "FileUploadAttemptCancelled")
     .eq("target_id", failedAttemptId!);
   expect(cancellationAudit.count).toBe(1);
-  const exactVersionFiles = restoredDrawer.getByRole("list", {
-    name: "ملفات النسخة الدقيقة",
-  });
   await expect(
-    exactVersionFiles.getByText("review.png", { exact: true }),
+    restoredDrawer.locator("li:visible").filter({ hasText: "review.png" }),
   ).toBeVisible();
-  await expect(exactVersionFiles.getByText(failedVideoName)).toHaveCount(0);
+  await expect(
+    restoredDrawer.locator("li:visible").filter({ hasText: failedVideoName }),
+  ).toHaveCount(0);
   await restoredDrawer.getByRole("button", { name: "إغلاق" }).click();
   await runManagementStep({ card: managementCard, step: "send_to_client" });
   await expectBoardSaved(page);
@@ -528,6 +540,7 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
   const deliveryDrawer = await openDrawer(
     cardFor(page, persistentDeliverableNames.main),
   );
+  await openDrawerTab(deliveryDrawer, "المحتوى والنسخ");
   await deliveryDrawer
     .getByRole("button", { name: "راجعت بيانات التسليم" })
     .click();

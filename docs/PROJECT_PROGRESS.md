@@ -1,5 +1,36 @@
 # Project Progress
 
+## Spec 015 X010-B-6A local green, owner UAT pending — 2026-08-03
+
+Status: `X010_B6A_LOCAL_GREEN_CI_PENDING_OWNER_UAT_PENDING`. Starting HEAD
+`f45983d0c3faaaa855f847a0aec580418ad33e77` was verified with a clean worktree on
+`codex/015-persistent-mvp-pilot-completion`. Scope stayed inside Spec 015 only:
+S015-P2-121, S015-P2-122, S015-P2-123, and the visual-density part of D18.
+
+Delivered:
+- The universal drawer is now organized into seven keyboard-accessible RTL tabs:
+  overview, content/versions, files, execution tasks, comments, internal
+  quality, and activity. Overview is intentionally minimal: status, progress,
+  due date, owner, and next action.
+- Internal quality now reads as «مراجعة الجودة الداخلية», explains that clients
+  do not see it, provides six editable default checklist items, and saves only
+  through the explicit existing quality command/RPC action.
+- Team/member display now uses human names from `member_profiles`, central
+  Arabic role labels, and «عضو فريق» fallback instead of UUIDs, raw role keys, or
+  synthetic emails.
+- Visual density was tightened only on the drawer, client shell/home profile
+  area, management dashboard, and team workspace.
+
+Local verification PASS: lint; typecheck; unit 69/346; integration 28/112;
+component 30/128; RLS simulator 8/24; fixture E2E 179 passed / 10 skipped across
+desktop/mobile/RTL; persistent E2E 18/18 against local Supabase; secret scan;
+`git diff --check` (CRLF warnings only); build.
+
+Pending: commit/push, exact-HEAD CI, CodeRabbit, Vercel Preview, and final owner
+UAT. Not implemented in B6A: S015-P2-124 reopen-after-approval, S015-P2-125
+Kanban protected-move clarity, S015-P2-126 team invitation flow, email, UAT
+cleanup, Hosted UAT, Production, merge, or TEAM_UAT_READY.
+
 ## Spec 015 X010-B-5 corrective CI green, owner UAT pending — 2026-08-02
 
 Status: `X010_B5_CORRECTIVE_CI_GREEN_OWNER_UAT_PENDING`. Corrective code HEAD

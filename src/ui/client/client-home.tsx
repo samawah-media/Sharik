@@ -34,12 +34,12 @@ export function ClientHome({
 
   return (
     <main className="mx-auto grid w-full max-w-5xl gap-5 px-4 py-5 sm:py-6">
-      <section className="grid gap-3 rounded-2xl border border-border bg-surface p-4 shadow-xs sm:p-6">
+      <section className="grid gap-3 rounded-lg border border-border bg-surface p-4 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm font-semibold text-accent">بوابة العميل</p>
           <Badge tone="success">مساحتك الخاصة</Badge>
         </div>
-        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+        <h1 className="text-lg font-semibold tracking-tight sm:text-xl">
           مساحة {displayClientName}
         </h1>
         <p className="max-w-2xl text-sm leading-6 text-muted">
@@ -106,7 +106,7 @@ function HomeSectionCard({
   return (
     <ButtonLink
       aria-label={`${heading} — ${ctaLabel}`}
-      className="grid h-auto grid-rows-[auto_auto_auto] items-start gap-2 rounded-2xl !text-right"
+      className="grid h-auto grid-rows-[auto_auto_auto] items-start gap-2 rounded-lg !text-right"
       href={href}
       variant="secondary"
     >

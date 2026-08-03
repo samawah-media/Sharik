@@ -1,5 +1,36 @@
 # Spec 015 gate status
 
+## X010-B-6A local green, exact-HEAD CI pending — 2026-08-03
+
+`X010_B6A_LOCAL_GREEN_CI_PENDING_OWNER_UAT_PENDING`. Mandatory starting HEAD
+`f45983d0c3faaaa855f847a0aec580418ad33e77` verified before edits on
+`codex/015-persistent-mvp-pilot-completion`; worktree was clean. Scope stayed
+inside Spec 015 and was limited to S015-P2-121, S015-P2-122, S015-P2-123, and
+the visual-density part of D18. No Spec 016, ADR, dependency, migration,
+permission/RLS change, email, UAT cleanup, hosted UAT, Production, merge, or
+team invitation was introduced.
+
+Local gate PASS on 2026-08-03: `npm run lint`; `npm run typecheck`; `npm run
+test:unit` 69 files / 346 tests; `npm run test:integration` 28 files / 112
+tests; `npm run test:component` 30 files / 128 tests; `npm run
+test:rls:simulator` 8 files / 24 tests; `npm run test:e2e` 179 passed / 10
+skipped across desktop/mobile/RTL; `npm run test:e2e:persistent` 18/18 against
+local Supabase after updating persistent tests for the new drawer tabs; `npm run
+secret:scan`; `git diff --check` (CRLF warnings only); `npm run build`.
+
+Delivered: compact sticky drawer header with status and next action; seven
+keyboard-accessible RTL tabs; overview reduced to status/progress/due
+date/owner/next step; mounted panels preserve form values; internal quality
+explains client invisibility, shows editable defaults, and saves explicitly via
+existing quality commands/RPC; member display uses `member_profiles` human names,
+Arabic role labels, and `عضو فريق` fallback rather than UUID/raw roles/synthetic
+emails; visual density tightened only on the drawer, client shell/home profile
+area, management dashboard, and team workspace.
+
+CI, CodeRabbit, and Vercel Preview are pending until push. Owner UAT and
+TEAM_UAT_READY are not declared. B6B remains for S015-P2-124, S015-P2-125, and
+S015-P2-126; B7 remains the final owner acceptance trial.
+
 ## X010-B-5 corrective exact-HEAD CI GREEN — 2026-08-02
 
 `X010_B5_CORRECTIVE_CI_GREEN_OWNER_UAT_PENDING`. Mandatory starting HEAD was

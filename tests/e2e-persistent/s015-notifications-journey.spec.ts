@@ -48,6 +48,12 @@ const openDrawer = async (page: Page, card: Locator) => {
   return drawer;
 };
 
+const openDrawerTab = async (drawer: Locator, name: string | RegExp) => {
+  const tab = drawer.getByRole("tab", { name }).first();
+  await expect(tab).toBeVisible();
+  await tab.click();
+};
+
 const cardFor = (page: Page, name: string) =>
   page.locator("article").filter({ hasText: name });
 
@@ -73,6 +79,7 @@ test("send-to-client notifies the client approver in-app (persistent)", async ({
       page,
       cardFor(page, persistentDeliverableNames.main),
     );
+    await openDrawerTab(writerDrawer, "المحتوى والنسخ");
     await writerDrawer.locator('input[name="versionNumber"]').fill("1");
     await writerDrawer
       .locator('textarea[name="contentBody"]')
@@ -93,6 +100,7 @@ test("send-to-client notifies the client approver in-app (persistent)", async ({
       page,
       cardFor(page, persistentDeliverableNames.main),
     );
+    await openDrawerTab(approveDrawer, "المحتوى والنسخ");
     const approveForm = approveDrawer.locator(
       'form:has(input[name="workflowStep"][value="approve_internally"])',
     );
@@ -108,6 +116,7 @@ test("send-to-client notifies the client approver in-app (persistent)", async ({
       page,
       cardFor(page, persistentDeliverableNames.main),
     );
+    await openDrawerTab(sendDrawer, "المحتوى والنسخ");
     const confirmBtn = sendDrawer.getByRole("button", {
       name: "راجعت النسخة والملفات",
     });
@@ -165,6 +174,7 @@ test("task assignment notifies the assignee in-app (persistent)", async ({
   });
   const card = cardFor(page, persistentDeliverableNames.main);
   const drawer = await openDrawer(page, card);
+  await openDrawerTab(drawer, "مهام التنفيذ");
 
   // Add a task assigned to the writer if the control is available.
   const addTask = drawer.getByRole("button", { name: /إضافة مهمة|مهمة جديدة/ }).first();

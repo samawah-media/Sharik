@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
   createPersistentActorClient,
   persistentDeliverableNames,
@@ -42,6 +42,12 @@ const openDeliverableWorkspace = async (page: Page, name: string) => {
   return drawer;
 };
 
+const openDrawerTab = async (drawer: Locator, name: string | RegExp) => {
+  const tab = drawer.getByRole("tab", { name }).first();
+  await expect(tab).toBeVisible();
+  await tab.click();
+};
+
 test("real Auth sessions enforce the task assignment and reassignment journey", async ({
   page,
 }) => {
@@ -54,6 +60,7 @@ test("real Auth sessions enforce the task assignment and reassignment journey", 
   await signInViaUi(page, seed.actors.tenantAdmin);
   await page.goto(boardPath, { waitUntil: "domcontentloaded" });
   let drawer = await openDeliverableWorkspace(page, deliverableName);
+  await openDrawerTab(drawer, "مهام التنفيذ");
   await drawer.getByLabel("عنوان المهمة").fill(taskTitle);
   await drawer.getByLabel("الوصف").fill("وصف المهمة المسندة");
   await drawer.getByLabel("الأولوية").selectOption("high");
@@ -91,6 +98,7 @@ test("real Auth sessions enforce the task assignment and reassignment journey", 
   await signInViaUi(page, seed.actors.unassignedWriter);
   await page.goto("/work", { waitUntil: "domcontentloaded" });
   drawer = await openDeliverableWorkspace(page, deliverableName);
+  await openDrawerTab(drawer, "مهام التنفيذ");
   await expect(drawer.getByText(taskTitle)).toBeVisible();
   await drawer
     .getByRole("combobox", { name: `حالة المهمة: ${taskTitle}` })
@@ -134,6 +142,7 @@ test("real Auth sessions enforce the task assignment and reassignment journey", 
   await signInViaUi(page, seed.actors.tenantAdmin);
   await page.goto(boardPath, { waitUntil: "domcontentloaded" });
   drawer = await openDeliverableWorkspace(page, deliverableName);
+  await openDrawerTab(drawer, "مهام التنفيذ");
   const editDisclosure = drawer
     .locator("details")
     .filter({ hasText: "تعديل المهمة أو إعادة إسنادها" })
@@ -164,6 +173,7 @@ test("real Auth sessions enforce the task assignment and reassignment journey", 
   await signInViaUi(page, seed.actors.assignedDesigner);
   await page.goto("/work", { waitUntil: "domcontentloaded" });
   drawer = await openDeliverableWorkspace(page, deliverableName);
+  await openDrawerTab(drawer, "مهام التنفيذ");
   await drawer
     .getByRole("combobox", { name: `حالة المهمة: ${taskTitle}` })
     .selectOption("done");

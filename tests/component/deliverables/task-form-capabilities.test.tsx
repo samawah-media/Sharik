@@ -1,16 +1,23 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
-import { TaskForm } from "@/ui/deliverables/workspace-forms";
+import { QualityCheckForm, TaskForm } from "@/ui/deliverables/workspace-forms";
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+});
+
+const { upsertQualityCheck } = vi.hoisted(() => ({
+  upsertQualityCheck: vi.fn().mockResolvedValue({ ok: true }),
+}));
 
 vi.mock("@/server/actions/deliverable-workspace-actions", () => ({
   upsertDeliverableTask: vi.fn().mockResolvedValue({ ok: true }),
   deleteDeliverableTask: vi.fn().mockResolvedValue({ ok: true }),
   saveOrSubmitVersionContent: vi.fn().mockResolvedValue({ ok: true }),
   addWorkspaceComment: vi.fn().mockResolvedValue({ ok: true }),
-  upsertQualityCheck: vi.fn().mockResolvedValue({ ok: true }),
+  upsertQualityCheck,
   registerWorkspaceFile: vi.fn().mockResolvedValue({ ok: true }),
   createWorkspaceFileDownload: vi.fn().mockResolvedValue({ ok: true }),
   moveDeliverableOnBoard: vi.fn().mockResolvedValue({ ok: true }),
@@ -180,5 +187,37 @@ describe("TaskForm capabilities", () => {
     );
     expect(screen.getByText("حفظ التعديلات")).toBeTruthy();
     expect(screen.getByDisplayValue("مهمة موجودة")).toBeTruthy();
+  });
+});
+
+describe("QualityCheckForm defaults", () => {
+  it("shows an editable default checklist and saves only after the explicit action", async () => {
+    render(
+      <QualityCheckForm
+        defaultChecklist
+        deliverable={baseDeliverable}
+        versionId="version_1"
+      />,
+    );
+
+    expect(screen.getByDisplayValue("سلامة اللغة والإملاء.")).toBeTruthy();
+    expect(screen.getByDisplayValue("مطابقة هوية العميل.")).toBeTruthy();
+    expect(upsertQualityCheck).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByDisplayValue("سلامة اللغة والإملاء."), {
+      target: { value: "سلامة اللغة والنبرة." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "حفظ قائمة الجودة" }));
+
+    await waitFor(() => {
+      expect(upsertQualityCheck).toHaveBeenCalledTimes(6);
+    });
+    expect(upsertQualityCheck).toHaveBeenCalledWith(
+      expect.objectContaining({
+        label: "سلامة اللغة والنبرة.",
+        status: "pending",
+        versionId: "version_1",
+      }),
+    );
   });
 });

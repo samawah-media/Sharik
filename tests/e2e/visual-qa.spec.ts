@@ -5,6 +5,9 @@ test.describe.configure({ timeout: 180_000 });
 const syntheticLeakPatterns = [
   /client_b/i,
   /tenant_b/i,
+  /tenant_administrator/i,
+  /account_manager/i,
+  /@[a-z0-9.-]+\.[a-z]{2,}/i,
   /approval log/i,
   /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i,
 ];
@@ -192,13 +195,26 @@ test("deliverable list, universal drawer, forms, files, comments, and focus retu
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(closeButton).toBeFocused();
   await expect(
+    drawer.getByRole("tab", { name: /نظرة عامة/ }),
+  ).toBeVisible();
+  await expect(
+    drawer.getByRole("heading", { name: "نظرة عامة" }),
+  ).toBeVisible();
+  await drawer.getByRole("tab", { name: /المحتوى والنسخ/ }).click();
+  await expect(
     drawer.getByRole("heading", { name: "المحتوى والنسخة" }),
   ).toBeVisible();
+  await drawer.getByRole("tab", { name: /الملفات/ }).click();
   await expect(drawer.getByRole("heading", { name: "الملفات" })).toBeVisible();
+  await drawer.getByRole("tab", { name: /الجودة الداخلية/ }).click();
   await expect(
-    drawer.getByRole("heading", { name: "التعليقات" }),
+    drawer.getByRole("heading", { name: "مراجعة الجودة الداخلية" }),
   ).toBeVisible();
+  await expect(drawer.getByText(/لا يراها العميل/)).toBeVisible();
+  await page.keyboard.press("ArrowLeft");
+  await expect(drawer.getByRole("tab", { name: /النشاط/ })).toBeFocused();
   await expectMinimumTouchTargets(page);
+  await expectNoUnexpectedHorizontalOverflow(page);
   await capture(page, testInfo, "universal-drawer-content-files-comments", {
     fullPage: false,
   });
@@ -243,6 +259,7 @@ test("client pending inbox visual states distinguish viewer and approver", async
   await expect(page.getByText(/تعليق داخلي|ملاحظة جودة|internal/i)).toHaveCount(
     0,
   );
+  await expect(page.getByText(/مراجعة الجودة الداخلية|لا يراها العميل/)).toHaveCount(0);
   await expectMinimumTouchTargets(page);
   await capture(page, testInfo, "client-approver-actions-pending");
 

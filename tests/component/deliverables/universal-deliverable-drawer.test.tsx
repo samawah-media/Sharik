@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableWorkspace } from "@/modules/deliverables/deliverable-workspace";
@@ -73,12 +73,19 @@ const { workspace } = vi.hoisted(() => {
     ],
     uploadAttempts: [],
     comments: [],
-    qualityChecks: [
+  qualityChecks: [
       {
         id: "qc_1",
         versionId: "version_1",
         label: "مراجعة اللغة",
         status: "changes_required",
+        checkedBy: {
+          userId: "reviewer_1",
+          displayName: "مدير المشروع",
+          roleLabel: "مدير المشروع",
+          initial: "م",
+        },
+        checkedAt: "2026-07-03T01:00:00.000Z",
         sortOrder: 0,
       },
     ],
@@ -126,7 +133,12 @@ vi.mock("@/server/actions/deliverable-workspace-actions", () => ({
 }));
 
 vi.mock("@/ui/deliverables/workspace-forms", () => ({
-  VersionContentForm: () => <div data-testid="stub-version-form" />,
+  VersionContentForm: () => (
+    <label>
+      مسودة اختبار
+      <input data-testid="stub-version-input" />
+    </label>
+  ),
   WorkspaceCommentForm: () => <div data-testid="stub-comment-form" />,
   TaskForm: () => <div data-testid="stub-task-form" />,
   TaskStatusControl: () => <div data-testid="stub-task-status" />,
@@ -188,6 +200,53 @@ beforeEach(() => {
 });
 
 describe("universal deliverable drawer localization", () => {
+  it("organizes the drawer into keyboard-accessible tabs and preserves form values", async () => {
+    render(<UniversalDeliverableDrawer deliverable={deliverable} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "فتح مساحة المخرج" }));
+
+    const drawer = await screen.findByTestId("deliverable-drawer");
+    const tabs = within(drawer).getAllByRole("tab");
+    expect(tabs.map((tab) => tab.textContent?.replace(/\d+$/, ""))).toEqual([
+      "نظرة عامة",
+      "المحتوى والنسخ",
+      "الملفات",
+      "مهام التنفيذ",
+      "التعليقات",
+      "الجودة الداخلية",
+      "النشاط",
+    ]);
+
+    expect(
+      within(drawer).getByRole("heading", { name: "نظرة عامة" }),
+    ).toBeVisible();
+    expect(within(drawer).queryByText("الأولوية")).toBeNull();
+
+    fireEvent.click(within(drawer).getByRole("tab", { name: /المحتوى والنسخ/ }));
+    const draftInput = within(drawer).getByTestId("stub-version-input");
+    fireEvent.change(draftInput, { target: { value: "قيمة محفوظة أثناء التنقل" } });
+
+    fireEvent.click(within(drawer).getByRole("tab", { name: /الجودة الداخلية/ }));
+    expect(
+      within(drawer).getByRole("heading", { name: "مراجعة الجودة الداخلية" }),
+    ).toBeVisible();
+    expect(
+      within(drawer).getByText(/لا يراها العميل/),
+    ).toBeVisible();
+
+    fireEvent.keyDown(within(drawer).getByRole("tab", { name: /الجودة الداخلية/ }), {
+      key: "ArrowLeft",
+    });
+    await waitFor(() => {
+      expect(within(drawer).getByRole("tab", { name: /النشاط/ })).toHaveFocus();
+    });
+
+    fireEvent.click(within(drawer).getByRole("tab", { name: /المحتوى والنسخ/ }));
+    expect(within(drawer).getByTestId("stub-version-input")).toHaveValue(
+      "قيمة محفوظة أثناء التنقل",
+    );
+  });
+
   it("renders Arabic domain labels and never surfaces raw technical enums", async () => {
     render(<UniversalDeliverableDrawer deliverable={deliverable} />);
 
@@ -204,13 +263,13 @@ describe("universal deliverable drawer localization", () => {
     const expectedArabicLabels = [
       "معتمد داخليًا",
       "منشور",
-      "عادية",
       "قيد التنفيذ",
       "ملف داخلي",
-      "تطلب تعديلًا",
+      "يحتاج تعديلًا",
       "معتمدة داخليًا",
       "قرار العميل: مقبول",
       "توقف الوقت بانتظار العميل",
+      "راجعها مدير المشروع",
     ];
     for (const label of expectedArabicLabels) {
       expect(drawerText, `expected Arabic label "${label}" in drawer`).toContain(label);

@@ -1,5 +1,38 @@
 # Spec 015 execution log
 
+## 2026-08-03 — X010-B-6A local green (drawer, internal quality, team clarity)
+
+- Status recorded as `X010_B6A_LOCAL_GREEN_CI_PENDING_OWNER_UAT_PENDING`.
+  Mandatory starting HEAD `f45983d0c3faaaa855f847a0aec580418ad33e77`; clean
+  worktree verified before edits. Scope stayed inside Spec 015 only: S015-P2-121,
+  S015-P2-122, S015-P2-123, plus the visual part of D18. Explicitly not
+  implemented: S015-P2-124 reopen-after-approval, S015-P2-125 Kanban logic /
+  protected-move changes, S015-P2-126 team invitations, email, UAT cleanup,
+  Hosted UAT, Production, or merge.
+- Drawer: `UniversalDeliverableDrawer` now uses seven tabs (نظرة عامة، المحتوى
+  والنسخ، الملفات، مهام التنفيذ، التعليقات، الجودة الداخلية، النشاط), a compact
+  sticky header, keyboard tab navigation, RTL/mobile-safe horizontal tab scroll,
+  and mounted tab panels so form values persist while switching tabs. Overview
+  intentionally shows only status, progress, due date, owner, and next action.
+- Quality: new default checklist module provides six editable internal-review
+  items. The quality tab explains that the checklist is internal to Samawah and
+  invisible to clients. Default items are not auto-saved; the explicit save
+  action writes through the existing `upsertQualityCheck` command/RPC path.
+  Arabic statuses are «بانتظار المراجعة»، «يحتاج تعديلًا»، and «اجتاز
+  المراجعة»; reviewer/timestamp is shown only when trusted fields exist.
+- Team clarity: new central Arabic role-label mapper plus `member_profiles`
+  display-name sanitizer removes raw roles (`tenant_administrator`,
+  `account_manager`), UUIDs, fixture/synthetic emails, and falls back to «عضو
+  فريق» without changing assignment or authorization behavior.
+- Visual D18 slice: reduced oversized spacing/type/card weight only on drawer,
+  client shell/home profile area, management dashboard, and team workspace.
+- Local matrix PASS: lint; typecheck; unit 69/346; integration 28/112; component
+  30/128; RLS simulator 8/24; fixture E2E 179 passed / 10 skipped across
+  desktop/mobile/RTL; persistent E2E 18/18 against local Supabase; secret scan;
+  `git diff --check` (CRLF warnings only); build.
+- Pending: commit/push, exact-HEAD CI, CodeRabbit, and Vercel Preview. Owner UAT
+  and TEAM_UAT_READY are not declared.
+
 ## 2026-08-02 — X010-B-5 corrective (client document files + honest states + lazy preview + modal) exact-HEAD CI GREEN
 
 - Status advanced to `X010_B5_CORRECTIVE_CI_GREEN_OWNER_UAT_PENDING`. Mandatory

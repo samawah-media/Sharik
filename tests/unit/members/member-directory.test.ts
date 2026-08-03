@@ -3,6 +3,7 @@ import {
   createMemberDirectory,
   repairArabicMojibake,
   resolveMemberDisplays,
+  safeMemberDisplayName,
 } from "@/modules/members/member-directory";
 
 describe("scoped member directory", () => {
@@ -43,5 +44,26 @@ describe("scoped member directory", () => {
         }),
       ]);
     expect(resolveMemberDisplays(directory, ["user_other"])).toEqual([]);
+  });
+
+  it("replaces raw identifiers, synthetic email-like names, and raw role labels", () => {
+    expect(safeMemberDisplayName("00000000-0000-4000-8000-000000000000")).toBe(
+      "عضو فريق",
+    );
+    expect(safeMemberDisplayName("fixture.user@example.com")).toBe("عضو فريق");
+
+    const directory = createMemberDirectory([
+      {
+        user_id: "user_a",
+        display_name: "fixture.user@example.com",
+        role_label: "account_manager",
+      },
+    ]);
+
+    expect(directory.user_a).toMatchObject({
+      displayName: "عضو فريق",
+      roleLabel: "مدير الحساب",
+      initial: "ع",
+    });
   });
 });

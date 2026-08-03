@@ -1,6 +1,7 @@
 "use client";
 
 import { FileText, X } from "lucide-react";
+import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { hasClientReviewPayload } from "@/modules/approvals/client-review-readiness";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
@@ -12,9 +13,7 @@ import type {
 import { canUpdateTaskStatus } from "@/modules/deliverables/deliverable-workspace";
 import {
   deliverableStatusLabel,
-  deliverableTypeLabel,
   fileVisibilityLabel,
-  priorityLabel,
   qualityCheckStatusLabel,
   taskStatusLabel,
   versionStatusLabel,
@@ -65,11 +64,67 @@ const nextAction: Record<string, string> = {
   delivered: "مكتمل",
 };
 
+const drawerTabs = [
+  { id: "overview", label: "نظرة عامة" },
+  { id: "content", label: "المحتوى والنسخ" },
+  { id: "files", label: "الملفات" },
+  { id: "execution", label: "مهام التنفيذ" },
+  { id: "comments", label: "التعليقات" },
+  { id: "quality", label: "الجودة الداخلية" },
+  { id: "activity", label: "النشاط" },
+] as const;
+
+type DrawerTabId = (typeof drawerTabs)[number]["id"];
+
 function EmptySection({ children }: { children: string }) {
   return (
     <p className="rounded-lg border border-dashed border-border bg-background px-3 py-4 text-sm text-muted">
       {children}
     </p>
+  );
+}
+
+function SectionPanel({
+  activeTab,
+  children,
+  id,
+  labelledBy,
+}: {
+  activeTab: DrawerTabId;
+  children: ReactNode;
+  id: DrawerTabId;
+  labelledBy: string;
+}) {
+  return (
+    <section
+      aria-labelledby={labelledBy}
+      className="grid gap-3"
+      hidden={activeTab !== id}
+      id={`drawer-panel-${id}`}
+      role="tabpanel"
+    >
+      {children}
+    </section>
+  );
+}
+
+function MemberSummary({
+  label,
+  member,
+}: {
+  label: string;
+  member?: { displayName: string; roleLabel?: string };
+}) {
+  return (
+    <div className="rounded-lg bg-background p-3">
+      <dt className="font-semibold">{label}</dt>
+      <dd className="mt-1 text-muted">
+        {member?.displayName ?? "عضو فريق"}
+        {member?.roleLabel ? (
+          <span className="block text-xs text-muted">{member.roleLabel}</span>
+        ) : null}
+      </dd>
+    </div>
   );
 }
 
@@ -239,6 +294,7 @@ export function UniversalDeliverableDrawer({
   );
   const [loading, setLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [activeTab, setActiveTab] = useState<DrawerTabId>("overview");
   const [uploadSafety, setUploadSafety] =
     useState<WorkspaceUploadSafetyState>("settled");
   const [closeFeedback, setCloseFeedback] = useState<string>();
@@ -265,7 +321,26 @@ export function UniversalDeliverableDrawer({
 
   const handleOpen = () => {
     if (!workspace) setLoading(true);
+    setActiveTab("overview");
     setOpen(true);
+  };
+
+  const onTabKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    const currentIndex = drawerTabs.findIndex((tab) => tab.id === activeTab);
+    const lastIndex = drawerTabs.length - 1;
+    let nextIndex = currentIndex;
+    if (event.key === "ArrowRight") nextIndex = Math.max(0, currentIndex - 1);
+    if (event.key === "ArrowLeft") nextIndex = Math.min(lastIndex, currentIndex + 1);
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = lastIndex;
+    if (nextIndex !== currentIndex) {
+      event.preventDefault();
+      const nextTab = drawerTabs[nextIndex];
+      setActiveTab(nextTab.id);
+      requestAnimationFrame(() => {
+        document.getElementById(`drawer-tab-${nextTab.id}`)?.focus();
+      });
+    }
   };
 
   const requestClose = useCallback(() => {
@@ -372,6 +447,20 @@ export function UniversalDeliverableDrawer({
     body: currentVersion?.body,
     files: currentVersionFiles,
   });
+  const dueDate =
+    deliverable.internalDueDate ??
+    deliverable.clientDueDate ??
+    deliverable.finalDueDate;
+  const nextActionLabel =
+    nextAction[deliverable.status] ?? "راجع حالة المخرج";
+  const tabCounts: Partial<Record<DrawerTabId, number>> = {
+    content: workspace?.versions.length,
+    files: workspace?.files.length,
+    execution: workspace?.tasks.length,
+    comments: workspace?.comments.length,
+    quality: workspace?.qualityChecks.length,
+    activity: workspace?.activity.length,
+  };
 
   return (
     <>
@@ -402,18 +491,19 @@ export function UniversalDeliverableDrawer({
             ref={panelRef}
             role="dialog"
           >
-            <header className="flex items-start justify-between gap-3 border-b border-border p-4 sm:p-5">
+            <header className="flex items-start justify-between gap-3 border-b border-border p-3 sm:p-4">
               <div className="min-w-0">
                 <p className="text-xs font-semibold text-accent">
                   مساحة تنفيذ مشتركة
                 </p>
-                <h2 className="mt-1 break-words text-xl font-semibold">
+                <h2 className="mt-1 break-words text-lg font-semibold">
                   {deliverable.name}
                 </h2>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <Badge tone="accent">{deliverable.progressPercentage}%</Badge>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
                   <Badge tone="muted">{deliverableStatusLabel(deliverable.status)}</Badge>
-                  <Badge tone="neutral">{deliverableTypeLabel(deliverable.type)}</Badge>
+                  <span className="text-xs text-muted">
+                    الخطوة التالية: {nextActionLabel}
+                  </span>
                 </div>
               </div>
               <button
@@ -446,53 +536,88 @@ export function UniversalDeliverableDrawer({
                 </div>
               ) : (
                 <div className="grid gap-6 pb-8">
-                  <section
-                    aria-labelledby="drawer-overview"
-                    className="grid gap-3"
+                  <div
+                    aria-label="أقسام مساحة المخرج"
+                    className="flex gap-2 overflow-x-auto border-b border-border pb-2"
+                    role="tablist"
+                  >
+                    {drawerTabs.map((tab) => {
+                      const active = activeTab === tab.id;
+                      const count = tabCounts[tab.id];
+                      return (
+                        <button
+                          aria-controls={`drawer-panel-${tab.id}`}
+                          aria-selected={active}
+                          className={`min-h-11 min-w-fit rounded-lg px-3 text-sm font-semibold transition-colors ${
+                            active
+                              ? "bg-accent text-white"
+                              : "bg-background text-muted hover:bg-accent-soft hover:text-foreground"
+                          }`}
+                          id={`drawer-tab-${tab.id}`}
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id)}
+                          onKeyDown={onTabKeyDown}
+                          role="tab"
+                          tabIndex={active ? 0 : -1}
+                          type="button"
+                        >
+                          {tab.label}
+                          {typeof count === "number" && count > 0 ? (
+                            <span className="ms-1 text-xs opacity-80">
+                              {count}
+                            </span>
+                          ) : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <SectionPanel
+                    activeTab={activeTab}
+                    id="overview"
+                    labelledBy="drawer-overview"
                   >
                     <h3
                       className="text-base font-semibold"
                       id="drawer-overview"
                     >
-                      نظرة عامة والخطوة التالية
+                      نظرة عامة
                     </h3>
                     <dl className="grid gap-2 text-sm sm:grid-cols-2">
                       <div className="rounded-lg bg-background p-3">
+                        <dt className="font-semibold">الحالة</dt>
+                        <dd className="mt-1 text-muted">
+                          {deliverableStatusLabel(deliverable.status)}
+                        </dd>
+                      </div>
+                      <div className="rounded-lg bg-background p-3">
+                        <dt className="font-semibold">التقدم</dt>
+                        <dd className="mt-1 text-muted">
+                          {deliverable.progressPercentage}%
+                        </dd>
+                      </div>
+                      <div className="rounded-lg bg-background p-3">
                         <dt className="font-semibold">الخطوة التالية</dt>
                         <dd className="mt-1 text-muted">
-                          {nextAction[deliverable.status] ?? "راجع حالة المخرج"}
+                          {nextActionLabel}
                         </dd>
                       </div>
                       <div className="rounded-lg bg-background p-3">
-                        <dt className="font-semibold">الموعد الداخلي</dt>
+                        <dt className="font-semibold">الموعد</dt>
                         <dd className="mt-1 text-muted">
-                          {deliverable.internalDueDate ?? "غير محدد"}
+                          {dueDate ?? "غير محدد"}
                         </dd>
                       </div>
-                      <div className="rounded-lg bg-background p-3">
-                        <dt className="font-semibold">الأولوية</dt>
-                        <dd className="mt-1 text-muted">
-                          {priorityLabel(deliverable.priority)}
-                        </dd>
-                      </div>
-                      <div className="rounded-lg bg-background p-3">
-                        <dt className="font-semibold">المسؤول</dt>
-                        <dd className="mt-1 text-muted">
-                          {deliverable.ownerDisplay?.displayName ??
-                            "فريق سماوة"}
-                        </dd>
-                      </div>
+                      <MemberSummary
+                        label="المسؤول الرئيسي"
+                        member={deliverable.ownerDisplay}
+                      />
                     </dl>
-                    {deliverable.description ? (
-                      <p className="whitespace-pre-wrap text-sm leading-7 text-muted">
-                        {deliverable.description}
-                      </p>
-                    ) : null}
-                  </section>
+                  </SectionPanel>
 
-                  <section
-                    aria-labelledby="drawer-content"
-                    className="grid gap-3"
+                  <SectionPanel
+                    activeTab={activeTab}
+                    id="content"
+                    labelledBy="drawer-content"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <h3
@@ -614,11 +739,12 @@ export function UniversalDeliverableDrawer({
                         persistedUploadBlocked || uploadSafety !== "settled"
                       }
                     />
-                  </section>
+                  </SectionPanel>
 
-                  <section
-                    aria-labelledby="drawer-execution"
-                    className="grid gap-3"
+                  <SectionPanel
+                    activeTab={activeTab}
+                    id="execution"
+                    labelledBy="drawer-execution"
                   >
                     <h3
                       className="text-base font-semibold"
@@ -626,6 +752,30 @@ export function UniversalDeliverableDrawer({
                     >
                       مهام التنفيذ
                     </h3>
+                    {deliverable.contributorDisplays?.length ? (
+                      <div className="grid gap-2 rounded-lg border border-border bg-background p-3">
+                        <p className="text-sm font-semibold">
+                          أعضاء الفريق المشاركون
+                        </p>
+                        <ul className="flex flex-wrap gap-2">
+                          {deliverable.contributorDisplays.map((member) => (
+                            <li
+                              className="rounded-lg bg-surface px-3 py-2 text-xs"
+                              key={member.userId}
+                            >
+                              <span className="font-semibold">
+                                {member.displayName}
+                              </span>
+                              {member.roleLabel ? (
+                                <span className="block text-muted">
+                                  {member.roleLabel}
+                                </span>
+                              ) : null}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
                     {workspace?.tasks.length ? (
                       <ul className="grid gap-2">
                         {workspace.tasks.map((task) => (
@@ -649,11 +799,12 @@ export function UniversalDeliverableDrawer({
                       taskCapabilities={workspace?.taskCapabilities}
                       onMutated={handleMutated}
                     />
-                  </section>
+                  </SectionPanel>
 
-                  <section
-                    aria-labelledby="drawer-files"
-                    className="grid gap-3"
+                  <SectionPanel
+                    activeTab={activeTab}
+                    id="files"
+                    labelledBy="drawer-files"
                   >
                     <h3 className="text-base font-semibold" id="drawer-files">
                       الملفات
@@ -679,11 +830,12 @@ export function UniversalDeliverableDrawer({
                       onUploadAttemptCancelled={handleUploadAttemptCancelled}
                       uploadAttempts={workspace?.uploadAttempts}
                     />
-                  </section>
+                  </SectionPanel>
 
-                  <section
-                    aria-labelledby="drawer-comments"
-                    className="grid gap-3"
+                  <SectionPanel
+                    activeTab={activeTab}
+                    id="comments"
+                    labelledBy="drawer-comments"
                   >
                     <h3
                       className="text-base font-semibold"
@@ -733,23 +885,43 @@ export function UniversalDeliverableDrawer({
                       currentVersionId={workspace?.currentVersionId}
                       target={deliverable}
                     />
-                  </section>
+                  </SectionPanel>
 
-                  <section
-                    aria-labelledby="drawer-quality"
-                    className="grid gap-3"
+                  <SectionPanel
+                    activeTab={activeTab}
+                    id="quality"
+                    labelledBy="drawer-quality"
                   >
                     <h3 className="text-base font-semibold" id="drawer-quality">
-                      قائمة الجودة الداخلية
+                      مراجعة الجودة الداخلية
                     </h3>
+                    <p className="text-sm leading-6 text-muted">
+                      قائمة داخلية تساعد فريق سماوة على التأكد من جاهزية العمل
+                      قبل إرساله للعميل. لا يراها العميل.
+                    </p>
                     {workspace?.qualityChecks.length ? (
                       <ul className="grid gap-2">
                         {workspace.qualityChecks.map((check) => (
                           <li
-                            className="flex min-h-11 items-center justify-between gap-3 rounded-lg bg-background px-3 py-2"
+                            className="grid gap-2 rounded-lg bg-background px-3 py-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
                             key={check.id}
                           >
-                            <span className="text-sm">{check.label}</span>
+                            <div className="min-w-0">
+                              <span className="text-sm font-semibold">
+                                {check.label}
+                              </span>
+                              {check.note ? (
+                                <p className="mt-1 break-words text-xs text-muted">
+                                  {check.note}
+                                </p>
+                              ) : null}
+                              {check.checkedBy && check.checkedAt ? (
+                                <p className="mt-1 text-xs text-muted">
+                                  راجعها {check.checkedBy.displayName} ·{" "}
+                                  {formatDate(check.checkedAt)}
+                                </p>
+                              ) : null}
+                            </div>
                             {canPublishClientComment &&
                             workspace.currentVersionId ? (
                               <QualityCheckStatusControl
@@ -779,16 +951,18 @@ export function UniversalDeliverableDrawer({
                     )}
                     {canPublishClientComment ? (
                       <QualityCheckForm
+                        defaultChecklist={!workspace?.qualityChecks.length}
                         deliverable={deliverable}
                         versionId={workspace?.currentVersionId}
                         onMutated={handleMutated}
                       />
                     ) : null}
-                  </section>
+                  </SectionPanel>
 
-                  <section
-                    aria-labelledby="drawer-activity"
-                    className="grid gap-3"
+                  <SectionPanel
+                    activeTab={activeTab}
+                    id="activity"
+                    labelledBy="drawer-activity"
                   >
                     <h3
                       className="text-base font-semibold"
@@ -818,7 +992,7 @@ export function UniversalDeliverableDrawer({
                         لا يوجد نشاط ظاهر لهذا الدور بعد.
                       </EmptySection>
                     )}
-                  </section>
+                  </SectionPanel>
                 </div>
               )}
             </div>

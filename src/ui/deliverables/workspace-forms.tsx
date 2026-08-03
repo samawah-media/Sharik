@@ -18,6 +18,7 @@ import {
   deliverableTaskInputSchema,
   qualityCheckInputSchema,
 } from "@/modules/deliverables/workspace-inputs";
+import { createDefaultQualityChecklist } from "@/modules/deliverables/quality-defaults";
 import {
   addWorkspaceComment,
   saveOrSubmitVersionContent,
@@ -564,13 +565,18 @@ export function QualityCheckForm({
   deliverable,
   versionId,
   onMutated,
+  defaultChecklist = false,
 }: {
   deliverable: DeliverableSafeSummary;
   versionId?: string;
   onMutated?: () => void;
+  defaultChecklist?: boolean;
 }) {
   const router = useRouter();
   const [feedback, setFeedback] = useState<string>();
+  const [defaultItems, setDefaultItems] = useState(() =>
+    createDefaultQualityChecklist(),
+  );
   const form = useForm<QualityValues>({
     resolver: zodResolver(qualityCheckInputSchema),
     defaultValues: {
@@ -591,6 +597,49 @@ export function QualityCheckForm({
       <p className="text-sm text-muted">احفظ نسخة أولًا لإضافة عناصر الجودة.</p>
     );
 
+  const saveDefaultChecklist = async () => {
+    setFeedback(undefined);
+    const items = defaultItems
+      .map((item, index) => ({
+        ...item,
+        label: item.label.trim(),
+        sortOrder: index,
+      }))
+      .filter((item) => item.label.length > 0);
+    if (items.length === 0) {
+      setFeedback("أضف عنصر جودة واحدًا على الأقل قبل الحفظ.");
+      return;
+    }
+
+    const results = [];
+    for (const item of items) {
+      results.push(
+        await upsertQualityCheck({
+          clientId: deliverable.clientId,
+          deliverableId: deliverable.id,
+          versionId,
+          checkId: null,
+          label: item.label,
+          status: item.status,
+          note: item.note,
+          sortOrder: item.sortOrder,
+          idempotencyKey: crypto.randomUUID(),
+        }),
+      );
+    }
+
+    const ok = results.every((result) => result.ok);
+    setFeedback(
+      ok
+        ? "تم حفظ قائمة الجودة الداخلية."
+        : "تعذر حفظ قائمة الجودة كاملة. راجع الصلاحية ثم حاول مجددًا.",
+    );
+    if (ok) {
+      onMutated?.();
+      router.refresh();
+    }
+  };
+
   const submit = form.handleSubmit(async (values) => {
     setFeedback(undefined);
     const result = await upsertQualityCheck({
@@ -608,6 +657,47 @@ export function QualityCheckForm({
       router.refresh();
     }
   });
+
+  if (defaultChecklist) {
+    return (
+      <div className="grid gap-3 rounded-xl border border-border bg-background p-4">
+        <div>
+          <p className="text-sm font-semibold">القائمة الافتراضية</p>
+          <p className="mt-1 text-xs leading-5 text-muted">
+            عدّل العناصر هنا، ثم احفظها دفعة واحدة. لا يتم حفظ أي عنصر تلقائيًا.
+          </p>
+        </div>
+        <div className="grid gap-2">
+          {defaultItems.map((item, index) => (
+            <label className="grid gap-1 text-sm font-semibold" key={index}>
+              عنصر {index + 1}
+              <input
+                className="min-h-11 rounded-lg border border-border bg-surface px-3"
+                onChange={(event) =>
+                  setDefaultItems((current) =>
+                    current.map((entry, entryIndex) =>
+                      entryIndex === index
+                        ? { ...entry, label: event.target.value }
+                        : entry,
+                    ),
+                  )
+                }
+                value={item.label}
+              />
+            </label>
+          ))}
+        </div>
+        {feedback ? (
+          <p aria-live="polite" className="text-sm text-muted">
+            {feedback}
+          </p>
+        ) : null}
+        <Button onClick={saveDefaultChecklist} type="button" variant="primary">
+          حفظ قائمة الجودة
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <form
@@ -629,8 +719,8 @@ export function QualityCheckForm({
             {...form.register("status")}
           >
             <option value="pending">بانتظار المراجعة</option>
-            <option value="passed">مطابق</option>
-            <option value="changes_required">يحتاج تعديل</option>
+            <option value="passed">اجتاز المراجعة</option>
+            <option value="changes_required">يحتاج تعديلًا</option>
             <option value="not_applicable">غير مطبق</option>
           </select>
         </label>
@@ -709,8 +799,8 @@ export function QualityCheckStatusControl({
       onChange={(event) => change(event.target.value)}
     >
       <option value="pending">بانتظار</option>
-      <option value="passed">مطابق</option>
-      <option value="changes_required">تعديل</option>
+      <option value="passed">اجتاز</option>
+      <option value="changes_required">يحتاج تعديلًا</option>
       <option value="not_applicable">غير مطبق</option>
     </select>
   );

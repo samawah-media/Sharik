@@ -158,7 +158,7 @@ export function TeamWorkspace({
             }).status;
             return (
               <article
-                className="grid gap-3 rounded-2xl border border-border bg-surface p-3 lg:grid-cols-[minmax(18rem,28rem)_minmax(0,1fr)] lg:items-start"
+                className="grid gap-3 rounded-lg border border-border bg-surface p-3 lg:grid-cols-[minmax(18rem,28rem)_minmax(0,1fr)] lg:items-start"
                 key={deliverable.id}
               >
                 <DeliverableContentCard

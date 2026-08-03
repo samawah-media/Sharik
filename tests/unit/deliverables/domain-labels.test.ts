@@ -47,7 +47,7 @@ describe("domain labels", () => {
   it("returns natural Arabic for task, version, quality, approval, and visibility values", () => {
     expect(taskStatusLabel("in_progress")).toBe("قيد التنفيذ");
     expect(versionStatusLabel("internally_approved")).toBe("معتمدة داخليًا");
-    expect(qualityCheckStatusLabel("changes_required")).toBe("تطلب تعديلًا");
+    expect(qualityCheckStatusLabel("changes_required")).toBe("يحتاج تعديلًا");
     expect(approvalDecisionLabel("approved")).toBe("مقبول");
     expect(fileVisibilityLabel("internal_only")).toBe("ملف داخلي");
     expect(slaEventLabel("paused_waiting_client")).toBe(

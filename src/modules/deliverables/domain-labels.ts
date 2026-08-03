@@ -55,9 +55,9 @@ export const versionStatusLabels: Record<string, string> = {
 };
 
 export const qualityCheckStatusLabels: Record<string, string> = {
-  pending: "قيد الانتظار",
-  passed: "ناجحة",
-  changes_required: "تطلب تعديلًا",
+  pending: "بانتظار المراجعة",
+  passed: "اجتاز المراجعة",
+  changes_required: "يحتاج تعديلًا",
   not_applicable: "لا تنطبق",
 };
 

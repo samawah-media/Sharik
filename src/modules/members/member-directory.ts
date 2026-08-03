@@ -1,3 +1,5 @@
+import { humanRoleLabel, roleLabelAr } from "@/modules/roles/role-labels";
+
 const windows1252Bytes = new Map<number, number>([
   [0x20ac, 0x80],
   [0x201a, 0x82],
@@ -64,6 +66,21 @@ export type MemberDisplay = {
 
 export type MemberDirectory = Record<string, MemberDisplay>;
 
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const unsafeDisplayPattern =
+  /(@|tenant_administrator|account_manager|content_writer|designer|client_approver|client_viewer|fixture|synthetic|example\.com)/i;
+
+export const memberFallbackName = "عضو فريق";
+
+export const safeMemberDisplayName = (value?: string | null) => {
+  const repaired = repairArabicMojibake(value ?? "").trim();
+  if (!repaired || uuidPattern.test(repaired) || unsafeDisplayPattern.test(repaired)) {
+    return memberFallbackName;
+  }
+  return repaired;
+};
+
 export const createMemberDirectory = (
   rows: Array<{
     user_id: string;
@@ -74,19 +91,19 @@ export const createMemberDirectory = (
 ): MemberDirectory =>
   Object.fromEntries(
     rows.map((row) => {
-      const displayName = repairArabicMojibake(row.display_name);
-      const roleLabel = row.role_label
-        ? repairArabicMojibake(row.role_label)
-        : undefined;
+      const displayName = safeMemberDisplayName(row.display_name);
+      const roleLabel = humanRoleLabel(
+        row.role_label ? repairArabicMojibake(row.role_label) : undefined,
+      );
 
       return [
         row.user_id,
         {
           userId: row.user_id,
           displayName,
-          roleLabel,
+          roleLabel: roleLabel ?? roleLabelAr(),
           avatarUrl: row.avatar_url ?? undefined,
-          initial: Array.from(displayName.trim())[0] ?? "؟",
+          initial: Array.from(displayName.trim())[0] ?? "ع",
         },
       ];
     }),

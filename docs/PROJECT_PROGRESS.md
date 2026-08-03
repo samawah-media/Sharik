@@ -1,8 +1,8 @@
 # Project Progress
 
-## Spec 015 X010-B-6A corrective local green, CI pending — 2026-08-03
+## Spec 015 X010-B-6A corrective CI green, owner UAT pending — 2026-08-03
 
-Status: `X010_B6A_CORRECTIVE_LOCAL_GREEN_CI_PENDING`. Independent review found
+Status: `X010_B6A_CORRECTIVE_CI_GREEN_OWNER_UAT_PENDING`. Independent review found
 that the editable default quality checklist could persist only part of its six
 items, and that the lazy Drawer read hid failures as empty content. Both are now
 fixed inside B6A. Migration `202608030001` saves the checklist in one atomic,
@@ -11,11 +11,13 @@ error, preserves last-loaded data on refresh failure, and the bounded fixture
 workspace now loads correctly for demo/visual QA.
 
 Local evidence: reset PASS; pgTAP 14/695 PASS; lint/typecheck PASS; unit 70/349;
-integration 28/112; component 30/130; RLS simulator
-8/24; build and secret scan PASS; targeted Drawer visual E2E PASS on desktop,
-mobile, and RTL. Exact-HEAD CI/Preview are pending and no corrective GREEN is
-claimed yet. B6B, Owner UAT, Hosted UAT, Production, merge, and TEAM_UAT_READY
-remain outside this closure.
+integration 28/112; component 30/130; RLS simulator 8/24; build and secret scan
+PASS; targeted Drawer visual E2E PASS on desktop, mobile, and RTL. Exact code
+HEAD `b825182f085ee2ef65372d200c8a4458b12e9b3f` passed F-001 run
+`30837530949`, including fixture E2E 178 passed / 10 configured skips and
+persistent E2E 18/18. Vercel on `samawahs-projects/shrik` passed. B6B, Owner
+UAT, Hosted UAT, Production, merge, and TEAM_UAT_READY remain outside this
+closure.
 
 ## Spec 015 X010-B-6A CI green, owner UAT pending — 2026-08-03
 

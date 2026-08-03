@@ -1,8 +1,8 @@
 # Spec 015 gate status
 
-## X010-B-6A corrective local green, exact-HEAD CI pending — 2026-08-03
+## X010-B-6A corrective CI green, owner UAT pending — 2026-08-03
 
-`X010_B6A_CORRECTIVE_LOCAL_GREEN_CI_PENDING`. Review of the B6A implementation
+`X010_B6A_CORRECTIVE_CI_GREEN_OWNER_UAT_PENDING`. Review of the B6A implementation
 found and fixed two gaps without starting B6B: the six default quality checks
 were previously saved as six independent server actions, and a failed lazy
 Drawer read was silently rendered as empty tabs. Additive migration
@@ -20,8 +20,11 @@ Drawer component/schema tests 25/25; production build; secret scan; visual
 Drawer E2E PASS on desktop, mobile, and RTL. The first visual run correctly
 exposed the old fixture-read failure; the fixture path was fixed and all three
 targeted reruns passed. Full fixture/persistent Playwright local invocations
-exceeded the desktop command timeout without a completed report and are not
-claimed; exact-HEAD CI must run both before corrective CI GREEN.
+exceeded the desktop command timeout without a completed report and were not
+claimed locally. Exact code HEAD `b825182f085ee2ef65372d200c8a4458b12e9b3f`
+then passed F-001 run `30837530949`: fixture E2E 178 passed / 10 configured
+skips, persistent E2E 18/18, secret scan, and production build, in addition to
+the local/DB matrix above. Vercel passed on `samawahs-projects/shrik`.
 
 No Production, merge, hosted migration, Hosted UAT, invitation, ADR, dependency,
 or B6B work. Owner UAT and TEAM_UAT_READY remain undeclared.

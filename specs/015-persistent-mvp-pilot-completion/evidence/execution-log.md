@@ -1,6 +1,6 @@
 # Spec 015 execution log
 
-## 2026-08-03 — X010-B-6A corrective review (local green, CI pending)
+## 2026-08-03 — X010-B-6A corrective review (CI green, owner UAT pending)
 
 - Registered and fixed S015-P1-132: default quality items were six independent
   writes. `s015_save_quality_checklist` now validates a bounded list and writes
@@ -16,8 +16,13 @@
   component 30/130; RLS simulator 8/24; build; secret scan; targeted Drawer
   visual E2E desktop/mobile/RTL. Full local Playwright invocations timed out
   without reports and are left to exact-HEAD CI, not converted to PASS.
+- Exact code HEAD `b825182f085ee2ef65372d200c8a4458b12e9b3f` passed
+  F-001 run `30837530949`: unit 70/349, integration 28/112, RLS simulator
+  8/24, pgTAP 14/695, component 30/130, fixture E2E 178 passed / 10
+  configured skips, persistent E2E 18/18, secret scan, and build. Vercel passed
+  on the correct `samawahs-projects/shrik` project.
 - Boundary: no B6B, hosted mutation, Production, merge, invitation, dependency,
-  or ADR. Status `X010_B6A_CORRECTIVE_LOCAL_GREEN_CI_PENDING`.
+  or ADR. Status `X010_B6A_CORRECTIVE_CI_GREEN_OWNER_UAT_PENDING`.
 
 ## 2026-08-03 — X010-B-6A CI green (drawer, internal quality, team clarity)
 

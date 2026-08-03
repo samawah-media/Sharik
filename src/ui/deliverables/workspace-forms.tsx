@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
@@ -22,6 +22,7 @@ import { createDefaultQualityChecklist } from "@/modules/deliverables/quality-de
 import {
   addWorkspaceComment,
   saveOrSubmitVersionContent,
+  saveQualityChecklist,
   upsertDeliverableTask,
   upsertQualityCheck,
 } from "@/server/actions/deliverable-workspace-actions";
@@ -574,6 +575,9 @@ export function QualityCheckForm({
 }) {
   const router = useRouter();
   const [feedback, setFeedback] = useState<string>();
+  const [savingChecklist, setSavingChecklist] = useState(false);
+  const [defaultChecklistSaved, setDefaultChecklistSaved] = useState(false);
+  const checklistIdempotencyKey = useRef(crypto.randomUUID());
   const [defaultItems, setDefaultItems] = useState(() =>
     createDefaultQualityChecklist(),
   );
@@ -598,6 +602,7 @@ export function QualityCheckForm({
     );
 
   const saveDefaultChecklist = async () => {
+    if (savingChecklist || defaultChecklistSaved) return;
     setFeedback(undefined);
     const items = defaultItems
       .map((item, index) => ({
@@ -611,32 +616,31 @@ export function QualityCheckForm({
       return;
     }
 
-    const results = [];
-    for (const item of items) {
-      results.push(
-        await upsertQualityCheck({
-          clientId: deliverable.clientId,
-          deliverableId: deliverable.id,
-          versionId,
-          checkId: null,
-          label: item.label,
-          status: item.status,
-          note: item.note,
-          sortOrder: item.sortOrder,
-          idempotencyKey: crypto.randomUUID(),
-        }),
+    setSavingChecklist(true);
+    try {
+      const result = await saveQualityChecklist({
+        clientId: deliverable.clientId,
+        deliverableId: deliverable.id,
+        versionId,
+        items: items.map(({ label, note }) => ({ label, note })),
+        idempotencyKey: checklistIdempotencyKey.current,
+      });
+      setFeedback(
+        result.ok
+          ? "تم حفظ قائمة الجودة الداخلية."
+          : "تعذر حفظ قائمة الجودة كاملة. راجع الصلاحية ثم حاول مجددًا.",
       );
-    }
-
-    const ok = results.every((result) => result.ok);
-    setFeedback(
-      ok
-        ? "تم حفظ قائمة الجودة الداخلية."
-        : "تعذر حفظ قائمة الجودة كاملة. راجع الصلاحية ثم حاول مجددًا.",
-    );
-    if (ok) {
-      onMutated?.();
-      router.refresh();
+      if (result.ok) {
+        setDefaultChecklistSaved(true);
+        onMutated?.();
+        router.refresh();
+      }
+    } catch {
+      setFeedback(
+        "تعذر حفظ قائمة الجودة كاملة. تحقق من الاتصال ثم حاول مجددًا.",
+      );
+    } finally {
+      setSavingChecklist(false);
     }
   };
 
@@ -682,6 +686,7 @@ export function QualityCheckForm({
                     ),
                   )
                 }
+                disabled={savingChecklist || defaultChecklistSaved}
                 value={item.label}
               />
             </label>
@@ -692,8 +697,17 @@ export function QualityCheckForm({
             {feedback}
           </p>
         ) : null}
-        <Button onClick={saveDefaultChecklist} type="button" variant="primary">
-          حفظ قائمة الجودة
+        <Button
+          disabled={savingChecklist || defaultChecklistSaved}
+          onClick={saveDefaultChecklist}
+          type="button"
+          variant="primary"
+        >
+          {defaultChecklistSaved
+            ? "تم حفظ قائمة الجودة"
+            : savingChecklist
+              ? "جارٍ حفظ القائمة…"
+              : "حفظ قائمة الجودة"}
         </Button>
       </div>
     );

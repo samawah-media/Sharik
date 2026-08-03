@@ -1,5 +1,31 @@
 # Spec 015 gate status
 
+## X010-B-6A corrective local green, exact-HEAD CI pending — 2026-08-03
+
+`X010_B6A_CORRECTIVE_LOCAL_GREEN_CI_PENDING`. Review of the B6A implementation
+found and fixed two gaps without starting B6B: the six default quality checks
+were previously saved as six independent server actions, and a failed lazy
+Drawer read was silently rendered as empty tabs. Additive migration
+`202608030001_s015_x010b6a_atomic_quality_checklist.sql` introduces one scoped,
+audited, atomic and idempotent checklist command. The Drawer now distinguishes
+first-load failure from honest empty data, retains stale data on refresh
+failure, offers retry, and fixture mode returns a real bounded workspace rather
+than relying on a failed UUID-only read.
+
+Local PASS: clean Supabase reset through `202608030001`; pgTAP 14 files / 695
+tests (success, replay no duplicate, changed-payload conflict, middle-item full
+rollback including audit, client denial); lint; typecheck; unit 70/349;
+integration 28/112; component 30/130; RLS simulator 8/24; targeted
+Drawer component/schema tests 25/25; production build; secret scan; visual
+Drawer E2E PASS on desktop, mobile, and RTL. The first visual run correctly
+exposed the old fixture-read failure; the fixture path was fixed and all three
+targeted reruns passed. Full fixture/persistent Playwright local invocations
+exceeded the desktop command timeout without a completed report and are not
+claimed; exact-HEAD CI must run both before corrective CI GREEN.
+
+No Production, merge, hosted migration, Hosted UAT, invitation, ADR, dependency,
+or B6B work. Owner UAT and TEAM_UAT_READY remain undeclared.
+
 ## X010-B-6A CI green, owner UAT pending — 2026-08-03
 
 `X010_B6A_CI_GREEN_OWNER_UAT_PENDING`. Mandatory starting HEAD

@@ -8,7 +8,8 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-const { upsertQualityCheck } = vi.hoisted(() => ({
+const { saveQualityChecklist, upsertQualityCheck } = vi.hoisted(() => ({
+  saveQualityChecklist: vi.fn().mockResolvedValue({ ok: true }),
   upsertQualityCheck: vi.fn().mockResolvedValue({ ok: true }),
 }));
 
@@ -18,6 +19,7 @@ vi.mock("@/server/actions/deliverable-workspace-actions", () => ({
   saveOrSubmitVersionContent: vi.fn().mockResolvedValue({ ok: true }),
   addWorkspaceComment: vi.fn().mockResolvedValue({ ok: true }),
   upsertQualityCheck,
+  saveQualityChecklist,
   registerWorkspaceFile: vi.fn().mockResolvedValue({ ok: true }),
   createWorkspaceFileDownload: vi.fn().mockResolvedValue({ ok: true }),
   moveDeliverableOnBoard: vi.fn().mockResolvedValue({ ok: true }),
@@ -202,7 +204,7 @@ describe("QualityCheckForm defaults", () => {
 
     expect(screen.getByDisplayValue("سلامة اللغة والإملاء.")).toBeTruthy();
     expect(screen.getByDisplayValue("مطابقة هوية العميل.")).toBeTruthy();
-    expect(upsertQualityCheck).not.toHaveBeenCalled();
+    expect(saveQualityChecklist).not.toHaveBeenCalled();
 
     fireEvent.change(screen.getByDisplayValue("سلامة اللغة والإملاء."), {
       target: { value: "سلامة اللغة والنبرة." },
@@ -210,14 +212,53 @@ describe("QualityCheckForm defaults", () => {
     fireEvent.click(screen.getByRole("button", { name: "حفظ قائمة الجودة" }));
 
     await waitFor(() => {
-      expect(upsertQualityCheck).toHaveBeenCalledTimes(6);
+      expect(saveQualityChecklist).toHaveBeenCalledTimes(1);
     });
-    expect(upsertQualityCheck).toHaveBeenCalledWith(
+    expect(saveQualityChecklist).toHaveBeenCalledWith(
       expect.objectContaining({
-        label: "سلامة اللغة والنبرة.",
-        status: "pending",
         versionId: "version_1",
+        items: expect.arrayContaining([
+          expect.objectContaining({ label: "سلامة اللغة والنبرة." }),
+        ]),
       }),
+    );
+    expect(screen.getByRole("button", { name: "تم حفظ قائمة الجودة" })).toBeDisabled();
+  });
+
+  it("keeps one idempotency key when a lost response is retried", async () => {
+    saveQualityChecklist.mockRejectedValueOnce(new Error("network"));
+    render(
+      <QualityCheckForm
+        defaultChecklist
+        deliverable={baseDeliverable}
+        versionId="version_1"
+      />,
+    );
+
+    const saveButton = screen.getByRole("button", {
+      name: "حفظ قائمة الجودة",
+    });
+    fireEvent.click(saveButton);
+    expect(
+      await screen.findByText(
+        "تعذر حفظ قائمة الجودة كاملة. تحقق من الاتصال ثم حاول مجددًا.",
+      ),
+    ).toBeVisible();
+    const firstKey = saveQualityChecklist.mock.calls[0]?.[0].idempotencyKey;
+
+    fireEvent.change(
+      screen.getByDisplayValue("سلامة اللغة والإملاء."),
+      { target: { value: "سلامة اللغة والنبرة." } },
+    );
+    fireEvent.click(saveButton);
+    await waitFor(() => expect(saveQualityChecklist).toHaveBeenCalledTimes(2));
+    expect(saveQualityChecklist.mock.calls[1]?.[0].idempotencyKey).toBe(
+      firstKey,
+    );
+    expect(saveQualityChecklist.mock.calls[1]?.[0].items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ label: "سلامة اللغة والنبرة." }),
+      ]),
     );
   });
 });

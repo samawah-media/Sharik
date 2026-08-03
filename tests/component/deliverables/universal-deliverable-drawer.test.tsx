@@ -32,7 +32,7 @@ const deliverable: DeliverableSafeSummary = {
   updatedAt: "2026-06-29T00:00:00.000Z",
 };
 
-const { workspace } = vi.hoisted(() => {
+const { fetchDeliverableWorkspace, workspace } = vi.hoisted(() => {
   const workspace: DeliverableWorkspace = {
     deliverableId: "deliverable_a",
     currentVersionId: "version_1",
@@ -114,7 +114,12 @@ const { workspace } = vi.hoisted(() => {
     },
     counts: { versions: 1, tasks: 1, files: 1, comments: 0 },
   };
-  return { workspace };
+  return {
+    fetchDeliverableWorkspace: vi
+      .fn()
+      .mockResolvedValue({ ok: true, workspace }),
+    workspace,
+  };
 });
 
 const rawEnumTokens = [
@@ -129,7 +134,7 @@ const rawEnumTokens = [
 ];
 
 vi.mock("@/server/actions/deliverable-workspace-actions", () => ({
-  fetchDeliverableWorkspace: vi.fn().mockResolvedValue({ ok: true, workspace }),
+  fetchDeliverableWorkspace,
 }));
 
 vi.mock("@/ui/deliverables/workspace-forms", () => ({
@@ -200,6 +205,28 @@ beforeEach(() => {
 });
 
 describe("universal deliverable drawer localization", () => {
+  it("shows an honest load error and recovers when the user retries", async () => {
+    fetchDeliverableWorkspace.mockResolvedValueOnce({
+      ok: false,
+      reason: "denied",
+    });
+    render(<UniversalDeliverableDrawer deliverable={deliverable} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "فتح مساحة المخرج" }));
+
+    expect(
+      await screen.findByText(
+        "تعذر تحميل مساحة المخرج. تحقق من الاتصال ثم حاول مجددًا.",
+      ),
+    ).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "إعادة المحاولة" }));
+
+    expect(
+      await screen.findByRole("heading", { name: "نظرة عامة" }),
+    ).toBeVisible();
+    expect(fetchDeliverableWorkspace).toHaveBeenCalledTimes(2);
+  });
+
   it("organizes the drawer into keyboard-accessible tabs and preserves form values", async () => {
     render(<UniversalDeliverableDrawer deliverable={deliverable} />);
 

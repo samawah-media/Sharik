@@ -77,3 +77,19 @@ export const qualityCheckInputSchema = z.object({
   sortOrder: z.number().int().min(0).max(10_000).optional(),
   idempotencyKey: z.string().min(8).max(200),
 });
+
+export const qualityChecklistInputSchema = z.object({
+  clientId: z.string().uuid(),
+  deliverableId: z.string().uuid(),
+  versionId: z.string().uuid(),
+  items: z
+    .array(
+      z.object({
+        label: z.string().trim().min(2).max(200),
+        note: z.string().trim().max(2_000).optional(),
+      }),
+    )
+    .min(1)
+    .max(20),
+  idempotencyKey: z.string().min(8).max(180),
+});

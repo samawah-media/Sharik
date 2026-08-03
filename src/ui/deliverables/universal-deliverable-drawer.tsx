@@ -293,6 +293,7 @@ export function UniversalDeliverableDrawer({
     preloadedWorkspace,
   );
   const [loading, setLoading] = useState(false);
+  const [workspaceError, setWorkspaceError] = useState<string>();
   const [refreshKey, setRefreshKey] = useState(0);
   const [activeTab, setActiveTab] = useState<DrawerTabId>("overview");
   const [uploadSafety, setUploadSafety] =
@@ -303,6 +304,12 @@ export function UniversalDeliverableDrawer({
   const panelRef = useRef<HTMLElement>(null);
 
   const handleMutated = useCallback(() => {
+    setWorkspaceError(undefined);
+    setLoading(true);
+    setRefreshKey((key) => key + 1);
+  }, []);
+  const retryWorkspaceLoad = useCallback(() => {
+    setWorkspaceError(undefined);
     setLoading(true);
     setRefreshKey((key) => key + 1);
   }, []);
@@ -320,7 +327,10 @@ export function UniversalDeliverableDrawer({
   }, []);
 
   const handleOpen = () => {
-    if (!workspace) setLoading(true);
+    if (!workspace) {
+      setWorkspaceError(undefined);
+      setLoading(true);
+    }
     setActiveTab("overview");
     setOpen(true);
   };
@@ -364,12 +374,27 @@ export function UniversalDeliverableDrawer({
       clientId: deliverable.clientId,
       deliverableId: deliverable.id,
       currentVersionId: summary?.currentVersionId ?? null,
-    }).then((result) => {
-      if (!cancelled) {
-        if (result.ok) setWorkspace(result.workspace);
-        setLoading(false);
-      }
-    });
+    })
+      .then((result) => {
+        if (cancelled) return;
+        if (result.ok) {
+          setWorkspace(result.workspace);
+          setWorkspaceError(undefined);
+        } else {
+          setWorkspaceError(
+            "تعذر تحميل مساحة المخرج. تحقق من الاتصال ثم حاول مجددًا.",
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled)
+          setWorkspaceError(
+            "تعذر تحميل مساحة المخرج. تحقق من الاتصال ثم حاول مجددًا.",
+          );
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
     return () => {
       cancelled = true;
     };
@@ -534,8 +559,41 @@ export function UniversalDeliverableDrawer({
                   <div className="h-32 animate-pulse rounded-lg bg-border/30" />
                   <div className="h-32 animate-pulse rounded-lg bg-border/30" />
                 </div>
+              ) : workspaceError && !workspace ? (
+                <div
+                  className="grid gap-3 rounded-xl border border-danger/30 bg-danger/10 p-4"
+                  role="alert"
+                >
+                  <p className="text-sm font-semibold text-danger">
+                    {workspaceError}
+                  </p>
+                  <button
+                    className={buttonStyles({ variant: "primary" })}
+                    onClick={retryWorkspaceLoad}
+                    type="button"
+                  >
+                    إعادة المحاولة
+                  </button>
+                </div>
               ) : (
                 <div className="grid gap-6 pb-8">
+                  {workspaceError ? (
+                    <div
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-danger/30 bg-danger/10 p-3"
+                      role="alert"
+                    >
+                      <p className="text-sm font-semibold text-danger">
+                        تعذر تحديث التفاصيل. البيانات المعروضة هي آخر نسخة محملة.
+                      </p>
+                      <button
+                        className={buttonStyles({ variant: "secondary" })}
+                        onClick={retryWorkspaceLoad}
+                        type="button"
+                      >
+                        إعادة المحاولة
+                      </button>
+                    </div>
+                  ) : null}
                   <div
                     aria-label="أقسام مساحة المخرج"
                     className="flex gap-2 overflow-x-auto border-b border-border pb-2"

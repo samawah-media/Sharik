@@ -15,6 +15,8 @@ import {
   approvalDecisionLabel,
   slaEventLabel,
 } from "@/modules/deliverables/domain-labels";
+import { fixtureManagementDeliverables } from "@/server/actions/deliverable-read";
+import { canUseRouteActorFixtures } from "@/server/navigation/route-guards";
 
 type ScopedDeliverable = { id: string; currentVersionId?: string };
 
@@ -40,6 +42,79 @@ type ActorTaskAuthority = { isManagement: boolean; isTeam: boolean };
 const NO_TASK_AUTHORITY: ActorTaskAuthority = {
   isManagement: false,
   isTeam: false,
+};
+
+const fixtureWorkspace = (
+  deliverableId: string,
+  actorUserId?: string,
+): DeliverableWorkspace | undefined => {
+  const deliverable = fixtureManagementDeliverables.find(
+    (item) => item.id === deliverableId,
+  );
+  if (!deliverable) return undefined;
+  const hasVersion = Boolean(deliverable.currentVersionId);
+  const taskDone = deliverable.status === "delivered";
+
+  return {
+    deliverableId,
+    currentActorUserId: actorUserId,
+    currentVersionId: deliverable.currentVersionId,
+    versions: hasVersion
+      ? [
+          {
+            id: deliverable.currentVersionId!,
+            versionNumber: 1,
+            status: taskDone ? "final" : "client_visible",
+            submittedAt: deliverable.updatedAt,
+            brief: `نسخة تجريبية آمنة لـ${deliverable.name}.`,
+            caption: `محتوى تجريبي لمراجعة ${deliverable.name}.`,
+            channel: "Instagram",
+            format: "منشور",
+          },
+        ]
+      : [],
+    tasks: [
+      {
+        id: `fixture-task-${deliverable.id}`,
+        title: `متابعة تنفيذ ${deliverable.name}`,
+        status: taskDone ? "done" : "in_progress",
+        priority: deliverable.priority,
+        assigneeUserId: deliverable.ownerUserId,
+        assignee: deliverable.ownerDisplay,
+        dueDate: deliverable.internalDueDate,
+        sortOrder: 0,
+      },
+    ],
+    files: [],
+    uploadAttempts: [],
+    comments: [],
+    qualityChecks: [],
+    activity: hasVersion
+      ? [
+          {
+            id: `fixture-version-${deliverable.id}`,
+            kind: "version",
+            label: "تم رفع النسخة التجريبية 1",
+            createdAt: deliverable.updatedAt,
+          },
+        ]
+      : [],
+    eligibleAssignees: [],
+    taskCapabilities: {
+      canCreateTask: true,
+      canAssignOthers: false,
+      canReassignTask: false,
+      canUpdateOwnTaskStatus: true,
+      canDeleteTask: false,
+      canEditTaskFields: true,
+    },
+    counts: {
+      versions: hasVersion ? 1 : 0,
+      tasks: 1,
+      files: 0,
+      comments: 0,
+    },
+  };
 };
 
 async function resolveActorTaskAuthority({
@@ -130,6 +205,27 @@ export async function listScopedDeliverableWorkspaceSummaries({
   supabase?: SupabaseClient;
 }): Promise<Record<string, DeliverableWorkspaceSummary>> {
   if (deliverables.length === 0) return {};
+
+  if (canUseRouteActorFixtures()) {
+    return Object.fromEntries(
+      deliverables.flatMap((deliverable) => {
+        const workspace = fixtureWorkspace(deliverable.id);
+        if (!workspace) return [];
+        const currentVersion = workspace.versions[0];
+        return [
+          [
+            deliverable.id,
+            {
+              deliverableId: deliverable.id,
+              currentVersionId: workspace.currentVersionId,
+              currentVersion,
+              counts: workspace.counts,
+            },
+          ],
+        ];
+      }),
+    );
+  }
 
   const client = supabase ?? (await createSupabaseServerClient());
   const deliverableIds = deliverables.map((deliverable) => deliverable.id);
@@ -258,6 +354,15 @@ export async function listScopedDeliverableWorkspaces({
   actorUserId?: string;
 }): Promise<Record<string, DeliverableWorkspace>> {
   if (deliverables.length === 0) return {};
+
+  if (canUseRouteActorFixtures()) {
+    return Object.fromEntries(
+      deliverables.flatMap((deliverable) => {
+        const workspace = fixtureWorkspace(deliverable.id, actorUserId);
+        return workspace ? [[deliverable.id, workspace]] : [];
+      }),
+    );
+  }
 
   const client = supabase ?? (await createSupabaseServerClient());
   const deliverableIds = deliverables.map((deliverable) => deliverable.id);

@@ -7,6 +7,7 @@ import {
   deliverableTaskInputSchema,
   deleteTaskInputSchema,
   qualityCheckInputSchema,
+  qualityChecklistInputSchema,
   stageClientReviewFileInputSchema,
 } from "@/modules/deliverables/workspace-inputs";
 
@@ -138,6 +139,32 @@ describe("workspace input boundary", () => {
         label: "مراجعة",
         status: "approved",
         idempotencyKey: "quality-create-2",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("validates a bounded atomic quality checklist payload", () => {
+    const base = {
+      clientId: crypto.randomUUID(),
+      deliverableId: crypto.randomUUID(),
+      versionId: crypto.randomUUID(),
+      idempotencyKey: "quality-checklist-1",
+    };
+    expect(
+      qualityChecklistInputSchema.safeParse({
+        ...base,
+        items: [{ label: "سلامة اللغة" }, { label: "مطابقة الهوية" }],
+      }).success,
+    ).toBe(true);
+    expect(
+      qualityChecklistInputSchema.safeParse({ ...base, items: [] }).success,
+    ).toBe(false);
+    expect(
+      qualityChecklistInputSchema.safeParse({
+        ...base,
+        items: Array.from({ length: 21 }, (_, index) => ({
+          label: `عنصر ${index + 1}`,
+        })),
       }).success,
     ).toBe(false);
   });

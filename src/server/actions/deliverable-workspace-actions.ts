@@ -13,8 +13,11 @@ import {
   deliverableTaskInputSchema,
   deleteTaskInputSchema,
   qualityCheckInputSchema,
+  qualityChecklistInputSchema,
 } from "@/modules/deliverables/workspace-inputs";
 import { listScopedDeliverableWorkspaces } from "./deliverable-workspace-read";
+import { fixtureManagementDeliverables } from "./deliverable-read";
+import { canUseRouteActorFixtures } from "@/server/navigation/route-guards";
 import { updateDeliverableStatusViaRpc } from "./deliverable-write-rpc";
 
 const boardMoveSchema = z.object({
@@ -514,6 +517,25 @@ export async function upsertQualityCheck(
   return { ok: true as const };
 }
 
+export async function saveQualityChecklist(
+  input: z.input<typeof qualityChecklistInputSchema>,
+) {
+  const parsed = qualityChecklistInputSchema.safeParse(input);
+  if (!parsed.success)
+    return { ok: false as const, reason: "invalid_input" as const };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("s015_save_quality_checklist", {
+    target_client_id: parsed.data.clientId,
+    target_deliverable_id: parsed.data.deliverableId,
+    target_version_id: parsed.data.versionId,
+    target_items: parsed.data.items,
+    request_idempotency_key: parsed.data.idempotencyKey,
+  });
+  if (error) return { ok: false as const, reason: "denied" as const };
+  revalidatePath(`/clients/${parsed.data.clientId}/deliverables/board`);
+  return { ok: true as const };
+}
+
 const fetchWorkspaceSchema = z.object({
   clientId: z.string().uuid(),
   deliverableId: z.string().uuid(),
@@ -523,6 +545,35 @@ const fetchWorkspaceSchema = z.object({
 export async function fetchDeliverableWorkspace(
   input: z.input<typeof fetchWorkspaceSchema>,
 ) {
+  if (canUseRouteActorFixtures()) {
+    const fixtureInput = z
+      .object({ clientId: z.string().min(1), deliverableId: z.string().min(1) })
+      .safeParse(input);
+    if (!fixtureInput.success)
+      return { ok: false as const, reason: "invalid_input" as const };
+    const fixtureDeliverable = fixtureManagementDeliverables.find(
+      (deliverable) =>
+        deliverable.id === fixtureInput.data.deliverableId &&
+        deliverable.clientId === fixtureInput.data.clientId,
+    );
+    if (!fixtureDeliverable)
+      return { ok: false as const, reason: "denied" as const };
+    const workspaces = await listScopedDeliverableWorkspaces({
+      tenantId: fixtureDeliverable.tenantId,
+      clientId: fixtureDeliverable.clientId,
+      deliverables: [
+        {
+          id: fixtureDeliverable.id,
+          currentVersionId: fixtureDeliverable.currentVersionId,
+        },
+      ],
+      actorUserId: fixtureDeliverable.ownerUserId,
+    });
+    const workspace = workspaces[fixtureDeliverable.id];
+    return workspace
+      ? { ok: true as const, workspace }
+      : { ok: false as const, reason: "denied" as const };
+  }
   const parsed = fetchWorkspaceSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, reason: "invalid_input" as const };
   const supabase = await createSupabaseServerClient();

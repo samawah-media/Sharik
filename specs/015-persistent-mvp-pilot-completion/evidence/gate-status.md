@@ -1,8 +1,8 @@
 # Spec 015 gate status
 
-## X010-B-6A local green, exact-HEAD CI pending — 2026-08-03
+## X010-B-6A CI green, owner UAT pending — 2026-08-03
 
-`X010_B6A_LOCAL_GREEN_CI_PENDING_OWNER_UAT_PENDING`. Mandatory starting HEAD
+`X010_B6A_CI_GREEN_OWNER_UAT_PENDING`. Mandatory starting HEAD
 `f45983d0c3faaaa855f847a0aec580418ad33e77` verified before edits on
 `codex/015-persistent-mvp-pilot-completion`; worktree was clean. Scope stayed
 inside Spec 015 and was limited to S015-P2-121, S015-P2-122, S015-P2-123, and
@@ -27,9 +27,15 @@ Arabic role labels, and `عضو فريق` fallback rather than UUID/raw roles/sy
 emails; visual density tightened only on the drawer, client shell/home profile
 area, management dashboard, and team workspace.
 
-CI, CodeRabbit, and Vercel Preview are pending until push. Owner UAT and
-TEAM_UAT_READY are not declared. B6B remains for S015-P2-124, S015-P2-125, and
-S015-P2-126; B7 remains the final owner acceptance trial.
+Remote gate PASS for code HEAD `4629b9362d5ad5c59b94afb141dd360f4cc9ed45`:
+F-001 Quality run `30825492962` succeeded across lint, typecheck, unit,
+integration, clean reset, RLS, component, fixture E2E, persistent E2E, secret
+scan, and build. CodeRabbit status is SUCCESS with draft review skipped. Vercel
+deployment `C1QMnTQ2PBi15qP5GmCkCzdBv6RQ` is Ready with Preview
+`https://shrik-git-codex-015-persistent-mvp-pil-cbe689-samawahs-projects.vercel.app`.
+
+Owner UAT and TEAM_UAT_READY are not declared. B6B remains for S015-P2-124,
+S015-P2-125, and S015-P2-126; B7 remains the final owner acceptance trial.
 
 ## X010-B-5 corrective exact-HEAD CI GREEN — 2026-08-02
 

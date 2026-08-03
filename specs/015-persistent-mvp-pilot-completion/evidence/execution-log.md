@@ -1,8 +1,8 @@
 # Spec 015 execution log
 
-## 2026-08-03 — X010-B-6A local green (drawer, internal quality, team clarity)
+## 2026-08-03 — X010-B-6A CI green (drawer, internal quality, team clarity)
 
-- Status recorded as `X010_B6A_LOCAL_GREEN_CI_PENDING_OWNER_UAT_PENDING`.
+- Status recorded as `X010_B6A_CI_GREEN_OWNER_UAT_PENDING`.
   Mandatory starting HEAD `f45983d0c3faaaa855f847a0aec580418ad33e77`; clean
   worktree verified before edits. Scope stayed inside Spec 015 only: S015-P2-121,
   S015-P2-122, S015-P2-123, plus the visual part of D18. Explicitly not
@@ -30,8 +30,11 @@
   30/128; RLS simulator 8/24; fixture E2E 179 passed / 10 skipped across
   desktop/mobile/RTL; persistent E2E 18/18 against local Supabase; secret scan;
   `git diff --check` (CRLF warnings only); build.
-- Pending: commit/push, exact-HEAD CI, CodeRabbit, and Vercel Preview. Owner UAT
-  and TEAM_UAT_READY are not declared.
+- Remote gates PASS for code HEAD `4629b9362d5ad5c59b94afb141dd360f4cc9ed45`:
+  F-001 Quality run `30825492962`; CodeRabbit SUCCESS with draft review skipped;
+  Vercel deployment `C1QMnTQ2PBi15qP5GmCkCzdBv6RQ` Ready at
+  `https://shrik-git-codex-015-persistent-mvp-pil-cbe689-samawahs-projects.vercel.app`.
+  Owner UAT and TEAM_UAT_READY are not declared.
 
 ## 2026-08-02 — X010-B-5 corrective (client document files + honest states + lazy preview + modal) exact-HEAD CI GREEN
 

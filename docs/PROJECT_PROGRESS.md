@@ -1,8 +1,8 @@
 # Project Progress
 
-## Spec 015 X010-B-6A local green, owner UAT pending — 2026-08-03
+## Spec 015 X010-B-6A CI green, owner UAT pending — 2026-08-03
 
-Status: `X010_B6A_LOCAL_GREEN_CI_PENDING_OWNER_UAT_PENDING`. Starting HEAD
+Status: `X010_B6A_CI_GREEN_OWNER_UAT_PENDING`. Starting HEAD
 `f45983d0c3faaaa855f847a0aec580418ad33e77` was verified with a clean worktree on
 `codex/015-persistent-mvp-pilot-completion`. Scope stayed inside Spec 015 only:
 S015-P2-121, S015-P2-122, S015-P2-123, and the visual-density part of D18.
@@ -26,10 +26,16 @@ component 30/128; RLS simulator 8/24; fixture E2E 179 passed / 10 skipped across
 desktop/mobile/RTL; persistent E2E 18/18 against local Supabase; secret scan;
 `git diff --check` (CRLF warnings only); build.
 
-Pending: commit/push, exact-HEAD CI, CodeRabbit, Vercel Preview, and final owner
-UAT. Not implemented in B6A: S015-P2-124 reopen-after-approval, S015-P2-125
-Kanban protected-move clarity, S015-P2-126 team invitation flow, email, UAT
-cleanup, Hosted UAT, Production, merge, or TEAM_UAT_READY.
+Remote verification PASS for code HEAD
+`4629b9362d5ad5c59b94afb141dd360f4cc9ed45`: F-001 Quality run
+`30825492962` succeeded; CodeRabbit status succeeded with draft review skipped;
+Vercel deployment `C1QMnTQ2PBi15qP5GmCkCzdBv6RQ` is Ready with Preview
+`https://shrik-git-codex-015-persistent-mvp-pil-cbe689-samawahs-projects.vercel.app`.
+
+Pending: final owner UAT only. Not implemented in B6A: S015-P2-124
+reopen-after-approval, S015-P2-125 Kanban protected-move clarity, S015-P2-126
+team invitation flow, email, UAT cleanup, Hosted UAT, Production, merge, or
+TEAM_UAT_READY.
 
 ## Spec 015 X010-B-5 corrective CI green, owner UAT pending — 2026-08-02
 

@@ -7,10 +7,10 @@
   run `30755205688` SUCCESS — lint, typecheck, unit 67/342, integration 28/112,
   clean reset through `202608020001`, RLS simulator 8/24, **pgTAP 13/682** (incl.
   `s015_x010b5_client_document_files`), component 30/126, fixture E2E 178,
-  persistent E2E 18/18, secret scan, build. CodeRabbit SUCCESS. Vercel Preview
-  check via Vercel deployments found no deployment for exact head `8e5c3bd`;
-  record `PREVIEW_PENDING` and do not claim Preview GREEN. Authoritative CI is
-  green.
+  persistent E2E 18/18, secret scan, build. CodeRabbit SUCCESS. Follow-up
+  documentation HEAD `bbfe58e` also passed F-001 run `30796391833`; CodeRabbit
+  SUCCESS; Vercel Preview `dpl_8afgdFgy9NcSTGEeSAkJwUWLg3xy` Ready at
+  `https://shrik-nzrv6pwrc-samawahs-projects.vercel.app`.
 - Corrective content, inside Spec 015 only: (1) additive migration
   `202608020001_s015_x010b5_client_document_files.sql` lets an active client read
   and download standalone document files (contract_file / report_file /
@@ -25,9 +25,7 @@
   close, and focus restore to the card.
 - Boundary unchanged: no Production/merge/hosted-migration/team-invitation.
   S015-P2-120 → `technical-fixed; CI-verified; final-owner-UAT-pending`.
-  Final status is
-  `X010_B5_CORRECTIVE_CI_GREEN_PREVIEW_PENDING_OWNER_UAT_PENDING` until an exact
-  `8e5c3bd` Preview deployment appears.
+  Final status is `X010_B5_CORRECTIVE_CI_GREEN_OWNER_UAT_PENDING`.
   S015-P1-063, X010-A-9 / S015-P1-111 / S015-P1-112 remain hosted-blocked.
 
 ## 2026-08-02 — X010-B-5 Drive-like file experience (CI green)

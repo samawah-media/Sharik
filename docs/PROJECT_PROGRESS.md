@@ -1,9 +1,10 @@
 # Project Progress
 
-## Spec 015 X010-B-5 corrective CI green, Preview pending — 2026-08-02
+## Spec 015 X010-B-5 corrective CI green, owner UAT pending — 2026-08-02
 
-Status: `X010_B5_CORRECTIVE_CI_GREEN_PREVIEW_PENDING_OWNER_UAT_PENDING`. Final
-application HEAD `8e5c3bd4a86da05dd7411d4352bac3c5f4fe614e` on
+Status: `X010_B5_CORRECTIVE_CI_GREEN_OWNER_UAT_PENDING`. Corrective code HEAD
+`8e5c3bd4a86da05dd7411d4352bac3c5f4fe614e`, documentation follow-up HEAD
+`bbfe58ea22ee3297d9ab70524019e15d93d8ddce`, on
 `codex/015-persistent-mvp-pilot-completion`; mandatory starting HEAD
 `59c25eb2786158b0b45c88c9a694cbece6de23f6` is an ancestor. Bounded to Spec 015
 only; no new Spec/ADR/dependency, no historical migration edit, no B6 start.
@@ -13,10 +14,9 @@ integration 28/112, clean Supabase reset through additive migration
 `202608020001_s015_x010b5_client_document_files.sql`, RLS simulator 8/24, pgTAP
 13/682 including `s015_x010b5_client_document_files`, component 30/126, fixture
 E2E 178, persistent E2E 18/18, secret scan, and build. CodeRabbit SUCCESS.
-Vercel deployments for project `prj_OGVntLNpwvHd6XJoyXpjAgFWmSWO` under team
-`team_V2DB7cQmTZIGATfviARQwq4j` did not include an exact-head `8e5c3bd`
-deployment, so Preview remains `PREVIEW_PENDING` and Preview GREEN is not
-claimed.
+Documentation follow-up F-001 run `30796391833` also passed on `bbfe58e`.
+CodeRabbit SUCCESS. Vercel Preview `dpl_8afgdFgy9NcSTGEeSAkJwUWLg3xy` is Ready
+at `https://shrik-nzrv6pwrc-samawahs-projects.vercel.app`.
 
 Delivered (S015-P2-120 -> `technical-fixed; CI-verified;
 final-owner-UAT-pending`):

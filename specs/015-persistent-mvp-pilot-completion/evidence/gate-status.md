@@ -14,11 +14,12 @@ lint, typecheck, unit 67/342, integration 28/112, clean Supabase start + reset
 (all migrations through `202608020001`), RLS simulator 8/24, **pgTAP 13 files /
 682 tests** (incl. `s015_x010b5_client_document_files`), component 30/126,
 fixture E2E 178, persistent E2E 18/18 (incl. updated /client/files), secret
-scan, build. CodeRabbit SUCCESS. Vercel deployments were inspected for the
-project `prj_OGVntLNpwvHd6XJoyXpjAgFWmSWO` in team
-`team_V2DB7cQmTZIGATfviARQwq4j`; no deployment object for exact head `8e5c3bd`
-was present. Record `PREVIEW_PENDING`; do not claim Preview GREEN. The
-authoritative CI matrix is green and CodeRabbit reviewed.
+scan, build. CodeRabbit SUCCESS. The follow-up documentation HEAD
+`bbfe58ea22ee3297d9ab70524019e15d93d8ddce` also passed F-001 run
+`30796391833`; CodeRabbit SUCCESS; Vercel Preview
+`dpl_8afgdFgy9NcSTGEeSAkJwUWLg3xy` is Ready at
+`https://shrik-nzrv6pwrc-samawahs-projects.vercel.app`. The authoritative CI
+matrix is green and CodeRabbit reviewed.
 
 Corrective fixes inside Spec 015 (S015-P2-120 → `technical-fixed; CI-verified;
 final-owner-UAT-pending`):
@@ -43,10 +44,8 @@ final-owner-UAT-pending`):
 
 Boundary unchanged: no Production deployment/merge/hosted-migration/team-
 invitation. S015-P1-063, X010-A-9 / S015-P1-111 / S015-P1-112, H008-H010, X007,
-T032 remain open; GREEN / TEAM_UAT_READY / Hosted UAT NOT declared. Final
-documentation status is
-`X010_B5_CORRECTIVE_CI_GREEN_PREVIEW_PENDING_OWNER_UAT_PENDING` unless an exact
-`8e5c3bd` Preview deployment appears later.
+T032 remain open; TEAM_UAT_READY / Hosted UAT NOT declared. Final documentation
+status is `X010_B5_CORRECTIVE_CI_GREEN_OWNER_UAT_PENDING`.
 
 ## X010-B-5 file experience local complete — 2026-08-02
 

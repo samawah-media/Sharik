@@ -96,6 +96,17 @@ const getApprovalWorkflowActions = (
     ];
   }
 
+  if (deliverable.status === "client_approved") {
+    return [
+      {
+        step: "prepare_for_delivery",
+        label: "تجهيز للتسليم",
+        defaultReason: "prepare_exact_approved_version_for_delivery",
+        variant: "primary",
+      },
+    ];
+  }
+
   if (deliverable.status === "ready_for_delivery") {
     return [
       ...(deliverable.requiresClientApproval

@@ -103,4 +103,25 @@ describe("deliverable client-review readiness", () => {
       screen.getByText("لا يمكن المتابعة قبل اكتمال الرفع أو إلغاء الملف المتعثر."),
     ).toBeInTheDocument();
   });
+
+  it("keeps the protected prepare-for-delivery action after client approval", () => {
+    render(
+      <DeliverableApprovalWorkflowControl
+        action={vi.fn()}
+        deliverable={{
+          ...deliverable,
+          status: "client_approved",
+          progressPercentage: 90,
+        }}
+      />,
+    );
+
+    const button = screen.getByRole("button", { name: "تجهيز للتسليم" });
+    expect(button).toBeEnabled();
+    expect(
+      button.closest("form")?.querySelector(
+        'input[name="workflowStep"][value="prepare_for_delivery"]',
+      ),
+    ).toBeInTheDocument();
+  });
 });

@@ -1,6 +1,6 @@
 # Spec 015 execution log
 
-## 2026-08-04 - X010-B-6B local DB/browser closure
+## 2026-08-04 - X010-B-6B technical and exact-HEAD CI closure
 
 - Starting HEAD verified exactly:
   `78bc03ad8943ec49d52c228ca323720fe81737a1` on
@@ -31,13 +31,19 @@
   client scope after real Auth sign-in. Old draft RPCs are non-executable;
   acceptance, profile, membership, role, audit, and replay are DB/browser tested.
 - Local PASS: lint; typecheck; unit 71/353; integration 28/112; component
-  30/132; RLS simulator 8/24; clean reset; pgTAP 15/729; persistent invitation
+  30/133; RLS simulator 8/24; clean reset; pgTAP 15/729; persistent invitation
   E2E 1/1; targeted fixture invitations/team/Kanban 12/12 across desktop/mobile/
   RTL; build; secret scan; `git diff --check` with CRLF warnings only.
-- Full fixture E2E exceeded the 15-minute local runner window without a report;
-  exact-HEAD CI must provide the full-suite disposition.
+- Initial F-001 run `30907707216` caught one real regression: the management UI
+  omitted `prepare_for_delivery` at `client_approved`. The protected action was
+  restored with a direct component regression; the exact failing persistent
+  browser lifecycle then passed locally 1/1.
+- Final corrective code HEAD `d90f60694bad0b2da72cfa2acabe4e09af9ed54a`
+  passed F-001 run `30911193680`: unit 71/353, integration 28/112, RLS
+  simulator 8/24, pgTAP 15/729, component 30/133, fixture E2E 178 passed / 10
+  configured skips, persistent E2E 19/19, secret scan, and build.
 - Result: S015-P2-124/125/126 are technically fixed and locally verified; B6B
-  is locally closed. Owner B7 PASS and TEAM_UAT_READY are not declared.
+  is exact-HEAD CI verified. Owner B7 PASS and TEAM_UAT_READY are not declared.
 
 ## 2026-08-03 — X010-B-6A corrective review (CI green, owner UAT pending)
 

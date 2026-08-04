@@ -1,8 +1,8 @@
 # Project Progress
 
-## Spec 015 X010-B-6B local DB/browser green, CI and owner UAT pending - 2026-08-04
+## Spec 015 X010-B-6B CI green, owner UAT pending - 2026-08-04
 
-Status: `X010_B6B_LOCAL_DB_BROWSER_GREEN_CI_OWNER_UAT_PENDING`. Starting HEAD
+Status: `X010_B6B_CI_GREEN_OWNER_UAT_PENDING`. Starting HEAD
 `78bc03ad8943ec49d52c228ca323720fe81737a1` verified on
 `codex/015-persistent-mvp-pilot-completion`. Scope stayed limited to
 S015-P2-124, S015-P2-125, and S015-P2-126 only.
@@ -16,18 +16,22 @@ acceptance, duplicate and permission-expansion prevention, scoped member
 directory, audit, and idempotency. No email sending or real invitations.
 
 Verification: lint and typecheck PASS; unit 71/353; integration 28/112;
-component 30/132; RLS simulator 8/24; clean Supabase reset; pgTAP 15 files /
+component 30/133; RLS simulator 8/24; clean Supabase reset; pgTAP 15 files /
 729 tests; persistent real-Auth invitation journey 1/1; targeted fixture
 desktop/mobile/RTL invitations, members, and Kanban 12/12 after correcting one
-superseded fixture assertion; build, secret scan, and diff check PASS. The full
-fixture command still exceeded its 15-minute local runner window without a
-completed report, so exact-HEAD CI remains mandatory.
+superseded fixture assertion; build, secret scan, and diff check PASS. Exact
+code HEAD `d90f60694bad0b2da72cfa2acabe4e09af9ed54a` passed F-001 run
+`30911193680`: fixture E2E 178 passed / 10 configured skips, persistent E2E
+19/19, and all preceding gates. The first CI run exposed a missing
+`client_approved` UI action for preparing delivery; it was restored, covered by
+a component regression, and the exact persistent lifecycle passed locally and
+in the final CI.
 
-B6B is technically closed locally. Silent recall after client exposure
+B6B is technically closed and exact-HEAD CI verified. Silent recall after client exposure
 (`waiting_client_approval`, `client_approved`, and client-approved delivery
 staging) is forbidden by design: V1 returns work through the recorded client
 change-request path and never silently invalidates a client-visible decision.
-Owner UAT/B7, exact-HEAD CI, hosted migration application, TEAM_UAT_READY,
+Owner UAT/B7, hosted migration application, TEAM_UAT_READY,
 Production, and merge remain open/not declared.
 
 ## Spec 015 X010-B-6A corrective CI green, owner UAT pending — 2026-08-03

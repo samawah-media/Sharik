@@ -1,8 +1,8 @@
 # Spec 015 gate status
 
-## X010-B-6B local DB/browser green, CI and owner UAT pending - 2026-08-04
+## X010-B-6B CI green, owner UAT pending - 2026-08-04
 
-`X010_B6B_LOCAL_DB_BROWSER_GREEN_CI_OWNER_UAT_PENDING`. Mandatory starting HEAD
+`X010_B6B_CI_GREEN_OWNER_UAT_PENDING`. Mandatory starting HEAD
 `78bc03ad8943ec49d52c228ca323720fe81737a1` was verified before edits on
 `codex/015-persistent-mvp-pilot-completion`. Scope stayed inside Spec 015 and
 only targeted S015-P2-124, S015-P2-125, and S015-P2-126. No B7, Owner UAT,
@@ -20,15 +20,18 @@ remaining permission gap: once client-visible, return to work uses the recorded
 client change-request flow rather than a silent management recall. Terminal
 `delivered`, `cancelled`, and `archived` states remain denied.
 
-Local PASS: lint; typecheck; unit 71/353; integration 28/112; component 30/132;
+Local PASS: lint; typecheck; unit 71/353; integration 28/112; component 30/133;
 RLS simulator 8/24; clean Supabase reset; RLS/pgTAP 15 files / 729 tests;
 persistent real-Auth/PostgreSQL invitation acceptance 1/1; targeted fixture
 desktop/mobile/RTL invitations + team directory + Kanban 12/12; build; secret
-scan; `git diff --check` (CRLF warnings only). The full fixture command exceeded
-its 15-minute local runner window without a completed report; no false PASS is
-claimed for it, and exact-HEAD CI remains mandatory.
+scan; `git diff --check` (CRLF warnings only). Exact corrective HEAD
+`d90f60694bad0b2da72cfa2acabe4e09af9ed54a` passed F-001 run `30911193680`,
+including full fixture E2E 178 passed / 10 configured skips, persistent E2E
+19/19, secret scan, and build. The preceding CI run correctly caught a missing
+`client_approved` prepare-delivery control; the control and a direct component
+regression were added before this final green run.
 
-B6B is locally closed. Exact-HEAD CI, hosted UAT migration/application,
+B6B is technically closed and exact-HEAD CI verified. Hosted UAT migration/application,
 Owner B7 acceptance, TEAM_UAT_READY, merge, and Production remain open/not
 declared.
 

@@ -135,6 +135,31 @@ const statusOptions = (deliverable: DeliverableSafeSummary) =>
     return { status, allowed };
   });
 
+const protectedMoveExplanation =
+  "السحب متاح فقط بين لم يبدأ وقيد التنفيذ. المراجعة والاعتماد والإرسال والتسليم تتم من مساحة المخرج بأزرار محمية ومدققة.";
+
+const kanbanDeniedReasonLabel = (
+  reason: Exclude<
+    ReturnType<typeof canChangeDeliverableStatus>,
+    { allowed: true }
+  >["reason"],
+) => {
+  switch (reason) {
+    case "terminal_status_locked":
+      return "الحالات النهائية لا تُفتح من اللوحة.";
+    case "protected_status_requires_command":
+      return "هذه المرحلة تحتاج إجراء workflow محميًا من مساحة المخرج.";
+    case "unsafe_operational_transition":
+      return "هذه الحركة ليست انتقال تشغيل مباشرًا مسموحًا.";
+    case "target_status_not_on_board":
+      return "المرحلة غير متاحة على اللوحة.";
+    case "internal_approval_required_before_client_waiting":
+      return "لا يمكن انتظار العميل قبل الاعتماد الداخلي.";
+    case "client_approval_required_before_delivery":
+      return "لا يمكن التسليم قبل اعتماد العميل وتجهيز التسليم.";
+  }
+};
+
 const priorityTone = (priority: DeliverableSafeSummary["priority"]) => {
   if (priority === "urgent") {
     return "danger";
@@ -449,12 +474,12 @@ export function DeliverableBoard({
       targetStatus,
       requiresClientApproval: deliverable.requiresClientApproval,
     });
-    if (!decision.allowed || deliverable.status === targetStatus) {
-      setDragFeedback(
-        deliverable.status === targetStatus
-          ? undefined
-          : "لا يمكن تنفيذ هذه الحركة بالسحب. استخدم الإجراء المخصص للحالة.",
-      );
+    if (deliverable.status === targetStatus) {
+      setDragFeedback(undefined);
+      return;
+    }
+    if (!decision.allowed) {
+      setDragFeedback(kanbanDeniedReasonLabel(decision.reason));
       return;
     }
     const previous = items;
@@ -481,7 +506,7 @@ export function DeliverableBoard({
     if (!result.ok) {
       setItems(previous);
       setDragFeedback(
-        "تعذر حفظ الحركة وأُعيدت البطاقة إلى مكانها. راجع الصلاحية أو حدّث الصفحة.",
+        "تعذر حفظ الحركة، لذلك أُعيدت البطاقة إلى حالتها السابقة بصدق. راجع الصلاحية أو حدّث الصفحة.",
       );
     } else {
       setDragFeedback("تم حفظ الحركة وتسجيلها في سجل النشاط.");
@@ -498,6 +523,9 @@ export function DeliverableBoard({
       onWheel={scrollBoardWithMouseWheel}
       tabIndex={0}
     >
+      <p className="mb-3 rounded-lg border border-border bg-surface px-3 py-2 text-sm leading-6 text-muted">
+        {protectedMoveExplanation}
+      </p>
       {dragFeedback ? (
         <p
           aria-live="polite"
@@ -532,7 +560,9 @@ export function DeliverableBoard({
                       {lane.label}
                     </h2>
                     <p className="mt-1 text-xs text-muted">
-                      مسار بصري يجمع حالات قاعدة البيانات كما هي
+                      {lane.targetStatus
+                        ? "يمكن السحب هنا للتشغيل العام."
+                        : "إجراء محمي من مساحة المخرج."}
                     </p>
                   </div>
                   <Badge tone="muted">{laneItems.length}</Badge>
@@ -541,7 +571,12 @@ export function DeliverableBoard({
                   {laneItems.length > 0 ? (
                     laneItems.map((deliverable) => (
                       <DraggableDeliverableCard
-                        canDrag={Boolean(action)}
+                        canDrag={
+                          Boolean(action) &&
+                          ["not_started", "in_progress"].includes(
+                            deliverable.status,
+                          )
+                        }
                         deliverable={deliverable}
                         key={deliverable.id}
                       >

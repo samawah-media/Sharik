@@ -1,4 +1,6 @@
 import type { RoleAssignment } from "@/modules/memberships/membership";
+import { roleLabelAr } from "@/modules/roles/role-labels";
+import type { InternalTeamMember } from "@/server/actions/internal-team-members";
 
 export type MemberListItem = {
   id: string;
@@ -66,6 +68,57 @@ export function MemberList({ members }: { members: MemberListItem[] }) {
             <button type="button">تحديث الدور</button>
             <button type="button">تعطيل العضوية</button>
           </div>
+        </article>
+      ))}
+    </section>
+  );
+}
+
+export function InternalTeamDirectory({
+  members,
+}: {
+  members: InternalTeamMember[];
+}) {
+  if (members.length === 0) {
+    return (
+      <section aria-label="أعضاء الفريق">
+        <p>لا يوجد أعضاء فريق مفعّلون بعد.</p>
+      </section>
+    );
+  }
+
+  return (
+    <section aria-label="أعضاء الفريق" className="grid gap-3">
+      <h2 className="text-lg font-semibold">أعضاء الفريق</h2>
+      {members.map((member) => (
+        <article
+          className="grid gap-3 rounded-xl border border-border bg-surface p-4"
+          data-status={member.status}
+          key={member.membershipId}
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <h3 className="font-semibold">{member.displayName}</h3>
+            <span className="rounded-full border border-border px-3 py-1 text-xs">
+              {member.status === "active" ? "عضوية نشطة" : "عضوية معطلة"}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2" aria-label="أدوار العضو">
+            {member.roleKeys.map((roleKey) => (
+              <span
+                className="rounded-full bg-background px-3 py-1 text-xs"
+                key={roleKey}
+              >
+                {roleLabelAr(roleKey)}
+              </span>
+            ))}
+          </div>
+          {member.clientNames.length > 0 ? (
+            <p className="text-sm text-muted">
+              يعمل على: {member.clientNames.join("، ")}
+            </p>
+          ) : (
+            <p className="text-sm text-muted">صلاحية إدارية على مساحة سماوة.</p>
+          )}
         </article>
       ))}
     </section>

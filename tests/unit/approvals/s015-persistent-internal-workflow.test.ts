@@ -55,4 +55,29 @@ describe("Spec 015 persistent internal workflow", () => {
       expect.objectContaining({ target_version_number: 3 }),
     );
   });
+
+  it("routes protected internal rework through the exact-version RPC with revision and reason", async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: null });
+    const result = await executePersistentInternalWorkflow({
+      supabase: { rpc } as unknown as SupabaseClient,
+      input: {
+        ...scoped,
+        command: "return_internal_rework",
+        expectedRevision: 4,
+        comment: "خطأ في النسخة المعتمدة داخليًا",
+      },
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(rpc).toHaveBeenCalledWith(
+      "s015_return_deliverable_to_internal_rework",
+      expect.objectContaining({
+        target_client_id: scoped.clientId,
+        target_deliverable_id: scoped.deliverableId,
+        target_version_id: scoped.versionId,
+        expected_revision: 4,
+        rework_reason: "خطأ في النسخة المعتمدة داخليًا",
+      }),
+    );
+  });
 });

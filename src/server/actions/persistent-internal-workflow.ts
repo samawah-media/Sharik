@@ -10,11 +10,13 @@ export const persistentInternalWorkflowSchema = z.object({
     "submit_version",
     "approve_internal",
     "request_internal_changes",
+    "return_internal_rework",
     "send_to_client",
     "prepare_delivery",
     "deliver",
   ]),
   versionNumber: z.number().int().positive().optional(),
+  expectedRevision: z.number().int().positive().optional(),
   comment: z.string().trim().max(2000).optional(),
   idempotencyKey: z.string().trim().min(8).max(200),
 });
@@ -40,7 +42,13 @@ export async function executePersistentInternalWorkflow({
     request_idempotency_key: parsed.data.idempotencyKey,
   };
   const result =
-    parsed.data.command === "prepare_delivery"
+    parsed.data.command === "return_internal_rework"
+      ? await supabase.rpc("s015_return_deliverable_to_internal_rework", {
+          ...shared,
+          expected_revision: parsed.data.expectedRevision ?? null,
+          rework_reason: parsed.data.comment ?? "",
+        })
+      : parsed.data.command === "prepare_delivery"
       ? await supabase.rpc("s015_prepare_delivery", shared)
       : parsed.data.command === "deliver"
         ? await supabase.rpc("s015_deliver_ready_version", shared)

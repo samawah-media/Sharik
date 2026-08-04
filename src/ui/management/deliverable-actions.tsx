@@ -15,6 +15,7 @@ type ManagementWorkflowStep = Extract<
   R007WorkflowStep,
   | "approve_internally"
   | "request_internal_changes"
+  | "return_internal_rework"
   | "send_to_client"
   | "prepare_for_delivery"
   | "deliver_after_client_approval"
@@ -57,6 +58,14 @@ const getApprovalWorkflowActions = (
   ) {
     return [
       {
+        step: "return_internal_rework",
+        label: "إعادة للتعديل الداخلي",
+        reasonLabel: "سبب إعادة العمل للتعديل الداخلي",
+        reasonRequired: true,
+        defaultReason: "return_internal_rework_before_client_send",
+        variant: "secondary",
+      },
+      {
         step: "send_to_client",
         label: "إرسال للعميل",
         defaultReason: "send_to_client_after_internal_approval",
@@ -66,11 +75,18 @@ const getApprovalWorkflowActions = (
   }
 
   if (
-    deliverable.status === "client_approved" ||
-    (deliverable.status === "internally_approved" &&
-      !deliverable.requiresClientApproval)
+    deliverable.status === "internally_approved" &&
+    !deliverable.requiresClientApproval
   ) {
     return [
+      {
+        step: "return_internal_rework",
+        label: "إعادة للتعديل الداخلي",
+        reasonLabel: "سبب إعادة العمل للتعديل الداخلي",
+        reasonRequired: true,
+        defaultReason: "return_internal_rework_after_approval",
+        variant: "secondary",
+      },
       {
         step: "prepare_for_delivery",
         label: "تجهيز للتسليم",
@@ -82,6 +98,18 @@ const getApprovalWorkflowActions = (
 
   if (deliverable.status === "ready_for_delivery") {
     return [
+      ...(deliverable.requiresClientApproval
+        ? []
+        : [
+            {
+              step: "return_internal_rework",
+              label: "إعادة للتعديل الداخلي",
+              reasonLabel: "سبب إعادة العمل للتعديل الداخلي",
+              reasonRequired: true,
+              defaultReason: "return_internal_rework_before_delivery",
+              variant: "secondary",
+            } satisfies ApprovalWorkflowConfig,
+          ]),
       {
         step: "deliver_after_client_approval",
         label: "تأكيد التسليم النهائي",
@@ -196,7 +224,9 @@ export function DeliverableApprovalWorkflowControl({
                     file.visibility,
                   )),
           );
-          const blocked = reviewPayloadMissing || uploadBlocked;
+          const uploadBlocksWorkflow =
+            uploadBlocked && workflow.step !== "return_internal_rework";
+          const blocked = reviewPayloadMissing || uploadBlocksWorkflow;
           return (
             <div className="grid gap-2" key={workflow.step}>
               {isConfirmationStep ? (
@@ -233,13 +263,19 @@ export function DeliverableApprovalWorkflowControl({
                   ) : null}
                 </section>
               ) : null}
+              {workflow.step === "return_internal_rework" ? (
+                <p className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs leading-5 text-warning">
+                  إجراء محمي يعيد النسخة الحالية إلى فريق سماوة للتعديل الداخلي
+                  ويخفيها عن العميل حتى اعتماد نسخة جديدة وإرسالها بوضوح.
+                </p>
+              ) : null}
               {reviewPayloadMissing ? (
                 <p className="text-xs leading-5 text-warning">
                   أضف نصًا فعليًا أو جهّز ملف النسخة الحالية للعميل قبل
                   الإرسال.
                 </p>
               ) : null}
-              {uploadBlocked ? (
+              {uploadBlocksWorkflow ? (
                 <p className="text-xs leading-5 text-danger">
                   لا يمكن المتابعة قبل اكتمال الرفع أو إلغاء الملف المتعثر.
                 </p>

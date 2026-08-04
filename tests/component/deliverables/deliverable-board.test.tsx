@@ -98,6 +98,9 @@ describe("internal deliverable work board", () => {
       "tabindex",
       "0",
     );
+    expect(
+      within(board).getByText(/السحب متاح فقط بين لم يبدأ وقيد التنفيذ/),
+    ).toBeInTheDocument();
     expect(screen.getAllByTestId("kanban-column")).toHaveLength(7);
     expect(screen.getAllByTestId("kanban-column")[0]).toHaveClass(
       "min-w-[20rem]",
@@ -150,6 +153,7 @@ describe("internal deliverable work board", () => {
     expect(
       screen.queryByRole("option", { name: "بانتظار اعتماد العميل" }),
     ).not.toBeInTheDocument();
+    expect(screen.getAllByText("إجراء محمي من مساحة المخرج.").length).toBeGreaterThan(0);
   });
 
   it("keeps empty columns readable without stretching cards", () => {

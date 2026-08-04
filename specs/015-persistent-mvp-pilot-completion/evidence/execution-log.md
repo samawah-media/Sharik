@@ -1,5 +1,44 @@
 # Spec 015 execution log
 
+## 2026-08-04 - X010-B-6B local DB/browser closure
+
+- Starting HEAD verified exactly:
+  `78bc03ad8943ec49d52c228ca323720fe81737a1` on
+  `codex/015-persistent-mvp-pilot-completion`. Scope was limited to X010-B-6B
+  inside Spec 015: S015-P2-124, S015-P2-125, and S015-P2-126.
+- Before coding, reviewed the owner acceptance requirements and documented the
+  protected transition matrix in `spec.md`. The owner-visible recall path is not
+  safely specified by the accepted state machine, so no assumption was made for
+  recall after client exposure.
+- S015-P2-124: added additive RPC
+  `s015_return_deliverable_to_internal_rework` for only unambiguous states:
+  `internally_approved`, and `ready_for_delivery` when client approval is not
+  required. The command requires management authority, current version id,
+  expected revision, non-empty reason, current internally approved version,
+  audit, internal-only comment, SLA segment transition, notification enqueue,
+  and stable idempotency. It denies stale version/revision, terminal states, and
+  client-exposed states (`waiting_client_approval`, `client_approved`, and
+  client-approval delivery staging). This is the final V1 decision: client-
+  visible work returns only through an explicit client change request, never a
+  silent management recall.
+- S015-P2-125: clarified Kanban direct drag vs protected workflow actions,
+  added Arabic denial reasons, disabled terminal cards, kept approvals/send/
+  delivery/rework in drawer workflow actions, and made rollback copy explicitly
+  state that the card was restored after failed save.
+- S015-P2-126: added an admin-only internal team invitation surface and additive
+  RPCs for list/create/resend/revoke/read/accept plus a real team directory. A
+  one-time SHA-256 fingerprinted link activates only the exact email, role, and
+  client scope after real Auth sign-in. Old draft RPCs are non-executable;
+  acceptance, profile, membership, role, audit, and replay are DB/browser tested.
+- Local PASS: lint; typecheck; unit 71/353; integration 28/112; component
+  30/132; RLS simulator 8/24; clean reset; pgTAP 15/729; persistent invitation
+  E2E 1/1; targeted fixture invitations/team/Kanban 12/12 across desktop/mobile/
+  RTL; build; secret scan; `git diff --check` with CRLF warnings only.
+- Full fixture E2E exceeded the 15-minute local runner window without a report;
+  exact-HEAD CI must provide the full-suite disposition.
+- Result: S015-P2-124/125/126 are technically fixed and locally verified; B6B
+  is locally closed. Owner B7 PASS and TEAM_UAT_READY are not declared.
+
 ## 2026-08-03 — X010-B-6A corrective review (CI green, owner UAT pending)
 
 - Registered and fixed S015-P1-132: default quality items were six independent

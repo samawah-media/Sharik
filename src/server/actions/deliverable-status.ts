@@ -28,6 +28,7 @@ const r007WorkflowPermissions = {
   send_to_client: PERMISSIONS.DELIVERABLE_SEND_TO_CLIENT,
   approve_as_client: PERMISSIONS.DELIVERABLE_CLIENT_APPROVE,
   request_client_changes: PERMISSIONS.DELIVERABLE_CLIENT_APPROVE,
+  return_internal_rework: PERMISSIONS.DELIVERABLE_INTERNAL_APPROVE,
   prepare_for_delivery: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
   deliver_after_client_approval: PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
 } as const satisfies Record<R007WorkflowStep, (typeof PERMISSIONS)[keyof typeof PERMISSIONS]>;
@@ -45,6 +46,7 @@ const resolveR007WorkflowStep = (
 const persistentCommandForStep = {
   approve_internally: "approve_internal",
   request_internal_changes: "request_internal_changes",
+  return_internal_rework: "return_internal_rework",
   send_to_client: "send_to_client",
   prepare_for_delivery: "prepare_delivery",
   deliver_after_client_approval: "deliver",
@@ -123,6 +125,7 @@ export async function updateDeliverableStatusAction(formData: FormData) {
           persistentCommandForStep[
             workflowStep as keyof typeof persistentCommandForStep
           ],
+        expectedRevision: parsedInput.expectedRevision ?? undefined,
         comment: nullableFormValue(parsedInput.reason) ?? undefined,
         idempotencyKey: parsedInput.idempotencyKey,
       },

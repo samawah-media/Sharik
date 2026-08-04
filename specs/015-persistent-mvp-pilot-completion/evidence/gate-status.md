@@ -1,5 +1,37 @@
 # Spec 015 gate status
 
+## X010-B-6B local DB/browser green, CI and owner UAT pending - 2026-08-04
+
+`X010_B6B_LOCAL_DB_BROWSER_GREEN_CI_OWNER_UAT_PENDING`. Mandatory starting HEAD
+`78bc03ad8943ec49d52c228ca323720fe81737a1` was verified before edits on
+`codex/015-persistent-mvp-pilot-completion`. Scope stayed inside Spec 015 and
+only targeted S015-P2-124, S015-P2-125, and S015-P2-126. No B7, Owner UAT,
+email, UAT cleanup, Production, merge, real invitations, Spec 016, dependency,
+or hosted mutation was performed.
+
+Delivered: a written protected workflow matrix in `spec.md`; additive RPCs and
+UI actions for returning unambiguous approved internal work to
+`internal_changes_requested`; Kanban copy/denial/rollback clarity for protected
+moves; and an admin-only internal team invitation surface with pending, resend,
+revoke, duplicate prevention, scoped listing, audit, and idempotency. The
+rework RPC deliberately denies `waiting_client_approval`, `client_approved`, and
+client-approval delivery staging. That is the final V1 safety decision, not a
+remaining permission gap: once client-visible, return to work uses the recorded
+client change-request flow rather than a silent management recall. Terminal
+`delivered`, `cancelled`, and `archived` states remain denied.
+
+Local PASS: lint; typecheck; unit 71/353; integration 28/112; component 30/132;
+RLS simulator 8/24; clean Supabase reset; RLS/pgTAP 15 files / 729 tests;
+persistent real-Auth/PostgreSQL invitation acceptance 1/1; targeted fixture
+desktop/mobile/RTL invitations + team directory + Kanban 12/12; build; secret
+scan; `git diff --check` (CRLF warnings only). The full fixture command exceeded
+its 15-minute local runner window without a completed report; no false PASS is
+claimed for it, and exact-HEAD CI remains mandatory.
+
+B6B is locally closed. Exact-HEAD CI, hosted UAT migration/application,
+Owner B7 acceptance, TEAM_UAT_READY, merge, and Production remain open/not
+declared.
+
 ## X010-B-6A corrective CI green, owner UAT pending — 2026-08-03
 
 `X010_B6A_CORRECTIVE_CI_GREEN_OWNER_UAT_PENDING`. Review of the B6A implementation

@@ -6,6 +6,7 @@ export const r007WorkflowStepTargets = {
   send_to_client: "waiting_client_approval",
   approve_as_client: "client_approved",
   request_client_changes: "client_changes_requested",
+  return_internal_rework: "internal_changes_requested",
   prepare_for_delivery: "ready_for_delivery",
   deliver_after_client_approval: "delivered",
 } as const satisfies Record<string, DeliverableLifecycleStatus>;

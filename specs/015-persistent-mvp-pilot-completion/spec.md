@@ -43,6 +43,22 @@ Move the Hadna-only local MVP from synthetic route fixtures to one persistent, t
 - `account_manager`, `content_writer`, and `designer` may submit only assigned deliverables in their active client scope. They receive no approval, client-send, client-decision, or delivery authority.
 - Database acceptance requires executed replay, append-only, atomicity, exact-version, assigned-team, Tenant A/B, and same-tenant Client A/B regressions.
 
+### X010-B-6B protected workflow matrix
+
+| Area | Source state / input | Actor | Allowed? | Resulting state | Version effect | SLA effect | Client visibility | Audit / notifications |
+|---|---|---:|---:|---|---|---|---|---|
+| Internal rework after approval | `internally_approved` with exact current version and current revision | Tenant owner/admin, project manager, marketing manager in tenant/client scope | Yes | `internal_changes_requested` | Current version returns to `internal_only`; a new version must be submitted before any client send | Ends any open segment and starts `resumed` with reason `return_internal_rework` | Not visible to client until a later internal approval and explicit send | `DeliverableReturnedToInternalRework`; in-app notification fan-out follows audit-event triggers when configured |
+| Internal rework before delivery without client approval | `ready_for_delivery` only when `requires_client_approval = false`, exact current version and current revision | Tenant owner/admin, project manager, marketing manager in tenant/client scope | Yes | `internal_changes_requested` | Current version returns to `internal_only` | Ends any open segment and starts `resumed` | Not visible to client | `DeliverableReturnedToInternalRework` |
+| Internal rework after client exposure | `waiting_client_approval`, `client_approved`, or `ready_for_delivery` when client approval was required | Any actor | No in V1 | No change | No change | No change | Existing client visibility and decisions are never silently recalled | Denied by RPC; the supported return path is an explicit client change request. A future withdrawal feature is separate out-of-scope work, not an implicit status transition. |
+| Terminal reopen | `delivered`, `cancelled`, `archived` | Any actor | No | No change | No change | No change | No change | Denied by RPC |
+| Stale version/revision | Non-current `version_id` or mismatched `expected_revision` | Any actor | No | No change | No change | No change | No change | Denied by RPC; idempotent replay with the same key returns the original result |
+| Kanban drag | Drag to `not_started` or `in_progress` where the state machine allows it | Authorized internal board user | Yes | `not_started` or `in_progress` | No approval/version mutation | Existing status command behavior | No client exposure change | Existing audited status command |
+| Kanban protected move | Drag to review, approval, client-send, client-decision, delivery, or terminal state | Any actor | No | No change with optimistic rollback | No change | No change | No change | UI explains Arabic denial; workflow buttons remain the only path |
+| Team invitation | Valid name/email, Arabic internal role, active tenant scope, active client scope, one-time link | Tenant owner/admin only | Yes | Pending, then accepted by the exact signed-in email | Acceptance activates only the invited client-scoped role and human profile | No SLA effect | No cross-client/member leakage | Create/resend/revoke/accept are audited and idempotent; old draft RPCs are non-executable |
+| Duplicate/expanding invitation | Same pending email with any repeated/different role or client scope | Any actor | No | No change | No duplicate or permission expansion | No SLA effect | No extra visibility | Denied by RPC; management must revoke or regenerate the existing pending invitation |
+
+The owner request asked for a path after a deliverable was “already sent to the client”. V1 deliberately does not implement a silent internal recall from client-visible states. After exposure, the existing audited client change-request flow is the only supported return path. Any future agency-initiated withdrawal must be a separately specified client-visible feature covering notice, approval invalidation, visible history, and SLA ownership.
+
 ## Out of scope
 
 Hosted UAT execution, deployment/promotion, team access, real customer data, social scheduling, billing, mobile apps, microservices, new dependencies, and Production acceptance.

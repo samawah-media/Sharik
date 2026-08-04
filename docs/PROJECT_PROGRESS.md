@@ -1,5 +1,23 @@
 # Project Progress
 
+## Spec 015 X010-B-7 ready for owner trial - 2026-08-04
+
+Status: `X010_B7_READY_FOR_OWNER_TRIAL`. The correct protected Preview and
+non-Production Supabase UAT are synchronized through migration `202608040001`.
+Real-Auth persona/boundary smoke passed 27/27 on desktop, mobile, and RTL. The
+full hosted workflow run `s015-hosted-lifecycle-c9ca31d742` passed 1/1 and ended
+delivered, proving assignments, exact versions, internal/client decisions,
+durable uploads and cancellation, final delivery, SLA, audit, package ledger,
+idempotency, terminal-state denial, and tenant/client/internal-content secrecy.
+The durable-upload corrective defects S015-P1-111/112 are closed.
+
+Owner-review run `s015-owner-trial-e54d621cfe` is intentionally waiting for a
+client decision. The next action is the owner's human walkthrough using
+`specs/015-persistent-mvp-pilot-completion/evidence/owner-acceptance-walkthrough-ar.md`.
+No team-readiness or Production acceptance is claimed until the owner records
+explicit PASS with no P0/P1. Production, merge, public signup, external-client
+invitations, and real data remain untouched.
+
 ## Spec 015 X010-B-6B CI green, owner UAT pending - 2026-08-04
 
 Status: `X010_B6B_CI_GREEN_OWNER_UAT_PENDING`. Starting HEAD

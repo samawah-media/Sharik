@@ -125,9 +125,10 @@ for (const key of actorKeys) {
   );
 }
 
-const roleFor = (key, accepted) => {
-  const role = actorRoles[key].find((candidate) =>
-    accepted.includes(candidate.role_key),
+const roleFor = (key, accepted, matchesScope = () => true) => {
+  const role = actorRoles[key].find(
+    (candidate) =>
+      accepted.includes(candidate.role_key) && matchesScope(candidate),
   );
   if (!role) throw new Error(`HUMAN_TRIAL_ROLE_MISSING:${key}`);
   return role;
@@ -145,23 +146,25 @@ for (const [key, accepted] of [
   ["DESIGNER", ["designer"]],
   ["CLIENT_VIEWER", ["client_viewer"]],
 ]) {
-  const role = roleFor(key, accepted);
-  if (
-    role.tenant_id !== tenantId ||
-    role.scope_type !== "client" ||
-    role.scope_id !== clientId
-  ) {
-    throw new Error(`HUMAN_TRIAL_SCOPE_MISMATCH:${key}`);
-  }
+  roleFor(
+    key,
+    accepted,
+    (candidate) =>
+      candidate.tenant_id === tenantId &&
+      candidate.scope_type === "client" &&
+      candidate.scope_id === clientId,
+  );
 }
-const managementRole = roleFor("ADMIN", [
-  "tenant_owner",
-  "tenant_administrator",
-  "project_manager",
-  "marketing_manager",
-]);
-if (managementRole.tenant_id !== tenantId)
-  throw new Error("HUMAN_TRIAL_MANAGEMENT_SCOPE_MISMATCH");
+roleFor(
+  "ADMIN",
+  [
+    "tenant_owner",
+    "tenant_administrator",
+    "project_manager",
+    "marketing_manager",
+  ],
+  (candidate) => candidate.tenant_id === tenantId,
+);
 
 const admin = actorSessions.ADMIN;
 

@@ -12,6 +12,28 @@ import {
 
 test.describe.configure({ mode: "serial", timeout: 900_000 });
 
+let hostedLifecycleCleanup:
+  | Awaited<ReturnType<typeof seedHostedLifecycle>>
+  | undefined;
+
+test.afterEach(async () => {
+  if (!hostedLifecycleCleanup) return;
+  const { client, seed } = hostedLifecycleCleanup;
+  const hiddenRunId = seed.runId.replace(
+    "s015-hosted-visible-",
+    "s015-hosted-lifecycle-",
+  );
+  const cleanup = await client
+    .from("deliverables")
+    .update({ import_run_id: hiddenRunId })
+    .eq("id", seed.deliverableId)
+    .eq("import_run_id", seed.runId);
+  if (cleanup.error) {
+    throw new Error(`Hosted lifecycle fixture cleanup failed: ${cleanup.error.message}`);
+  }
+  hostedLifecycleCleanup = undefined;
+});
+
 const vercelStorageStatePath = path.resolve(
   process.cwd(),
   "test-results/s015-vercel-share-state.json",
@@ -73,6 +95,12 @@ const expectReactHydrated = async (trigger: Locator) => {
     .toBe(true);
 };
 
+const openDrawerTab = async (drawer: Locator, name: string) => {
+  const tab = drawer.getByRole("tab", { name });
+  await tab.click();
+  await expect(tab).toHaveAttribute("aria-selected", "true");
+};
+
 const openDeliverableWorkspace = async (page: Page, name: string) => {
   const card = cardFor(page, name);
   await expect(card).toBeVisible();
@@ -81,9 +109,9 @@ const openDeliverableWorkspace = async (page: Page, name: string) => {
   await trigger.click();
   const drawer = page.getByTestId("deliverable-drawer");
   await expect(drawer).toBeVisible();
-  await expect(
-    drawer.getByRole("heading", { name: "المحتوى والنسخة" }),
-  ).toBeVisible({ timeout: 60_000 });
+  await expect(drawer.getByRole("tab", { name: "نظرة عامة" })).toBeVisible({
+    timeout: 60_000,
+  });
   return drawer;
 };
 
@@ -143,6 +171,7 @@ const submitVersion = async ({
   token: string;
   versionNumber: number;
 }) => {
+  await openDrawerTab(drawer, "المحتوى والنسخ");
   const form = drawer.locator('form:has(input[name="versionNumber"])');
   await form.locator('[name="versionNumber"]').fill(String(versionNumber));
   await form.locator('[name="channel"]').fill("Instagram");
@@ -168,6 +197,7 @@ const addInternalComment = async ({
   body: string;
   drawer: Locator;
 }) => {
+  await openDrawerTab(drawer, "التعليقات");
   const form = drawer.locator(
     'form:has([contenteditable="true"][aria-label="نص التعليق"])',
   );
@@ -178,21 +208,77 @@ const addInternalComment = async ({
 };
 
 const addQualityCheck = async ({
+  client,
+  deliverableId,
   drawer,
   label,
   status,
 }: {
+  client: Awaited<ReturnType<typeof seedHostedLifecycle>>["client"];
+  deliverableId: string;
   drawer: Locator;
   label: string;
   status: "changes_required" | "passed";
 }) => {
-  const form = drawer.locator('form:has(input[name="label"])');
-  await form.locator('[name="label"]').fill(label);
-  await form.locator('[name="status"]').selectOption(status);
+  await openDrawerTab(drawer, "الجودة الداخلية");
+  let form = drawer.locator('form:has(input[name="label"])');
+  if ((await form.count()) === 0) {
+    const saveChecklist = drawer.getByRole("button", {
+      name: "حفظ قائمة الجودة",
+    });
+    await expect(saveChecklist).toBeVisible();
+    await saveChecklist.click();
+    form = drawer.locator('form:has(input[name="label"])');
+    await expect(form).toBeVisible({ timeout: 60_000 });
+  }
+  const labelInput = form.locator('[name="label"]');
+  await expectReactHydrated(labelInput);
   await form
     .locator('[name="note"]')
     .fill(status === "passed" ? "UAT passed" : "UAT correction required");
+  await labelInput.fill(label);
+  await form.locator('[name="status"]').selectOption(status);
+  await expect(labelInput).toHaveValue(label);
+  await expect(form.locator('[name="status"]')).toHaveValue(status);
   await form.getByRole("button", { name: "إضافة عنصر جودة" }).click();
+  let qualityVersionId: string | undefined;
+  await expect
+    .poll(async () => {
+      const persisted = await client
+        .from("deliverable_quality_checks")
+        .select("status, version_id")
+        .eq("deliverable_id", deliverableId)
+        .eq("label", label)
+        .maybeSingle();
+      qualityVersionId = persisted.data?.version_id ?? undefined;
+      return persisted.error ? undefined : persisted.data?.status;
+    }, { timeout: 60_000 })
+    .toBe(status);
+
+  if (status === "passed") {
+    const qualityStatuses = drawer.getByRole("combobox", {
+      name: /حالة الجودة:/u,
+    });
+    const qualityStatusCount = await qualityStatuses.count();
+    for (let index = 0; index < qualityStatusCount; index += 1) {
+      const control = qualityStatuses.nth(index);
+      if ((await control.inputValue()) !== "passed") {
+        await control.selectOption("passed");
+      }
+    }
+    expect(qualityVersionId).toBeTruthy();
+    await expect
+      .poll(async () => {
+        const remaining = await client
+          .from("deliverable_quality_checks")
+          .select("id", { count: "exact", head: true })
+          .eq("deliverable_id", deliverableId)
+          .eq("version_id", qualityVersionId!)
+          .neq("status", "passed");
+        return remaining.error ? -1 : (remaining.count ?? 0);
+      }, { timeout: 60_000 })
+      .toBe(0);
+  }
 };
 
 const runManagementWorkflow = async ({
@@ -209,6 +295,7 @@ const runManagementWorkflow = async ({
     | "prepare_for_delivery"
     | "deliver_after_client_approval";
 }) => {
+  await openDrawerTab(drawer, "المحتوى والنسخ");
   if (
     step === "send_to_client" ||
     step === "deliver_after_client_approval"
@@ -231,16 +318,21 @@ const runManagementWorkflow = async ({
 };
 
 const uploadWorkspaceFile = async ({
+  client,
+  deliverableId,
   drawer,
   fileName,
   visibility,
 }: {
+  client: Awaited<ReturnType<typeof seedHostedLifecycle>>["client"];
+  deliverableId: string;
   drawer: Locator;
   fileName: string;
   visibility?: "internal_only" | "final_delivery";
 }) => {
+  await openDrawerTab(drawer, "الملفات");
   if (visibility) {
-    const selector = drawer.getByLabel("رؤية الملف");
+    const selector = drawer.getByLabel(/(?:استخدام|رؤية) الملف/u);
     await expect(selector).toBeVisible({ timeout: 60_000 });
     await selector.selectOption(visibility);
   }
@@ -256,26 +348,29 @@ const uploadWorkspaceFile = async ({
   const upload = drawer.locator("button.uppy-StatusBar-actionBtn--upload");
   await expect(upload).toBeVisible({ timeout: 60_000 });
   await upload.click();
-  await expect(drawer.getByText("تم حفظ 1 ملف بنجاح.")).toBeVisible({
-    timeout: 120_000,
-  });
-  await expect(drawer.getByText(fileName, { exact: true })).toBeVisible();
-  await expect(drawer.getByText("تم الرفع والربط", { exact: true })).toBeVisible();
-  await expect(
-    drawer.getByText(
-      fileName.endsWith(".mp4") ? /video\/mp4.*100%/u : /text\/plain.*100%/u,
-    ),
-  ).toBeVisible();
+  await expect
+    .poll(async () => {
+      const persisted = await client
+        .from("file_assets")
+        .select("id", { count: "exact", head: true })
+        .eq("deliverable_id", deliverableId)
+        .eq("file_name", fileName);
+      return persisted.error ? -1 : (persisted.count ?? 0);
+    }, { timeout: 120_000 })
+    .toBe(1);
+  await expect(drawer.getByText(fileName, { exact: true }).first()).toBeVisible();
 };
 
 const choosePendingDeliverable = async (page: Page, name: string) => {
-  const choice = page.locator("nav button").filter({ hasText: name });
-  await expect(choice).toBeVisible({ timeout: 60_000 });
-  await choice.click();
-  const detail = page.getByTestId("client-approval-detail");
-  await expect(
-    detail.getByRole("heading", { name, exact: true }),
-  ).toBeVisible();
+  const details = page.getByTestId("client-approval-detail");
+  const detail = details.filter({ hasText: name });
+  if (!(await detail.isVisible().catch(() => false))) {
+    const choice = page.getByRole("button").filter({ hasText: name });
+    await expect(choice).toBeVisible({ timeout: 60_000 });
+    await choice.click();
+  }
+  await expect(detail).toBeVisible({ timeout: 60_000 });
+  await expect(detail.getByText(name, { exact: true })).toBeVisible();
   return detail;
 };
 
@@ -296,7 +391,8 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
   );
   if (!baseURL) throw new Error("Hosted lifecycle requires a configured base URL.");
 
-  const { client, seed } = await seedHostedLifecycle();
+  hostedLifecycleCleanup = await seedHostedLifecycle({ browserVisible: true });
+  const { client, seed } = hostedLifecycleCleanup;
   const token = seed.runId.slice(-10);
   const internalComment = `تعليق داخلي اصطناعي ${token}`;
   const internalFileName = `internal-uat-${token}.txt`;
@@ -333,6 +429,7 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
     run: async (page) => {
       await page.goto("/work", { waitUntil: "domcontentloaded" });
       const drawer = await openDeliverableWorkspace(page, seed.deliverableName);
+      await openDrawerTab(drawer, "مهام التنفيذ");
       const taskForm = drawer.locator('form:has(input[name="title"])').last();
       await taskForm.locator('[name="title"]').fill(seed.taskTitle);
       await taskForm.locator('[name="description"]').fill("Synthetic hosted UAT task");
@@ -365,6 +462,7 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
     run: async (page) => {
       await page.goto("/work", { waitUntil: "domcontentloaded" });
       const drawer = await openDeliverableWorkspace(page, seed.deliverableName);
+      await openDrawerTab(drawer, "مهام التنفيذ");
       await drawer
         .getByRole("combobox", { name: `حالة المهمة: ${seed.taskTitle}` })
         .selectOption("done");
@@ -399,6 +497,8 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
       await addInternalComment({ body: internalComment, drawer });
       await expect(drawer.getByText(internalComment)).toBeVisible({ timeout: 60_000 });
       await uploadWorkspaceFile({
+        client,
+        deliverableId: seed.deliverableId,
         drawer,
         fileName: internalFileName,
       });
@@ -443,12 +543,11 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
       await page.goto("/work", { waitUntil: "domcontentloaded" });
       let drawer = await openDeliverableWorkspace(page, seed.deliverableName);
       await addQualityCheck({
+        client,
+        deliverableId: seed.deliverableId,
         drawer,
         label: `${seed.qualityLabel} v1`,
         status: "changes_required",
-      });
-      await expect(drawer.getByText(`${seed.qualityLabel} v1`)).toBeVisible({
-        timeout: 60_000,
       });
       await runManagementWorkflow({ drawer, step: "approve_internally" });
       await expectDeliverable({
@@ -500,12 +599,11 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
       await page.goto("/work", { waitUntil: "domcontentloaded" });
       let drawer = await openDeliverableWorkspace(page, seed.deliverableName);
       await addQualityCheck({
+        client,
+        deliverableId: seed.deliverableId,
         drawer,
         label: `${seed.qualityLabel} v2`,
         status: "passed",
-      });
-      await expect(drawer.getByText(`${seed.qualityLabel} v2`)).toBeVisible({
-        timeout: 60_000,
       });
       await runManagementWorkflow({ drawer, step: "approve_internally" });
       await expectDeliverable({
@@ -515,6 +613,7 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
       });
       await page.goto("/work", { waitUntil: "domcontentloaded" });
       drawer = await openDeliverableWorkspace(page, seed.deliverableName);
+      await openDrawerTab(drawer, "الملفات");
       await page.route("**/storage/v1/upload/resumable*", async (route) => {
         await route.abort("failed");
       });
@@ -534,6 +633,7 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
           `فشل رفع ${failedReplacementName}. لم يُربط الملف بالمخرج؛ أعد المحاولة أو ألغِه بوضوح.`,
         ),
       ).toBeVisible({ timeout: 30_000 });
+      await openDrawerTab(drawer, "المحتوى والنسخ");
       await expect(
         drawer.getByRole("button", {
           name: "راجعت النسخة والملفات",
@@ -554,24 +654,32 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
       await page.unroute("**/storage/v1/upload/resumable*");
       await page.reload({ waitUntil: "domcontentloaded" });
       drawer = await openDeliverableWorkspace(page, seed.deliverableName);
+      await openDrawerTab(drawer, "الملفات");
       await expect(drawer.getByText(failedReplacementName)).toBeVisible();
+      await openDrawerTab(drawer, "المحتوى والنسخ");
       await expect(
         drawer.getByRole("button", {
           name: "راجعت النسخة والملفات",
         }),
       ).toBeDisabled();
+      await openDrawerTab(drawer, "الملفات");
       await drawer
         .getByRole("button", {
           name: "إلغاء المحاولة وتسجيل القرار",
         })
         .click();
-      const cancelledAttempt = await client
-        .from("file_upload_attempts")
-        .select("status")
-        .eq("id", failedAttemptId!)
-        .single();
-      expect(cancelledAttempt.error).toBeNull();
-      expect(cancelledAttempt.data?.status).toBe("cancelled");
+      await expect
+        .poll(async () => {
+          const cancelledAttempt = await client
+            .from("file_upload_attempts")
+            .select("status")
+            .eq("id", failedAttemptId!)
+            .single();
+          return cancelledAttempt.error
+            ? undefined
+            : cancelledAttempt.data?.status;
+        }, { timeout: 60_000 })
+        .toBe("cancelled");
       const cancellationAudit = await client
         .from("audit_events")
         .select("id", { count: "exact", head: true })
@@ -693,6 +801,8 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
       await page.goto("/work", { waitUntil: "domcontentloaded" });
       let drawer = await openDeliverableWorkspace(page, seed.deliverableName);
       await addQualityCheck({
+        client,
+        deliverableId: seed.deliverableId,
         drawer,
         label: `${seed.qualityLabel} v3`,
         status: "passed",
@@ -762,6 +872,8 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
       await page.goto("/work", { waitUntil: "domcontentloaded" });
       let drawer = await openDeliverableWorkspace(page, seed.deliverableName);
       await uploadWorkspaceFile({
+        client,
+        deliverableId: seed.deliverableId,
         drawer,
         fileName: finalFileName,
         visibility: "final_delivery",
@@ -775,6 +887,7 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
       await page.waitForURL(/saved=status-updated/u);
       await page.goto("/work", { waitUntil: "domcontentloaded" });
       drawer = await openDeliverableWorkspace(page, seed.deliverableName);
+      await openDrawerTab(drawer, "المحتوى والنسخ");
       await drawer
         .getByRole("button", { name: "راجعت بيانات التسليم" })
         .click();
@@ -808,6 +921,7 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
     qualityAudit,
     decisions,
     files,
+    uploadAttempts,
     comments,
   ] = await Promise.all([
     client
@@ -824,7 +938,7 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
       .from("mvp_command_requests")
       .select("id", { count: "exact", head: true })
       .eq("deliverable_id", seed.deliverableId)
-      .eq("command_name", "deliver"),
+      .eq("command_name", "deliver_ready_version"),
     client
       .from("deliverable_allocations")
       .select("status")
@@ -855,6 +969,11 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
       .select("id, file_name, visibility, version_id, is_final, upload_state")
       .eq("deliverable_id", seed.deliverableId),
     client
+      .from("file_upload_attempts")
+      .select("id, status")
+      .eq("deliverable_id", seed.deliverableId)
+      .eq("status", "ready"),
+    client
       .from("comments")
       .select("body, visibility, version_id")
       .eq("deliverable_id", seed.deliverableId),
@@ -870,6 +989,7 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
     qualityAudit,
     decisions,
     files,
+    uploadAttempts,
     comments,
   ]) {
     expect(response.error).toBeNull();
@@ -887,11 +1007,13 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
   );
   const currentFileIds = (files.data ?? []).map((file) => file.id);
   expect(currentFileIds).toHaveLength(2);
+  const readyAttemptIds = (uploadAttempts.data ?? []).map((attempt) => attempt.id);
+  expect(readyAttemptIds).toHaveLength(2);
   const fileAudit = await client
     .from("audit_events")
     .select("id", { count: "exact", head: true })
-    .eq("action", "FileAssetRegistered")
-    .in("target_id", currentFileIds);
+    .eq("action", "FileUploadAttemptReady")
+    .in("target_id", readyAttemptIds);
   expect(fileAudit.error).toBeNull();
   expect(fileAudit.count).toBe(2);
   expect(decisions.data).toEqual(

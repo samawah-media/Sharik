@@ -320,7 +320,9 @@ const dateAfter = (days: number) => {
   return date.toISOString().slice(0, 10);
 };
 
-export const seedHostedLifecycle = async (): Promise<{
+export const seedHostedLifecycle = async (
+  options: { browserVisible?: boolean; ownerTrial?: boolean } = {},
+): Promise<{
   client: SupabaseClient;
   seed: HostedLifecycleSeed;
 }> => {
@@ -335,7 +337,14 @@ export const seedHostedLifecycle = async (): Promise<{
     tenantId,
   });
   const token = crypto.randomUUID().replaceAll("-", "").slice(0, 10);
-  const runId = `s015-hosted-lifecycle-${token}`;
+  if (options.browserVisible && options.ownerTrial) {
+    throw new Error("Hosted lifecycle seed visibility options conflict.");
+  }
+  const runId = options.ownerTrial
+    ? `s015-owner-trial-${token}`
+    : options.browserVisible
+      ? `s015-hosted-visible-${token}`
+      : `s015-hosted-lifecycle-${token}`;
   const contractId = crypto.randomUUID();
   const packageId = crypto.randomUUID();
   const packageLineId = crypto.randomUUID();
@@ -352,7 +361,9 @@ export const seedHostedLifecycle = async (): Promise<{
       tenant_id: tenantId,
       client_id: clientId,
       name: `عقد UAT اصطناعي ${token}`,
-      reference: `S015-UAT-${token}`,
+      reference: options.ownerTrial
+        ? `S015-OWNER-UAT-${token}`
+        : `S015-UAT-${token}`,
       status: "active",
     }),
     "hosted lifecycle contract seed",

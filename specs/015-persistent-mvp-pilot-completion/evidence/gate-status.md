@@ -1,5 +1,25 @@
 # Spec 015 gate status
 
+## X010-B-7 technically ready for owner trial - 2026-08-04
+
+`X010_B7_READY_FOR_OWNER_TRIAL`. The approved non-Production Supabase UAT is
+healthy and now matches the reviewed migration inventory through
+`202608040001`. The protected Preview under `samawahs-projects/shrik` passed
+real-Auth route/persona smoke 27/27 across desktop, mobile, and Arabic RTL.
+Hosted lifecycle `s015-hosted-lifecycle-c9ca31d742` passed 1/1 and ended
+`delivered`: management assignment, assigned writer/designer work, three exact
+versions, internal changes/approval, client changes/final approval, stale
+decision denial, durable failed-upload cancellation, final file, SLA
+pause/resume/completion, audit, ledger, idempotency, terminal-state denial, and
+client/unassigned secrecy. S015-P1-111 and S015-P1-112 are closed.
+
+Persistent owner-review fixture `s015-owner-trial-e54d621cfe` remains at
+`waiting_client_approval` so the owner can compare viewer and approver behavior.
+This state authorizes only the owner's structured walkthrough. X010-B-7,
+X008-H, H008-H010, X007, and T032 remain open until the owner records explicit
+human PASS with no new P0/P1. No Production access, merge, public signup,
+external invitation, or real client data occurred.
+
 ## X010-B-6B CI green, owner UAT pending - 2026-08-04
 
 `X010_B6B_CI_GREEN_OWNER_UAT_PENDING`. Mandatory starting HEAD

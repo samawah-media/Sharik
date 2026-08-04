@@ -1,5 +1,34 @@
 # Spec 015 execution log
 
+## 2026-08-04 - X010-B-7 hosted technical preparation
+
+- Confirmed the correct targets: Vercel project `samawahs-projects/shrik` and
+  healthy non-Production Supabase project `sharik-uat`
+  (`jnvuccapgsabrwwkxnbh`). Production was not accessed.
+- Reviewed and applied the eight pending additive migrations from
+  `202607300001` through `202608040001`; post-apply local/remote inventory
+  matched and a second dry-run reported the remote database up to date.
+- Scoped the approved internal synthetic personas using the audited invitation
+  path. The negative internal persona has valid client scope but no assignment,
+  preserving a meaningful authorization test rather than a route-access false
+  negative.
+- Prepared persistent owner-review run `s015-owner-trial-e54d621cfe` with one
+  exact current version at `waiting_client_approval`. Viewer has zero decision
+  actions; approver has approve/request-change actions.
+- Protected-Preview real-Auth boundary/persona smoke passed 27/27 across
+  desktop/mobile/RTL. Vercel protection automation used a temporary cookie jar
+  only; no bypass secret entered the app or browser bundle and teardown removed
+  the temporary file.
+- Updated the hosted lifecycle harness for the current B5/B6 UI (drawer tabs,
+  direct multi-item pending details, `استخدام الملف`, atomic/default quality
+  checklist, durable upload audit targets). Final hosted lifecycle
+  `s015-hosted-lifecycle-c9ca31d742` passed 1/1 in 4.8 minutes and ended
+  delivered with all workflow, secrecy, SLA, audit, ledger, idempotency, and
+  terminal-state assertions green.
+- Result: `X010_B7_READY_FOR_OWNER_TRIAL`. S015-P1-111/112 and X010-A-9 are
+  closed. Owner human PASS remains mandatory; TEAM_UAT_READY, Production,
+  merge, and external invitations are not declared.
+
 ## 2026-08-04 - X010-B-6B technical and exact-HEAD CI closure
 
 - Starting HEAD verified exactly:

@@ -210,6 +210,8 @@ invite the team. Parent disposition: X010-A-9 / S015-P1-111 / S015-P1-112 remain
     - [x] X010-B-6A corrective CI gate (2026-08-03): S015-P1-132 and S015-P2-131 fixed and CI-verified. Default quality checklist save is one additive PostgreSQL RPC (`202608030001`) with atomic rollback including audit and stable idempotent replay; Drawer load/refresh failures are honest and retryable; fixture mode returns a bounded real workspace and rejects unknown fixtures. Local reset + pgTAP 14/695, lint/typecheck, unit 70/349, integration 28/112, component 30/130, RLS simulator 8/24, build, secret scan, and targeted desktop/mobile/RTL visual Drawer E2E PASS. Exact code HEAD `b825182` passed F-001 `30837530949`, including fixture E2E 178/10 configured skips and persistent E2E 18/18; Vercel passed on `samawahs-projects/shrik`. Status `X010_B6A_CORRECTIVE_CI_GREEN_OWNER_UAT_PENDING`; Owner UAT remains open.
     - [ ] X010-B-6B remaining: S015-P2-124 post-approval reopen path, S015-P2-125 Kanban protected-move clarity, and S015-P2-126 team invitation flow are explicitly out of B6A scope.
   - [ ] X010-B-7 Final structured owner acceptance trial after B2–B6: bounded owner walkthrough of the simplified onboarding, terminology, notifications, files, and drawer experience on the corrected Preview; close only on explicit owner PASS. No Production, merge, or team invitation before owner PASS.
+    - Owner procedure: `evidence/owner-acceptance-walkthrough-ar.md`.
+    - Requirements-quality gate: `checklists/owner-acceptance-requirements.md`.
 
 
 ## Correction note: task assignment authority (2026-07-15)

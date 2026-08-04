@@ -1,5 +1,30 @@
 # Owner Manual UAT Notes — 2026-07-26
 
+## Current reconciliation — 2026-08-04
+
+This section supersedes the older counts below without deleting their historical
+evidence. Current repository HEAD at reconciliation is `38f800c` on
+`codex/015-persistent-mvp-pilot-completion`.
+
+- **34 observations are technically fixed:** A1–A13, B1–B4, and D1–D17.
+- **D18 is partially fixed:** density was tightened on the main management,
+  client, team, board, and Drawer surfaces; final owner visual acceptance remains.
+- **Four visual checks remain:** C1–C4 (desktop density, mobile density, Kanban
+  navigation, and Arabic-state sweep).
+- **Five owner notes remain open:** N1/S015-P2-124 post-approval internal reopen,
+  N2/S015-P2-125 protected Kanban move clarity, N3/S015-P2-126 team invitation,
+  N4/S015-P2-127 email-notification decision, and N5/S015-P2-128 bounded UAT-data
+  cleanup preserving append-only audit and ledger history.
+- The reliable last client-decision timestamp remains deferred under
+  S015-P2-117; no approximate timestamp is shown.
+- X010-B-6B and X010-B-7 remain open. Owner UAT, TEAM_UAT_READY, merge, and
+  Production acceptance are not declared.
+- S015-P1-111/S015-P1-112 remain code-fixed and CI-verified but require the
+  approved hosted upload/cancel regression before final closure.
+
+The owner walkthrough procedure is maintained in
+`evidence/owner-acceptance-walkthrough-ar.md`.
+
 ## X010-B-4 corrective local close — 2026-08-01
 
 B4 is **not** owner-accepted. It is recorded as

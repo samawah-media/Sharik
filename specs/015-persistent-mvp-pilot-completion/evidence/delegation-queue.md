@@ -1,5 +1,23 @@
 # Astra-led correction queue — 2026-09-07
 
+## Persistent selector review — 2026-09-08
+
+Peirce native Astra medium, fresh read-only context, baseline6ab50e2; reviewed
+other persistent UI selectors while lead owned invitation correction/CI. No
+edits or tests; completed and closed. No additional confirmed blocker; identified
+conditional obsolete controls in task-notification test. Lead verified source
+and recorded incomplete notification E2E proof in preflight. No external route,
+no retries; usage/cost unknown. Full corrected CI and owner checks remain pending.
+
+## Production target advisory — 2026-09-08
+
+Parfit native Astra medium, read-only, HEAD6ab50e2. Cross-file runtime/config
+review justified by production auth and fixture boundary. No secrets, network,
+tests, writes or deployment. Confirmed required public Supabase configuration,
+NODE_ENV production fixture denial, separate production project requirement.
+Lead verified cited env/parser/proxy/fixture source. No schema or behavior change;
+usage/cost unknown. Production database choice and owner acceptance remain pending.
+
 ## Preview preflight — 2026-09-08
 
 Two native Astra read-only reviewers, both finished and closed. Bacon reviewed

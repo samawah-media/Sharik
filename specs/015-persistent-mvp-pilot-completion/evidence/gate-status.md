@@ -1,5 +1,21 @@
 # Spec 015 gate status
 
+## Preview release held for corrected CI — 2026-09-08
+
+Owner accepted Preview-first. Run34231310152 failed persistent invitation only:
+23PASS/1FAIL,22.4m; removed single-client selector timed out. Test-only correction
+uses the current checkbox, verifies its client ID, and checks the directory badge.
+Focused component13PASS, types/scoped lint PASS; corrected CI is not yet accepted.
+No hosted migration or deployment. All20 owner checks remain pending.
+
+## Remote CI in progress; Production blocked on target choice — 2026-09-08
+
+Account approval resolved;6ab50e2 pushed. Exact-source run34231310152 has passed
+clean reset/RLS/DB and earlier code gates; later steps pending. No hosted apply
+or deployment. Production publication requested, but Production has no configured
+env variables/database; owner asks for recommendation. Preview-first trial is
+recommended, not a claim of Production readiness. Owner20/hosted gates stay open.
+
 ## CI recovery exception — 2026-09-08
 
 Local commit0a69924 is ready. Push failed403 with default Git identity. Safety

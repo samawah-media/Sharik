@@ -21,9 +21,9 @@ test("a scoped team invitation is created, denied to the wrong email, and accept
   await form.getByLabel("اسم العضو").fill("مصمم العميل الثاني");
   await form.getByLabel("بريد العضو").fill(invitedActor.email);
   await form.getByLabel("الدور").selectOption("designer");
-  await form
-    .getByLabel("العميل الذي سيعمل عليه")
-    .selectOption(seed.clientB);
+  const invitedClient = form.getByRole("checkbox", { name: "Glass", exact: true });
+  await expect(invitedClient).toHaveValue(seed.clientB);
+  await invitedClient.check();
   await form.getByRole("button", { name: "إنشاء رابط الدعوة" }).click();
 
   await expect(
@@ -97,6 +97,8 @@ test("a scoped team invitation is created, denied to the wrong email, and accept
     invitedMemberCard.getByRole("heading", { name: "مصمم العميل الثاني" }),
   ).toBeVisible();
   await expect(invitedMemberCard.getByText("المصمم", { exact: true })).toBeVisible();
-  await expect(invitedMemberCard.getByText("يعمل على: Glass")).toBeVisible();
+  await expect(
+    invitedMemberCard.getByLabel("عملاء العضو").getByText("Glass", { exact: true }),
+  ).toBeVisible();
   await expect(invitedMemberCard.getByText(invitedActor.email)).toHaveCount(0);
 });

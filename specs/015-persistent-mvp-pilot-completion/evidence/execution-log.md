@@ -1,5 +1,28 @@
 # Spec 015 execution log
 
+## 2026-09-08 — Preview accepted, CI selector regression isolated
+
+Owner accepted Preview-first. Linked dry-run listed only202609010001; checksum
+and target matched. No apply. CI34231310152 persistent23PASS/1FAIL confirmed the
+removed single-client selector timeout. Corrected test-only checkbox/client-ID
+and directory badge selectors. Focused components13PASS, types/scoped lint PASS.
+No source behavior or security assertion weakened. Corrected CI pending.
+Independent Astra review's conditional notification-proof gap remains OPEN;
+see current preflight. No deployment or owner acceptance claimed.
+
+## 2026-09-08 — Account approved and reviewed source pushed
+
+Explicit owner approval resolved repository account identity; process-local
+credential use pushed6ab50e2 without changing global auth defaults or exposing
+tokens. F-00134231310152 running, passed through clean reset and RLS/DB. Latest
+Vercel deployment unchanged. Production requested; read-only env listing shows
+no Production configuration. Owner asks which target is preferable; lead advises
+Preview-first trial, then independent Production. No provisioning/data transfer,
+hosted migration/deployment or owner-PASS. Read-only Astra runtime review completed
+without edits: missing public Supabase env would break session middleware; confirmed
+production NODE_ENV blocks route fixtures. Lead checked the referenced source and
+existing independent-production-project requirement. Worker closed; usage unknown.
+
 ## 2026-09-08 — Preview recovery pre-push checks in progress
 
 Final checkpoint: batch committed locally0a69924. Normal push failed403 for

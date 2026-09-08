@@ -1,13 +1,64 @@
 # UI1–UI4 owner Preview preflight — 2026-09-08
 
 Status: HOSTED_TEAM_UAT_BLOCKED. UI1–UI4 LOCAL PASS remains valid.
-Owner now authorizes publishing the updates for a hands-on trial. This is
-Preview/UAT authority, not Production promotion or waiver of compatibility gates.
+Owner authorized hands-on Preview publication, then explicitly requested
+Production on2026-09-08. Production preparation is blocked on target configuration
+and database choice; this request does not waive compatibility or acceptance gates.
 Continue in Spec015; do not create another release roadmap.
+
+## Latest remote checkpoint — 2026-09-08
+
+Final CI result34231310152: FAIL, persistent23PASS/1FAIL in22.4m. Failure is
+`locator.selectOption` waiting for the removed single-client label. Lead replaced
+it with the current named checkbox plus exact client-ID assertion and updated
+the member's client badge assertion. No application changes or removed security
+assertions. Focused components13PASS, scoped lint and TypeScript PASS. A first
+local typecheck accidentally included the lead-created source snapshot under
+tmp; that disposable snapshot was removed and the unchanged typecheck passed.
+A mistaken component config command failed before tests; the actual package
+script then passed13. These are not hidden test successes.
+
+Independent native Astra read-only review found no other confirmed blocking
+selector mismatch. It found a separate coverage gap in the task-notification
+journey: conditional obsolete task controls allow the test to pass without
+creating a task or requiring a notification. Lead verified this against current
+workspace-forms.tsx. Keep that journey's end-to-end notification proof OPEN;
+its CI PASS must not imply complete notification acceptance. Do not waive owner
+checks. No hosted mutation; corrected exact-source CI still required.
+
+Owner accepted Preview-first publication for trying the new design. Production
+remains out of this execution. Run ID: `s015-ui-preview-20260908-6ab50e2`.
+Codex is executor; the owner retains stop/rollback authority. The execution window
+is this owner-authorized session, after exact-head CI success only.
+Read-only linked DB dry-run succeeded: only `202609010001` is pending.
+Full fixture browser CI step passed; persistent browser, secret scan and build
+are still pending at this checkpoint. No hosted migration applied yet.
+
+Bounded migration gate: verify the linked UAT identity and migration SHA256
+`B0CAFE57D7491908C3CE55CCD1E73E1EA0C78998A40F2E7E54FA03581CFEE7BB`;
+stop on target drift, unexpected migrations, checksum drift or failed CI.
+Apply without seed/import/role flags, then require a no-op dry-run.
+Keep the old Preview available as deployment rollback. Database rollback is a
+reviewed forward correction (or bounded restoration of the previous function
+definition), never a reset, business-data deletion or automatic down migration.
+Owner acceptance and hosted all-persona tests remain pending independently.
+
+Owner explicitly approved the saved repository-owning account. Normal push of
+6ab50e2 succeeded. Exact-head F-001 run34231310152 is in progress; checkout,
+whitespace, install, lint, types, unit, integration, disposable Supabase start,
+clean no-seed reset and RLS/DB step passed. Later steps are not yet accepted.
+Vercel still lists the old Preview as latest; no automatic new deployment occurred.
+Production env listing is empty; Preview has APP_ENV, Supabase public URL/key and
+server-role key. No values copied or environments changed. No hosted migration.
+Owner asked which target is preferable. Lead recommends updating Preview for
+the owner/team trial, then independently configured Production after acceptance.
+Production database selection, provisioning costs and any data transfer remain
+unapproved/undefined. Do not copy UAT credentials into Production by inference.
+All20 owner requirements remain pending, not waived by deployment authorization.
 
 ## Owner-approved recovery continuation
 
-Latest checkpoint: reviewed batch committed locally as0a69924. Normal push was
+Historical account blocker: reviewed batch committed locally as0a69924. Normal push was
 rejected403 because the default Git identity lacks repository permission. A
 process-scoped attempt to use the existing organization-account credential was
 blocked by automatic safety review before execution; do not work around it.

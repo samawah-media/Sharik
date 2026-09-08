@@ -1,5 +1,26 @@
 # Project Progress
 
+## Preview accepted; persistent test selector corrected — 2026-09-08
+
+Owner chose Preview-first trial. CI34231310152 on6ab50e2 failed only the persistent
+invitation journey:23PASS/1FAIL,22.4m. The test waited for the removed single-client
+select; the approved form now uses client checkboxes. Lead corrected that selector
+with an explicit client-ID assertion and the directory client-badge assertion.
+No production behavior, assertion waiver, timeout or retry change. Focused
+components13PASS; types and scoped lint PASS. Full corrected CI remains required.
+No hosted migration/deployment. All20 owner checks remain pending. A separate
+conditional notification-test coverage gap is recorded in current preflight.
+
+## Remote verification running; production target unresolved — 2026-09-08
+
+Owner explicitly approved repository account use; pushed6ab50e2 successfully.
+F-001 run34231310152 passed through clean Supabase reset and RLS/DB; remaining
+steps still running. Automatic Preview deployment did not occur. Owner requested
+Production, but its environment-variable inventory is empty and its database
+target is undefined. Owner then requested advice; recommend updated Preview for
+team/owner acceptance before independent Production setup. No hosted migration,
+deployment, provisioning or data transfer. All20 owner checks remain pending.
+
 ## CI recovery approved — publication still pending — 2026-09-08
 
 Reviewed batch is committed locally as0a69924. Push rejected403 for the default

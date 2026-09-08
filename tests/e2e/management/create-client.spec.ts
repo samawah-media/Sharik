@@ -7,8 +7,16 @@ test("shows Arabic client list with a single primary onboarding CTA and the stan
 
   await expect(page.getByRole("heading", { name: "العملاء" })).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "فتح المساحة" }).first(),
+    page.getByRole("link", { name: /فتح مساحة/ }).first(),
   ).toBeVisible();
+
+  await page
+    .getByTestId("management-client-card-client_a")
+    .click({ position: { x: 12, y: 12 } });
+  await expect(page.getByRole("heading", { name: "مساحة هدنة" })).toBeVisible({
+    timeout: 60_000,
+  });
+  await page.goto("/clients", { waitUntil: "domcontentloaded" });
 
   await expect(
     page.getByRole("link", { name: "إضافة عميل جديد" }),

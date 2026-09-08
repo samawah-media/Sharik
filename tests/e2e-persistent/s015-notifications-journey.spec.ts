@@ -140,8 +140,11 @@ test("send-to-client notifies the client approver in-app (persistent)", async ({
   expect(error).toBeNull();
   expect(data?.length ?? 0).toBeGreaterThanOrEqual(1);
   const notification = data?.[0];
-  expect(notification?.action_href).toBe("/client/pending");
-  expect(notification?.title).toContain("بانتظار المراجعة");
+  if (!notification) {
+    throw new Error("Expected a client-send notification for the approver.");
+  }
+  expect(notification.action_href).toBe("/client/pending");
+  expect(notification.title).toContain("بانتظار المراجعة");
 
   // 3. Client approver signs in and sees the notification in the center.
   await page.context().clearCookies();
@@ -160,6 +163,38 @@ test("send-to-client notifies the client approver in-app (persistent)", async ({
   await expect(body).not.toContainText("client_send");
   await expect(body).not.toContainText("deliverable_version");
   await expect(body).not.toContainText(seed.mainDeliverableId);
+
+  // 5. Mark the real PostgreSQL row as read. `read_at` is a timestamptz and
+  // Supabase returns it with an explicit timezone offset; the center must keep
+  // rendering after the mutation instead of converting the whole list to an
+  // error/empty state while the bell count remains non-zero.
+  const notificationRow = page.locator("li").filter({
+    hasText: "لديك نسخة جديدة بانتظار المراجعة",
+  });
+  await notificationRow
+    .getByRole("button", { name: "تعليم كمقروء" })
+    .click();
+  await expect(
+    notificationRow.getByRole("button", { name: "تعليم كمقروء" }),
+  ).toHaveCount(0);
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.getByTestId("notifications-page")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "تعذر تحميل الإشعارات" }),
+  ).toHaveCount(0);
+  await expect(
+    page.locator("article").filter({
+      hasText: "لديك نسخة جديدة بانتظار المراجعة",
+    }),
+  ).toBeVisible();
+
+  const { data: readRows, error: readError } = await seeded.client
+    .from("notifications")
+    .select("read_at")
+    .eq("id", notification.id)
+    .single();
+  expect(readError).toBeNull();
+  expect(readRows?.read_at).toBeTruthy();
 });
 
 test("task assignment notifies the assignee in-app (persistent)", async ({

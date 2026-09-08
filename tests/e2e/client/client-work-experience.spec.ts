@@ -46,7 +46,8 @@ test.describe("X010-B3 client work experience", () => {
     const deliverableId = String(href).split("/client/work/")[1];
 
     await firstCard.click();
-    await expect(page).toHaveURL(`/client/work/${deliverableId}`);
+    // The local dev server compiles this dynamic route on its first navigation.
+    await expect(page).toHaveURL(`/client/work/${deliverableId}`, { timeout: 30_000 });
     await expect(
       page.getByRole("link", { name: "العودة إلى أعمالي" }),
     ).toBeVisible();
@@ -108,7 +109,7 @@ test.describe("X010-B3 client work experience", () => {
     expect(
       await page.getByText(/والقرار لدى المسؤول عن الاعتماد/).count(),
     ).toBeGreaterThan(0);
-    await expect(page.getByRole("button", { name: "اعتماد المخرج" })).toHaveCount(
+    await expect(page.getByRole("button", { name: "اعتماد النسخة" })).toHaveCount(
       0,
     );
     await expect(page.getByRole("button", { name: "طلب تعديل" })).toHaveCount(0);
@@ -126,7 +127,7 @@ test.describe("X010-B3 client work experience", () => {
 
     await page.goto(detailUrl, { waitUntil: "domcontentloaded" });
     await expect(
-      page.getByRole("button", { name: "اعتماد المخرج" }),
+      page.getByRole("button", { name: "اعتماد النسخة" }),
     ).toHaveCount(0);
     await expect(page.getByRole("button", { name: "طلب تعديل" })).toHaveCount(0);
     await expect(page.getByText(/للاطلاع فقط|لا يملك صلاحية/)).toBeVisible();

@@ -1,7 +1,11 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
+import {
+  formatArabicDate,
+  formatArabicDateRange,
+} from "@/modules/localization/arabic-display";
 import type { MemberDisplay } from "@/modules/members/member-directory";
 import type { OnboardingFormState } from "@/modules/onboarding/onboarding-form-state";
 import { initialOnboardingFormState } from "@/modules/onboarding/onboarding-form-state";
@@ -44,6 +48,11 @@ type WizardData = {
   requiresInternalApproval: boolean;
   requiresClientApproval: boolean;
   reservedQuantity: string;
+};
+
+type WizardFieldError = {
+  field: string;
+  message: string;
 };
 
 const stepLabels = [
@@ -112,7 +121,12 @@ const initialData: WizardData = {
 const fieldClass =
   "rounded-md border border-border bg-background px-3 py-2";
 
+const fieldErrorClass =
+  "rounded-md border border-danger/40 bg-background px-3 py-2";
+
 const helperClass = "text-xs text-muted";
+
+const fieldErrorId = (field: string) => `onboarding-error-${field}`;
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -159,6 +173,198 @@ function StepIndicator({
   );
 }
 
+function FieldError({ field, message }: { field: string; message?: string }) {
+  if (!message) return null;
+
+  return (
+    <span className="text-xs font-normal text-danger" id={fieldErrorId(field)}>
+      {message}
+    </span>
+  );
+}
+
+function ReviewRow({
+  label,
+  value,
+  ltr = false,
+  wide = false,
+}: {
+  label: string;
+  value: ReactNode;
+  ltr?: boolean;
+  wide?: boolean;
+}) {
+  return (
+    <div
+      className={
+        "flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5" +
+        (wide ? " sm:col-span-2" : "")
+      }
+    >
+      <dt className="font-medium text-foreground">{label}:</dt>
+      <dd className="text-muted" dir={ltr ? "ltr" : undefined}>
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+const deliverableTypeLabel = (value: string) =>
+  typeOptions.find((option) => option.value === value)?.label ?? "غير محدد";
+
+const deliverablePriorityLabel = (value: string) =>
+  priorityOptions.find((option) => option.value === value)?.label ?? "غير محددة";
+
+const packageLineField = (
+  index: number,
+  field: keyof PackageLineDraft,
+): string => `packageLine-${index}-${field}`;
+
+function collectStepErrors(
+  target: number,
+  currentData: WizardData,
+): WizardFieldError[] {
+  const errors: WizardFieldError[] = [];
+
+  if (target === 0) {
+    if (currentData.clientName.trim().length < 2) {
+      errors.push({
+        field: "clientName",
+        message: "اسم الشركة أو الجهة مطلوب (حرفان على الأقل).",
+      });
+    }
+    if (
+      currentData.clientContactPhone.trim().length > 0 &&
+      !isValidContactPhone(currentData.clientContactPhone)
+    ) {
+      errors.push({
+        field: "clientContactPhone",
+        message: "رقم الهاتف / واتساب غير صحيح. استخدم رمز الدولة والأرقام فقط.",
+      });
+    }
+  }
+
+  if (target === 1) {
+    if (currentData.contractName.trim().length < 2) {
+      errors.push({
+        field: "contractName",
+        message: "اسم العقد مطلوب (حرفان على الأقل).",
+      });
+    }
+    if (
+      currentData.contractPeriodStart &&
+      currentData.contractPeriodEnd &&
+      currentData.contractPeriodStart > currentData.contractPeriodEnd
+    ) {
+      errors.push({
+        field: "contractPeriodEnd",
+        message: "تاريخ بداية العقد بعد تاريخ نهايته.",
+      });
+    }
+  }
+
+  if (target === 2) {
+    if (currentData.packageName.trim().length < 2) {
+      errors.push({
+        field: "packageName",
+        message: "اسم الباقة مطلوب (حرفان على الأقل).",
+      });
+    }
+    if (
+      currentData.packagePeriodStart &&
+      currentData.packagePeriodEnd &&
+      currentData.packagePeriodStart > currentData.packagePeriodEnd
+    ) {
+      errors.push({
+        field: "packagePeriodEnd",
+        message: "بداية فترة الباقة بعد نهايتها.",
+      });
+    }
+    currentData.packageLines.forEach((line, index) => {
+      if (line.serviceLabel.trim().length < 2) {
+        errors.push({
+          field: packageLineField(index, "serviceLabel"),
+          message: "كل خدمة في الباقة تحتاج اسمًا (حرفان على الأقل).",
+        });
+      }
+      if (line.unitLabel.trim().length < 1) {
+        errors.push({
+          field: packageLineField(index, "unitLabel"),
+          message: "وحدة القياس مطلوبة لكل خدمة.",
+        });
+      }
+      const qty = Number(line.committedQuantity);
+      if (!Number.isFinite(qty) || qty < 0) {
+        errors.push({
+          field: packageLineField(index, "committedQuantity"),
+          message: "الكمية المتفق عليها يجب أن تكون صفر أو أكثر.",
+        });
+      } else if (
+        isCountUnitLabel(line.unitLabel) &&
+        !Number.isInteger(qty)
+      ) {
+        errors.push({
+          field: packageLineField(index, "committedQuantity"),
+          message: "الكمية لوحدات العدّ (مثل منشور) يجب أن تكون عددًا صحيحًا بدون كسور.",
+        });
+      }
+    });
+  }
+
+  if (target === 4) {
+    if (currentData.deliverableName.trim().length < 2) {
+      errors.push({
+        field: "deliverableName",
+        message: "اسم المخرج مطلوب (حرفان على الأقل).",
+      });
+    }
+    if (currentData.deliverableType.trim().length < 1) {
+      errors.push({
+        field: "deliverableType",
+        message: "نوع المخرج مطلوب.",
+      });
+    }
+    const presentDates = [
+      { field: "startDate", value: currentData.startDate },
+      { field: "internalDueDate", value: currentData.internalDueDate },
+      { field: "clientDueDate", value: currentData.clientDueDate },
+      { field: "finalDueDate", value: currentData.finalDueDate },
+    ].filter((entry) => Boolean(entry.value));
+    const firstOutOfOrder = presentDates.find(
+      (entry, index) => index > 0 && entry.value < presentDates[index - 1].value,
+    );
+    if (firstOutOfOrder) {
+      errors.push({
+        field: firstOutOfOrder.field,
+        message: "المواعيد غير مرتبة بشكل صحيح.",
+      });
+    }
+    const firstLineQty = Number(
+      currentData.packageLines[0]?.committedQuantity ?? 0,
+    );
+    const reserved = Number(currentData.reservedQuantity);
+    if (Number.isFinite(reserved) && reserved > firstLineQty) {
+      errors.push({
+        field: "reservedQuantity",
+        message: "الكمية المحجوزة أكبر من سعة أول خدمة في الباقة.",
+      });
+    }
+    const firstLineUnit = currentData.packageLines[0]?.unitLabel ?? "";
+    if (
+      isCountUnitLabel(firstLineUnit) &&
+      Number.isFinite(reserved) &&
+      !Number.isInteger(reserved)
+    ) {
+      errors.push({
+        field: "reservedQuantity",
+        message: "الكمية المحجوزة لوحدات العدّ يجب أن تكون عددًا صحيحًا.",
+      });
+    }
+  }
+
+  return errors;
+}
+
 export function FirstClientWizard({
   runId,
   eligibleMembers = [],
@@ -177,8 +383,8 @@ export function FirstClientWizard({
   const [data, setData] = useState<WizardData>(initialData);
   const dataRef = useRef<WizardData>(initialData);
   const formRef = useRef<HTMLFormElement | null>(null);
-  const errorFieldRef = useRef<HTMLFieldSetElement | null>(null);
-  const [stepError, setStepError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [pendingFocusField, setPendingFocusField] = useState<string | null>(null);
   const [showContractDetails, setShowContractDetails] = useState(false);
   const [showPackageDetails, setShowPackageDetails] = useState(false);
   const [state, formAction] = useActionState(
@@ -190,11 +396,34 @@ export function FirstClientWizard({
     formRef.current?.setAttribute("data-hydrated", "true");
   }, []);
 
+  const errorFor = (field: string) => fieldErrors[field];
+
+  const fieldAria = (field: string) => {
+    if (!fieldErrors[field]) return {};
+
+    return {
+      "aria-invalid": true,
+      "aria-describedby": fieldErrorId(field),
+    };
+  };
+
+  const inputClass = (field: string) =>
+    fieldErrors[field] ? fieldErrorClass : fieldClass;
+
+  const clearFieldError = (field: string) => {
+    setFieldErrors((previous) => {
+      if (!(field in previous)) return previous;
+      const next = { ...previous };
+      delete next[field];
+      return next;
+    });
+  };
+
   const update = <K extends keyof WizardData>(key: K, value: WizardData[K]) => {
     const nextData = { ...dataRef.current, [key]: value };
     dataRef.current = nextData;
     setData(nextData);
-    setStepError(null);
+    clearFieldError(String(key));
   };
 
   const updateLine = (
@@ -210,7 +439,7 @@ export function FirstClientWizard({
     };
     dataRef.current = nextData;
     setData(nextData);
-    setStepError(null);
+    clearFieldError(packageLineField(index, field));
   };
 
   const addLine = () => {
@@ -242,112 +471,38 @@ export function FirstClientWizard({
     setData(nextData);
   };
 
-  const focusFirstError = () => {
-    const fieldset = errorFieldRef.current;
-    if (!fieldset) {
-      return;
-    }
-    const focusable = fieldset.querySelector<HTMLElement>(
-      "input, select, textarea",
+  useEffect(() => {
+    if (!pendingFocusField) return;
+
+    const field = formRef.current?.querySelector<HTMLElement>(
+      `[data-wizard-field="${pendingFocusField}"]`,
     );
-    focusable?.focus();
-  };
+    if (!field) return;
 
-  const validateStep = (target: number): string | null => {
-    const currentData = dataRef.current;
-
-    if (target === 0) {
-      if (currentData.clientName.trim().length < 2)
-        return "اسم الشركة أو الجهة مطلوب (حرفان على الأقل).";
-      if (
-        currentData.clientContactPhone.trim().length > 0 &&
-        !isValidContactPhone(currentData.clientContactPhone)
-      )
-        return "رقم الهاتف / واتساب غير صحيح. استخدم رمز الدولة والأرقام فقط.";
-    }
-
-    if (target === 1) {
-      if (currentData.contractName.trim().length < 2)
-        return "اسم العقد مطلوب (حرفان على الأقل).";
-      if (
-        currentData.contractPeriodStart &&
-        currentData.contractPeriodEnd &&
-        currentData.contractPeriodStart > currentData.contractPeriodEnd
-      )
-        return "تاريخ بداية العقد بعد تاريخ نهايته.";
-    }
-
-    if (target === 2) {
-      if (currentData.packageName.trim().length < 2)
-        return "اسم الباقة مطلوب (حرفان على الأقل).";
-      if (
-        currentData.packagePeriodStart &&
-        currentData.packagePeriodEnd &&
-        currentData.packagePeriodStart > currentData.packagePeriodEnd
-      )
-        return "بداية فترة الباقة بعد نهايتها.";
-      for (const line of currentData.packageLines) {
-        if (line.serviceLabel.trim().length < 2)
-          return "كل خدمة في الباقة تحتاج اسمًا (حرفان على الأقل).";
-        if (line.unitLabel.trim().length < 1)
-          return "وحدة القياس مطلوبة لكل خدمة.";
-        const qty = Number(line.committedQuantity);
-        if (!Number.isFinite(qty) || qty < 0)
-          return "الكمية المتفق عليها يجب أن تكون صفر أو أكثر.";
-        if (
-          isCountUnitLabel(line.unitLabel) &&
-          !Number.isInteger(qty)
-        )
-          return "الكمية لوحدات العدّ (مثل منشور) يجب أن تكون عددًا صحيحًا بدون كسور.";
-      }
-    }
-
-    if (target === 4) {
-      if (currentData.deliverableName.trim().length < 2)
-        return "اسم المخرج مطلوب (حرفان على الأقل).";
-      if (currentData.deliverableType.trim().length < 1)
-        return "نوع المخرج مطلوب.";
-      const dates = [
-        currentData.startDate,
-        currentData.internalDueDate,
-        currentData.clientDueDate,
-        currentData.finalDueDate,
-      ].filter(Boolean);
-      if (
-        dates.some((d, i) => i > 0 && d < dates[i - 1])
-      )
-        return "المواعيد غير مرتبة بشكل صحيح.";
-      const firstLineQty = Number(
-        currentData.packageLines[0]?.committedQuantity ?? 0,
-      );
-      const reserved = Number(currentData.reservedQuantity);
-      if (Number.isFinite(reserved) && reserved > firstLineQty)
-        return "الكمية المحجوزة أكبر من سعة أول خدمة في الباقة.";
-      const firstLineUnit = currentData.packageLines[0]?.unitLabel ?? "";
-      if (
-        isCountUnitLabel(firstLineUnit) &&
-        Number.isFinite(reserved) &&
-        !Number.isInteger(reserved)
-      )
-        return "الكمية المحجوزة لوحدات العدّ يجب أن تكون عددًا صحيحًا.";
-    }
-
-    return null;
-  };
+    field.focus();
+    setPendingFocusField(null);
+  }, [pendingFocusField]);
 
   const next = () => {
-    const error = validateStep(step);
-    if (error) {
-      setStepError(error);
-      requestAnimationFrame(focusFirstError);
+    const errors = collectStepErrors(step, dataRef.current);
+    if (errors.length > 0) {
+      const nextErrors: Record<string, string> = {};
+      for (const error of errors) {
+        if (!nextErrors[error.field]) nextErrors[error.field] = error.message;
+      }
+      if (errors[0].field === "packagePeriodEnd") {
+        setShowPackageDetails(true);
+      }
+      setFieldErrors(nextErrors);
+      setPendingFocusField(errors[0].field);
       return;
     }
-    setStepError(null);
+    setFieldErrors({});
     setStep((s) => Math.min(s + 1, stepLabels.length - 1));
   };
 
   const back = () => {
-    setStepError(null);
+    setFieldErrors({});
     setStep((s) => Math.max(s - 1, 0));
   };
 
@@ -372,6 +527,14 @@ export function FirstClientWizard({
   );
 
   const normalizedPhone = normalizeContactPhone(data.clientContactPhone);
+
+  const ownerMember = eligibleMembers.find(
+    (member) => member.userId === data.ownerUserId,
+  );
+  const contributorMembers = data.contributorUserIds
+    .map((userId) => eligibleMembers.find((member) => member.userId === userId))
+    .filter((member): member is MemberDisplay => Boolean(member));
+  const hasErrorSummary = Object.keys(fieldErrors).length > 0;
 
   return (
     <form
@@ -417,7 +580,7 @@ export function FirstClientWizard({
         <StepIndicator current={step} total={stepLabels.length} />
 
         {step === 0 ? (
-          <fieldset className="grid gap-4" aria-label="بيانات العميل" ref={errorFieldRef}>
+          <fieldset className="grid gap-4" aria-label="بيانات العميل">
             <legend className="sr-only">بيانات العميل</legend>
             <p className={helperClass}>
               أدخل اسم الجهة التي ستتولى العمل معها. هذا الاسم يظهر في كل المساحة.
@@ -426,10 +589,13 @@ export function FirstClientWizard({
               اسم الشركة أو الجهة
               <input
                 aria-label="اسم الشركة أو الجهة"
-                className={fieldClass}
+                className={inputClass("clientName")}
+                data-wizard-field="clientName"
                 onChange={(e) => update("clientName", e.target.value)}
                 value={data.clientName}
+                {...fieldAria("clientName")}
               />
+              <FieldError field="clientName" message={errorFor("clientName")} />
             </label>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="grid gap-2 text-sm font-medium">
@@ -445,12 +611,18 @@ export function FirstClientWizard({
                 رقم الهاتف / واتساب
                 <input
                   aria-label="رقم الهاتف / واتساب"
-                  className={fieldClass}
+                  className={inputClass("clientContactPhone")}
+                  data-wizard-field="clientContactPhone"
                   dir="ltr"
                   inputMode="tel"
                   onChange={(e) => update("clientContactPhone", e.target.value)}
                   placeholder="+9665XXXXXXXX"
                   value={data.clientContactPhone}
+                  {...fieldAria("clientContactPhone")}
+                />
+                <FieldError
+                  field="clientContactPhone"
+                  message={errorFor("clientContactPhone")}
                 />
               </label>
             </div>
@@ -469,16 +641,19 @@ export function FirstClientWizard({
         ) : null}
 
         {step === 1 ? (
-          <fieldset className="grid gap-4" aria-label="بيانات العقد" ref={errorFieldRef}>
+          <fieldset className="grid gap-4" aria-label="بيانات العقد">
             <legend className="sr-only">بيانات العقد</legend>
             <label className="grid gap-2 text-sm font-medium">
               اسم العقد
               <input
                 aria-label="اسم العقد"
-                className={fieldClass}
+                className={inputClass("contractName")}
+                data-wizard-field="contractName"
                 onChange={(e) => update("contractName", e.target.value)}
                 value={data.contractName}
+                {...fieldAria("contractName")}
               />
+              <FieldError field="contractName" message={errorFor("contractName")} />
             </label>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="grid gap-2 text-sm font-medium">
@@ -495,10 +670,16 @@ export function FirstClientWizard({
                 تاريخ نهاية العقد
                 <input
                   aria-label="تاريخ نهاية العقد"
-                  className={fieldClass}
+                  className={inputClass("contractPeriodEnd")}
+                  data-wizard-field="contractPeriodEnd"
                   onChange={(e) => update("contractPeriodEnd", e.target.value)}
                   type="date"
                   value={data.contractPeriodEnd}
+                  {...fieldAria("contractPeriodEnd")}
+                />
+                <FieldError
+                  field="contractPeriodEnd"
+                  message={errorFor("contractPeriodEnd")}
                 />
               </label>
             </div>
@@ -542,7 +723,7 @@ export function FirstClientWizard({
         ) : null}
 
         {step === 2 ? (
-          <fieldset className="grid gap-4" aria-label="بيانات الباقة" ref={errorFieldRef}>
+          <fieldset className="grid gap-4" aria-label="بيانات الباقة">
             <legend className="sr-only">بيانات الباقة</legend>
             <p className={helperClass}>
               الباقة تجمع كل الخدمات المتفق عليها مع العميل في عقد واحد. يمكنك إضافة أكثر من خدمة دون الحاجة لإنشاء باقة لكل خدمة.
@@ -551,10 +732,13 @@ export function FirstClientWizard({
               اسم الباقة
               <input
                 aria-label="اسم الباقة"
-                className={fieldClass}
+                className={inputClass("packageName")}
+                data-wizard-field="packageName"
                 onChange={(e) => update("packageName", e.target.value)}
                 value={data.packageName}
+                {...fieldAria("packageName")}
               />
+              <FieldError field="packageName" message={errorFor("packageName")} />
             </label>
             <div className="rounded-lg border border-border p-3">
               <button
@@ -582,10 +766,16 @@ export function FirstClientWizard({
                     نهاية فترة الباقة
                     <input
                       aria-label="نهاية فترة الباقة"
-                      className={fieldClass}
+                      className={inputClass("packagePeriodEnd")}
+                      data-wizard-field="packagePeriodEnd"
                       onChange={(e) => update("packagePeriodEnd", e.target.value)}
                       type="date"
                       value={data.packagePeriodEnd}
+                      {...fieldAria("packagePeriodEnd")}
+                    />
+                    <FieldError
+                      field="packagePeriodEnd"
+                      message={errorFor("packagePeriodEnd")}
                     />
                   </label>
                 </div>
@@ -612,30 +802,59 @@ export function FirstClientWizard({
                       اسم الخدمة
                       <input
                         aria-label={`اسم الخدمة للسطر ${index + 1}`}
-                        className={fieldClass}
+                        className={inputClass(packageLineField(index, "serviceLabel"))}
+                        data-wizard-field={packageLineField(index, "serviceLabel")}
                         onChange={(e) => updateLine(index, "serviceLabel", e.target.value)}
                         value={line.serviceLabel}
+                        {...fieldAria(packageLineField(index, "serviceLabel"))}
+                      />
+                      <FieldError
+                        field={packageLineField(index, "serviceLabel")}
+                        message={errorFor(packageLineField(index, "serviceLabel"))}
                       />
                     </label>
                     <label className="grid gap-1.5 text-sm font-medium">
                       وحدة القياس
                       <input
                         aria-label={`وحدة القياس للسطر ${index + 1}`}
-                        className={fieldClass}
+                        className={inputClass(packageLineField(index, "unitLabel"))}
+                        data-wizard-field={packageLineField(index, "unitLabel")}
                         onChange={(e) => updateLine(index, "unitLabel", e.target.value)}
                         value={line.unitLabel}
+                        {...fieldAria(packageLineField(index, "unitLabel"))}
+                      />
+                      <FieldError
+                        field={packageLineField(index, "unitLabel")}
+                        message={errorFor(packageLineField(index, "unitLabel"))}
                       />
                     </label>
                     <label className="grid gap-1.5 text-sm font-medium">
                       الكمية المتفق عليها
                       <input
                         aria-label={`الكمية المتفق عليها للسطر ${index + 1}`}
-                        className={fieldClass}
+                        className={inputClass(
+                          packageLineField(index, "committedQuantity"),
+                        )}
+                        data-wizard-field={packageLineField(
+                          index,
+                          "committedQuantity",
+                        )}
                         inputMode={isCount ? "numeric" : "decimal"}
                         pattern={isCount ? "[0-9]+" : undefined}
-                        onChange={(e) => updateLine(index, "committedQuantity", e.target.value)}
+                        onChange={(e) =>
+                          updateLine(index, "committedQuantity", e.target.value)
+                        }
                         type="text"
                         value={line.committedQuantity}
+                        {...fieldAria(
+                          packageLineField(index, "committedQuantity"),
+                        )}
+                      />
+                      <FieldError
+                        field={packageLineField(index, "committedQuantity")}
+                        message={errorFor(
+                          packageLineField(index, "committedQuantity"),
+                        )}
                       />
                       {isCount ? (
                         <span className={helperClass}>عدد صحيح فقط (وحدة عدّ).</span>
@@ -669,7 +888,7 @@ export function FirstClientWizard({
         ) : null}
 
         {step === 3 ? (
-          <fieldset className="grid gap-4" aria-label="تعيين الفريق" ref={errorFieldRef}>
+          <fieldset className="grid gap-4" aria-label="تعيين الفريق">
             <legend className="sr-only">تعيين الفريق</legend>
             <label className="grid gap-2 text-sm font-medium">
               المسؤول الرئيسي عن العمل
@@ -730,15 +949,21 @@ export function FirstClientWizard({
         ) : null}
 
         {step === 4 ? (
-          <fieldset className="grid gap-4" aria-label="أول مخرج" ref={errorFieldRef}>
+          <fieldset className="grid gap-4" aria-label="أول مخرج">
             <legend className="sr-only">أول مخرج</legend>
             <label className="grid gap-2 text-sm font-medium">
               اسم المخرج
               <input
                 aria-label="اسم المخرج"
-                className={fieldClass}
+                className={inputClass("deliverableName")}
+                data-wizard-field="deliverableName"
                 onChange={(e) => update("deliverableName", e.target.value)}
                 value={data.deliverableName}
+                {...fieldAria("deliverableName")}
+              />
+              <FieldError
+                field="deliverableName"
+                message={errorFor("deliverableName")}
               />
             </label>
             <label className="grid gap-2 text-sm font-medium">
@@ -755,9 +980,11 @@ export function FirstClientWizard({
                 نوع المخرج
                 <select
                   aria-label="نوع المخرج"
-                  className={fieldClass}
+                  className={inputClass("deliverableType")}
+                  data-wizard-field="deliverableType"
                   onChange={(e) => update("deliverableType", e.target.value)}
                   value={data.deliverableType}
+                  {...fieldAria("deliverableType")}
                 >
                   {typeOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -770,6 +997,10 @@ export function FirstClientWizard({
                     </option>
                   )}
                 </select>
+                <FieldError
+                  field="deliverableType"
+                  message={errorFor("deliverableType")}
+                />
               </label>
               <label className="grid gap-2 text-sm font-medium">
                 الأولوية
@@ -791,7 +1022,8 @@ export function FirstClientWizard({
               الكمية المحجوزة من أول خدمة في الباقة
               <input
                 aria-label="الكمية المحجوزة"
-                className={fieldClass}
+                className={inputClass("reservedQuantity")}
+                data-wizard-field="reservedQuantity"
                 inputMode={
                   isCountUnitLabel(data.packageLines[0]?.unitLabel ?? "")
                     ? "numeric"
@@ -805,6 +1037,11 @@ export function FirstClientWizard({
                 onChange={(e) => update("reservedQuantity", e.target.value)}
                 type="text"
                 value={data.reservedQuantity}
+                {...fieldAria("reservedQuantity")}
+              />
+              <FieldError
+                field="reservedQuantity"
+                message={errorFor("reservedQuantity")}
               />
               <span className={helperClass}>
                 تُحجز من الكمية المتفق عليها عند إنشاء المخرج وتُستهلك عند التسليم.
@@ -815,40 +1052,61 @@ export function FirstClientWizard({
                 تاريخ البدء
                 <input
                   aria-label="تاريخ البدء"
-                  className={fieldClass}
+                  className={inputClass("startDate")}
+                  data-wizard-field="startDate"
                   onChange={(e) => update("startDate", e.target.value)}
                   type="date"
                   value={data.startDate}
+                  {...fieldAria("startDate")}
                 />
+                <FieldError field="startDate" message={errorFor("startDate")} />
               </label>
               <label className="grid gap-2 text-sm font-medium">
                 موعد داخلي
                 <input
                   aria-label="الموعد الداخلي"
-                  className={fieldClass}
+                  className={inputClass("internalDueDate")}
+                  data-wizard-field="internalDueDate"
                   onChange={(e) => update("internalDueDate", e.target.value)}
                   type="date"
                   value={data.internalDueDate}
+                  {...fieldAria("internalDueDate")}
+                />
+                <FieldError
+                  field="internalDueDate"
+                  message={errorFor("internalDueDate")}
                 />
               </label>
               <label className="grid gap-2 text-sm font-medium">
                 موعد العميل
                 <input
                   aria-label="موعد العميل"
-                  className={fieldClass}
+                  className={inputClass("clientDueDate")}
+                  data-wizard-field="clientDueDate"
                   onChange={(e) => update("clientDueDate", e.target.value)}
                   type="date"
                   value={data.clientDueDate}
+                  {...fieldAria("clientDueDate")}
+                />
+                <FieldError
+                  field="clientDueDate"
+                  message={errorFor("clientDueDate")}
                 />
               </label>
               <label className="grid gap-2 text-sm font-medium">
                 الموعد النهائي
                 <input
                   aria-label="الموعد النهائي"
-                  className={fieldClass}
+                  className={inputClass("finalDueDate")}
+                  data-wizard-field="finalDueDate"
                   onChange={(e) => update("finalDueDate", e.target.value)}
                   type="date"
                   value={data.finalDueDate}
+                  {...fieldAria("finalDueDate")}
+                />
+                <FieldError
+                  field="finalDueDate"
+                  message={errorFor("finalDueDate")}
                 />
               </label>
             </div>
@@ -874,64 +1132,167 @@ export function FirstClientWizard({
         ) : null}
 
         {step === 5 ? (
-          <section aria-label="مراجعة البيانات" className="grid gap-4">
+          <section aria-label="مراجعة البيانات" className="grid gap-3 md:grid-cols-2">
             <div className="rounded-lg border border-border p-4">
               <h3 className="font-semibold">العميل</h3>
               <dl className="mt-2 grid gap-1 text-sm text-muted">
-                <div><dt className="inline font-medium text-foreground">الجهة: </dt><dd className="inline">{data.clientName || "—"}</dd></div>
+                <ReviewRow label="الجهة" value={data.clientName} />
                 {data.clientContactName ? (
-                  <div><dt className="inline font-medium text-foreground">مسؤول التواصل: </dt><dd className="inline">{data.clientContactName}</dd></div>
+                  <ReviewRow label="مسؤول التواصل" value={data.clientContactName} />
                 ) : null}
                 {data.clientContactPhone ? (
-                  <div><dt className="inline font-medium text-foreground">الهاتف / واتساب: </dt><dd className="inline" dir="ltr">{data.clientContactPhone}</dd></div>
+                  <ReviewRow
+                    label="الهاتف / واتساب"
+                    ltr
+                    value={data.clientContactPhone}
+                  />
                 ) : null}
                 {data.clientContactEmail ? (
-                  <div><dt className="inline font-medium text-foreground">البريد: </dt><dd className="inline" dir="ltr">{data.clientContactEmail}</dd></div>
+                  <ReviewRow
+                    label="البريد"
+                    ltr
+                    value={data.clientContactEmail}
+                  />
                 ) : null}
               </dl>
             </div>
             <div className="rounded-lg border border-border p-4">
               <h3 className="font-semibold">العقد</h3>
               <dl className="mt-2 grid gap-1 text-sm text-muted">
-                <div><dt className="inline font-medium text-foreground">الاسم: </dt><dd className="inline">{data.contractName || "—"}</dd></div>
+                <ReviewRow label="الاسم" value={data.contractName} />
                 {data.contractReference ? (
-                  <div><dt className="inline font-medium text-foreground">المرجع: </dt><dd className="inline">{data.contractReference}</dd></div>
+                  <ReviewRow label="المرجع" value={data.contractReference} />
                 ) : null}
                 {data.contractPeriodStart || data.contractPeriodEnd ? (
-                  <div><dt className="inline font-medium text-foreground">الفترة: </dt><dd className="inline">{data.contractPeriodStart || "—"}</dd> — <dd className="inline">{data.contractPeriodEnd || "—"}</dd></div>
+                  <ReviewRow
+                    label="الفترة"
+                    value={formatArabicDateRange(
+                      data.contractPeriodStart,
+                      data.contractPeriodEnd,
+                    )}
+                  />
                 ) : null}
               </dl>
             </div>
             <div className="rounded-lg border border-border p-4">
               <h3 className="font-semibold">الباقة</h3>
               <dl className="mt-2 grid gap-1 text-sm text-muted">
-                <div><dt className="inline font-medium text-foreground">الاسم: </dt><dd className="inline">{data.packageName || "—"}</dd></div>
-                {data.packageLines.map((line, i) => (
-                  <div key={i}>
-                    <dt className="inline font-medium text-foreground">{line.serviceLabel || "—"}</dt>
-                    {" — "}
-                    <dd className="inline">{line.committedQuantity} {line.unitLabel}</dd>
+                <ReviewRow label="الاسم" value={data.packageName} />
+                {data.packagePeriodStart || data.packagePeriodEnd ? (
+                  <ReviewRow
+                    label="فترة الباقة"
+                    value={formatArabicDateRange(
+                      data.packagePeriodStart,
+                      data.packagePeriodEnd,
+                    )}
+                  />
+                ) : null}
+                {data.packageLines.map((line, index) => (
+                  <div
+                    className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5"
+                    key={index}
+                  >
+                    <dt className="font-medium text-foreground">
+                      {line.serviceLabel}
+                    </dt>
+                    <dd className="text-muted">
+                      {line.committedQuantity} {line.unitLabel}
+                    </dd>
                   </div>
                 ))}
               </dl>
             </div>
             <div className="rounded-lg border border-border p-4">
-              <h3 className="font-semibold">أول مخرج</h3>
+              <h3 className="font-semibold">الفريق</h3>
               <dl className="mt-2 grid gap-1 text-sm text-muted">
-                <div><dt className="inline font-medium text-foreground">الاسم: </dt><dd className="inline">{data.deliverableName || "—"}</dd></div>
-                <div><dt className="inline font-medium text-foreground">النوع: </dt><dd className="inline">{typeOptions.find((t) => t.value === data.deliverableType)?.label ?? data.deliverableType}</dd></div>
-                <div><dt className="inline font-medium text-foreground">المسؤول: </dt><dd className="inline">{eligibleMembers.find((m) => m.userId === data.ownerUserId)?.displayName ?? "—"}</dd></div>
+                <ReviewRow
+                  label="المسؤول الرئيسي"
+                  value={
+                    ownerMember
+                      ? `${ownerMember.displayName}${ownerMember.roleLabel ? ` — ${ownerMember.roleLabel}` : ""}`
+                      : "لم يُحدَّد مسؤول رئيسي بعد"
+                  }
+                />
+                {contributorMembers.length > 0 ? (
+                  contributorMembers.map((member) => (
+                    <ReviewRow
+                      key={member.userId}
+                      label={member.displayName}
+                      value={member.roleLabel ?? "عضو فريق"}
+                    />
+                  ))
+                ) : (
+                  <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                    <dt className="font-medium text-foreground">
+                      أعضاء الفريق المشاركون:
+                    </dt>
+                    <dd className="text-muted">لا يوجد أعضاء مشاركون حاليًا.</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+            <div className="rounded-lg border border-border p-4 md:col-span-2">
+              <h3 className="font-semibold">أول مخرج</h3>
+              <dl className="mt-2 grid gap-1 text-sm text-muted sm:grid-cols-2">
+                <ReviewRow label="الاسم" value={data.deliverableName} wide />
+                {data.deliverableDescription ? (
+                  <ReviewRow
+                    label="الوصف"
+                    value={data.deliverableDescription}
+                    wide
+                  />
+                ) : null}
+                <ReviewRow
+                  label="النوع"
+                  value={deliverableTypeLabel(data.deliverableType)}
+                />
+                <ReviewRow
+                  label="الأولوية"
+                  value={deliverablePriorityLabel(data.deliverablePriority)}
+                />
+                {data.startDate ? (
+                  <ReviewRow
+                    label="تاريخ البدء"
+                    value={formatArabicDate(data.startDate)}
+                  />
+                ) : null}
+                {data.internalDueDate ? (
+                  <ReviewRow
+                    label="الموعد الداخلي"
+                    value={formatArabicDate(data.internalDueDate)}
+                  />
+                ) : null}
+                {data.clientDueDate ? (
+                  <ReviewRow
+                    label="موعد العميل"
+                    value={formatArabicDate(data.clientDueDate)}
+                  />
+                ) : null}
+                {data.finalDueDate ? (
+                  <ReviewRow
+                    label="الموعد النهائي"
+                    value={formatArabicDate(data.finalDueDate)}
+                  />
+                ) : null}
+                <ReviewRow
+                  label="يتطلب تعميدًا داخليًا"
+                  value={data.requiresInternalApproval ? "نعم" : "لا"}
+                />
+                <ReviewRow
+                  label="يتطلب اعتماد العميل"
+                  value={data.requiresClientApproval ? "نعم" : "لا"}
+                />
               </dl>
             </div>
           </section>
         ) : null}
 
-        {stepError ? (
+        {hasErrorSummary ? (
           <p
             aria-live="polite"
             className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger"
           >
-            {stepError}
+            تعذّر المتابعة — راجع الحقول المحددة بالأخطاء.
           </p>
         ) : null}
 

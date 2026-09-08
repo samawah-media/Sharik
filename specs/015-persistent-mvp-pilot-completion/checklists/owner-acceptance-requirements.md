@@ -6,6 +6,10 @@
 
 **Note**: This checklist evaluates the quality of the requirements, not whether the implementation works.
 
+**Owner disposition — 2026-09-01**: The owner explicitly authorized implementation to continue while this checklist remains incomplete. Every unchecked item is **deferred, not passed and not waived**. Agents must keep `X010-B-7B`, `H008-H010`, `X007`, and `T032` open, must not declare `OWNER_UAT_PASS`, `TEAM_UAT_READY`, Production readiness, or invite the wider team, and must return to all unchecked items after the current defect/UX burn-down.
+
+**Correction-batch reminder — 2026-09-03**: Local completion of X010-B-7C-1 through X010-B-7C-8 and planning X010-B-7C-9 do not change this checklist. The count remains 20 unchecked items until the owner walkthrough is actually executed and recorded.
+
 ## Requirement Completeness
 
 - [ ] CHK001 Are the permitted source states, target state, actors, reason, audit event, SLA effect, client visibility, and version effect specified for post-approval internal reopen? [Completeness, Gap, S015-P2-124]

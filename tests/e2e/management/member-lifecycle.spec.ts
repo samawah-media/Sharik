@@ -20,7 +20,15 @@ test("shows role change, disablement, and safe membership states", async ({
     "href",
     "/invitations/internal",
   );
-  await expect(page.getByText("بانتظار القبول")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "دعوات بانتظار القبول", exact: true }),
+  ).toBeVisible();
+  const pendingInvitation = page.getByRole("article").filter({
+    has: page.getByRole("heading", { name: "عضو فريق مدعو", exact: true }),
+  });
+  await expect(
+    pendingInvitation.getByText("بانتظار القبول", { exact: true }),
+  ).toBeVisible();
   await expect(page.getByText("Client B")).toHaveCount(0);
   await expect(page.getByText("tenant_b")).toHaveCount(0);
 });

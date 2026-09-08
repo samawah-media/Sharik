@@ -171,7 +171,7 @@ describe("deliverable creation form and reservation preview", () => {
     const list = screen.getByRole("region", { name: "قائمة المخرجات" });
     expect(within(list).getAllByText("منشور إطلاق الحملة")).toHaveLength(1);
     expect(within(list).getAllByText("منشور").length).toBeGreaterThan(0);
-    expect(within(list).getAllByText("2026-07-05").length).toBeGreaterThan(0);
+    expect(within(list).getAllByText("٥ يوليو ٢٠٢٦").length).toBeGreaterThan(0);
     expect(within(list).getAllByText("لم يبدأ").length).toBeGreaterThan(0);
     expect(within(list).getByText("0%")).toBeInTheDocument();
     expect(

@@ -45,8 +45,8 @@ const fixtureInvitations = [
     invitedDisplayName: "عضو فريق مدعو",
     invitedEmail: "pending@example.test",
     roleKey: "account_manager" as const,
-    clientId: "00000000-0000-4000-8000-000000000001",
-    clientName: "هدنة",
+    clientIds: ["00000000-0000-4000-8000-000000000001"],
+    clientNames: ["هدنة"],
     status: "pending" as const,
     expiresAt: "2026-07-01T00:00:00.000Z",
     createdAt: "2026-06-24T00:00:00.000Z",
@@ -57,7 +57,7 @@ const fixtureInvitations = [
 export default async function MembersPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ as?: string }>;
+  searchParams?: Promise<{ as?: string; directoryFixture?: string }>;
 }) {
   const params = await searchParams;
   const runtime = await resolveRouteRuntime(params?.as);
@@ -114,11 +114,52 @@ export default async function MembersPage({
       </header>
 
       {usesFixtures ? (
-        <>
-          <ResponsibilityTransferBlockedState />
-          <MemberList members={fixtureMembers} />
-          <InvitationList invitations={fixtureInvitations} />
-        </>
+        params?.directoryFixture === "compact" ? (
+          <InternalTeamDirectory members={[
+            {
+              membershipId: "directory-member-1",
+              userId: "directory-user-1",
+              displayName: "سارة المصممة",
+              status: "active",
+              roleKeys: ["designer", "content_writer"],
+              clientNames: ["هدنة", "Glass Studio"],
+            },
+            {
+              membershipId: "directory-member-2",
+              userId: "directory-user-2",
+              displayName: "مدير المساحة",
+              status: "active",
+              roleKeys: ["samawah_admin"],
+              clientNames: [],
+            },
+            {
+              membershipId: "directory-member-3",
+              userId: "directory-user-3",
+              displayName: "عضو معطل",
+              status: "disabled",
+              roleKeys: ["account_manager"],
+              clientNames: ["جلس"],
+            },
+            {
+              membershipId: "directory-member-4",
+              userId: "directory-user-4",
+              displayName: "عبدالرحمن مسؤول التنسيق والتصميم للحملات المشتركة متعددة العملاء Samawah Studio",
+              status: "active",
+              roleKeys: ["designer", "content_writer", "account_manager"],
+              clientNames: [
+                "مؤسسة المشاريع الإبداعية والتسويق والتواصل متعددة الفروع",
+                "InternationalCreativeCollaborationStudioWithoutSpaces",
+                "هدنة",
+              ],
+            },
+          ]} />
+        ) : (
+          <>
+            <ResponsibilityTransferBlockedState />
+            <MemberList members={fixtureMembers} />
+            <InvitationList invitations={fixtureInvitations} />
+          </>
+        )
       ) : (
         <>
           {!memberResult.ok ? (

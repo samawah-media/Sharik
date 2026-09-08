@@ -18,6 +18,12 @@ export const CLEAN_WORKSPACE_PROVISIONED_ACTION =
   "x009b_clean_workspace_provisioned";
 export const CLEAN_WORKSPACE_ROLLBACK_ACTION =
   "x009b_clean_workspace_rolled_back";
+// X010-B-7C-9: the apply path persists one deterministic append-only audit
+// row that binds the run to the exact source tenant and membership set it
+// quarantined. Later status/replay/rollback processes resolve this binding
+// instead of re-deriving identity from whatever happens to be active.
+export const CLEAN_WORKSPACE_SOURCE_BINDING_ACTION =
+  "x010b7c9_clean_workspace_source_binding";
 
 export const CLEAN_WORKSPACE_INTERNAL_ROLE_KEYS = [
   "tenant_owner",
@@ -90,23 +96,128 @@ export type WorkspaceMembershipReference = {
   status: string;
 };
 
-// Replays and rollback run after the clean membership becomes the only active
-// membership. Therefore legacy identity is determined by tenant identity, not
-// by whichever membership happens to be active at invocation time.
-export const selectLegacyWorkspaceMembership = (input: {
-  cleanTenantId: string;
-  memberships: readonly WorkspaceMembershipReference[];
-}): WorkspaceMembershipReference => {
-  const legacyMemberships = input.memberships.filter(
-    (membership) => membership.tenantId !== input.cleanTenantId,
-  );
-  if (legacyMemberships.length !== 1) {
-    throw new Error(
-      `CLEAN_WORKSPACE_LEGACY_MEMBERSHIP_AMBIGUOUS:${legacyMemberships.length}`,
-    );
-  }
-  return legacyMemberships[0];
+// X010-B-7C-9 hardened source selection. The original X009-B selector treated
+// every non-target membership as "legacy" and failed when a persona had more
+// than one — which is exactly the world after a first rollover plus new owner
+// trials: the original legacy membership stays behind as a disabled historical
+// row. The rollover source is therefore defined by *activity*, not by history:
+// every approved internal persona must have exactly one active membership
+// outside the deterministic target, all personas must share that source
+// tenant, and every deviation fails closed before any mutation.
+export type CleanWorkspacePersonaSource = {
+  key: string;
+  membership: WorkspaceMembershipReference;
 };
+
+export type CleanWorkspaceSourceSelectionPlan = {
+  sourceTenantId: string;
+  selections: CleanWorkspacePersonaSource[];
+};
+
+export const planCleanWorkspaceSourceSelection = (input: {
+  targetTenantId: string;
+  personas: ReadonlyArray<{
+    key: string;
+    memberships: readonly WorkspaceMembershipReference[];
+  }>;
+}): CleanWorkspaceSourceSelectionPlan => {
+  const selections: CleanWorkspacePersonaSource[] = [];
+  const sourceTenantIds = new Set<string>();
+
+  for (const persona of input.personas) {
+    const activeMemberships = persona.memberships.filter(
+      (membership) => membership.status === "active",
+    );
+    if (activeMemberships.length === 0) {
+      throw new Error("CLEAN_WORKSPACE_ACTIVE_SOURCE_MISSING");
+    }
+    if (activeMemberships.length > 1) {
+      throw new Error(
+        `CLEAN_WORKSPACE_ACTIVE_SOURCE_AMBIGUOUS:${activeMemberships.length}`,
+      );
+    }
+    const candidate = activeMemberships[0];
+    if (candidate.tenantId === input.targetTenantId) {
+      throw new Error("CLEAN_WORKSPACE_SOURCE_TENANT_COLLIDES_WITH_TARGET");
+    }
+    selections.push({ key: persona.key, membership: candidate });
+    sourceTenantIds.add(candidate.tenantId);
+  }
+
+  if (selections.length === 0) {
+    throw new Error("CLEAN_WORKSPACE_ACTIVE_SOURCE_MISSING");
+  }
+  if (sourceTenantIds.size !== 1) {
+    throw new Error("CLEAN_WORKSPACE_SOURCE_TENANT_MISMATCH");
+  }
+
+  return { sourceTenantId: [...sourceTenantIds][0], selections };
+};
+
+// Deterministic append-only binding between one run and its exact quarantined
+// source set. The canonical reason format is mirrored byte-for-byte by
+// scripts/prepare-s015-clean-workspace.mjs (see the synchronization-guard
+// unit test) so the hosted tool and local persistent journeys resolve the
+// same binding rows.
+export type CleanWorkspaceSourceBinding = {
+  runId: string;
+  sourceTenantId: string;
+  sourceMembershipIds: readonly string[];
+};
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+
+const canonicalizeSourceMembershipIds = (ids: readonly string[]): string[] =>
+  [...ids].filter(Boolean).sort();
+
+export const cleanWorkspaceSourceBindingAuditEventId = (runId: string): string =>
+  cleanWorkspaceAuditEventId({ runId, suffix: "source-binding" });
+
+export const buildCleanWorkspaceSourceBindingReason = (
+  binding: CleanWorkspaceSourceBinding,
+): string =>
+  `run_id=${binding.runId};source_tenant=${binding.sourceTenantId};source_memberships=${canonicalizeSourceMembershipIds(
+    binding.sourceMembershipIds,
+  ).join(",")}`;
+
+export const parseCleanWorkspaceSourceBindingReason = (
+  reason: string | null | undefined,
+): CleanWorkspaceSourceBinding | null => {
+  if (!reason) return null;
+  const segments = reason.split(";").map((segment) => segment.trim());
+  const fields = new Map<string, string>();
+  for (const segment of segments) {
+    const separator = segment.indexOf("=");
+    if (separator < 1) return null;
+    fields.set(segment.slice(0, separator), segment.slice(separator + 1));
+  }
+  const runId = fields.get("run_id");
+  const sourceTenantId = fields.get("source_tenant");
+  const memberships = fields.get("source_memberships");
+  if (!runId || !sourceTenantId || memberships === undefined) return null;
+  if (!UUID_PATTERN.test(sourceTenantId)) return null;
+  const sourceMembershipIds = memberships
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+  if (sourceMembershipIds.length === 0) return null;
+  if (sourceMembershipIds.some((id) => !UUID_PATTERN.test(id))) return null;
+  return {
+    runId,
+    sourceTenantId,
+    sourceMembershipIds: canonicalizeSourceMembershipIds(sourceMembershipIds),
+  };
+};
+
+export const cleanWorkspaceBindingsMatch = (
+  left: CleanWorkspaceSourceBinding,
+  right: CleanWorkspaceSourceBinding,
+): boolean =>
+  left.runId === right.runId &&
+  left.sourceTenantId === right.sourceTenantId &&
+  canonicalizeSourceMembershipIds(left.sourceMembershipIds).join(",") ===
+    canonicalizeSourceMembershipIds(right.sourceMembershipIds).join(",");
 
 // Mirror a persona's legacy role assignments into the clean workspace at tenant
 // scope. Management roles are already tenant-scoped and migrate unchanged.

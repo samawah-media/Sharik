@@ -98,6 +98,23 @@ test("management can onboard a complete first client through the wizard", async 
   await expect(
     form.getByRole("button", { name: "إنشاء العميل والبدء" }),
   ).toBeVisible();
+
+  // X010-B-7C-8A regression: the review names the human owner and every
+  // selected contributor with Arabic roles instead of hiding the team.
+  const review = form.getByRole("region", { name: "مراجعة البيانات" });
+  await expect(review).toBeVisible();
+  await expect(
+    review.getByText(/كاتب المحتوى المسند/u),
+  ).toBeVisible();
+  await expect(review.getByText(/المصمم المسند/u)).toBeVisible();
+  await expect(review.getByText(/كاتب محتوى/u)).toBeVisible();
+  await expect(
+    review.getByText("يتطلب تعميدًا داخليًا:", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    review.getByText("يتطلب اعتماد العميل:", { exact: true }),
+  ).toBeVisible();
+
   await form.getByRole("button", { name: "إنشاء العميل والبدء" }).click();
 
   await expect(page).toHaveURL(/onboarded=1/u, { timeout: 120_000 });
@@ -228,11 +245,26 @@ test("wizard prevents advancing with empty required company name", async ({
   await expect(form).toHaveAttribute("data-hydrated", "true");
   await form.getByRole("button", { name: "التالي" }).click();
 
+  // X010-B-7C-8 / S015-P2-138 regression: the first actually-invalid field
+  // (company name — never the optional phone) receives focus and an inline,
+  // screen-reader-reachable field error.
+  const companyInput = form.locator('input[aria-label="اسم الشركة أو الجهة"]');
+  const phoneInput = form.locator('input[aria-label="رقم الهاتف / واتساب"]');
   await expect(page.getByText(/اسم الشركة أو الجهة مطلوب/u)).toBeVisible();
-  await expect(form.locator('input[aria-label="اسم العقد"]')).toHaveCount(0);
+  await expect(companyInput).toBeFocused();
+  await expect(companyInput).toHaveAttribute("aria-invalid", "true");
+  await expect(companyInput).toHaveAttribute(
+    "aria-describedby",
+    "onboarding-error-clientName",
+  );
   await expect(
-    form.locator('input[aria-label="اسم الشركة أو الجهة"]'),
-  ).toBeVisible();
+    form.locator("#onboarding-error-clientName"),
+  ).toContainText(/اسم الشركة أو الجهة مطلوب/u);
+  await expect(phoneInput).not.toBeFocused();
+  await expect(phoneInput).not.toHaveAttribute("aria-invalid");
+
+  await expect(form.locator('input[aria-label="اسم العقد"]')).toHaveCount(0);
+  await expect(companyInput).toBeVisible();
 });
 
 test("idempotent replay with same run-id does not duplicate entities", async () => {

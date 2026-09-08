@@ -1,5 +1,432 @@
 # Spec 015 execution log
 
+## 2026-09-08 — Preview recovery pre-push checks in progress
+
+Owner approved GitHub runner-local DB/persistent verification after bounded Docker
+recovery failed. Branch-only automatic Vercel deployment hold prepared; no hosted
+data transfer. Lead combined suite151files/853PASS, TypeScript/full ESLint/secret
+scan PASS. First browser run failed at root warmup; unchanged retry completed
+260PASS/37SKIP/3FAIL. All three failures are the member-lifecycle ambiguous
+pending-status locator. Exact badge scoping plus separate heading assertion is
+test-only; first focused rerun failed root warmup before cases, final attempt
+passed3/3 in1.2m with normal shutdown. This is focused correction verification,
+not a fresh full-suite PASS. Fresh build exit0 (29.4s compile,44s TypeScript,11 static pages), scoped
+test lint and whitespace checks PASS. Server teardown required verified
+descendant-only cleanup after worker exit; runner retained to report exit1.
+Read-only existing browser session opened old management dashboard successfully.
+No credentials, cookies or customer records stored in public evidence. Reviewed
+changes staged; generated next-env.d.ts excluded. Commit/push, CI, migration,
+deployment and owner acceptance remain pending. See ui-owner-preview-preflight.md.
+
+## 2026-09-08 — UI1 runtime continuation
+
+Two readonly Astra sidecars: historical harness comparison and bounded UI2 scope.
+Lead preserved `.next/dev` inside `.next/` and ran unchanged integrated tests with
+fresh generated cache. Session78988 exit1 at150s root warmup, no tests reached.
+Next warned of505ms filesystem benchmark. Cache/OS root cause remains unproven.
+No production/harness edits, app termination, dependency/DB changes or deployment.
+[Diagnostic evidence](ui1-runtime-diagnostic.md); owner acceptance stays pending.
+
+## 2026-09-08 — X010-B-7C-21 / UI1 light shell
+
+Owner-approved bounded implementation; Astra implementer, parallel readonly
+coverage sidecar, then independent Astra review. Three production files changed:
+semantic colors and ProductShell/ClientShell classes only. No behavior, database,
+dependency, route, auth, SLA or approval changes. Source review accepted after
+strengthening the integrated keyboard-outline test.
+Fresh lead checks: 263/263 component tests, 4/4 isolated visual checks, tsc and
+scoped ESLint exit 0. Full Next browser warmup failed twice before any test;
+not a passing or failing application assertion. UI1 integrated acceptance remains
+blocked, not LOCAL PASS. No commit/push/deployment/owner acceptance. Usage unknown.
+See [checkpoint and resume order](ui1-lead-checkpoint.md).
+
+## 2026-09-08 — X010-B-7C-20 research and standalone mockups
+
+Owner-approved research phase only. Two native Astra workers supplied public
+reference research and copy/design review. Lead added internal change request,
+clearer client-wait SLA copy, deadline status and preview-first mobile order.
+Artifacts: [research package](ui-research-20260908/README.md).
+No app/dependency/database change, commit, push or deployment. No new ADR.
+Owner design approval and all 20 owner requirements-quality checks remain open.
+Prototype browser checks are not application, security, real-DB or owner UAT.
+
+## 2026-09-07 — D17/D18 LOCAL PASS
+
+D17 / X010-B-7C-18 and D18 / X010-B-7C-19 are LOCAL PASS. Lead six-file
+regression session 31896 exited 0: 59 PASS / 25 intentional profile SKIP (5.5m),
+including all six D18 cases passing again after the 6 PASS diagnostic (4.4m).
+Independent audit and viewed screenshots support acceptance. Lead accepts the
+installed Turbopack plus /work warmup for the shared local fixture harness;
+no dependency, guard or assertion changes and no proven root-cause claim.
+Fresh node check, scoped ESLint and diff check exited 0 (lead-reported).
+No local successor is approved. Exact-HEAD CI/target confirmation and owner
+walkthrough remain pending; all 20 owner checkboxes remain unchecked.
+Completed diagnostic details are retained in the report.
+See [diagnostic evidence](d18-report.md#current-shared-harness-checkpoint--2026-09-07).
+
+## Historical 2026-09-07 — D17/D18 execution before warmup diagnostic
+
+Latest checkpoint (lead-reported): both layouts implemented after RED;
+independent spec/quality reviews found no issues. Full component 38 files /
+263 tests PASS. First shared browser exited 1: 11 PASS / 5 FAIL / 5 intentional
+SKIP (6.9m). Four D17 geometry cases, six pending-inbox regressions and D18
+desktop1440 passed; five other D18 cases stopped at initial drawer opening
+before geometry. Bounded React readiness test-only correction reviewed; one
+click and unchanged geometry, no real prehydration-click claim.
+Corrected six-case D18 rerun: exit 1, 4 PASS / 2 FAIL (9.4m).
+Mobile and RTL profiles at 1440/375 passed. Desktop1440 passed geometry,
+interactions and DOM stress, but failed the final console assertion:
+Next Router action dispatched before initialization. Desktop375 failed the
+30s React readiness poll before geometry; its cause remains unproven.
+D18 remains implemented, verification-pending and unchecked. Standalone
+six-file scoped ESLint and git diff check exited 0. Typecheck PASS, exit 0.
+Final isolated build PASS, exit 0: compiled in 2.5min, TypeScript 20.5s,
+11 static pages. D17 / X010-B-7C-18 is LOCAL PASS and checked; D18 /
+X010-B-7C-19 remains unchecked, implemented and verification-pending.
+Wave-owned verification processes have ended. Final normal git diff check
+passed; source changes remain local and unstaged.
+All 20 owner checkboxes remain unchecked (lead verified).
+Next bounded diagnostic: distinguish Next dev cold-start/HMR effects from
+product behavior. The completed build is not production-mode browser
+verification. `src/server/navigation/route-fixture-env.ts` disables `as=` actor
+fixtures under `NODE_ENV=production`; do not bypass that guard. Subsequent
+production-mode browser verification requires an approved authenticated DB
+setup and has not been executed. External gates remain pending.
+No next fix, dependency upgrade or error filtering is implemented/approved.
+Images saved in visual-20260907: D17 desktop/mobile and D18 desktop.
+All 20 owner items remain unchecked; no real-DB/hosted/CI/deploy acceptance.
+
+### Earlier dispatch, RED and implementation chronology
+
+Owner approved the bounded designs. Native workers prepared disjoint tests;
+lead desktop RED measured approve136px (>56) and task row152px (>120), both
+expected geometry failures, exit1. Source hashes matched the pre-wave snapshot.
+Screenshots inspected and retained. No production layout change preceded RED.
+Flash3.8-low returned a generic class-edit recipe, exit0; lead accepted the
+responsive top alignment but rejected redundant button changes and unsupported
+pixel-savings arithmetic. Native workers then applied layout-only changes.
+Cross-review added positive date/status and DOM-only long-text stress checks.
+At that earlier implementation checkpoint, shared verification had not
+returned results. The latest checkpoint above supersedes that status only;
+no real-DB, hosted, CI, owner acceptance, commit or deployment is claimed.
+
+## Historical earlier checkpoint — 2026-09-07 subscription-route verification and D17/D18 audits
+
+Two reused Astra workers returned read-only next-density audits. A separate
+gemini-3.8-flash-low advisory relay completed successfully, exit 0, after the
+CLI displayed the owner-confirmed Google AI Pro identity and credit overages
+off. Only a generic UI brief was supplied to the planned review; no source
+payload. Empty scratch directory independently checked afterward. Usage is
+unknown. Earlier interrupted interactive setup and evidence limits are
+recorded in delegation-queue.md; do not infer zero consumption.
+
+Lead reconciled provider status and proposed client decision-panel/task-row
+scope. At that checkpoint implementation remained design-pending; no new production code, tests,
+build, database or hosted result is claimed. Existing external and owner
+gates remain open. No commit, push, deployment, dependency or ADR change.
+
+## 2026-09-07 — approved D15/D16 implementation and integration
+
+Two reused Astra workers implemented disjoint shell/directory slices after
+lead browser RED (header 115px >112px; desktop directory paired tall cards).
+Lead inspected actual source and guarded real-directory fixtures; reciprocal
+read-only review found no remaining source issue. Component 37/253,
+navigation/fixture unit 2/9, eight-file scoped ESLint, diff check and fresh
+typecheck PASS. Combined browser attempt ended exit 1: 39 passed, 20
+intentional profile skips, 4 client-mobile focus-reveal failures (9.9m).
+Directory 12/12 and existing visual-qa 15/15 passed in that run.
+The focused client retry used bounded 2s geometry polling without forced
+scrolling or relaxed bounds; all four still failed. Client-link nearest focus
+reveal then passed worker component RED/GREEN and independent read-only review.
+Final lead full component 37/254, scoped lint/diff/typecheck PASS. Final
+shell/client-inbox browser 19 PASS / 20 intentional skips (7.8m), exit 0.
+Screenshot caret is initial; no caret hydration warning observed in final run.
+Fresh build PASS, exit 0 (115s compile, 20.5s TypeScript, 11 generated pages).
+Both bounded tasks are locally complete; all external/owner gates stay open.
+Initial warm-up/generated-type failure and exact generated .next/dev cleanup
+are recorded in delegation-queue.md; no source/config workaround used.
+No hosted mutation, database cleanup, deployment, commit or readiness claim.
+
+## 2026-09-07 — next density audit and handoff correction
+
+Continued with read-only D15/D16 delegation before a new bounded design.
+Corrected stale PROJECT_PROGRESS pending text and plan wording which still
+listed D13/D14's locally completed filters, row entry and media fallback as
+unimplemented. Preserved historical evidence and all real-DB/hosted/owner
+gates. D16 identified the real-directory versus legacy-fixture /members
+coverage gap; lead verified the actual route branches and component test.
+No production code, provider, deployment or data change in this audit.
+
+## 2026-09-07 — X010-B-7C-14/15 delegated local corrections
+
+D13 Fermat implemented compact mobile filters and a native-button stretched
+My Work row entry. D14 Hubble implemented inline-media failure/reset handling.
+Each reviewed the other slice read-only; Fermat added the requested A→B→A
+race regression under transferred test-only ownership. Lead reviewed actual
+source and desktop/mobile images and ran shared gates: component 37/248,
+fixture browser 15/15 (4.9m), typecheck, scoped lint/diff and fresh production
+build PASS. Typecheck first exposed an unsupported `exact` option in a new
+component test; corrected test passed 8/8 and fresh typecheck passed.
+All production/tests were delegated; lead owned integration and documentation.
+No provider expansion, source payload to external providers, new dependency,
+ADR, schema/permission change, hosted write, commit/push/deploy occurred.
+Pending: real media expiry/decoding, DB-backed rollover/pgTAP, hosted/Preview,
+exact-HEAD CI and 20 unchecked owner requirements. Costs unknown.
+
+## 2026-09-03 - X010-B-7C-9 safe owner-UAT workspace rollover implementation (S015-P2-128/S015-P2-139)
+
+- Executed the local-only mandate in
+  `evidence/next-agent-prompt-x010-b-7c-9.md`. The X009-B tool's status-blind
+  selector assumed exactly one non-target membership per persona; after a
+  successful rollover and new trials, historical inactive memberships made a
+  second rollover fail as ambiguous. Failing unit tests were written first
+  (11 failures), then the pure contract was hardened and the hosted tool and
+  local persistent mirror followed.
+- Pure contract (`src/modules/uat/clean-workspace.ts`): replaced
+  `selectLegacyWorkspaceMembership` with `planCleanWorkspaceSourceSelection`
+  (exactly one active source per persona, historical inactive tolerated,
+  zero/multiple active, cross-persona tenant mismatch, and target collision
+  fail closed) and added a deterministic append-only binding representation:
+  `x010b7c9_clean_workspace_source_binding` with a canonical
+  `run_id/source_tenant/source_memberships` reason plus build/parse/match
+  helpers. A synchronization-guard unit test pins the hosted script to the
+  mirrored identifier namespace, binding format, and fail-closed codes.
+- Hosted tool (`scripts/prepare-s015-clean-workspace.mjs`): discovery selects
+  the single active source per persona; apply provisions the target, verifies
+  it fully (persona-count active memberships, at least one active
+  tenant-scoped role each, zero operational rows), writes the binding, and
+  only then disables the exact source set; already-applied replay is a
+  verified no-op; sources-active replay must re-select the bound set or fail
+  `CLEAN_WORKSPACE_BINDING_CONFLICT`; missing/partial binding identity fails
+  closed; rollback requires the binding and restores only its recorded ids
+  while disabling only the same-run target; compensation keeps the last
+  verified active workspace; all guards (mode flags, hostname allowlist,
+  non-Production refusal, confirmations, category/count-only output) are
+  retained. No identifiers are printed.
+- Persistent coverage: the clean-workspace seed now creates two historical
+  inactive workspaces per internal persona; the local apply/rollback mirror
+  implements the same binding contract (no-op replay, conflict denial,
+  verification-before-disable, compensation). The journey grew to 10 tests:
+  apply/binding, honest empty states, client-persona denial, no-op replay,
+  rollback, re-apply-after-rollback, second rollover over historical
+  memberships, binding-exact second rollback, ambiguity denial without
+  mutation, and swapped-source tenant-mismatch denial without mutation.
+- pgTAP `s015_clean_workspace_membership.test.sql` gained 11 assertions:
+  multiple historical inactive memberships, second-rollover entry/quarantine
+  state, binding-exact rollback leaving historical rows untouched, and
+  append-only audit/ledger preservation across the second rollover.
+- Local PASS: focused clean-workspace unit 21/21 (failing-first); full unit
+  73 files / 373 tests; typecheck; lint; RLS simulator 8 files / 24 tests;
+  `npx supabase@2.107.0 db reset --local --no-seed`; pgTAP 16 files / 755
+  tests; persistent clean-workspace journey 10/10 against real local
+  Supabase; production build; secret scan; `git diff --check` exit 0. Two
+  earlier journey runs exposed and corrected two overly broad test
+  assertions (client personas legitimately remain active in the source
+  tenant — they are never part of the internal rollover). The persistent dev
+  server again rewrote `next-env.d.ts`/`tsconfig.json` type includes; both
+  were restored to their committed content.
+- Not executed: any hosted Supabase/Vercel command (including read-only
+  inventory), hosted migration application, invitations, commit/push/merge/
+  deploy, and Production actions. X010-B-7C-9E (owner-authorized hosted
+  rehearsal/apply/rollback, exact-HEAD CI, corrected Preview persona
+  verification, and owner recheck) remains open; no `OWNER_UAT_PASS` or
+  `TEAM_UAT_READY` claim is made.
+
+## 2026-09-03 - X010-B-7C-9 next-batch specification and handoff
+
+- Reconciled S015-P2-128 and S015-P2-139 into one bounded next batch. The safe
+  product outcome is another reversible X009-B workspace rollover, not deletion
+  or mutation of synthetic business rows.
+- Added the acceptance contract and dependency-ordered tasks before code:
+  select exactly one shared active source despite multiple historical inactive
+  memberships; provision and verify the deterministic empty target before
+  source quarantine; preserve client-only persona denial; retain guarded
+  dry-run/status/idempotent apply/exact rollback, compensation, and redacted
+  category/count evidence.
+- Created the medium-experience implementation-agent prompt at
+  `evidence/next-agent-prompt-x010-b-7c-9.md`. It authorizes local code and
+  tests only. Hosted apply, deployment, invitations, merge, Production, and
+  acceptance claims remain outside its authority.
+- Planning/documentation only: no cleanup command, hosted read/write, database
+  mutation, migration, deployment, invitation, or Production action occurred.
+
+## 2026-09-03 - Independent review correction for X010-B-7C-8
+
+- Review found one P2 edge case not covered by the implementing agent: a
+  reversed optional package period could remain collapsed while validation
+  targeted its unmounted end-date field. The wizard now opens that disclosure
+  before focusing the exact invalid field, preserving inline
+  `aria-invalid`/`aria-describedby` feedback and the entered values.
+- Added a behavior-level component regression for enter dates, collapse,
+  attempt advance, automatic reopen, exact focus, and inline error wiring. The
+  error-summary wording no longer incorrectly says that errors are below the
+  summary.
+- Independent PASS: lint; typecheck; unit 73 files / 364 tests; component 31
+  files / 152 tests (wizard 20/20); focused fixture browser 10 passed / 2
+  intentional mobile-only skips across desktop/mobile/Arabic RTL. The first
+  Playwright launch aborted during local web-server warm-up before tests; the
+  clean retry passed. Existing same-batch integration, RLS simulator, pgTAP,
+  persistent, build, secret-scan, and diff-check evidence was reviewed but not
+  rerun here.
+- No commit, push, merge, deployment, hosted mutation, migration, invitation,
+  production action, or owner-checklist completion occurred. Exact-HEAD CI,
+  corrected Preview, owner recheck, and all 20 owner checks remain pending.
+
+## 2026-09-03 - X010-B-7C fifth owner-feedback correction batch (S015-P2-138)
+
+- Added the X010-B-7C-8 acceptance slice to `spec.md` and `tasks.md` before
+  any product change; scope stayed strictly on the onboarding final review
+  and field validation UX. No workflow, RLS, permission, audit, migration,
+  dependency, or ADR change.
+- Rebuilt the wizard final review into compact client / contract / package /
+  team / first-deliverable sections: the primary owner and every selected
+  contributor render by human name and Arabic role (honest «لم يُحدَّد بعد» /
+  «لا يوجد أعضاء مشاركون» fallbacks when unassigned), all provided dates use
+  the shared Arabic Gregorian formatter (`formatArabicDate` /
+  `formatArabicDateRange`), and the internal/client approval settings render
+  as explicit «نعم/لا» rows. Empty optional values are omitted; unknown
+  type/priority values fall back to calm Arabic instead of raw enums; no raw
+  UUIDs or identifiers render.
+- Replaced generic step errors with field-addressable validation
+  (`WizardFieldError { field, message }`): each fallible input carries
+  `data-wizard-field`, an inline `<span id="onboarding-error-{field}">`
+  message, `aria-invalid`, and `aria-describedby`; focus moves
+  deterministically to the first actually-invalid field (company name before
+  the optional phone; the exact offending date for ordering errors; the exact
+  package line for line errors). Correcting a field clears only its own
+  error; an aria-live summary complements but never replaces the field error;
+  entered values and step position survive back/forward navigation.
+- Tests: component wizard suite grew 12 → 20 tests after independent review (empty-submit focus, aria
+  wiring, phone neutrality, per-field clearing with value preservation,
+  date-order binding, review owner/contributors/roles/dates/approvals, no raw
+  IDs/enums, optional hiding). New fixture browser
+  `tests/e2e/management/onboarding-review-ux.spec.ts` (10 passing across
+  desktop 3, mobile 4, Arabic RTL 3) covers the full review journey, keyboard
+  focus flow, RTL, screen-reader-reachable inline errors, back/forward data
+  preservation, mobile no-horizontal-overflow, and desktop/mobile review
+  screenshots. The persistent onboarding journey gained the same
+  focus/aria/inline-error assertions plus human-team review assertions.
+- Local PASS: lint; typecheck; unit 73 files / 364 tests (serial; one
+  parallel run hit the known worker-start resource timeout on an untouched
+  file that passes in isolation); integration 28 files / 112 tests; component
+  31 files / 152 tests (wizard 20/20); RLS simulator 8 files / 24 tests;
+  pgTAP 16 files / 744 tests; fixture browser 10/10 as above; persistent
+  onboarding journey 4/4; production build (`/clients/onboard` present);
+  secret scan; `git diff --check` exit 0 (CRLF warnings only).
+- Environment note: Docker Desktop recovered during this slice without any
+  destructive action (it had been crashing on its stale `dockerInference`
+  socket since the power outage). Local Supabase containers are healthy, the
+  persistent browser journey ran against real local data, the full local
+  pgTAP matrix executed (including the previously blocked batch-4
+  multi-client invitation file), and `s015-onboarding-journey` reset/reseeded
+  only the local test database.
+- Playwright-only adjustments: the Next dev indicator portal is hidden via a
+  test style tag because it overlaps the wizard's primary action on narrow
+  viewports (dev tooling only, absent from production builds), and the
+  hydration wait uses a 60s timeout for slow dev compilation.
+- Not executed / still pending: exact-HEAD CI (F-001), corrected Preview
+  deployment, hosted UAT actions (none required — this batch ships no
+  migration), owner recheck on a corrected Preview, and all 20 owner
+  acceptance checklist items. No commit, push, merge, deploy, hosted
+  migration, real invitation, Production action, or Owner UAT PASS claim.
+
+## 2026-09-01 - X010-B-7C fourth owner-feedback correction batch
+
+- Added X010-B-7C-7 to the canonical spec/tasks before implementation and kept
+  the parent task open until PostgreSQL, exact-HEAD CI, Preview, and owner UAT.
+- Removed the risky default role/client choices. Management must select one
+  role and at least one active client before the action is enabled; one invite
+  can carry that same role across multiple exact authorized client scopes.
+- Split the lifecycle into actionable pending invitations, a compact
+  keyboard-accessible revoked/superseded history, and the member directory.
+  Accepted invitations no longer duplicate active members.
+- Added an additive SQL migration for aggregated reads plus exact multi-client
+  create/preview/accept behavior. Acceptance preserves exact-email matching,
+  tenant isolation, disabled-membership denial, idempotency, and one audit event
+  per scoped role assignment. No table, RLS-policy, dependency, or ADR change.
+- Local PASS: lint; typecheck; unit 73/364; component 31/144; integration
+  28/112; RLS simulator 8/24; invitation browser 6/6 across desktop/mobile/RTL
+  plus final screenshot refresh 3/3; manual desktop/mobile screenshot review;
+  production build; secret scan; diff check.
+- Local PostgreSQL/pgTAP could not connect. Restarting Docker Desktop after the
+  power outage exposed a Docker 4.79.0 backend crash while recreating its stale
+  `dockerInference` runtime socket. The migration was not applied to hosted UAT.
+  Exact-HEAD CI, database-backed pgTAP, corrected Preview, and all 20 owner
+  checks remain pending. No hosted mutation, real invitation, merge, or
+  Production action occurred.
+
+## 2026-09-01 - X010-B-7C third owner-feedback correction batch
+
+- Added the X010-B-7C-6 acceptance slice to `spec.md` and `tasks.md` before
+  product changes. Scope stayed on S015-P2-135 plus the commercial/date portion
+  of S015-P2-136; no record deletion or ledger/workflow/RLS/permission change.
+- Added one tested commercial presentation model. Count units reject fractional
+  display, negative availability is flagged, delivered quantity is preserved,
+  and management/client summaries use the same four balance labels and Arabic
+  Gregorian period formatter.
+- Added search, status filters, and bounded pagination to management contract
+  and package lists. Both the server read and component boundary reuse the
+  existing human-trial visibility predicate for known run-scoped contracts;
+  database, audit, and ledger history remain untouched.
+- Browser and manual screenshot QA found a 541px client-shell document on a
+  390px viewport. The mobile grid min-width was corrected, measured at 390px,
+  and covered by an explicit no-horizontal-overflow browser assertion.
+- Local PASS: lint plus exact-source targeted ESLint; typecheck; unit 73/362;
+  component 31/142; integration 28/112; commercial browser 9/9 across
+  desktop/mobile/Arabic RTL plus final mobile overflow 1/1; manually inspected
+  desktop/mobile screenshots; production build; secret scan; diff check.
+- No migration, dependency, ADR, hosted mutation, UAT deletion, invitation,
+  merge, or Production action. Exact-HEAD CI, corrected Preview, safe UAT
+  cleanup, and all 20 owner acceptance checks remain pending.
+
+## 2026-09-01 - X010-B-7C second owner-feedback correction batch
+
+- Updated `spec.md` and `tasks.md` before product code so the second correction
+  batch is a named, dependency-ordered slice rather than an informal screenshot
+  list. Owner acceptance remains deferred, not passed or waived.
+- Replaced button-only entry on management client cards, client workspace path
+  cards, and assigned-client cards with whole-card primary links. Secondary
+  links stay independently interactive and no anchor/button nesting was added.
+- Replaced the Drawer horizontal tab strip with a sticky responsive grid. The
+  existing RTL ArrowLeft/ArrowRight/Home/End behavior, focus return, role-based
+  tabs, and mounted unsaved form values remain covered.
+- Added centralized Arabic Gregorian date/date-time display plus Arabic content
+  channel/format labels and safe fallbacks. Corrected surfaces no longer expose
+  `Instagram`, `Post`, unknown technical values, or raw ISO due dates.
+- Local PASS: lint; typecheck; unit 72/72 files and 358/358 tests; component
+  31/31 files and 139/139 tests; management + assigned-team whole-card browser 2/2; Drawer
+  visual browser 3/3 across desktop/mobile/Arabic RTL; production build; secret
+  scan; diff check. Screenshots were inspected manually. An initial parallel
+  full-suite run found one obsolete English assertion and worker resource
+  timeouts; after the assertion fix, complete Unit and Component suites passed
+  serially with one worker.
+- No migration, dependency, ADR, workflow, RLS, permission, hosted mutation,
+  invitation, merge, or Production action. Exact-HEAD CI, corrected Preview,
+  owner recheck, and all 20 deferred acceptance items remain pending.
+
+## 2026-09-01 - X010-B-7C P1 file/team-workspace correction
+
+- Used the authorized client approver only for read-only diagnosis. The exact
+  owner-trial deliverable is `delivered` with a final current version and zero
+  readable file rows; its version contains synthetic text only. No password or
+  UAT record was changed.
+- Updated the owner-trial hosted preparation to begin an audited durable upload,
+  transfer a real PNG as the assigned writer, complete its atomic registration,
+  approve internally, stage that exact ready file, send to client, and assert
+  viewer/approver preview plus download visibility.
+- Added explicit `PERM.DELIVERABLE.VIEW` to internal execution roles and removed
+  the incorrect `CONTRACT_VIEW` gate from the client deliverables surfaces.
+  Non-commercial workspace statistics now come from only the deliverables
+  returned by existing RLS; commercial links remain permission-gated.
+- Added an assigned-writer fixture/browser regression and replaced the
+  unauthorized package-zero card with a scoped completion card. Local PASS:
+  lint; typecheck; unit 71/355; integration 28/112; component 30/137; RLS
+  simulator 8/24; assigned-writer desktop browser 1/1; owner hosted-test
+  transform/list; secret scan; diff check; production build. Exact-HEAD
+  CI/Preview/real-Auth owner recheck remain pending.
+- No migration, dependency, ADR, Production, merge, invitation, or hosted UAT
+  mutation was performed. Deferred owner tests remain explicitly unexecuted.
+
 ## 2026-08-04 - X010-B-7 hosted technical preparation
 
 - Confirmed the correct targets: Vercel project `samawahs-projects/shrik` and
@@ -192,7 +619,7 @@
   with an explicit cancelled row; retry + audited cancel + X010-A durable
   behavior preserved. «تنزيل آمن» → «تنزيل» everywhere.
 - Files: pure `src/modules/files/file-groups.ts`; `src/ui/client/client-files-
-  board.tsx`; rebuilt `src/app/(client)/client/files/page.tsx`; updated
+board.tsx`; rebuilt `src/app/(client)/client/files/page.tsx`; updated
   `workspace-files.tsx` + `universal-deliverable-drawer.tsx`.
 - Tests: unit `file-groups` (grouping/labels/size/preview/status-no-leak);
   component `client-files-board` (folders/counts/empty/no-leak/«تنزيل»/signed-
@@ -243,7 +670,7 @@
   8. Persistent notifications journey: replaced speculative button labels with
      the proven `workflowStep`-form flow — assigned writer submits version 1,
      management approves internally, management clicks the `راجعت النسخة
-     والملفات` confirmation and submits the send_to_client form.
+والملفات` confirmation and submits the send_to_client form.
 - Exact-HEAD verification on `b4726cf`: F-001 Quality run `30741184814`
   SUCCESS (lint, typecheck, unit 66/333, integration 28/112, RLS simulator
   8/24, pgTAP 12 files / 673 tests, component 29/119, fixture E2E, persistent
@@ -254,7 +681,6 @@
   remain `code-fixed + CI-green + hosted-blocked`.
 
 ## 2026-08-01 — X010-B-4 independent corrective close
-
 
 - Reviewed local B4 commit `2003249` without pushing or deploying. Registered
   S015-P1-129/130/131 and S015-P2-129/130; status is
@@ -306,7 +732,7 @@
   trigger on `audit_events` resolves recipients per event and enqueues via
   `s015_enqueue_notification(...)` with `ON CONFLICT DO NOTHING`. A second
   SECURITY DEFINER trigger on `deliverable_tasks` (`AFTER INSERT OR UPDATE OF
-  assignee_user_id`) covers assignment/reassignment. The actor is excluded from
+assignee_user_id`) covers assignment/reassignment. The actor is excluded from
   recipients. Recipient resolvers: `s015_notification_client_management_recipients`,
   `s015_notification_deliverable_execution_recipients`,
   `s015_notification_client_portal_recipients` (all SECURITY DEFINER).
@@ -473,7 +899,7 @@
   integration 28 files / 112 tests; component 27 files / 105 tests; RLS
   simulator 8 files / 24 tests; fixture E2E 144 passed / 8 skipped (1 mobile
   visual-QA was flaky and passed on isolated re-run); secret scan; `git diff
-  --check` (LF/CRLF warnings only); production build (new `/client/work` route
+--check` (LF/CRLF warnings only); production build (new `/client/work` route
   present). DB-backed gates (pgTAP, persistent E2E) are environment-blocked
   locally (`LegacyDbConnectError`) and run in exact-HEAD CI; the environmental
   block is **not** converted to a PASS.
@@ -560,7 +986,6 @@
 
 ## 2026-07-29 — X010-A hosted exact-version closure
 
-
 - Status: `X010_A_GREEN`. Application HEAD `f8b363d0ac6ff86290fc025fdb7b1a220cc2ddc0` passed exact-HEAD F-001 run `30479343344`; correct project `samawahs-projects/shrik` Preview deployment `dpl_8FsJYiCoiULPi9HJ7swZurXqZEW8` was Ready. Healthy non-Production UAT `jnvuccapgsabrwwkxnbh` received additive migration `202607290002`; local/remote migration inventory matched.
 - Protected shared fixture run `s015-hosted-lifecycle-6998e30147` covered admin, account manager, assigned writer, tenant-scoped designer boundary, client viewer, and client approver. A replacement attempt failed, survived reload, disabled send, and required explicit audited cancellation. Management sent exact version 1; viewer saw it read-only without internal comment/file; approver requested changes; writer submitted exact version 2; management approved/sent it; approver approved; management prepared and finally delivered version 2.
 - PostgreSQL ended with deliverable `a863308e-fc4d-4f1e-b76a-0b5581d70cfd` delivered at revision 12/progress 100, final current version `622667e0-dc41-4a92-9f05-428c5a5a162c`, four approval decisions, two paused-client SLA segments plus resume/completion, one reservation, and one consumption. Exact final-delivery replay returned the original result and left one `deliver_ready_version` command and one consumption.
@@ -614,13 +1039,13 @@
 - Protected official Preview is Ready/Preview. Real administrator sign-in, client visibility, repaired deliverable visibility, wizard hydration, and five eligible team options passed. A hosted invalid-member rehearsal was denied with `42501` and left zero partial client rows.
 - No Production, merge, public signup, external-client invitation, or unrelated data mutation occurred.
 
-| Date | Milestone | Result | Evidence |
-|---|---|---|---|
-| 2026-07-22 | X009-C guided first-client onboarding — local green, CI pending | `X009_C_LOCAL_GREEN_CI_PENDING` | Within Spec 015 only: built a combined Zod schema (`src/server/commands/onboarding/onboarding-schema.ts`) with Arabic validation, date-order checks, package capacity enforcement, and duplicate prevention; built an orchestrating server action (`src/server/actions/onboarding.ts`) that creates client + contract + package + first deliverable through the existing audited RPCs with run-ID-derived idempotency keys, tenant-scoped permission checks, and partial-failure recovery via slug lookup; built a 5-step + review wizard component (`src/ui/management/first-client-wizard.tsx`) with Arabic RTL, mobile/desktop responsive layout, keyboard accessibility, team selector with human names only, dynamic package-line add/remove, and per-step validation; wired the wizard page at `/clients/onboard` with route guards and a tenant-scoped member directory; added prominent wizard CTA on `/clients` empty state and header. Added unit schema tests (17), component wizard tests (7), pgTAP onboarding sequence + idempotency + unauthorized-role denial (15), and persistent browser E2E for full success journey + unauthorized denial + empty-field prevention + idempotent replay (4). Local matrix PASS: typecheck; unit + component 80 files/338 tests; pgTAP 8 files/468 tests; persistent E2E 4 passed; secret scan; `git diff --check`; production build. No new dependency, migration, or ADR. All mutations are tenant-scoped, RLS-protected, idempotent, and audited through the existing RPC path. Exact-head CI pending. |
-| 2026-07-21 | X009-B final exact-head closure | `X009_B_GREEN_READY_FOR_OWNER_ENTRY` | F-001 run `29860433963` passed the complete matrix, including all 12 persistent scenarios, the corrected native-FormData tamper regression, secret scan, and production build. S015-P2-095 is fixed. Combined with the completed hosted clean-workspace cycle and direct Preview persona evidence, X009-B is closed. |
-| 2026-07-21 | X009-B final-head persistent harness correction | `HOSTED_GREEN_EXACT_HEAD_CI_PENDING` | Documentation-head run `29856562297` exposed S015-P2-095. The first correction proved the select DOM value but run `29858760373` confirmed React rebuilt the action payload from trusted state, so no invalid value reached the server. The test now removes the original field name and appends an asserted hidden `ownerUserId`, guaranteeing that native FormData carries the tampered value while preserving all Arabic error/secrecy/zero-row assertions. Hosted X009-B state remains green and unchanged; corrective exact-head CI is pending. |
-| 2026-07-21 | X009-B hosted closure after independent correction | `X009_B_GREEN_READY_FOR_OWNER_ENTRY` | Corrective F-001 run `29852802208` passed the full exact-head matrix. Repository link, Preview Supabase URL, and CLI project inventory matched healthy non-Production `sharik-uat`. Process-only guarded dry-run planned 5 internal memberships/roles and zero client personas. Apply, separate-process replay, status, rollback/status, final apply/status all passed. Final clean counts: 5 active internal memberships, 5 active tenant-scoped roles, 5 profiles, and zero clients/contracts/packages/package lines/deliverables/versions/tasks/approvals/files/ledger/reservations; legacy internal memberships active=0 while legacy audit=135 and ledger=26 remain preserved. Direct protected-Preview inspection passed for management, account manager, writer, designer, unassigned, and client viewer boundaries. A private diagnostic exposed the temporary UAT admin field value; it was rotated immediately and updated only in the ignored local credential file. No Production, merge, invitation, public signup, real data, or history deletion occurred. |
-| 2026-07-21 | X009-B independent replay review correction | `X009_B_CORRECTIVE_CI_HOSTED_PENDING` | Independent review found S015-P1-094: the hosted script discovered legacy by active membership, but after apply the clean membership is intentionally the only active one, so separate-process replay/status/rollback would fail with a clean/legacy collision. Corrected discovery excludes the deterministic clean tenant and can inspect disabled legacy membership through the setup-only admin client; the allowlist now uses the dedicated Supabase hostname rather than the Vercel hostname, and failed apply performs bounded membership compensation. Focused unit 12/12, typecheck, lint, and script syntax pass. The linked target was verified read-only as healthy `sharik-uat`, with the local URL hostname matching the linked project ref. No hosted mutation or Production action occurred before corrective exact-head CI. |
+| Date       | Milestone                                                                                                   | Result                                    | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ---------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-22 | X009-C guided first-client onboarding — local green, CI pending                                             | `X009_C_LOCAL_GREEN_CI_PENDING`           | Within Spec 015 only: built a combined Zod schema (`src/server/commands/onboarding/onboarding-schema.ts`) with Arabic validation, date-order checks, package capacity enforcement, and duplicate prevention; built an orchestrating server action (`src/server/actions/onboarding.ts`) that creates client + contract + package + first deliverable through the existing audited RPCs with run-ID-derived idempotency keys, tenant-scoped permission checks, and partial-failure recovery via slug lookup; built a 5-step + review wizard component (`src/ui/management/first-client-wizard.tsx`) with Arabic RTL, mobile/desktop responsive layout, keyboard accessibility, team selector with human names only, dynamic package-line add/remove, and per-step validation; wired the wizard page at `/clients/onboard` with route guards and a tenant-scoped member directory; added prominent wizard CTA on `/clients` empty state and header. Added unit schema tests (17), component wizard tests (7), pgTAP onboarding sequence + idempotency + unauthorized-role denial (15), and persistent browser E2E for full success journey + unauthorized denial + empty-field prevention + idempotent replay (4). Local matrix PASS: typecheck; unit + component 80 files/338 tests; pgTAP 8 files/468 tests; persistent E2E 4 passed; secret scan; `git diff --check`; production build. No new dependency, migration, or ADR. All mutations are tenant-scoped, RLS-protected, idempotent, and audited through the existing RPC path. Exact-head CI pending.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| 2026-07-21 | X009-B final exact-head closure                                                                             | `X009_B_GREEN_READY_FOR_OWNER_ENTRY`      | F-001 run `29860433963` passed the complete matrix, including all 12 persistent scenarios, the corrected native-FormData tamper regression, secret scan, and production build. S015-P2-095 is fixed. Combined with the completed hosted clean-workspace cycle and direct Preview persona evidence, X009-B is closed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 2026-07-21 | X009-B final-head persistent harness correction                                                             | `HOSTED_GREEN_EXACT_HEAD_CI_PENDING`      | Documentation-head run `29856562297` exposed S015-P2-095. The first correction proved the select DOM value but run `29858760373` confirmed React rebuilt the action payload from trusted state, so no invalid value reached the server. The test now removes the original field name and appends an asserted hidden `ownerUserId`, guaranteeing that native FormData carries the tampered value while preserving all Arabic error/secrecy/zero-row assertions. Hosted X009-B state remains green and unchanged; corrective exact-head CI is pending.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 2026-07-21 | X009-B hosted closure after independent correction                                                          | `X009_B_GREEN_READY_FOR_OWNER_ENTRY`      | Corrective F-001 run `29852802208` passed the full exact-head matrix. Repository link, Preview Supabase URL, and CLI project inventory matched healthy non-Production `sharik-uat`. Process-only guarded dry-run planned 5 internal memberships/roles and zero client personas. Apply, separate-process replay, status, rollback/status, final apply/status all passed. Final clean counts: 5 active internal memberships, 5 active tenant-scoped roles, 5 profiles, and zero clients/contracts/packages/package lines/deliverables/versions/tasks/approvals/files/ledger/reservations; legacy internal memberships active=0 while legacy audit=135 and ledger=26 remain preserved. Direct protected-Preview inspection passed for management, account manager, writer, designer, unassigned, and client viewer boundaries. A private diagnostic exposed the temporary UAT admin field value; it was rotated immediately and updated only in the ignored local credential file. No Production, merge, invitation, public signup, real data, or history deletion occurred.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| 2026-07-21 | X009-B independent replay review correction                                                                 | `X009_B_CORRECTIVE_CI_HOSTED_PENDING`     | Independent review found S015-P1-094: the hosted script discovered legacy by active membership, but after apply the clean membership is intentionally the only active one, so separate-process replay/status/rollback would fail with a clean/legacy collision. Corrected discovery excludes the deterministic clean tenant and can inspect disabled legacy membership through the setup-only admin client; the allowlist now uses the dedicated Supabase hostname rather than the Vercel hostname, and failed apply performs bounded membership compensation. Focused unit 12/12, typecheck, lint, and script syntax pass. The linked target was verified read-only as healthy `sharik-uat`, with the local URL hostname matching the linked project ref. No hosted mutation or Production action occurred before corrective exact-head CI.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | 2026-07-21 | X009-B clean owner-entry workspace — local mechanics green, hosted apply blocked on owner target/credential | `X009_B_LOCAL_GREEN_HOSTED_APPLY_BLOCKED` | Within Spec 015 only: added the clean-workspace contract (`src/modules/uat/clean-workspace.ts`) with deterministic run-ID-scoped tenant/membership/role/audit identifiers and tenant-scope role mirroring that never migrates client-only personas; added the hosted tool `scripts/prepare-s015-clean-workspace.mjs` with `--dry-run`/`--apply`/`--rollback`/`--status`, mandatory target category, owner-approved hostname allowlist, automatic Production refusal, idempotent deterministic upserts, rollback that only flips membership status, and category/count-only output; added unit, pgTAP (`s015_clean_workspace_membership.test.sql`), and persistent browser (`s015-clean-workspace-journey.spec.ts`) coverage proving admin/account-manager/writer/designer entry into the clean tenant, honest `لا يوجد عملاء مسندون` empty states, legacy Glass/Hadna invisibility across the tenant boundary, client-persona denial, idempotent replay (no duplicate tenant/membership/role), and rollback that restores the legacy entry with audit and ledger rows unchanged. Local matrix PASS on the exact reviewed head: lint; typecheck; unit 57 files/239 tests; integration 28 files/112 tests; component 21 files/72 tests; RLS simulator 8 files/24 tests; clean local Supabase reset; pgTAP 7 files/453 tests; fixture E2E 126 passed/6 skipped; persistent E2E 12 passed (5 new clean-workspace scenarios plus the prior 7); secret scan; `git diff --check`; and production build. S015-P2-090 is dispositioned as fixed-by-quarantine: the legacy tenant and its append-only ledger/audit are preserved and simply stop being the natural entry for approved internal identities; no ledger history is rewritten and any new package commitment starts at the owner-entered balance. Hosted apply (X009-B-6) remains blocked: the reviewed UAT hostname allowlist does not match the Supabase URL currently reachable from this workstation and no UAT service role is present locally; the tool fails closed on that mismatch. The owner must point `S015_UAT_PROJECT_ENV_FILE` at the verified UAT target and run dry-run/apply/replay/status/rollback. No Production target was reachable, no credential was printed or requested, no merge occurred, and no audit/ledger/approval history was deleted or rewritten. |
 
 | 2026-07-21 | X009-A S015-P1-092 exact-head closure | `X009_A_GREEN_READY_FOR_NEXT_CHECKPOINT` | Corrective F-001 run `29837663256` passed install, lint, typecheck, unit, integration, local Supabase start/reset, RLS/pgTAP, component, fixture E2E, all seven persistent E2E scenarios, secret scan, and the final production build. This directly verifies that the guarded pre-build cleanup prevents malformed `.next-persistent` dev types from contaminating production compilation. X009-A is closed; Production remains untouched. |

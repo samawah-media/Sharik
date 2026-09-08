@@ -1,5 +1,163 @@
 # Owner Manual UAT Notes — 2026-07-26
 
+## Owner-feedback correction batch 6 (local) — 2026-09-03
+
+This local batch implements X010-B-7C-9 for S015-P2-128 and S015-P2-139. The
+workspace rollover now handles the repeated-trial reality: each approved
+internal persona selects exactly one active source membership while every
+historical inactive workspace is tolerated, so a second rollover no longer
+fails as ambiguous. Apply provisions and verifies the new empty workspace
+first, records one deterministic append-only binding to the exact source
+tenant/membership set, and only then quarantines that set. Replay of an
+applied run is a verified no-op; drifted or conflicting identity fails closed
+without mutation; rollback restores exactly the recorded source and disables
+only that run's target. No synthetic client, contract, package, deliverable,
+file, Audit, or Ledger row is deleted or rewritten, and client-only personas
+never receive automatic access.
+
+Local verification passed: clean-workspace unit 21/21 (written failing
+first); full unit 73/373; typecheck; lint; RLS simulator 8/24; local Supabase
+reset; pgTAP 16/755; the persistent rollover journey 10/10 against real local
+Supabase (apply/binding, empty states, client-persona denial, no-op replay,
+rollback, re-apply after rollback, second rollover over historical
+memberships, binding-exact second rollback, and fail-closed ambiguity and
+tenant-mismatch denials without mutation); production build; secret scan; and
+diff check.
+
+Hosted execution was explicitly not performed: no Supabase/Vercel command, no
+hosted migration, no invitation, no merge, no Production action. X010-B-7C-9E
+(hosted rehearsal/apply/rollback after exact-HEAD CI), corrected Preview
+persona verification, owner recheck, and all 20 owner acceptance items remain
+pending. This entry is not `OWNER_UAT_PASS`, `TEAM_UAT_READY`, merge
+approval, or release approval.
+
+## Next correction batch — 2026-09-03
+
+X010-B-7C-9 is specified but not started. It addresses S015-P2-128 and
+S015-P2-139 by rolling approved internal personas into a new deterministic
+empty UAT workspace and quarantining their exact current source memberships.
+It will not delete the synthetic clients, contracts, packages, deliverables,
+files, Audit, or Ledger evidence. Multiple historical inactive workspaces are
+allowed; one deterministic append-only binding must identify the exact source
+for replay, status, and rollback before that source can be disabled.
+
+The implementation agent is authorized for local code and tests only. Hosted
+dry-run/apply/rollback, deployment, invitations, merge, Production, and owner
+acceptance remain pending. All 20 owner checks remain unchecked.
+
+## Independent review correction for batch 5 — 2026-09-03
+
+Before owner recheck, independent review found that a reversed optional package
+period could be hidden after collapsing its disclosure, leaving the associated
+inline error and focus target unavailable. The corrected wizard automatically
+reopens that disclosure and focuses «نهاية فترة الباقة» with its accessible
+inline message. Independent checks passed: lint, typecheck, unit 73/364,
+component 31/152 (wizard 20/20), and the focused browser spec 10 passed / 2
+intentional mobile-only skips after a successful retry. Owner UAT was not run;
+all 20 owner checks remain unchecked.
+
+## Owner-feedback correction batch 5 — 2026-09-03
+
+This local batch addresses S015-P2-138 only. The onboarding final review now
+summarizes the client, contract reference/period, package services with
+quantities and units, the primary owner and every selected contributor by
+human name and Arabic role, and the first deliverable's description, type,
+priority, all provided dates (one Arabic Gregorian formatter), and the
+internal/client approval settings as explicit «نعم/لا» rows. Empty optional
+values are omitted and no raw identifiers or enum values render.
+
+Empty or invalid submit no longer produces a generic message: the wizard
+stays on the step, focus moves to the first actually-invalid field — the
+company name on step one, never the optional phone — and an inline error
+appears bound to that exact field through stable aria-invalid /
+aria-describedby wiring for screen-reader users. Correcting a field clears
+only its error, preserves every entered value, and never resets the journey.
+
+Local verification passed: lint; typecheck; unit 73/364; integration 28/112;
+component 31/152 (wizard 20/20 after independent correction); RLS simulator 8/24; pgTAP 16/744;
+onboarding-review browser 10/10 across desktop 3, mobile 4 (no horizontal
+overflow; desktop and mobile review screenshots captured), Arabic RTL 3; and
+the persistent onboarding journey 4/4 against real local Supabase with the
+new assertions. Docker Desktop recovered without destructive action during
+this slice, which also let the previously blocked batch-4 pgTAP invitation
+file execute locally and pass.
+
+Owner recheck on a corrected Preview and exact-HEAD CI remain required. All
+20 owner acceptance items stay unchecked. This entry is not `OWNER_UAT_PASS`,
+`TEAM_UAT_READY`, merge approval, or release approval.
+
+## Owner-feedback correction batch 4 — 2026-09-01
+
+This local batch addresses S015-P2-137. The management invitation form now
+starts with no role or client selected and does not enable creation until one
+role and at least one active client are explicitly selected. A single invite
+can assign the same supported role across multiple named clients, and the
+acceptance screen explains those exact scopes before activation.
+
+Pending links remain actionable. Accepted invitations are omitted from the
+invitation lifecycle because the member already appears in the team directory;
+revoked and superseded records are retained in a compact disclosure that works
+by keyboard. Desktop, mobile, and RTL screenshots were manually inspected and
+the browser measured no horizontal overflow.
+
+Local verification passed: lint; typecheck; unit 73/364; component 31/144;
+integration 28/112; RLS simulator 8/24; invitation browser 6/6 plus final
+visual refresh 3/3; production build; secret scan; and diff check. The pgTAP
+test for multi-client create/read/accept exists, but local PostgreSQL execution
+is still pending because Docker Desktop 4.79.0 crashes while recreating its
+stale `dockerInference` runtime socket after the power outage. The additive
+migration was not applied to hosted UAT.
+
+Owner recheck on a corrected Preview, exact-HEAD CI, and database-backed pgTAP
+remain required. All 20 owner acceptance items stay unchecked. This entry is
+not `OWNER_UAT_PASS`, `TEAM_UAT_READY`, merge approval, or release approval.
+
+## Owner-feedback correction batch 3 — 2026-09-01
+
+This local batch addresses S015-P2-135 and the commercial/date portion of
+S015-P2-136. Management and client commercial summaries now use the same scoped
+contract/package/deliverable read model, show «المسلّم» beside agreed,
+in-progress, and remaining quantities, and render contract/package periods as
+explicit Arabic Gregorian «من … إلى …» ranges. Fractional values for count
+units and negative availability are not shown as valid balances: management is
+directed to the existing audited correction path and the client sees calm
+verification copy.
+
+Management contract and package lists now support search, status filtering, and
+bounded pagination. Known `S015-UAT-` hosted contracts remain in the database,
+audit, and ledger history but are excluded from ordinary human-trial lists by
+the existing visibility predicate; this batch did not delete or mutate UAT
+records. Manual mobile QA also found a client-shell width regression (541px
+document on a 390px viewport). The grid constraint was corrected and the final
+measured width is 390px, with a browser regression preventing recurrence.
+
+Local verification passed: lint plus exact-source targeted ESLint; typecheck;
+unit 73/362; component 31/142; integration 28/112; commercial browser 9/9 on
+desktop/mobile/Arabic RTL; final mobile overflow regression 1/1; manually
+reviewed desktop and mobile screenshots; production build; secret scan; and
+diff check. No migration, dependency, ADR, ledger/workflow/RLS/permission
+change, hosted mutation, invitation, merge, or Production action occurred.
+
+Owner recheck is still required on a corrected Preview. Safe UAT quarantine /
+cleanup under S015-P2-139 is a separate pending task. All 20 owner acceptance
+items remain unchecked. This entry is not `OWNER_UAT_PASS`, `TEAM_UAT_READY`,
+merge approval, or release approval.
+
+## Owner-feedback correction batch 2 — 2026-09-01
+
+This local batch addresses the named card/Drawer/copy slice only. Whole-card
+primary navigation is implemented for management client cards, client workspace
+path cards, and assigned-client cards; the Drawer uses a sticky responsive tab
+grid; corrected content-card/Drawer channel, format, and date values are Arabic.
+Desktop, mobile, and Arabic RTL fixture browser checks pass and screenshots were
+manually reviewed.
+
+Owner recheck remains required on the corrected Preview. S015-P2-133 is not a
+blanket closure for every row in the product, and S015-P2-136 still needs the
+broader cross-surface date/bidi sweep. All 20 owner acceptance checklist items
+remain deferred and unchecked. No Owner PASS, team invitation authorization,
+`TEAM_UAT_READY`, merge, or Production acceptance is implied.
+
 ## Current reconciliation — 2026-08-04
 
 This section supersedes the older counts below without deleting their historical
@@ -86,6 +244,7 @@ GREEN / TEAM_UAT_READY are **not** declared. Local non-DB gates green; exact-HEA
 CI, DB-backed gates, Preview, and owner final UAT pending.
 
 Corrections (no workflow/permissions/RLS change):
+
 - **Decision date honesty.** The approximate client-decision date (from
   `deliverable.updated_at`) was **removed**; `updated_at` is any update, not a
   decision. A reliable timestamp needs a scoped `approval_decisions` query + RLS
@@ -174,15 +333,16 @@ integer/fractional semantics; «المسؤول الرئيسي عن العمل» 
 onboarding mutations remain atomic, tenant-scoped, audited, and idempotent.
 
 ### Newly registered open owner notes (technical-fixed for the B2 items; the
+
 following remain open as explicit owner decisions / future slices)
 
-| # | Note | Status | Target |
-|---|---|---|---|
-| N1 | Ability to return a deliverable to internal correction after it was internally approved or already sent to the client (post-approval reopen) | open — S015-P2-124 | X010-B-6/7 |
-| N2 | Clarity on protected drag-and-drop moves versus explicit status actions (which Kanban moves are protected workflow transitions vs. cosmetic) | open — S015-P2-125 | X010-B-6 |
-| N3 | Adding and inviting team members to a tenant/client scope from inside the product shell | open — S015-P2-126 | X010-B-6 |
-| N4 | Decision on whether the platform sends email notifications for approvals/change-requests (owner decision required before any email integration) | open — S015-P2-127 | owner decision — X010-B-4 shipped **in-app only**; email deferred |
-| N5 | Cleaning trial/pilot operational data before go-live without deleting append-only Audit/Ledger history | open — S015-P2-128 | X010-B-7 |
+| #   | Note                                                                                                                                            | Status             | Target                                                            |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ----------------------------------------------------------------- |
+| N1  | Ability to return a deliverable to internal correction after it was internally approved or already sent to the client (post-approval reopen)    | open — S015-P2-124 | X010-B-6/7                                                        |
+| N2  | Clarity on protected drag-and-drop moves versus explicit status actions (which Kanban moves are protected workflow transitions vs. cosmetic)    | open — S015-P2-125 | X010-B-6                                                          |
+| N3  | Adding and inviting team members to a tenant/client scope from inside the product shell                                                         | open — S015-P2-126 | X010-B-6                                                          |
+| N4  | Decision on whether the platform sends email notifications for approvals/change-requests (owner decision required before any email integration) | open — S015-P2-127 | owner decision — X010-B-4 shipped **in-app only**; email deferred |
+| N5  | Cleaning trial/pilot operational data before go-live without deleting append-only Audit/Ledger history                                          | open — S015-P2-128 | X010-B-7                                                          |
 
 These open notes are **not** closed by X010-B-2. They are classified
 `technical-fixed` only where B2 resolved them; the five above remain open and
@@ -214,62 +374,62 @@ The single source of truth for current HEAD/CI/hosted status is
 
 #### A. Fixed technically (prior slices)
 
-| # | Observation | Disposition | Evidence |
-|---|---|---|---|
-| A1 | Image-only client review was blocked (circular guard) | fixed; S015-P1-099 / X009-D | real image renders, management stages, secrecy until send, delivery promotes |
-| A2 | Uploads did not expose dependable name/type/size/progress/terminal state | fixed; X010-A durable attempts | `202607290002`; persistent E2E |
-| A3 | Client send lacked a final exact-version summary | fixed; X010-A | `deliverable-actions.tsx` confirmation |
-| A4 | Delivery could skip explicit management preparation | fixed; X010-A `ready_for_delivery` mandatory | `202607290001` |
-| A5 | Final delivery lacked exact version/file confirmation | fixed; X010-A | confirmation section |
-| A6 | Deliverable not directly openable from the list | fixed; X010-A `فتح العمل` | deliverables page |
-| A7 | Kanban post-approval mapping incorrect | fixed; X010-A macro lanes | `deliverable-board.tsx` |
-| A8 | Count inputs exposed spinners and fractional quantities | fixed; X010-A | integer-only count units |
-| A9 | Raw technical enums in the universal drawer | fixed; S015-P1-073 | `domain-labels.ts` |
-| A10 | Client viewer instructed to approve | fixed; S015-P1-074 | role-aware copy |
-| A11 | Hosted-UAT synthetic seed visible in normal views | fixed; S015-P1-075 | `human-trial-visibility.ts` |
-| A12 | Uppy upload surface was English | fixed; S015-P2-076 | Arabic locale |
-| A13 | Cancel cleanup trusted browser path / false success | fixed; S015-P1-111/112 code + CI; hosted recheck pending | `202607300001`/`202607300002` |
+| #   | Observation                                                              | Disposition                                              | Evidence                                                                     |
+| --- | ------------------------------------------------------------------------ | -------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| A1  | Image-only client review was blocked (circular guard)                    | fixed; S015-P1-099 / X009-D                              | real image renders, management stages, secrecy until send, delivery promotes |
+| A2  | Uploads did not expose dependable name/type/size/progress/terminal state | fixed; X010-A durable attempts                           | `202607290002`; persistent E2E                                               |
+| A3  | Client send lacked a final exact-version summary                         | fixed; X010-A                                            | `deliverable-actions.tsx` confirmation                                       |
+| A4  | Delivery could skip explicit management preparation                      | fixed; X010-A `ready_for_delivery` mandatory             | `202607290001`                                                               |
+| A5  | Final delivery lacked exact version/file confirmation                    | fixed; X010-A                                            | confirmation section                                                         |
+| A6  | Deliverable not directly openable from the list                          | fixed; X010-A `فتح العمل`                                | deliverables page                                                            |
+| A7  | Kanban post-approval mapping incorrect                                   | fixed; X010-A macro lanes                                | `deliverable-board.tsx`                                                      |
+| A8  | Count inputs exposed spinners and fractional quantities                  | fixed; X010-A                                            | integer-only count units                                                     |
+| A9  | Raw technical enums in the universal drawer                              | fixed; S015-P1-073                                       | `domain-labels.ts`                                                           |
+| A10 | Client viewer instructed to approve                                      | fixed; S015-P1-074                                       | role-aware copy                                                              |
+| A11 | Hosted-UAT synthetic seed visible in normal views                        | fixed; S015-P1-075                                       | `human-trial-visibility.ts`                                                  |
+| A12 | Uppy upload surface was English                                          | fixed; S015-P2-076                                       | Arabic locale                                                                |
+| A13 | Cancel cleanup trusted browser path / false success                      | fixed; S015-P1-111/112 code + CI; hosted recheck pending | `202607300001`/`202607300002`                                                |
 
 #### B. Fixed technically (X010-B-1 — this slice)
 
-| # | Observation | Disposition | Evidence |
-|---|---|---|---|
-| B1 | Interface density: oversized headings/cards/spacing at 100% zoom | fixed; X010-B-1 | shared core tokens tightened; component regression |
-| B2 | Non-clickable cards and recent-decision rows | fixed; X010-B-1 | exception-dashboard recent items are links |
-| B3 | Raw technical English status in management dashboard | fixed; X010-B-1 | `deliverableStatusLabel` applied |
-| B4 | Kanban page-level overflow risk | fixed; X010-B-1 | board scroll contained; no page overflow |
+| #   | Observation                                                      | Disposition     | Evidence                                           |
+| --- | ---------------------------------------------------------------- | --------------- | -------------------------------------------------- |
+| B1  | Interface density: oversized headings/cards/spacing at 100% zoom | fixed; X010-B-1 | shared core tokens tightened; component regression |
+| B2  | Non-clickable cards and recent-decision rows                     | fixed; X010-B-1 | exception-dashboard recent items are links         |
+| B3  | Raw technical English status in management dashboard             | fixed; X010-B-1 | `deliverableStatusLabel` applied                   |
+| B4  | Kanban page-level overflow risk                                  | fixed; X010-B-1 | board scroll contained; no page overflow           |
 
 #### C. Needs manual recheck (owner visual QA on Preview)
 
-| # | Observation | Why recheck |
-|---|---|---|
-| C1 | Density and visual hierarchy at 100% zoom on desktop 1440×900 | owner must confirm readability after token tightening |
-| C2 | Mobile Chromium density and no horizontal page overflow | owner must confirm stacked layout |
-| C3 | Kanban horizontal mouse/touch/keyboard navigation | owner must confirm scroll and full-card reach |
-| C4 | Arabic states everywhere (no raw enum leak) | owner must scan all surfaces |
+| #   | Observation                                                   | Why recheck                                           |
+| --- | ------------------------------------------------------------- | ----------------------------------------------------- |
+| C1  | Density and visual hierarchy at 100% zoom on desktop 1440×900 | owner must confirm readability after token tightening |
+| C2  | Mobile Chromium density and no horizontal page overflow       | owner must confirm stacked layout                     |
+| C3  | Kanban horizontal mouse/touch/keyboard navigation             | owner must confirm scroll and full-card reach         |
+| C4  | Arabic states everywhere (no raw enum leak)                   | owner must scan all surfaces                          |
 
 #### D. Still open (future X010-B slices)
 
-| # | Observation | Target slice |
-|---|---|---|
-| D1 | Onboarding journey difficulty (client/contract/package/deliverable) | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
-| D2 | Company name vs contact person confusion | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
-| D3 | Phone/WhatsApp missing from client entity | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
-| D4 | Contract reference unexplained | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
-| D5 | Package lines inconsistent across entry paths | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
-| D6 | Correction/recovery unclear after input error | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
-| D7 | Team assignment terminology unclear | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
-| D8 | Hard terminology like "مخرجاتي" and English technical states in copy | X010-B-3 — **technical-fixed; final-owner-UAT-pending** |
-| D9 | Client work disappears after change request; should stay visible as "عاد لفريق سماوة — قيد التعديل" | X010-B-3 — **technical-fixed; final-owner-UAT-pending** |
-| D10 | Empty optional fields shown; needs progressive disclosure | X010-B-3 — **technical-fixed; final-owner-UAT-pending** |
-| D11 | No understandable in-app notifications center (approval/change-request) | X010-B-4 — **technical-fixed; final-owner-UAT-pending** |
-| D12 | Files not organized as a Drive-like experience (folders/classification/previews/Arabic names) | X010-B-5 |
-| D13 | "تنزيل آمن" should be simplified to "تنزيل" | X010-B-5 |
-| D14 | Upload progress/failure/retry/cancel clarity for images and video | X010-B-5 (refine) |
-| D15 | Universal drawer long and crowded; needs logical sections/tabs | X010-B-6 |
-| D16 | Internal quality not explained; no default editable checklist | X010-B-6 |
-| D17 | Owner/contributor/role display clarity; no `tenant_administrator` or synthetic data leak | X010-B-6 |
-| D18 | Client profile, admin dashboard, team dashboard visual improvement | X010-B-1 partial + X010-B-6 |
+| #   | Observation                                                                                         | Target slice                                            |
+| --- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| D1  | Onboarding journey difficulty (client/contract/package/deliverable)                                 | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
+| D2  | Company name vs contact person confusion                                                            | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
+| D3  | Phone/WhatsApp missing from client entity                                                           | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
+| D4  | Contract reference unexplained                                                                      | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
+| D5  | Package lines inconsistent across entry paths                                                       | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
+| D6  | Correction/recovery unclear after input error                                                       | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
+| D7  | Team assignment terminology unclear                                                                 | X010-B-2 — **technical-fixed; final-owner-UAT-pending** |
+| D8  | Hard terminology like "مخرجاتي" and English technical states in copy                                | X010-B-3 — **technical-fixed; final-owner-UAT-pending** |
+| D9  | Client work disappears after change request; should stay visible as "عاد لفريق سماوة — قيد التعديل" | X010-B-3 — **technical-fixed; final-owner-UAT-pending** |
+| D10 | Empty optional fields shown; needs progressive disclosure                                           | X010-B-3 — **technical-fixed; final-owner-UAT-pending** |
+| D11 | No understandable in-app notifications center (approval/change-request)                             | X010-B-4 — **technical-fixed; final-owner-UAT-pending** |
+| D12 | Files not organized as a Drive-like experience (folders/classification/previews/Arabic names)       | X010-B-5                                                |
+| D13 | "تنزيل آمن" should be simplified to "تنزيل"                                                         | X010-B-5                                                |
+| D14 | Upload progress/failure/retry/cancel clarity for images and video                                   | X010-B-5 (refine)                                       |
+| D15 | Universal drawer long and crowded; needs logical sections/tabs                                      | X010-B-6                                                |
+| D16 | Internal quality not explained; no default editable checklist                                       | X010-B-6                                                |
+| D17 | Owner/contributor/role display clarity; no `tenant_administrator` or synthetic data leak            | X010-B-6                                                |
+| D18 | Client profile, admin dashboard, team dashboard visual improvement                                  | X010-B-1 partial + X010-B-6                             |
 
 ### Counts
 
@@ -422,3 +582,94 @@ non-Production Preview synthetic smoke evidence are attached.
   changed to force the fixture. The owner should create or explicitly nominate
   one synthetic pending approval shared with the two approved client personas,
   then rerun X010-A-8.
+
+## Owner UAT continuation — 2026-09-01
+
+Status: `OWNER_UAT_DEFERRED_FOR_DEFECT_BURN_DOWN`. The owner authorized
+implementation to continue, but did not record PASS. Unexecuted scenarios remain
+open and the wider team must not be invited until the owner resumes and closes
+the structured walkthrough.
+
+### P1 functional findings
+
+1. Marking one notification as read decremented the badge, then the full center
+   failed to load and the bell showed no recent notifications while a non-zero
+   unread badge remained. Root cause: the UI row parser rejected PostgreSQL
+   timezone-offset `read_at` values after the first read mutation.
+2. Final client delivery/files were not consistently discoverable in the client
+   experience even though internal preview and delivery state existed.
+3. Assigned-team client workspaces showed zero work/package counts while the
+   same user had real assigned deliverables in `مهماتي`; client-scoped entry
+   points and commercial visibility were misleading or routed to generic work.
+
+### P2 product and UX findings
+
+1. The owner rejected the shared visual density at 100% zoom: oversized cards,
+   excessive blank space, weak hierarchy, long pages, and inconsistent content
+   widths remain across management, team, client, contract/package, and board
+   views.
+2. Important cards/rows usually require a small explicit button; the whole card
+   is not keyboard/mouse clickable and the action is easy to miss.
+3. The universal drawer is still crowded. Its tab strip requires horizontal
+   scrolling, forms create a very long nested surface, and desktop/mobile
+   hierarchy does not make the next action obvious.
+4. Notifications expose the English breadcrumb `notifications`; several other
+   routes expose `onboard`, `Post`, raw technical copy, or inconsistent date
+   formatting.
+5. Contract/package areas are polluted by repeated synthetic UAT contracts and
+   lack search/filter/pagination. Counts differ between list and commercial
+   summary; one synthetic package displayed an invalid negative remaining value.
+6. Count-based package units display fractional values such as `11.93`; package
+   summaries omit delivered quantity and RTL date ranges read backwards.
+7. Team/invitation cards are oversized; accepted invitations duplicate active
+   members; defaults preselect account-manager and a client; one member can be
+   invited to only one client despite the product supporting multi-client work.
+8. Onboarding final review does not clearly summarize contributors, all dates,
+   or approval settings. Empty-submit validation focuses the phone field instead
+   of the invalid company field and lacks an inline field error.
+9. Client profiles omit practical contact/image information even for management.
+10. Synthetic onboarding and lifecycle records created during UAT must later be
+    archived/quarantined through an audited safe cleanup that preserves audit and
+    package-ledger history; do not destructively delete them.
+
+### Confirmed behavior and corrected observations
+
+- Task assignee selection exists inside `مهام التنفيذ`; the owner successfully
+  created `إعداد نسخة تجريبية` assigned to the designer. The earlier “no member
+  choice” note is superseded, but the onboarding review still obscures the full
+  participant selection.
+- Protected Kanban movement and activity logging worked.
+- Internal comments persisted and appeared in activity.
+- Client viewer denial and client approver decision boundaries worked in the
+  exercised path.
+
+### Burn-down order
+
+1. Notification read/list/badge consistency (`S015-P1-133`).
+2. Client final-file discoverability and assigned-team scoped-work consistency.
+3. Shared shell, density, typography, card clickability, and drawer navigation.
+4. Commercial data presentation and safe UAT cleanup.
+5. Team/invitation and onboarding refinements.
+6. Resume every deferred owner-acceptance checklist scenario and record explicit
+   per-role PASS/FAIL.
+
+### Corrective implementation update — 2026-09-01
+
+- Read-only UAT diagnosis confirmed the delivered owner-trial item
+  `s015-owner-trial-e54d621cfe` has a valid final text version but no file row;
+  the client files surface therefore reported the stored truth. The preparation
+  harness now persists an audited durable-upload attempt, transfers a real
+  current-version PNG as the assigned writer, completes registration atomically,
+  stages it through the normal internal/client-review boundary, and checks
+  client image/download visibility.
+  The existing UAT item was not retroactively altered.
+- The assigned-team zero state came from using `CONTRACT_VIEW` as the
+  deliverables gate and from falling back to empty statistics when commercial
+  access was denied. Scoped `DELIVERABLE_VIEW` is now explicit for execution
+  roles, and the workspace falls back to counts from the existing RLS-filtered
+  deliverable list only. Writer/designer commercial access remains denied.
+- Local proof: lint, typecheck, unit 71/355, integration 28/112, component
+  30/137, RLS simulator 8/24, assigned-writer browser 1/1, owner hosted-test
+  transform/list, secret scan, diff check, and production build PASS.
+  Preview/real-Auth owner recheck remains pending; these corrections do not
+  change `OWNER_UAT_DEFERRED_FOR_DEFECT_BURN_DOWN`.

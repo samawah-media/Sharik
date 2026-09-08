@@ -1,4 +1,10 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import type { ContractSafeSummary } from "@/modules/contracts/contract-repository";
 import {
@@ -33,9 +39,7 @@ describe("contract form and states", () => {
       />,
     );
 
-    expect(
-      screen.getByRole("form", { name: "إنشاء عقد" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("form", { name: "إنشاء عقد" })).toBeInTheDocument();
     expect(screen.getByLabelText("اسم العقد")).toBeRequired();
     expect(screen.getByLabelText("مرجع العقد")).toBeInTheDocument();
     expect(screen.getByLabelText("ملخص العقد")).toBeInTheDocument();
@@ -59,15 +63,57 @@ describe("contract form and states", () => {
     const list = screen.getByRole("region", { name: "قائمة العقود" });
     expect(within(list).getByText("عقد إدارة محتوى")).toBeInTheDocument();
     expect(within(list).getByText("CTR-A-2026")).toBeInTheDocument();
-    expect(within(list).getByText("مسودة")).toBeInTheDocument();
+    expect(within(list).getAllByText("مسودة").length).toBeGreaterThan(0);
     expect(within(list).queryByText("createdBy")).not.toBeInTheDocument();
     expect(within(list).queryByText("Client B")).not.toBeInTheDocument();
+  });
+
+  it("searches, filters, paginates, and quarantines hosted UAT contracts", () => {
+    render(
+      <ContractList
+        contracts={[
+          contractSummary,
+          {
+            ...contractSummary,
+            id: "contract_completed",
+            name: "عقد حملة مكتمل",
+            reference: "CTR-COMPLETE",
+            status: "completed",
+          },
+          {
+            ...contractSummary,
+            id: "contract_hosted",
+            name: "عقد اصطناعي مستضاف",
+            reference: "S015-UAT-hidden",
+          },
+        ]}
+        pageSize={1}
+      />,
+    );
+
+    expect(screen.queryByText("عقد اصطناعي مستضاف")).not.toBeInTheDocument();
+    expect(screen.getByText("صفحة 1 من 2")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+    expect(screen.getByText("عقد حملة مكتمل")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("حالة العقد"), {
+      target: { value: "draft" },
+    });
+    expect(screen.getByText("عقد إدارة محتوى")).toBeInTheDocument();
+    expect(screen.queryByText("عقد حملة مكتمل")).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("بحث في العقود"), {
+      target: { value: "غير موجود" },
+    });
+    expect(screen.getByText("لا توجد عقود مطابقة")).toBeInTheDocument();
   });
 
   it("renders the empty state without leaking other client names", () => {
     render(<ContractEmptyState />);
 
-    expect(screen.getByText("لا توجد عقود لهذا العميل بعد")).toBeInTheDocument();
+    expect(
+      screen.getByText("لا توجد عقود لهذا العميل بعد"),
+    ).toBeInTheDocument();
     expect(screen.queryByText("Client B")).not.toBeInTheDocument();
   });
 

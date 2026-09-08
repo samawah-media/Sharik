@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
+  readNotificationBellData,
   readNotificationList,
   readNotificationUnreadCount,
 } from "@/server/actions/notifications-read";
@@ -61,6 +62,22 @@ describe("notification list read", () => {
       expect(result.value).toHaveLength(1);
       expect(result.value[0].actionHref).toBe("/client/pending");
       expect(result.value[0].read).toBe(false);
+    }
+  });
+
+  it("accepts PostgreSQL timezone-offset read timestamps after a notification is marked read", async () => {
+    const result = await readNotificationList({
+      supabase: supabaseWith(
+        [row({ read_at: "2026-09-01T09:15:30.123456+00:00" })],
+        null,
+      ),
+      filter: "all",
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toHaveLength(1);
+      expect(result.value[0].read).toBe(true);
     }
   });
 
@@ -127,5 +144,25 @@ describe("notification list read", () => {
         p_offset: 0,
       }),
     );
+  });
+});
+
+describe("notification bell read", () => {
+  it("keeps the unread count but reports an honest recent-list failure", async () => {
+    const rpc = vi.fn(async (name: string) =>
+      name === "s015_notification_unread_count"
+        ? { data: 15, error: null }
+        : { data: null, error: { message: "temporary failure" } },
+    );
+
+    const result = await readNotificationBellData({
+      supabase: { rpc } as unknown as SupabaseClient,
+    });
+
+    expect(result).toEqual({
+      unreadCount: 15,
+      recent: [],
+      recentReadFailed: true,
+    });
   });
 });

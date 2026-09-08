@@ -172,6 +172,8 @@ export const fixtureManagementCommercialSummary: ManagementCommercialSummary = {
       clientId: "client_a",
       name: "عقد هدنة للتشغيل التسويقي",
       summary: "متابعة داخلية آمنة لتجربة هدنة.",
+      periodStart: "2026-07-01",
+      periodEnd: "2026-12-31",
       status: "active",
       createdAt: "2026-06-28T00:00:00.000Z",
       updatedAt: "2026-06-28T00:00:00.000Z",
@@ -184,6 +186,8 @@ export const fixtureManagementCommercialSummary: ManagementCommercialSummary = {
       clientId: "client_a",
       contractId: "contract_a",
       name: "باقة هدنة",
+      periodStart: "2026-07-01",
+      periodEnd: "2026-07-31",
       status: "active",
       createdAt: "2026-06-28T00:00:00.000Z",
       updatedAt: "2026-06-28T00:00:00.000Z",
@@ -227,11 +231,15 @@ export const fixtureClientCommercialSummary: ClientCommercialSummary = {
   contracts: fixtureManagementCommercialSummary.contracts.map((contract) => ({
     name: contract.name,
     summary: contract.summary,
+    periodStart: contract.periodStart,
+    periodEnd: contract.periodEnd,
     status: contract.status,
   })),
   packages: fixtureManagementCommercialSummary.packages.map(
     (packageSummary) => ({
       name: packageSummary.name,
+      periodStart: packageSummary.periodStart,
+      periodEnd: packageSummary.periodEnd,
       status: packageSummary.status,
       lines: (packageSummary.lines ?? []).map((line) => ({
         serviceLabel: line.serviceLabel,

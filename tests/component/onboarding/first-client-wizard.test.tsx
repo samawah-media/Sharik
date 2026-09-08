@@ -1,5 +1,6 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { formatArabicDate, formatArabicDateRange } from "@/modules/localization/arabic-display";
 import type { MemberDisplay } from "@/modules/members/member-directory";
 import { FirstClientWizard } from "@/ui/management/first-client-wizard";
 
@@ -279,5 +280,324 @@ describe("FirstClientWizard — X010-B-2", () => {
     expect(form.querySelector('input[name="packageLinesJson"]')).toBeInTheDocument();
     expect(form.querySelector('input[name="clientContactPhone"]')).toBeInTheDocument();
     expect(form.querySelector('input[name="requiresInternalApproval"]')).toHaveValue("true");
+  });
+});
+
+describe("FirstClientWizard — X010-B-7C-8 field validation", () => {
+  it("focuses the company name field, not the phone, on empty submit and wires an inline error", async () => {
+    render(
+      <FirstClientWizard
+        runId="test-run-001"
+        eligibleMembers={mockMembers}
+        action={noopAction}
+      />,
+    );
+
+    const companyInput = screen.getByLabelText("اسم الشركة أو الجهة");
+    const phoneInput = screen.getByLabelText("رقم الهاتف / واتساب");
+
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+
+    await waitFor(() => expect(companyInput).toHaveFocus());
+    expect(phoneInput).not.toHaveFocus();
+
+    expect(companyInput).toHaveAttribute("aria-invalid", "true");
+    expect(companyInput).toHaveAttribute(
+      "aria-describedby",
+      "onboarding-error-clientName",
+    );
+    expect(
+      screen.getByText(/اسم الشركة أو الجهة مطلوب/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/اسم الشركة أو الجهة مطلوب/)).toHaveAttribute(
+      "id",
+      "onboarding-error-clientName",
+    );
+
+    // The optional empty phone must not be flagged as the first error.
+    expect(phoneInput).not.toHaveAttribute("aria-invalid");
+  });
+
+  it("clears only the corrected field error and preserves other entered values", async () => {
+    render(
+      <FirstClientWizard
+        runId="test-run-001"
+        eligibleMembers={mockMembers}
+        action={noopAction}
+      />,
+    );
+
+    const companyInput = screen.getByLabelText("اسم الشركة أو الجهة");
+    const contactInput = screen.getByLabelText("اسم مسؤول التواصل");
+    fireEvent.change(contactInput, { target: { value: "أحمد الاسم" } });
+
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+    await waitFor(() =>
+      expect(companyInput).toHaveAttribute("aria-invalid", "true"),
+    );
+
+    fireEvent.change(companyInput, { target: { value: "شركة النور" } });
+
+    expect(companyInput).not.toHaveAttribute("aria-invalid");
+    expect(screen.queryByText(/اسم الشركة أو الجهة مطلوب/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/تعذّر المتابعة — راجع الحقول/),
+    ).not.toBeInTheDocument();
+    expect(contactInput).toHaveValue("أحمد الاسم");
+    expect(companyInput).toHaveValue("شركة النور");
+  });
+
+  it("focuses the invalid phone field when the company name is valid", async () => {
+    render(
+      <FirstClientWizard
+        runId="test-run-001"
+        eligibleMembers={mockMembers}
+        action={noopAction}
+      />,
+    );
+
+    const companyInput = screen.getByLabelText("اسم الشركة أو الجهة");
+    const phoneInput = screen.getByLabelText("رقم الهاتف / واتساب");
+
+    fireEvent.change(companyInput, { target: { value: "عميل تجريبي" } });
+    fireEvent.change(phoneInput, { target: { value: "abc-not-a-phone" } });
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+
+    await waitFor(() => expect(phoneInput).toHaveFocus());
+    expect(companyInput).not.toHaveAttribute("aria-invalid");
+    expect(phoneInput).toHaveAttribute("aria-invalid", "true");
+    expect(phoneInput).toHaveAttribute(
+      "aria-describedby",
+      "onboarding-error-clientContactPhone",
+    );
+    expect(screen.queryByLabelText("اسم العقد")).not.toBeInTheDocument();
+  });
+
+  it("binds the deliverable date-ordering error to the offending date field", async () => {
+    render(
+      <FirstClientWizard
+        runId="test-run-001"
+        eligibleMembers={mockMembers}
+        action={noopAction}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("اسم الشركة أو الجهة"), {
+      target: { value: "عميل تجريبي" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+    fireEvent.change(screen.getByLabelText("اسم العقد"), {
+      target: { value: "عقد تجريبي" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+    fireEvent.change(screen.getByLabelText("اسم الباقة"), {
+      target: { value: "باقة تجريبية" },
+    });
+    fireEvent.change(screen.getByLabelText("اسم الخدمة للسطر 1"), {
+      target: { value: "منشورات" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+
+    fireEvent.change(screen.getByLabelText("اسم المخرج"), {
+      target: { value: "مخرج تجريبي" },
+    });
+    fireEvent.change(screen.getByLabelText("تاريخ البدء"), {
+      target: { value: "2026-07-10" },
+    });
+    fireEvent.change(screen.getByLabelText("الموعد الداخلي"), {
+      target: { value: "2026-07-01" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+
+    const internalDate = screen.getByLabelText("الموعد الداخلي");
+    await waitFor(() => expect(internalDate).toHaveFocus());
+    expect(internalDate).toHaveAttribute("aria-invalid", "true");
+    expect(internalDate).toHaveAttribute(
+      "aria-describedby",
+      "onboarding-error-internalDueDate",
+    );
+    expect(screen.getByText(/المواعيد غير مرتبة بشكل صحيح/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "إنشاء العميل والبدء" })).not.toBeInTheDocument();
+  });
+
+  it("reopens optional package dates and focuses the invalid hidden end date", async () => {
+    render(
+      <FirstClientWizard
+        runId="test-run-001"
+        eligibleMembers={mockMembers}
+        action={noopAction}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("اسم الشركة أو الجهة"), {
+      target: { value: "عميل تجريبي" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+    fireEvent.change(screen.getByLabelText("اسم العقد"), {
+      target: { value: "عقد تجريبي" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+    fireEvent.change(screen.getByLabelText("اسم الباقة"), {
+      target: { value: "باقة تجريبية" },
+    });
+    fireEvent.change(screen.getByLabelText("اسم الخدمة للسطر 1"), {
+      target: { value: "منشورات" },
+    });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "تحديد فترة الباقة (اختياري)" }),
+    );
+    fireEvent.change(screen.getByLabelText("بداية فترة الباقة"), {
+      target: { value: "2026-08-31" },
+    });
+    fireEvent.change(screen.getByLabelText("نهاية فترة الباقة"), {
+      target: { value: "2026-08-01" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "إخفاء فترة الباقة" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+
+    const packageEndDate = await screen.findByLabelText("نهاية فترة الباقة");
+    await waitFor(() => expect(packageEndDate).toHaveFocus());
+    expect(packageEndDate).toHaveAttribute("aria-invalid", "true");
+    expect(packageEndDate).toHaveAttribute(
+      "aria-describedby",
+      "onboarding-error-packagePeriodEnd",
+    );
+    expect(screen.getByText(/بداية فترة الباقة بعد نهايتها/)).toBeInTheDocument();
+  });
+});
+
+describe("FirstClientWizard — X010-B-7C-8 review step", () => {
+  const fillAndReachReview = () => {
+    render(
+      <FirstClientWizard
+        runId="test-run-001"
+        eligibleMembers={mockMembers}
+        action={noopAction}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("اسم الشركة أو الجهة"), {
+      target: { value: "شركة النور" },
+    });
+    fireEvent.change(screen.getByLabelText("اسم مسؤول التواصل"), {
+      target: { value: "أحمد الاسم" },
+    });
+    fireEvent.change(screen.getByLabelText("رقم الهاتف / واتساب"), {
+      target: { value: "+966 50 123 4567" },
+    });
+    fireEvent.change(screen.getByLabelText("البريد الإلكتروني"), {
+      target: { value: "ahmed@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+
+    fireEvent.change(screen.getByLabelText("اسم العقد"), {
+      target: { value: "عقد تجريبي" },
+    });
+    fireEvent.change(screen.getByLabelText("تاريخ بداية العقد"), {
+      target: { value: "2026-07-01" },
+    });
+    fireEvent.change(screen.getByLabelText("تاريخ نهاية العقد"), {
+      target: { value: "2026-08-31" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "تفاصيل إضافية (اختياري)" }));
+    fireEvent.change(screen.getByLabelText("مرجع العقد"), {
+      target: { value: "REF-100" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+
+    fireEvent.change(screen.getByLabelText("اسم الباقة"), {
+      target: { value: "باقة تجريبية" },
+    });
+    fireEvent.change(screen.getByLabelText("اسم الخدمة للسطر 1"), {
+      target: { value: "منشورات" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+
+    fireEvent.change(screen.getByLabelText("المسؤول الرئيسي عن العمل"), {
+      target: { value: "user-writer" },
+    });
+    fireEvent.click(
+      screen.getByLabelText("إضافة المصمم كعضو فريق مشارك"),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+
+    fireEvent.change(screen.getByLabelText("اسم المخرج"), {
+      target: { value: "مخرج تجريبي" },
+    });
+    fireEvent.change(screen.getByLabelText("وصف المخرج"), {
+      target: { value: "وصف تجريبي هادف" },
+    });
+    fireEvent.change(screen.getByLabelText("نوع المخرج"), {
+      target: { value: "design" },
+    });
+    fireEvent.change(screen.getByLabelText("الأولوية"), {
+      target: { value: "high" },
+    });
+    fireEvent.change(screen.getByLabelText("تاريخ البدء"), {
+      target: { value: "2026-07-10" },
+    });
+    fireEvent.change(screen.getByLabelText("الموعد الداخلي"), {
+      target: { value: "2026-07-15" },
+    });
+    fireEvent.change(screen.getByLabelText("موعد العميل"), {
+      target: { value: "2026-07-20" },
+    });
+    fireEvent.change(screen.getByLabelText("الموعد النهائي"), {
+      target: { value: "2026-07-25" },
+    });
+    fireEvent.click(screen.getByLabelText("يتطلب اعتماد العميل"));
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+
+    return screen.getByRole("button", { name: "إنشاء العميل والبدء" });
+  };
+
+  it("presents the owner and contributors with human names and Arabic roles", () => {
+    const submitButton = fillAndReachReview();
+
+    expect(submitButton).toBeInTheDocument();
+    expect(screen.getByText(/كاتب المحتوى — كاتب محتوى/)).toBeInTheDocument();
+    expect(screen.getByText("المصمم:")).toBeInTheDocument();
+    expect(screen.getByText("مصمم")).toBeInTheDocument();
+
+    // No raw identifiers anywhere in the review text.
+    expect(screen.queryByText(/user-writer/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/user-designer/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/user-admin/)).not.toBeInTheDocument();
+  });
+
+  it("presents all four deliverable dates in Arabic and the approval settings", () => {
+    fillAndReachReview();
+
+    expect(screen.getByText(formatArabicDate("2026-07-10"))).toBeInTheDocument();
+    expect(screen.getByText(formatArabicDate("2026-07-15"))).toBeInTheDocument();
+    expect(screen.getByText(formatArabicDate("2026-07-20"))).toBeInTheDocument();
+    expect(screen.getByText(formatArabicDate("2026-07-25"))).toBeInTheDocument();
+
+    expect(screen.getByText("يتطلب تعميدًا داخليًا:")).toBeInTheDocument();
+    expect(screen.getByText("نعم")).toBeInTheDocument();
+    expect(screen.getByText("يتطلب اعتماد العميل:")).toBeInTheDocument();
+    expect(screen.getByText("لا")).toBeInTheDocument();
+  });
+
+  it("presents deliverable metadata and contract/client details without raw enums", () => {
+    fillAndReachReview();
+
+    expect(screen.getByText("النوع:")).toBeInTheDocument();
+    expect(screen.getByText("تصميم")).toBeInTheDocument();
+    expect(screen.getByText("الأولوية:")).toBeInTheDocument();
+    expect(screen.getByText("مرتفعة")).toBeInTheDocument();
+    expect(screen.getByText("الوصف:")).toBeInTheDocument();
+    expect(screen.getByText("وصف تجريبي هادف")).toBeInTheDocument();
+    expect(screen.getByText("REF-100")).toBeInTheDocument();
+    expect(screen.getByText("أحمد الاسم")).toBeInTheDocument();
+    expect(screen.getByText("ahmed@example.com")).toBeInTheDocument();
+    expect(
+      screen.getByText(formatArabicDateRange("2026-07-01", "2026-08-31")),
+    ).toBeInTheDocument();
+
+    expect(screen.queryByText(/design|high|post|normal/)).not.toBeInTheDocument();
   });
 });

@@ -1,6 +1,11 @@
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableWorkspaceSummary } from "@/modules/deliverables/deliverable-workspace";
 import { firstMeaningfulReviewText } from "@/modules/approvals/client-review-readiness";
+import { formatArabicDate } from "@/modules/localization/arabic-display";
+import {
+  contentChannelLabel,
+  contentFormatLabel,
+} from "@/modules/deliverables/domain-labels";
 import { ContentPreviewCard } from "./content-preview-card";
 import { WorkspaceInlineMedia } from "./workspace-files";
 
@@ -35,16 +40,23 @@ export function DeliverableContentCard({
         <dl className="grid gap-2 text-xs text-muted sm:grid-cols-3">
           <div>
             <dt className="font-semibold text-foreground">المسؤول</dt>
-            <dd>{deliverable.ownerDisplay?.displayName ?? "بانتظار الإسناد"}</dd>
+            <dd>
+              {deliverable.ownerDisplay?.displayName ?? "بانتظار الإسناد"}
+            </dd>
           </div>
           <div>
             <dt className="font-semibold text-foreground">الموعد</dt>
-            <dd>{dueDate ?? "غير محدد"}</dd>
+            <dd>{formatArabicDate(dueDate)}</dd>
           </div>
           <div>
             <dt className="font-semibold text-foreground">القناة والصيغة</dt>
             <dd>
-              {[version?.channel, version?.format ?? typeLabel]
+              {[
+                version?.channel
+                  ? contentChannelLabel(version.channel)
+                  : undefined,
+                contentFormatLabel(version?.format ?? typeLabel),
+              ]
                 .filter(Boolean)
                 .join(" · ")}
             </dd>

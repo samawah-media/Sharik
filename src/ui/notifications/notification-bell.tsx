@@ -15,6 +15,7 @@ import type { NotificationItemData } from "./notification-item";
 export type NotificationBellData = {
   unreadCount: number;
   recent: NotificationItemData[];
+  recentReadFailed?: boolean;
 };
 
 export function NotificationBell({ data }: { data: NotificationBellData }) {
@@ -96,9 +97,22 @@ export function NotificationBell({ data }: { data: NotificationBellData }) {
               عرض كل الإشعارات
             </Link>
           </div>
-          {data.recent.length === 0 ? (
+          {data.recentReadFailed ? (
+            <div className="grid gap-2 px-3 py-5 text-center">
+              <p className="text-sm text-muted">
+                تعذر تحميل آخر الإشعارات.
+              </p>
+              <Link
+                className="text-xs font-semibold text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                href="/notifications"
+                onClick={() => setOpen(false)}
+              >
+                فتح مركز الإشعارات والمحاولة مجددًا
+              </Link>
+            </div>
+          ) : data.recent.length === 0 ? (
             <p className="px-3 py-6 text-center text-sm text-muted">
-              لا لديك إشعارات جديدة.
+              لا توجد إشعارات حديثة.
             </p>
           ) : (
             <ul className="grid gap-1">

@@ -1,5 +1,13 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableWorkspace } from "@/modules/deliverables/deliverable-workspace";
 import { UniversalDeliverableDrawer } from "@/ui/deliverables/universal-deliverable-drawer";
@@ -47,6 +55,7 @@ const { fetchDeliverableWorkspace, workspace } = vi.hoisted(() => {
         caption: "كابشن النسخة",
         channel: "Instagram",
         format: "Post",
+        kpi: "نمو التفاعل",
       },
     ],
     tasks: [
@@ -73,7 +82,7 @@ const { fetchDeliverableWorkspace, workspace } = vi.hoisted(() => {
     ],
     uploadAttempts: [],
     comments: [],
-  qualityChecks: [
+    qualityChecks: [
       {
         id: "qc_1",
         versionId: "version_1",
@@ -155,13 +164,9 @@ vi.mock("@/ui/deliverables/workspace-files", () => ({
   WorkspaceFileDownload: () => <div data-testid="stub-file-download" />,
   WorkspaceFilePreview: () => <div data-testid="stub-file-preview" />,
   WorkspaceFileUpload: () => <div data-testid="stub-file-upload" />,
-  WorkspaceInlineMedia: ({
-    fileId,
-    fit,
-  }: {
-    fileId: string;
-    fit?: string;
-  }) => <div data-fit={fit} data-testid={`stub-inline-media-${fileId}`} />,
+  WorkspaceInlineMedia: ({ fileId, fit }: { fileId: string; fit?: string }) => (
+    <div data-fit={fit} data-testid={`stub-inline-media-${fileId}`} />
+  ),
   WorkspaceFileClientReviewControl: ({
     canStage,
     file,
@@ -205,6 +210,38 @@ beforeEach(() => {
 });
 
 describe("universal deliverable drawer localization", () => {
+  it.each(["{Enter}", " "])(
+    "retains native activation and focus return with a stretched trigger: %s",
+    async (key) => {
+      const user = userEvent.setup();
+      render(
+        <UniversalDeliverableDrawer
+          deliverable={deliverable}
+          workspace={workspace}
+          triggerClassName="after:absolute after:inset-0"
+        />,
+      );
+      const trigger = screen.getByRole("button", { name: "فتح مساحة المخرج" });
+      expect(trigger).toHaveClass("after:absolute", "after:inset-0");
+      expect(trigger).toHaveAttribute("type", "button");
+      expect(screen.getAllByRole("button")).toHaveLength(1);
+      trigger.focus();
+      await user.keyboard(key);
+      const drawer = await screen.findByTestId("deliverable-drawer");
+      expect(
+        within(drawer).getByRole("button", { name: "إغلاق" }),
+      ).toHaveFocus();
+      await user.keyboard("{Escape}");
+      await waitFor(() =>
+        expect(
+          screen.queryByTestId("deliverable-drawer"),
+        ).not.toBeInTheDocument(),
+      );
+      expect(trigger).toHaveFocus();
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+    },
+  );
+
   it("shows an honest load error and recovers when the user retries", async () => {
     fetchDeliverableWorkspace.mockResolvedValueOnce({
       ok: false,
@@ -249,26 +286,35 @@ describe("universal deliverable drawer localization", () => {
     ).toBeVisible();
     expect(within(drawer).queryByText("الأولوية")).toBeNull();
 
-    fireEvent.click(within(drawer).getByRole("tab", { name: /المحتوى والنسخ/ }));
+    fireEvent.click(
+      within(drawer).getByRole("tab", { name: /المحتوى والنسخ/ }),
+    );
     const draftInput = within(drawer).getByTestId("stub-version-input");
-    fireEvent.change(draftInput, { target: { value: "قيمة محفوظة أثناء التنقل" } });
+    fireEvent.change(draftInput, {
+      target: { value: "قيمة محفوظة أثناء التنقل" },
+    });
 
-    fireEvent.click(within(drawer).getByRole("tab", { name: /الجودة الداخلية/ }));
+    fireEvent.click(
+      within(drawer).getByRole("tab", { name: /الجودة الداخلية/ }),
+    );
     expect(
       within(drawer).getByRole("heading", { name: "مراجعة الجودة الداخلية" }),
     ).toBeVisible();
-    expect(
-      within(drawer).getByText(/لا يراها العميل/),
-    ).toBeVisible();
+    expect(within(drawer).getByText(/لا يراها العميل/)).toBeVisible();
 
-    fireEvent.keyDown(within(drawer).getByRole("tab", { name: /الجودة الداخلية/ }), {
-      key: "ArrowLeft",
-    });
+    fireEvent.keyDown(
+      within(drawer).getByRole("tab", { name: /الجودة الداخلية/ }),
+      {
+        key: "ArrowLeft",
+      },
+    );
     await waitFor(() => {
       expect(within(drawer).getByRole("tab", { name: /النشاط/ })).toHaveFocus();
     });
 
-    fireEvent.click(within(drawer).getByRole("tab", { name: /المحتوى والنسخ/ }));
+    fireEvent.click(
+      within(drawer).getByRole("tab", { name: /المحتوى والنسخ/ }),
+    );
     expect(within(drawer).getByTestId("stub-version-input")).toHaveValue(
       "قيمة محفوظة أثناء التنقل",
     );
@@ -288,8 +334,10 @@ describe("universal deliverable drawer localization", () => {
     const drawerText = drawer?.textContent ?? "";
 
     const expectedArabicLabels = [
+      "مساحة المخرج",
       "معتمد داخليًا",
       "منشور",
+      "إنستغرام",
       "قيد التنفيذ",
       "ملف داخلي",
       "يحتاج تعديلًا",
@@ -299,12 +347,23 @@ describe("universal deliverable drawer localization", () => {
       "راجعها مدير المشروع",
     ];
     for (const label of expectedArabicLabels) {
-      expect(drawerText, `expected Arabic label "${label}" in drawer`).toContain(label);
+      expect(
+        drawerText,
+        `expected Arabic label "${label}" in drawer`,
+      ).toContain(label);
     }
 
     for (const token of rawEnumTokens) {
-      expect(drawerText, `raw enum "${token}" leaked into drawer`).not.toContain(token);
+      expect(
+        drawerText,
+        `raw enum "${token}" leaked into drawer`,
+      ).not.toContain(token);
     }
+    expect(drawerText).not.toContain("Instagram");
+    expect(drawerText).not.toContain("Post");
+    expect(drawerText).not.toContain("2026-07-03");
+    expect(drawerText).toContain("يوليو");
+    expect(drawerText).toContain("مؤشر النجاح");
   });
 
   it("renders the exact current-version media and client-review readiness", async () => {
@@ -329,6 +388,21 @@ describe("universal deliverable drawer localization", () => {
       "data-client-review-ready",
       "true",
     );
+  });
+
+  it("explains missing current-version media without replacing the saved content", async () => {
+    render(
+      <UniversalDeliverableDrawer
+        deliverable={deliverable}
+        workspace={{ ...workspace, files: [] }}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "فتح مساحة المخرج" }));
+    fireEvent.click(screen.getByRole("tab", { name: /المحتوى والنسخ/ }));
+
+    expect(screen.getByText("لا توجد صورة أو فيديو في النسخة الحالية")).toBeVisible();
+    expect(screen.getByText("محتوى النسخة")).toBeVisible();
+    expect(screen.getByText("كابشن النسخة")).toBeVisible();
   });
 
   it("reports an image-only internal file as not ready until it is staged", async () => {
@@ -371,8 +445,7 @@ describe("universal deliverable drawer localization", () => {
           name: "replacement.png",
           fileType: "image/png",
           fileSize: 2048,
-          storagePath:
-            "tenant/client/deliverable/version/replacement.png",
+          storagePath: "tenant/client/deliverable/version/replacement.png",
           visibility: "client_visible",
           status: "failed",
           progressPercentage: 40,

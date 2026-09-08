@@ -21,7 +21,11 @@ const notificationRowSchema = z.object({
   title: z.string().min(1),
   message: z.string().min(1),
   action_href: z.string().nullable().optional(),
-  read_at: z.string().datetime().nullable().optional(),
+  // PostgreSQL/Supabase serializes timestamptz values with an explicit offset
+  // (for example `+00:00`). The value is null until the first read mutation,
+  // so rejecting offsets makes the whole notification list fail immediately
+  // after a user marks one item as read.
+  read_at: z.string().datetime({ offset: true }).nullable().optional(),
   created_at: z.string(),
 });
 
@@ -97,6 +101,7 @@ export async function readNotificationList({
 export type NotificationBellPayload = {
   unreadCount: number;
   recent: NotificationListItem[];
+  recentReadFailed?: boolean;
 };
 
 // Combined payload for the shell bell. Returns a safe empty payload on any
@@ -115,7 +120,7 @@ export async function readNotificationBellData({
   });
 
   if (!recentResult.ok) {
-    return { unreadCount, recent: [] };
+    return { unreadCount, recent: [], recentReadFailed: true };
   }
 
   return { unreadCount, recent: recentResult.value };

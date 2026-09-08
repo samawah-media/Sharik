@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState, useSyncExternalStore } from "react";
 import { roleLabelAr } from "@/modules/roles/role-labels";
 import {
   initialInvitationActionState,
@@ -8,6 +8,8 @@ import {
 } from "@/modules/invitations/internal-team-invitation-state";
 import type { InternalTeamInvitation } from "@/server/actions/internal-team-invitations";
 import { Button } from "@/ui/core/button";
+
+const subscribeToHydration = () => () => undefined;
 
 type InvitationMutationAction = (
   previousState: InvitationActionState,
@@ -136,63 +138,115 @@ export function InvitationList({
     }
   >;
 }) {
-  if (invitations.length === 0) {
+  const [showClosed, setShowClosed] = useState(false);
+  const hydrated = useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false,
+  );
+
+  const pendingInvitations = invitations.filter(
+    (invitation) => invitation.status === "pending",
+  );
+  const closedInvitations = invitations.filter(
+    (invitation) =>
+      invitation.status === "revoked" || invitation.status === "superseded",
+  );
+
+  const renderInvitation = (
+    invitation: InternalTeamInvitation,
+    actionable: boolean,
+  ) => {
+    const inputs = operationInputs[invitation.id];
     return (
-      <section aria-label="الدعوات">
-        <p>لا توجد دعوات مسجلة.</p>
-      </section>
+      <article
+        key={invitation.id}
+        className="grid gap-3 rounded-xl border border-border bg-surface p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start"
+      >
+        <div className="grid min-w-0 gap-1">
+          <h3 className="truncate text-sm font-semibold">
+            {invitation.invitedDisplayName}
+          </h3>
+          <p className="truncate text-xs text-muted-foreground">
+            {invitation.invitedEmail}
+          </p>
+          <p className="text-xs leading-5 text-muted-foreground">
+            {roleLabelAr(invitation.roleKey)} · {invitation.clientNames.join("، ")}
+          </p>
+        </div>
+        <span className="w-fit rounded-full border border-border px-3 py-1 text-xs">
+          {invitation.status === "pending"
+            ? "بانتظار القبول"
+            : invitation.status === "revoked"
+              ? "ملغاة"
+              : "استُبدلت برابط أحدث"}
+        </span>
+        {actionable &&
+        resendAction &&
+        revokeAction &&
+        inputs ? (
+          <div className="sm:col-span-2">
+            <PendingInvitationActions
+              invitation={invitation}
+              invitationToken={inputs.invitationToken}
+              resendAction={resendAction}
+              resendIdempotencyKey={inputs.resendIdempotencyKey}
+              revokeAction={revokeAction}
+              revokeIdempotencyKey={inputs.revokeIdempotencyKey}
+            />
+          </div>
+        ) : null}
+      </article>
     );
-  }
+  };
 
   return (
-    <section aria-label="الدعوات" className="grid gap-3">
-      <h2 className="text-lg font-semibold">الدعوات السابقة</h2>
-      {invitations.map((invitation) => {
-        const inputs = operationInputs[invitation.id];
-        return (
-          <article
-            key={invitation.id}
-            className="rounded-xl border border-border bg-surface p-4"
+    <section aria-label="الدعوات" className="grid gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h2 className="text-lg font-semibold">دعوات بانتظار القبول</h2>
+          <p className="text-xs text-muted">
+            الروابط الفعالة فقط؛ العضو المقبول يظهر مرة واحدة في قائمة الفريق.
+          </p>
+        </div>
+        <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
+          {pendingInvitations.length}
+        </span>
+      </div>
+      {pendingInvitations.length > 0 ? (
+        <div className="grid gap-3 lg:grid-cols-2">
+          {pendingInvitations.map((invitation) =>
+            renderInvitation(invitation, true),
+          )}
+        </div>
+      ) : (
+        <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted">
+          لا توجد دعوات بانتظار القبول.
+        </p>
+      )}
+      {closedInvitations.length > 0 ? (
+        <section className="rounded-xl border border-border bg-surface">
+          <button
+            aria-controls="closed-invitations"
+            aria-expanded={showClosed}
+            className="min-h-11 w-full px-4 py-3 text-start text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2"
+            disabled={!hydrated}
+            onClick={() => setShowClosed((current) => !current)}
+            type="button"
           >
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="grid gap-1">
-                <h3 className="text-base font-semibold">
-                  {invitation.invitedDisplayName}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {invitation.invitedEmail}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {roleLabelAr(invitation.roleKey)} · {invitation.clientName}
-                </p>
-              </div>
-              <span className="rounded-full border border-border px-3 py-1 text-xs">
-                {invitation.status === "pending"
-                  ? "بانتظار القبول"
-                  : invitation.status === "accepted"
-                    ? "تم القبول"
-                    : invitation.status === "revoked"
-                      ? "ملغاة"
-                      : "استُبدلت"
-                }
-              </span>
-            </div>
-            {invitation.status === "pending" &&
-            resendAction &&
-            revokeAction &&
-            inputs ? (
-              <PendingInvitationActions
-                invitation={invitation}
-                invitationToken={inputs.invitationToken}
-                resendAction={resendAction}
-                resendIdempotencyKey={inputs.resendIdempotencyKey}
-                revokeAction={revokeAction}
-                revokeIdempotencyKey={inputs.revokeIdempotencyKey}
-              />
-            ) : null}
-          </article>
-        );
-      })}
+            سجل الدعوات المغلقة ({closedInvitations.length})
+          </button>
+          <div
+            className="grid gap-3 border-t border-border p-3 lg:grid-cols-2"
+            hidden={!showClosed}
+            id="closed-invitations"
+          >
+            {closedInvitations.map((invitation) =>
+              renderInvitation(invitation, false),
+            )}
+          </div>
+        </section>
+      ) : null}
     </section>
   );
 }

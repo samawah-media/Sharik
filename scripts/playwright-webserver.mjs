@@ -21,6 +21,7 @@ const warmRouteTimeoutMs = 150_000;
 
 const routesToWarm = [
   "/",
+  "/work?as=assigned_internal_a",
   "/portfolio?as=assigned_internal_a",
   "/portfolio?as=tenant_viewer_a",
   "/client?as=client_viewer_a",
@@ -69,7 +70,7 @@ const child = spawn(
   [
     "node_modules/next/dist/bin/next",
     "dev",
-    "--webpack",
+    "--turbopack",
     "-H",
     appHost,
     "-p",

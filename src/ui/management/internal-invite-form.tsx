@@ -1,12 +1,14 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState, useSyncExternalStore } from "react";
 import { roleLabelAr } from "@/modules/roles/role-labels";
 import {
   initialInvitationActionState,
   type InvitationActionState,
 } from "@/modules/invitations/internal-team-invitation-state";
 import { Button } from "@/ui/core/button";
+
+const subscribeToHydration = () => () => undefined;
 
 export type InternalInviteClientOption = {
   id: string;
@@ -72,6 +74,13 @@ export function InternalInviteForm({
     action ?? (async () => initialInvitationActionState),
     initialInvitationActionState,
   );
+  const [selectedRoleKey, setSelectedRoleKey] = useState("");
+  const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
+  const hydrated = useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false,
+  );
 
   return (
     <form action={formAction} aria-label="دعوة عضو داخلي" dir="rtl">
@@ -103,28 +112,64 @@ export function InternalInviteForm({
           الدور
           <select
             className="min-h-11 rounded-xl border border-border bg-background px-3 py-2"
+            disabled={!hydrated || pending}
             name="roleKey"
+            onChange={(event) => setSelectedRoleKey(event.target.value)}
             required
+            value={selectedRoleKey}
           >
+            <option disabled value="">
+              اختر الدور
+            </option>
             <option value="account_manager">{roleLabelAr("account_manager")}</option>
             <option value="content_writer">{roleLabelAr("content_writer")}</option>
             <option value="designer">{roleLabelAr("designer")}</option>
           </select>
         </label>
-        <label className="grid gap-2 text-sm font-medium">
-          العميل الذي سيعمل عليه
-          <select
-            className="min-h-11 rounded-xl border border-border bg-background px-3 py-2"
-            name="clientId"
-            required
-          >
-            {clients.map((client) => (
-              <option key={client.id} value={client.id}>
-                {client.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <fieldset
+          aria-describedby="invitation-client-scope-help"
+          className="grid gap-3 rounded-xl border border-border bg-background p-3"
+        >
+          <legend className="px-1 text-sm font-medium">
+            العملاء الذين سيعمل عليهم
+          </legend>
+          <p className="text-xs leading-5 text-muted" id="invitation-client-scope-help">
+            اختر كل العملاء الذين سيحصل العضو على الدور نفسه ضمنهم. لن يرى
+            بيانات أي عميل غير محدد هنا.
+          </p>
+          {clients.length > 0 ? (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {clients.map((client) => {
+                const checked = selectedClientIds.includes(client.id);
+                return (
+                  <label
+                    className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-border px-3 py-2 text-sm transition-colors has-[:checked]:border-accent has-[:checked]:bg-accent-soft"
+                    key={client.id}
+                  >
+                    <input
+                      checked={checked}
+                      className="size-4 accent-accent"
+                      disabled={!hydrated || pending}
+                      name="clientIds"
+                      onChange={(event) =>
+                        setSelectedClientIds((current) =>
+                          event.target.checked
+                            ? [...current, client.id]
+                            : current.filter((clientId) => clientId !== client.id),
+                        )
+                      }
+                      type="checkbox"
+                      value={client.id}
+                    />
+                    <span>{client.name}</span>
+                  </label>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-muted">لا يوجد عملاء نشطون متاحون للإسناد.</p>
+          )}
+        </fieldset>
         <p className="text-xs leading-5 text-muted">
           أنشئ الرابط ثم شاركه مع العضو عبر قناة موثوقة. لن يحصل العضو على أي
           صلاحية قبل تسجيل الدخول بنفس البريد وقبول الدعوة. إرسال البريد غير
@@ -133,7 +178,12 @@ export function InternalInviteForm({
         <InvitationActionFeedback state={state} />
         <Button
           className="w-fit"
-          disabled={clients.length === 0 || pending}
+          disabled={
+            !hydrated ||
+            selectedRoleKey === "" ||
+            selectedClientIds.length === 0 ||
+            pending
+          }
           type="submit"
         >
           {pending ? "جارٍ إنشاء الدعوة..." : "إنشاء رابط الدعوة"}
@@ -151,7 +201,7 @@ export function InternalInviteEmptyState() {
     >
       <h2 className="text-lg font-semibold">لا توجد دعوات داخلية بعد</h2>
       <p className="mt-2 text-sm text-muted">
-        أنشئ رابط دعوة لعضو داخلي وحدد دوره والعميل الذي سيعمل عليه.
+        أنشئ رابط دعوة لعضو داخلي وحدد دوره والعملاء الذين سيعمل عليهم.
       </p>
     </section>
   );

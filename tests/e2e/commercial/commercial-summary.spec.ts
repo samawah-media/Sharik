@@ -16,8 +16,10 @@ test("management commercial summary shows scoped cards without later workflow fe
     name: "ملخص المتابعة للإدارة",
   });
   await expect(summaryRegion).toBeVisible();
-  await expect(summaryRegion.getByText("قيد العمل:").first()).toBeVisible();
-  await expect(summaryRegion.getByText("المتبقي:").first()).toBeVisible();
+  await expect(summaryRegion.getByText("قيد العمل").first()).toBeVisible();
+  await expect(summaryRegion.getByText("المسلّم").first()).toBeVisible();
+  await expect(summaryRegion.getByText("المتبقي").first()).toBeVisible();
+  await expect(summaryRegion.getByText(/يوليو/).first()).toBeVisible();
   await expect(page.getByText("Kanban")).toHaveCount(0);
   await expect(page.getByText("files")).toHaveCount(0);
   await expect(page.getByText("comments")).toHaveCount(0);
@@ -44,10 +46,17 @@ test("client commercial summary hides internal fields and other-client identifie
   await expect(
     clientRegion.getByRole("heading", { name: "الأعمال" }),
   ).toBeVisible();
+  await expect(clientRegion.getByText("المسلّم").first()).toBeVisible();
+  await expect(clientRegion.getByText(/يوليو/).first()).toBeVisible();
   await expect(page.getByText("tenant_a")).toHaveCount(0);
   await expect(page.getByText("client_b")).toHaveCount(0);
   await expect(page.getByText("internal")).toHaveCount(0);
   await expect(page.getByText("audit")).toHaveCount(0);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth,
+    ),
+  ).toBeLessThanOrEqual(1);
 });
 
 test("client URL tampering to another commercial summary is denied without enumeration", async ({

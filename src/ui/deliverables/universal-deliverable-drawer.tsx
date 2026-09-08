@@ -12,17 +12,20 @@ import type {
 } from "@/modules/deliverables/deliverable-workspace";
 import { canUpdateTaskStatus } from "@/modules/deliverables/deliverable-workspace";
 import {
+  contentChannelLabel,
+  contentFormatLabel,
   deliverableStatusLabel,
   fileVisibilityLabel,
   qualityCheckStatusLabel,
   taskStatusLabel,
   versionStatusLabel,
 } from "@/modules/deliverables/domain-labels";
-import { fetchDeliverableWorkspace } from "@/server/actions/deliverable-workspace-actions";
 import {
-  groupTeamFiles,
-  type GroupedFile,
-} from "@/modules/files/file-groups";
+  formatArabicDate,
+  formatArabicDateTime,
+} from "@/modules/localization/arabic-display";
+import { fetchDeliverableWorkspace } from "@/server/actions/deliverable-workspace-actions";
+import { groupTeamFiles, type GroupedFile } from "@/modules/files/file-groups";
 import { Badge } from "@/ui/core/badge";
 import { buttonStyles } from "@/ui/core/button";
 import {
@@ -42,14 +45,6 @@ import {
   type WorkspaceUploadSafetyState,
 } from "./workspace-files";
 import { DeliverableApprovalWorkflowControl } from "@/ui/management/deliverable-actions";
-
-const dateFormatter = new Intl.DateTimeFormat("ar-SA", {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
-
-const formatDate = (value?: string) =>
-  value ? dateFormatter.format(new Date(value)) : "غير محدد";
 
 const nextAction: Record<string, string> = {
   not_started: "بدء التنفيذ",
@@ -227,13 +222,13 @@ function TaskWorkspaceCard({
   const canUpdateStatus = canUpdateTaskStatus(workspace, task);
 
   return (
-    <li className="grid gap-3 rounded-lg border border-border bg-background p-3">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+    <li className="grid min-w-0 gap-1 rounded-lg border border-border bg-background px-3 py-2">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+        <div className="min-w-0 [overflow-wrap:anywhere] [unicode-bidi:plaintext]">
           <p className="font-semibold">{task.title}</p>
           <p className="mt-1 text-xs text-muted">
             {task.assignee?.displayName ?? "غير مسند"}
-            {task.dueDate ? ` · ${task.dueDate}` : ""}
+            {task.dueDate ? ` · ${formatArabicDate(task.dueDate)}` : ""}
           </p>
         </div>
         {canUpdateStatus ? (
@@ -247,13 +242,13 @@ function TaskWorkspaceCard({
         )}
       </div>
       {canEditTask ? (
-        <details className="rounded-lg border border-border p-3">
+        <details className="min-w-0">
           <summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold">
             {workspace.taskCapabilities.canReassignTask
               ? "تعديل المهمة أو إعادة إسنادها"
               : "تعديل المهمة"}
           </summary>
-          <div className="pt-3">
+          <div className="border-t border-border pt-3">
             <TaskForm
               deliverable={deliverable}
               editingTask={task}
@@ -278,6 +273,7 @@ export function UniversalDeliverableDrawer({
   canPublishClientComment = false,
   approvalAction,
   buttonLabel = "فتح مساحة المخرج",
+  triggerClassName,
   clientName,
 }: {
   deliverable: DeliverableSafeSummary;
@@ -286,6 +282,7 @@ export function UniversalDeliverableDrawer({
   canPublishClientComment?: boolean;
   approvalAction?: (formData: FormData) => void | Promise<void>;
   buttonLabel?: string;
+  triggerClassName?: string;
   clientName?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -340,7 +337,8 @@ export function UniversalDeliverableDrawer({
     const lastIndex = drawerTabs.length - 1;
     let nextIndex = currentIndex;
     if (event.key === "ArrowRight") nextIndex = Math.max(0, currentIndex - 1);
-    if (event.key === "ArrowLeft") nextIndex = Math.min(lastIndex, currentIndex + 1);
+    if (event.key === "ArrowLeft")
+      nextIndex = Math.min(lastIndex, currentIndex + 1);
     if (event.key === "Home") nextIndex = 0;
     if (event.key === "End") nextIndex = lastIndex;
     if (nextIndex !== currentIndex) {
@@ -461,11 +459,11 @@ export function UniversalDeliverableDrawer({
   );
   const persistedUploadBlocked = Boolean(
     currentVersion &&
-      workspace?.uploadAttempts.some(
-        (attempt) =>
-          attempt.versionId === currentVersion.id &&
-          (attempt.status === "pending" || attempt.status === "failed"),
-      ),
+    workspace?.uploadAttempts.some(
+      (attempt) =>
+        attempt.versionId === currentVersion.id &&
+        (attempt.status === "pending" || attempt.status === "failed"),
+    ),
   );
   const clientReviewReady = hasClientReviewPayload({
     caption: currentVersion?.caption,
@@ -476,8 +474,7 @@ export function UniversalDeliverableDrawer({
     deliverable.internalDueDate ??
     deliverable.clientDueDate ??
     deliverable.finalDueDate;
-  const nextActionLabel =
-    nextAction[deliverable.status] ?? "راجع حالة المخرج";
+  const nextActionLabel = nextAction[deliverable.status] ?? "راجع حالة المخرج";
   const tabCounts: Partial<Record<DrawerTabId, number>> = {
     content: workspace?.versions.length,
     files: workspace?.files.length,
@@ -492,7 +489,7 @@ export function UniversalDeliverableDrawer({
       <button
         aria-expanded={open}
         aria-haspopup="dialog"
-        className={buttonStyles({ variant: "secondary", size: "sm" })}
+        className={`${buttonStyles({ variant: "secondary", size: "sm" })} ${triggerClassName ?? ""}`}
         onClick={handleOpen}
         ref={triggerRef}
         type="button"
@@ -519,13 +516,15 @@ export function UniversalDeliverableDrawer({
             <header className="flex items-start justify-between gap-3 border-b border-border p-3 sm:p-4">
               <div className="min-w-0">
                 <p className="text-xs font-semibold text-accent">
-                  مساحة تنفيذ مشتركة
+                  مساحة المخرج
                 </p>
                 <h2 className="mt-1 break-words text-lg font-semibold">
                   {deliverable.name}
                 </h2>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <Badge tone="muted">{deliverableStatusLabel(deliverable.status)}</Badge>
+                  <Badge tone="muted">
+                    {deliverableStatusLabel(deliverable.status)}
+                  </Badge>
                   <span className="text-xs text-muted">
                     الخطوة التالية: {nextActionLabel}
                   </span>
@@ -583,7 +582,8 @@ export function UniversalDeliverableDrawer({
                       role="alert"
                     >
                       <p className="text-sm font-semibold text-danger">
-                        تعذر تحديث التفاصيل. البيانات المعروضة هي آخر نسخة محملة.
+                        تعذر تحديث التفاصيل. البيانات المعروضة هي آخر نسخة
+                        محملة.
                       </p>
                       <button
                         className={buttonStyles({ variant: "secondary" })}
@@ -596,7 +596,7 @@ export function UniversalDeliverableDrawer({
                   ) : null}
                   <div
                     aria-label="أقسام مساحة المخرج"
-                    className="flex gap-2 overflow-x-auto border-b border-border pb-2"
+                    className="sticky top-0 z-20 -mx-4 grid grid-cols-3 gap-2 border-y border-border bg-surface/95 px-4 py-2 shadow-xs backdrop-blur sm:-mx-5 sm:grid-cols-4 sm:px-5"
                     role="tablist"
                   >
                     {drawerTabs.map((tab) => {
@@ -606,7 +606,7 @@ export function UniversalDeliverableDrawer({
                         <button
                           aria-controls={`drawer-panel-${tab.id}`}
                           aria-selected={active}
-                          className={`min-h-11 min-w-fit rounded-lg px-3 text-sm font-semibold transition-colors ${
+                          className={`min-h-11 min-w-0 w-full whitespace-normal rounded-lg px-2 py-1 text-xs font-semibold leading-5 transition-colors sm:px-3 sm:text-sm ${
                             active
                               ? "bg-accent text-white"
                               : "bg-background text-muted hover:bg-accent-soft hover:text-foreground"
@@ -655,14 +655,12 @@ export function UniversalDeliverableDrawer({
                       </div>
                       <div className="rounded-lg bg-background p-3">
                         <dt className="font-semibold">الخطوة التالية</dt>
-                        <dd className="mt-1 text-muted">
-                          {nextActionLabel}
-                        </dd>
+                        <dd className="mt-1 text-muted">{nextActionLabel}</dd>
                       </div>
                       <div className="rounded-lg bg-background p-3">
                         <dt className="font-semibold">الموعد</dt>
                         <dd className="mt-1 text-muted">
-                          {dueDate ?? "غير محدد"}
+                          {formatArabicDate(dueDate)}
                         </dd>
                       </div>
                       <MemberSummary
@@ -702,10 +700,10 @@ export function UniversalDeliverableDrawer({
                             />
                           </div>
                         ) : (
-                          <div className="grid min-h-36 place-items-center rounded-lg border border-dashed border-border bg-surface text-center text-muted">
-                            <FileText aria-hidden="true" size={32} />
+                          <div className="flex items-center gap-2 rounded-lg border border-dashed border-border bg-surface px-3 py-3 text-muted">
+                            <FileText aria-hidden="true" className="shrink-0" size={20} />
                             <p className="text-sm">
-                              لا يوجد أصل مرئي في النسخة الحالية
+                              لا توجد صورة أو فيديو في النسخة الحالية
                             </p>
                           </div>
                         )}
@@ -741,10 +739,20 @@ export function UniversalDeliverableDrawer({
                         ) : null}
                         <dl className="grid gap-2 text-xs sm:grid-cols-2">
                           {[
-                            ["القناة", currentVersion.channel],
-                            ["الصيغة", currentVersion.format],
+                            [
+                              "القناة",
+                              currentVersion.channel
+                                ? contentChannelLabel(currentVersion.channel)
+                                : undefined,
+                            ],
+                            [
+                              "الصيغة",
+                              currentVersion.format
+                                ? contentFormatLabel(currentVersion.format)
+                                : undefined,
+                            ],
                             ["الهدف", currentVersion.objective],
-                            ["KPI", currentVersion.kpi],
+                            ["مؤشر النجاح", currentVersion.kpi],
                           ]
                             .filter(([, value]) => value)
                             .map(([label, value]) => (
@@ -776,7 +784,7 @@ export function UniversalDeliverableDrawer({
                             <span>النسخة {version.versionNumber}</span>
                             <span className="text-muted">
                               {versionStatusLabel(version.status)} ·{" "}
-                              {formatDate(version.submittedAt)}
+                              {formatArabicDateTime(version.submittedAt)}
                             </span>
                           </li>
                         ))}
@@ -930,7 +938,7 @@ export function UniversalDeliverableDrawer({
                               {comment.body}
                             </p>
                             <time className="mt-1 block text-xs text-muted">
-                              {formatDate(comment.createdAt)}
+                              {formatArabicDateTime(comment.createdAt)}
                             </time>
                           </li>
                         ))}
@@ -976,7 +984,7 @@ export function UniversalDeliverableDrawer({
                               {check.checkedBy && check.checkedAt ? (
                                 <p className="mt-1 text-xs text-muted">
                                   راجعها {check.checkedBy.displayName} ·{" "}
-                                  {formatDate(check.checkedAt)}
+                                  {formatArabicDateTime(check.checkedAt)}
                                 </p>
                               ) : null}
                             </div>
@@ -1040,7 +1048,7 @@ export function UniversalDeliverableDrawer({
                               {item.actor?.displayName
                                 ? `${item.actor.displayName} · `
                                 : ""}
-                              {formatDate(item.createdAt)}
+                              {formatArabicDateTime(item.createdAt)}
                             </p>
                           </li>
                         ))}

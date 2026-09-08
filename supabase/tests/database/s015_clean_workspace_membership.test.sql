@@ -131,5 +131,75 @@ select is(
   0::bigint, 'clean workspace remains empty after rollback (no destructive deletion)'
 );
 
+-- ---------------------------------------------------------------------------
+-- X010-B-7C-9: repeated rollovers tolerate multiple historical inactive
+-- memberships, and rollback restores exactly the recorded source set.
+-- ---------------------------------------------------------------------------
+
+-- The persona accumulates historical inactive workspaces from earlier runs.
+insert into public.tenants (id, name) values
+  ('23000000-0000-4000-8000-000000000003', 'X009B Historical Tenant 1'),
+  ('23000000-0000-4000-8000-000000000004', 'X009B Historical Tenant 2');
+
+insert into public.tenant_memberships (id, tenant_id, auth_user_id, status) values
+  ('23000000-0000-4000-8000-000000000121', '23000000-0000-4000-8000-000000000003', '23000000-0000-4000-8000-000000000201', 'disabled'),
+  ('23000000-0000-4000-8000-000000000122', '23000000-0000-4000-8000-000000000004', '23000000-0000-4000-8000-000000000201', 'disabled');
+
+-- A second rollover provisions a fresh deterministic target (run 2) while the
+-- previously active legacy membership becomes the quarantined source.
+insert into public.tenants (id, name) values
+  ('23000000-0000-4000-8000-000000000005', 'سماوة — مساحة المالك');
+insert into public.tenant_memberships (id, tenant_id, auth_user_id, status) values
+  ('23000000-0000-4000-8000-000000000131', '23000000-0000-4000-8000-000000000005', '23000000-0000-4000-8000-000000000201', 'active');
+
+-- The apply persisted the deterministic append-only binding BEFORE disabling
+-- the source; the canonical reason records the exact source tenant and set.
+insert into public.audit_events (id, tenant_id, client_id, actor_user_id, action, decision, target_type, target_id, reason) values
+  ('23000000-0000-4000-8000-000000000801', '23000000-0000-4000-8000-000000000005', null, null, 'x010b7c9_clean_workspace_source_binding', 'allowed', 'tenant', '23000000-0000-4000-8000-000000000005',
+   'run_id=x010b7c9-run-2;source_tenant=23000000-0000-4000-8000-000000000001;source_memberships=23000000-0000-4000-8000-000000000101');
+
+update public.tenant_memberships
+  set status = 'disabled', disabled_at = now()
+  where id = '23000000-0000-4000-8000-000000000101';
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '23000000-0000-4000-8000-000000000201', true);
+select is(public.f001_active_tenant_member('23000000-0000-4000-8000-000000000005'), true, 'second rollover target is the single active entry');
+select is(public.f001_active_tenant_member('23000000-0000-4000-8000-000000000001'), false, 'second rollover source is quarantined');
+select is(public.f001_active_tenant_member('23000000-0000-4000-8000-000000000003'), false, 'historical workspace 1 stays inactive');
+select is(public.f001_active_tenant_member('23000000-0000-4000-8000-000000000004'), false, 'historical workspace 2 stays inactive');
+reset role;
+
+-- Binding-exact rollback: reactivate ONLY the recorded source membership and
+-- disable only this run's target membership. Historical rows are untouched.
+update public.tenant_memberships
+  set status = 'disabled', disabled_at = now()
+  where id = '23000000-0000-4000-8000-000000000131';
+update public.tenant_memberships
+  set status = 'active', disabled_at = null
+  where id = '23000000-0000-4000-8000-000000000101';
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '23000000-0000-4000-8000-000000000201', true);
+select is(public.f001_active_tenant_member('23000000-0000-4000-8000-000000000001'), true, 'binding-exact rollback restores the recorded source');
+select is(public.f001_active_tenant_member('23000000-0000-4000-8000-000000000005'), false, 'binding-exact rollback disables only the same-run target');
+select is(public.f001_active_tenant_member('23000000-0000-4000-8000-000000000003'), false, 'historical workspace 1 remains inactive after rollback');
+select is(public.f001_active_tenant_member('23000000-0000-4000-8000-000000000004'), false, 'historical workspace 2 remains inactive after rollback');
+reset role;
+
+-- The binding audit row is append-only evidence and survives the cycle.
+select is(
+  (select count(*) from public.audit_events where action = 'x010b7c9_clean_workspace_source_binding'),
+  1::bigint, 'source binding audit row is preserved exactly once'
+);
+select is(
+  (select count(*) from public.audit_events where tenant_id = '23000000-0000-4000-8000-000000000001'),
+  1::bigint, 'source audit history is still preserved after the second rollover'
+);
+select is(
+  (select count(*) from public.package_ledger_entries where tenant_id = '23000000-0000-4000-8000-000000000001'),
+  1::bigint, 'source ledger history is still preserved after the second rollover'
+);
+
 select * from finish();
 rollback;

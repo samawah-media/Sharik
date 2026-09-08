@@ -18,7 +18,7 @@ test("client approver sees controlled approval actions and no internal content",
     detail.getByRole("region", { name: "قرار اعتماد العميل" }),
   ).toBeVisible();
   await expect(
-    detail.getByRole("button", { name: "اعتماد المخرج" }),
+    detail.getByRole("button", { name: "اعتماد النسخة" }),
   ).toBeVisible();
   await expect(detail.getByRole("button", { name: "طلب تعديل" })).toBeVisible();
   await expect(detail.getByText("الملفات المتاحة")).toBeVisible();
@@ -44,7 +44,7 @@ test("client viewer can inspect allowed data but cannot submit approval", async 
     detail.getByText(/لا يملك صلاحية الاعتماد أو طلب التعديل/),
   ).toBeVisible();
   await expect(
-    detail.getByRole("button", { name: "اعتماد المخرج" }),
+    detail.getByRole("button", { name: "اعتماد النسخة" }),
   ).toHaveCount(0);
   await expect(detail.getByRole("button", { name: "طلب تعديل" })).toHaveCount(
     0,

@@ -18,7 +18,7 @@ const inviteSchema = z.object({
   displayName: z.string().trim().min(2).max(120),
   email: z.string().trim().email(),
   roleKey: z.enum(["account_manager", "content_writer", "designer"]),
-  clientId: z.string().uuid(),
+  clientIds: z.array(z.string().uuid()).min(1).max(100),
   invitationToken: invitationTokenSchema,
   idempotencyKey: z.string().trim().min(8).max(200),
 });
@@ -35,8 +35,8 @@ type InvitationRow = {
   invited_display_name: string;
   invited_email: string;
   role_key: string;
-  client_id: string;
-  client_name?: string | null;
+  client_ids: string[];
+  client_names: string[];
   status: string;
   delivery_state: string;
   expires_at: string;
@@ -50,8 +50,8 @@ export type InternalTeamInvitation = {
   invitedDisplayName: string;
   invitedEmail: string;
   roleKey: "account_manager" | "content_writer" | "designer";
-  clientId: string;
-  clientName: string;
+  clientIds: string[];
+  clientNames: string[];
   status: "pending" | "accepted" | "revoked" | "superseded";
   deliveryState: "queued" | "sent" | "failed";
   expiresAt: string;
@@ -64,8 +64,9 @@ const toInvitation = (row: InvitationRow): InternalTeamInvitation => ({
   invitedDisplayName: row.invited_display_name,
   invitedEmail: row.invited_email,
   roleKey: row.role_key as InternalTeamInvitation["roleKey"],
-  clientId: row.client_id,
-  clientName: row.client_name ?? "عميل ضمن النطاق",
+  clientIds: row.client_ids,
+  clientNames:
+    row.client_names.length > 0 ? row.client_names : ["عميل ضمن النطاق"],
   status: row.status as InternalTeamInvitation["status"],
   deliveryState: row.delivery_state as InternalTeamInvitation["deliveryState"],
   expiresAt: row.expires_at,
@@ -82,7 +83,7 @@ const invitationPath = (token: string) => `/invite/${token}`;
 export async function listInternalTeamInvitations() {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc(
-    "s015_list_internal_team_invitations_v2",
+    "s015_list_internal_team_invitations_v3",
   );
 
   if (error) {
@@ -107,7 +108,7 @@ export async function createInternalTeamInvitationAction(
     displayName: formData.get("displayName"),
     email: formData.get("email"),
     roleKey: formData.get("roleKey"),
-    clientId: formData.get("clientId"),
+    clientIds: formData.getAll("clientIds"),
     invitationToken: formData.get("invitationToken"),
     idempotencyKey: formData.get("idempotencyKey"),
   });
@@ -115,12 +116,12 @@ export async function createInternalTeamInvitationAction(
 
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc(
-    "s015_invite_internal_team_member_v2",
+    "s015_invite_internal_team_member_v3",
     {
       invited_display_name_input: parsed.data.displayName,
       invited_email_input: parsed.data.email,
       role_key_input: parsed.data.roleKey,
-      target_client_id: parsed.data.clientId,
+      target_client_ids: parsed.data.clientIds,
       invitation_token_input: parsed.data.invitationToken,
       request_id: crypto.randomUUID(),
       audit_event_id: crypto.randomUUID(),
@@ -212,7 +213,7 @@ const invitationAcceptSchema = z.object({
 export type InternalInvitationPreview = {
   invitedDisplayName: string;
   roleKey: "account_manager" | "content_writer" | "designer";
-  clientName: string;
+  clientNames: string[];
   expiresAt: string;
   status: "pending" | "accepted";
 };
@@ -220,7 +221,7 @@ export type InternalInvitationPreview = {
 type InvitationPreviewRow = {
   invited_display_name: string;
   role_key: InternalInvitationPreview["roleKey"];
-  client_name: string;
+  client_names: string[];
   expires_at: string;
   status: InternalInvitationPreview["status"];
 };
@@ -231,7 +232,7 @@ export async function readInternalInvitationPreview(token: string) {
 
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc(
-    "s015_read_internal_team_invitation",
+    "s015_read_internal_team_invitation_v2",
     { invitation_token_input: parsed.data },
   );
   const row = ((data ?? []) as InvitationPreviewRow[])[0];
@@ -242,7 +243,7 @@ export async function readInternalInvitationPreview(token: string) {
     invitation: {
       invitedDisplayName: row.invited_display_name,
       roleKey: row.role_key,
-      clientName: row.client_name,
+      clientNames: row.client_names,
       expiresAt: row.expires_at,
       status: row.status,
     } satisfies InternalInvitationPreview,

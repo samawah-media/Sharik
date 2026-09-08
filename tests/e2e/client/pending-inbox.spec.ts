@@ -17,7 +17,7 @@ test("client pending route is a real inbox and stays read-only for viewer", asyn
   await expect(
     page.getByText(/لا يملك صلاحية الاعتماد أو طلب التعديل/),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: "اعتماد المخرج" })).toHaveCount(
+  await expect(page.getByRole("button", { name: "اعتماد النسخة" })).toHaveCount(
     0,
   );
   await expect(page.getByText("r007_visible_version")).toHaveCount(0);
@@ -35,7 +35,7 @@ test("client approver receives the decision controls for the current version", a
     page.getByRole("heading", { name: "بانتظار موافقتي" }).first(),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "اعتماد المخرج" }),
+    page.getByRole("button", { name: "اعتماد النسخة" }),
   ).toBeVisible();
   await expect(page.getByRole("button", { name: "طلب تعديل" })).toBeVisible();
   await expect(page.locator('input[name="versionId"]').first()).toHaveValue(

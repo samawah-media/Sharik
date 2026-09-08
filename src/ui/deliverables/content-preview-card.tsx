@@ -1,6 +1,10 @@
 import { FileText, ImageIcon, Instagram, Megaphone, Play } from "lucide-react";
 import type { ReactNode } from "react";
 import { isMeaningfulReviewText } from "@/modules/approvals/client-review-readiness";
+import {
+  contentChannelLabel,
+  contentFormatLabel,
+} from "@/modules/deliverables/domain-labels";
 import { Badge } from "@/ui/core/badge";
 import { cn } from "@/ui/core/utils";
 
@@ -16,14 +20,18 @@ type ContentPreviewCardProps = {
   captionLabel?: string;
   footer?: ReactNode;
   compact?: boolean;
+  fullText?: boolean;
   className?: string;
 };
 
-const normalized = (value?: string) =>
-  value?.trim().toLocaleLowerCase("ar") ?? "";
+const normalized = (label?: string) =>
+  label?.trim().toLocaleLowerCase("ar") ?? "";
 
-const channelPresentation = (channel?: string) => {
-  const value = normalized(channel);
+const channelPresentation = (channel?: string, format?: string) => {
+  const value = normalized(channel || format);
+  const label = channel
+    ? contentChannelLabel(channel)
+    : contentFormatLabel(format);
 
   if (
     value.includes("instagram") ||
@@ -32,7 +40,7 @@ const channelPresentation = (channel?: string) => {
   ) {
     return {
       icon: Instagram,
-      label: "Instagram",
+      label,
     };
   }
 
@@ -44,20 +52,20 @@ const channelPresentation = (channel?: string) => {
   ) {
     return {
       icon: Play,
-      label: channel || "فيديو",
+      label,
     };
   }
 
   if (value.includes("campaign") || value.includes("حملة")) {
     return {
       icon: Megaphone,
-      label: channel || "حملة",
+      label,
     };
   }
 
   return {
     icon: ImageIcon,
-    label: channel || "محتوى رقمي",
+    label,
   };
 };
 
@@ -73,13 +81,16 @@ export function ContentPreviewCard({
   captionLabel = "نص النسخة الحالية",
   footer,
   compact = false,
+  fullText = false,
   className,
 }: ContentPreviewCardProps) {
-  const presentation = channelPresentation(channel || format);
+  const presentation = channelPresentation(channel, format);
   const Icon = presentation.icon;
   const visibleCaption = isMeaningfulReviewText(caption) ? caption : undefined;
+  const visibleFormat = contentFormatLabel(format);
   const showFormat =
-    Boolean(format) && normalized(format) !== normalized(presentation.label);
+    Boolean(format) &&
+    normalized(visibleFormat) !== normalized(presentation.label);
 
   return (
     <div
@@ -103,9 +114,15 @@ export function ContentPreviewCard({
             data-media-fallback
           >
             <div>
-              <Icon aria-hidden="true" className="mx-auto text-accent" size={32} />
+              <Icon
+                aria-hidden="true"
+                className="mx-auto text-accent"
+                size={32}
+              />
               <p className="mt-3 text-sm font-semibold">{presentation.label}</p>
-              <p className="mt-1 text-xs text-muted">لا يوجد أصل مرئي مرفوع لهذه النسخة</p>
+              <p className="mt-1 text-xs text-muted">
+                لا يوجد أصل مرئي مرفوع لهذه النسخة
+              </p>
             </div>
           </div>
         )}
@@ -123,26 +140,40 @@ export function ContentPreviewCard({
         </div>
         <div className="grid gap-1 border-b border-border bg-surface p-4">
           <p className="text-xs font-semibold text-accent">{eyebrow}</p>
-          <p className="line-clamp-2 text-lg font-bold leading-7">{title}</p>
-          {clientName ? <p className="text-xs text-muted">{clientName}</p> : null}
+          <p
+            className={cn(
+              "text-lg font-bold leading-7",
+              fullText ? "whitespace-pre-wrap break-words" : "line-clamp-2",
+            )}
+          >
+            {title}
+          </p>
+          {clientName ? (
+            <p className="text-xs text-muted">{clientName}</p>
+          ) : null}
         </div>
       </div>
       <div className="grid gap-3 p-4">
         <div className="flex flex-wrap gap-2">
-          {showFormat ? <Badge tone="muted">{format}</Badge> : null}
+          {showFormat ? <Badge tone="muted">{visibleFormat}</Badge> : null}
           {status ? <Badge tone="accent">{status}</Badge> : null}
         </div>
         {visibleCaption ? (
           <div>
             <p className="text-xs font-semibold text-muted">{captionLabel}</p>
-            <p className="mt-1 line-clamp-3 whitespace-pre-wrap break-words text-sm leading-7 text-foreground">
+            <p
+              className={cn(
+                "mt-1 whitespace-pre-wrap break-words text-sm leading-7 text-foreground",
+                !fullText && "line-clamp-3",
+              )}
+            >
               {visibleCaption}
             </p>
           </div>
         ) : (
           <p className="inline-flex items-center gap-2 text-sm text-muted">
             <FileText aria-hidden="true" size={16} />
-            لا يوجد caption أو body محفوظ في النسخة الحالية
+            لا يوجد نص محفوظ في النسخة الحالية
           </p>
         )}
         {footer ? (

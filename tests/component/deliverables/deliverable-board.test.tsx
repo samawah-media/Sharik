@@ -115,7 +115,7 @@ describe("internal deliverable work board", () => {
     expect(within(board).getAllByText("تصميم إعلان المنتج")).toHaveLength(1);
     expect(document.querySelectorAll("[data-content-card]")).toHaveLength(2);
     expect(within(board).getAllByText("أحمد العتيبي").length).toBeGreaterThan(0);
-    expect(within(board).getByText("2026-07-03")).toBeInTheDocument();
+    expect(within(board).getByText("٣ يوليو ٢٠٢٦")).toBeInTheDocument();
     expect(within(board).getByText("0%")).toBeInTheDocument();
     expect(within(board).getByText("70%")).toBeInTheDocument();
 

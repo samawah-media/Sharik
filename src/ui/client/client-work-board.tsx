@@ -8,16 +8,10 @@ import {
   clientWorkSectionIds,
 } from "@/modules/deliverables/client-labels";
 import { deliverableTypeLabel } from "@/modules/deliverables/domain-labels";
+import { formatArabicDate } from "@/modules/localization/arabic-display";
 import { EmptyState } from "@/ui/core/states";
 
 type ClientWorkDeliverable = ClientCommercialSummary["deliverables"][number];
-
-const formatDate = (value?: string) => {
-  if (!value) {
-    return "غير محدد";
-  }
-  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : value.slice(0, 10);
-};
 
 const workDetailHref = (deliverableId: string): string =>
   `/client/work/${encodeURIComponent(deliverableId)}`;
@@ -100,7 +94,7 @@ function ClientWorkCard({
   const href = workDetailHref(deliverable.id);
   const statusLabel = clientVisibleStatusLabel(deliverable.status, canApprove);
   const nextAction = clientNextAction(deliverable.status, canApprove);
-  const dueLabel = formatDate(
+  const dueLabel = formatArabicDate(
     deliverable.clientDueDate ?? deliverable.finalDueDate,
   );
   const waiting = deliverable.status === "waiting_client_approval";

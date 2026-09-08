@@ -1,9 +1,18 @@
 "use client";
 
-import { useActionState, useEffect, useId, useRef, useState } from "react";
+import {
+  useActionState,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useFormStatus } from "react-dom";
 import type { PackageBalanceProjection } from "@/modules/packages/package-ledger";
 import type { PackageSafeSummary } from "@/modules/packages/package-repository";
+import { paginateCommercialItems } from "@/modules/commercial/commercial-presentation";
+import { formatArabicDateRange } from "@/modules/localization/arabic-display";
 import type { PackageAdjustmentState } from "@/server/actions/packages";
 import {
   initialPackageFormState,
@@ -13,6 +22,7 @@ import { Badge, StatCard } from "@/ui/core/badge";
 import { Button } from "@/ui/core/button";
 import { Card, CardHeader, CardTitle, SectionPanel } from "@/ui/core/card";
 import { EmptyState, ErrorState } from "@/ui/core/states";
+import { PackageBalanceFacts } from "@/ui/commercial/package-balance-facts";
 
 type PackageFormAction = (
   previousState: PackageFormState,
@@ -225,10 +235,7 @@ function PackageAdjustmentForm({
   );
 
   useEffect(() => {
-    if (
-      state.status === "success" &&
-      lastCompletedState.current !== state
-    ) {
+    if (state.status === "success" && lastCompletedState.current !== state) {
       lastCompletedState.current = state;
       setAttempt((value) => value + 1);
     }
@@ -245,11 +252,7 @@ function PackageAdjustmentForm({
         <input name="clientId" type="hidden" value={clientId} />
         <input name="contractId" type="hidden" value={contractId} />
         <input name="packageLineId" type="hidden" value={packageLineId} />
-        <input
-          name="idempotencyKey"
-          type="hidden"
-          value={idempotencyKey}
-        />
+        <input name="idempotencyKey" type="hidden" value={idempotencyKey} />
         <label className="grid gap-1 text-sm">
           فرق الكمية
           <input
@@ -293,23 +296,82 @@ export function PackageList({
   adjustmentAction,
   clientId,
   contractId,
+  pageSize = 6,
 }: {
   packages: PackageSafeSummary[];
   adjustmentAction?: PackageAdjustmentAction;
   clientId?: string;
   contractId?: string;
+  pageSize?: number;
 }) {
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState("all");
+  const [page, setPage] = useState(1);
+  const result = useMemo(
+    () =>
+      paginateCommercialItems({
+        items: packages,
+        query,
+        status,
+        page,
+        pageSize,
+        getSearchText: (packageItem) =>
+          [
+            packageItem.name,
+            ...packageItem.lines.map((line) => line.serviceLabel),
+          ].join(" "),
+        getStatus: (packageItem) => packageItem.status,
+      }),
+    [packages, page, pageSize, query, status],
+  );
+
   return (
     <section aria-label="قائمة الباقات" className="grid gap-3" dir="rtl">
-      {packages.map((packageItem) => (
+      <div className="grid gap-3 rounded-lg border border-border bg-card p-3 sm:grid-cols-[minmax(0,1fr)_12rem_auto] sm:items-end">
+        <label className="grid gap-1 text-sm font-medium">
+          بحث في الباقات والخدمات
+          <input
+            className="min-h-11 rounded-md border border-border bg-background px-3 py-2"
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setPage(1);
+            }}
+            placeholder="اسم الباقة أو الخدمة"
+            type="search"
+            value={query}
+          />
+        </label>
+        <label className="grid gap-1 text-sm font-medium">
+          حالة الباقة
+          <select
+            className="min-h-11 rounded-md border border-border bg-background px-3 py-2"
+            onChange={(event) => {
+              setStatus(event.target.value);
+              setPage(1);
+            }}
+            value={status}
+          >
+            <option value="all">كل الحالات</option>
+            {Object.entries(statusLabels).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="pb-2 text-sm text-muted">عرض {result.totalItems} باقة</p>
+      </div>
+      {result.items.map((packageItem) => (
         <Card key={packageItem.id}>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <CardHeader>
               <CardTitle>{packageItem.name}</CardTitle>
               {packageItem.periodStart || packageItem.periodEnd ? (
                 <p className="text-sm text-muted">
-                  {packageItem.periodStart ?? "غير محدد"} -{" "}
-                  {packageItem.periodEnd ?? "غير محدد"}
+                  {formatArabicDateRange(
+                    packageItem.periodStart,
+                    packageItem.periodEnd,
+                  )}
                 </p>
               ) : null}
             </CardHeader>
@@ -326,12 +388,11 @@ export function PackageList({
                   <h3 className="text-sm font-semibold">{line.serviceLabel}</h3>
                   <Badge tone="muted">{line.unitLabel}</Badge>
                 </div>
-                <div className="flex flex-wrap gap-2 text-sm text-muted">
-                  <span>المتفق عليه: {line.balance.committed}</span>
-                  <span>المحجوز: {line.balance.reserved}</span>
-                  <span>المتاح: {line.balance.available}</span>
-                </div>
-                <PackageBalanceSummary balance={line.balance} />
+                <PackageBalanceFacts
+                  audience="management"
+                  balance={line.balance}
+                  unitLabel={line.unitLabel}
+                />
                 {adjustmentAction && clientId && contractId ? (
                   <PackageAdjustmentForm
                     action={adjustmentAction}
@@ -345,6 +406,39 @@ export function PackageList({
           </div>
         </Card>
       ))}
+      {result.totalItems === 0 ? (
+        <p className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-sm text-muted">
+          لا توجد باقات مطابقة
+        </p>
+      ) : null}
+      {result.totalPages > 1 ? (
+        <nav
+          aria-label="صفحات الباقات"
+          className="flex items-center justify-between gap-3"
+        >
+          <Button
+            disabled={result.page === 1}
+            onClick={() => setPage((value) => Math.max(1, value - 1))}
+            type="button"
+            variant="secondary"
+          >
+            السابق
+          </Button>
+          <span className="text-sm text-muted">
+            صفحة {result.page} من {result.totalPages}
+          </span>
+          <Button
+            disabled={result.page === result.totalPages}
+            onClick={() =>
+              setPage((value) => Math.min(result.totalPages, value + 1))
+            }
+            type="button"
+            variant="secondary"
+          >
+            التالي
+          </Button>
+        </nav>
+      ) : null}
     </section>
   );
 }

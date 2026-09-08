@@ -1,5 +1,442 @@
 # Project Progress
 
+## CI recovery approved — publication still pending — 2026-09-08
+
+Owner approved runner-local GitHub database/persistent testing after bounded
+Docker recovery failed. No hosted data transfer; socket backups remain outside
+the repository. Branch-specific automatic deployment hold and exact-source CI
+checkout/reset are prepared. Fresh combined local tests:151files/853PASS;
+TypeScript, full ESLint and secret scan PASS. Full browser260PASS/37SKIP/3FAIL:
+one stale partial-text locator failed in all three profiles. Its test-only fix
+passed focused3/3 verification across desktop/mobile/RTL; fresh build and scoped
+test lint PASS. Full exact-source CI pending. No hosted PASS or
+migration apply is implied.
+Two native Astra reviews found no confirmed scoped source/privacy blocker;
+database replay/rollback and hosted Auth remain separate gates.
+Existing owner browser session opened the old hosted management dashboard
+successfully, read-only. This is not fresh credential or new-version persona QA.
+See [current preflight](../specs/015-persistent-mvp-pilot-completion/evidence/ui-owner-preview-preflight.md).
+
+## Owner Preview publication authorized — preflight blocked — 2026-09-08
+
+Owner requested publishing UI1–UI4 for trial. Fresh production build, full lint,
+secret scan and110files/536 unit/integration/RLS-simulator tests PASS.
+Vercel/GitHub access is available. Linked UAT inventory confirms the required
+invitation migration202609010001 is not applied. Local Docker engine is unavailable
+and the existing admin persona credentials are rejected; real DB/hosted gates
+cannot yet be accepted. No publish, alias change, migration apply or data reset.
+UI1–UI4 local completion is unchanged; all20 owner checks remain pending.
+See [publication preflight](../specs/015-persistent-mvp-pilot-completion/evidence/ui-owner-preview-preflight.md).
+
+## UI4 local verification GREEN — 2026-09-08
+
+Client approval presentation completed using bounded native delegation and
+independent source review. Full review text, explicit version at decision,
+preview-first mobile layout and two-column desktop review; concise Saudi copy.
+Browser51PASS/9intentional profile skips; full components317PASS;
+isolated visual6PASS; TypeScript and
+scoped lint exit0. Lead inspected375/1440 screenshots. Initial warmup/navigation
+failures and recovery are recorded, not omitted.
+See [UI4 checkpoint](../specs/015-persistent-mvp-pilot-completion/evidence/ui4-checkpoint.md).
+UI1–UI4 scenarios are in the existing owner walkthrough as not run. All20 owner
+requirements-quality boxes remain unchecked; hosted/real-role/persistent and
+exact-HEAD gates are next, subject to prerequisites. No TEAM_UAT_READY claim.
+No commit, push, deployment, ADR, dependency or protected-behavior change.
+
+## UI3 local verification GREEN — 2026-09-08
+
+Internal drawer tabs/empty-preview density and static copy implemented through
+bounded native delegation; lead inspected exact deltas and independent review
+accepted spec/code/test quality. Browser12/12 PASS, full components40files/303PASS,
+TypeScript/scoped ESLint exit0. Lead reviewed375/1440 screenshots.
+See [UI3 checkpoint](../specs/015-persistent-mvp-pilot-completion/evidence/ui3-checkpoint.md).
+Next implementation slice is UI4 client approval presentation, after its bounded
+plan. All20 owner requirements-quality checkboxes and hosted/exact-HEAD gates
+remain pending. UI3 scenarios added to the same owner walkthrough as not run.
+No commit, push, deployment, new dependency or protected-behavior change.
+
+## UI1/UI2 local verification GREEN — 2026-09-08
+
+UI2 dashboard and complete-read boundary are implemented and independently source
+reviewed. Current full component run: 39 files / 286 PASS. Generated Next type
+corruption was preserved outside the dev type path after official type generation;
+the next typecheck exposed a test-fixture typing error, now corrected and source reviewed.
+TypeScript and scoped lint passed during recovery. The subsequent focused rerun
+passed all25 tests. UI1 brand focus clipping was reproduced (top=-2px), fixed
+without layout changes, and independently reviewed. Isolated visual4 PASS;
+integrated browser28 PASS /20 intentional profile skips, exit0. Those skips are
+not owner tests. UI2 dashboard browser6/6 PASS; full component recheck286/286 PASS.
+Final TypeScript and scoped ESLint exit0. Lead inspected375/1440 screenshots.
+At that UI1/UI2 checkpoint, UI3/UI4 and owner/hosted gates remained open; long-name browser QA was not claimed.
+Read the [current checkpoint](../specs/015-persistent-mvp-pilot-completion/evidence/ui2-recovery-checkpoint.md)
+before the historical UI1-only status below. UI3 is superseded by the newer checkpoint above.
+
+## UI1 implemented — integrated browser acceptance blocked — 2026-09-08
+
+Latest continuation: fresh generated-cache diagnostic failed the same root warmup
+before tests (session78988). Next reported a505ms filesystem benchmark warning.
+Cache cause unproven; no source/harness change or blind repeat. UI2 file/data
+scope prepared, not implemented. [Diagnostic](../specs/015-persistent-mvp-pilot-completion/evidence/ui1-runtime-diagnostic.md).
+
+Owner approved the research direction and three screens. UI1 shell foundation is
+implemented with bounded delegation and independent source review accepted.
+Fresh component suite: 263 PASS; isolated visual checks: 4 PASS; TypeScript and
+scoped ESLint: exit 0. Two full-app attempts failed warmup before tests; UI1 is
+not full LOCAL PASS. [Checkpoint report](../specs/015-persistent-mvp-pilot-completion/evidence/ui1-lead-checkpoint.md).
+Dashboard, drawer and client screen detail remain later slices. No owner-UAT,
+hosted or production claim; 20 requirements-quality checks still unchecked.
+
+## Current research handoff — 2026-09-08
+
+X010-B-7C-20 research-only package is ready: three Saudi references, proposed
+voice guide, three standalone mockups and transition/owner-test mapping.
+See [review package](../specs/015-persistent-mvp-pilot-completion/evidence/ui-research-20260908/README.md).
+Historical research-only checkpoint; superseded by owner approval and UI1 above.
+D17/D18 remain LOCAL PASS only. All 20 owner requirements-quality checkboxes,
+exact-HEAD CI/hosted and owner walkthrough gates remain pending. Historical
+records below are not new verification results.
+
+## Current handoff — 2026-09-07
+
+D17 / X010-B-7C-18 and D18 / X010-B-7C-19 are LOCAL PASS. Lead six-file
+regression session 31896 exited 0: 59 PASS / 25 intentional profile SKIP (5.5m),
+including all six D18 cases passing again after the 6 PASS diagnostic (4.4m).
+Independent audit and viewed screenshots support acceptance. Lead accepts the
+installed Turbopack plus /work warmup for the shared local fixture harness;
+no dependency, guard or assertion changes and no proven root-cause claim.
+Fresh node check, scoped ESLint and diff check exited 0 (lead-reported).
+No local successor is approved. Exact-HEAD CI/target confirmation and owner
+walkthrough remain pending; all 20 owner checkboxes remain unchecked.
+See [diagnostic evidence](../specs/015-persistent-mvp-pilot-completion/evidence/d18-report.md#current-shared-harness-checkpoint--2026-09-07).
+
+### Historical D17/D18 verification checkpoint — before warmup diagnostic
+
+Current checkpoint (lead-reported): X010-B-7C-18/19 / D17-D18 layout changes
+implemented after browser RED; independent spec/quality reviews found no issues.
+Full component: 38 files / 263 tests PASS. First shared browser: exit 1,
+11 PASS / 5 FAIL / 5 intentional SKIP (6.9m): all four D17 geometry cases,
+six pending-inbox regressions and D18 desktop1440 passed. Five other D18 cases
+failed at initial drawer opening, before geometry. A reviewed test-only bounded
+React readiness correction precedes a single click; no geometry was relaxed.
+Corrected six-case D18 rerun: exit 1, 4 PASS / 2 FAIL (9.4m).
+Mobile and RTL profiles at 1440/375 passed. Desktop1440 passed geometry,
+interactions and DOM stress, but failed the final console assertion:
+Next Router action dispatched before initialization. Desktop375 failed the
+30s React readiness poll before geometry; its cause remains unproven.
+D18 remains implemented, verification-pending and unchecked. Standalone
+six-file scoped ESLint and git diff check exited 0. Typecheck PASS, exit 0.
+Final isolated build PASS, exit 0: compiled in 2.5min, TypeScript 20.5s,
+11 static pages. D17 / X010-B-7C-18 is LOCAL PASS and checked; D18 /
+X010-B-7C-19 remains unchecked, implemented and verification-pending.
+Wave-owned verification processes have ended. Final normal git diff check
+passed; source changes remain local and unstaged.
+All 20 owner checkboxes remain unchecked (lead verified).
+Next bounded diagnostic: distinguish Next dev cold-start/HMR effects from
+product behavior. The completed build is not production-mode browser
+verification. `src/server/navigation/route-fixture-env.ts` disables `as=` actor
+fixtures under `NODE_ENV=production`; do not bypass that guard. Subsequent
+production-mode browser verification requires an approved authenticated DB
+setup and has not been executed. External gates remain pending.
+No next fix, dependency upgrade or error filtering is implemented/approved.
+D17 desktop/mobile and D18 desktop images
+are saved in Spec015 evidence/visual-20260907. All 20 owner items remain unchecked;
+real-DB, hosted/Preview, exact-HEAD CI and deployment acceptance remain pending.
+
+Historical provider checkpoint: Gemini routing was rechecked successfully on
+the owner-confirmed subscription account: agy 1.1.27 displayed Google AI Pro,
+Use AI Credits off, and gemini-3.8-flash-low completed a bounded generic UI
+review (exit 0). Earlier account-correction notes are historical, not a current
+blocker. See delegation-queue.md for scope, verification limits and next slices.
+Current changes/results are tracked in the canonical delegation queue.
+
+### Historical D15/D16 checkpoint — not current-wave acceptance
+
+Status: X010_B7C16_17_LOCAL_PASS_EXTERNAL_GATES_PENDING.
+Owner approved X010-B-7C-16/17 (D15/D16): mobile shell regrouping and compact
+real team-directory rows. Two reused Astra workers implemented disjoint files
+and cross-reviewed them; lead verified actual code and browser screenshots.
+Final component 37/254, navigation/fixture unit 2/9, scoped lint/diff and
+typecheck PASS. Directory browser 12/12 and existing visual-qa 15/15 passed;
+four client-mobile keyboard failures were diagnosed and fixed with nearest
+focus reveal. Final shell/client-inbox browser 19 PASS / 20 intentional skips
+(7.8m). Fresh production build PASS, exit 0: compiled in 115s, TypeScript
+20.5s, all 11 generated pages. X010-B-7C-16/17 are locally complete only.
+Real-DB, exact-HEAD CI, hosted/Preview and 20 owner items remain pending.
+Following D13/D14 evidence is historical baseline, not this wave's evidence.
+Previous wave: X010-B-7C-14 mobile filters/whole-row entry and X010-B-7C-15
+inline-media failure/file-change handling. Owner requested continuation with
+most implementation delegated. Two reused Astra workers have disjoint files;
+lead reviewed actual changes and ran shared gates. Component 37/248 and
+fixture browser 15/15 PASS, including mobile/RTL row activation and focus.
+Typecheck PASS after a test-only option correction; final scoped lint/diff
+and fresh production build PASS (exit 0, all 11 generated pages).
+Media lifecycle has 13 focused regressions, including A→B→A stale responses.
+Real signed-URL expiry/decoding remains unexecuted. No overall completion claim.
+Owner approved the compact operational My Work list on 2026-09-07.
+X010-B-7C-13 passed component and fixture-browser QA; external payload, real-DB and hosted gates
+remain pending. Do not rerun completed gates merely to recover context.
+Canonical work remains Spec 015 tasks.md; do not restart the older 9A-D prompt.
+No readiness, Production, invitation, commit, push or deployment is authorized
+by local test success. All 20 owner-acceptance items remain unchecked.
+
+Locally implemented and lead-reviewed:
+
+- X010-B-7C-14/15 / D13-D14: compact mobile filters, whole-row native-button
+  My Work entry, and inline-media failure/file-switch recovery. Component
+  37/248, fixture browser 15/15, typecheck, scoped lint/diff and build PASS.
+  Source and screenshots reviewed; real media expiry/decoding still unexecuted.
+
+- X010-B-7C-13 / D10-D12: compact My Work rows with scoped image thumbnails,
+  readable operational metadata and the existing drawer. Filters, Arabic
+  date precedence, author-written stage names and Kanban wiring preserved.
+  Lead reviewed desktop/mobile screenshots; other density surfaces remain open.
+
+- X010-B-7C-10 / D04,D07-D09: shared Arabic Gregorian/Riyadh date display
+  across comments/files, approval/detail, cards and client/management lists;
+  human due labels, source precedence and ISO form values preserved. Card
+  channel/format footer uses existing Arabic safe labels.
+- X010-B-7C-11 / D05: actual CLI startup and request-failure recovery corrected;
+  bound source/target checks and explicit incomplete-recovery stop errors.
+  No crash, concurrency or atomicity guarantee; no history deletion.
+- X010-B-7C-12 / D06: Arabic TaskForm errors/focus, nullable optional values,
+  retained failed inputs and unchanged in-form retry identity. Reload-safe
+  retries are not claimed.
+
+Latest evidence and scope:
+
+- X010-B-7C-14/15: current local verification is component 37 files / 248
+  tests, fixture browser 15/15 (4.9m), typecheck, scoped lint/diff and build
+  PASS. Initial unsupported test query option was corrected; the repeat
+  passed. All subsequent entries below are historical batch-specific evidence.
+
+- X010-B-7C-13: focused component 11/11 and full component 36 files / 232
+  tests PASS. Typecheck, final scoped lint/diff and production build PASS,
+  exit 0. Build completed TypeScript and all 11 generated pages; no cleanup
+  or compiler workaround was needed for this batch.
+  Fresh full fixture visual suite: 15/15 PASS, exit 0 (3.9m), including
+  220px desktop / 400px mobile maximums for the regular first fixture row,
+  64px thumbnail wrapper, filters and keyboard drawer/focus return.
+  First browser attempt was stopped after a test-only priority locator timeout;
+  the retry uses the actual combobox role. No production workaround.
+
+- D07-D09: 7 component files / 75 tests; scoped lint and full typecheck PASS.
+- Post-D07-D09 visual-qa: 15/15, exit 0 (4.1m), desktop/mobile/Arabic RTL,
+  including raw-ISO display checks. Fixture-only, not real database evidence.
+- Final post-D07-D09 local runs: full unit 74/400 and full component 36/222
+  PASS; production build PASS. One old Kanban raw-ISO display assertion was
+  updated after the first full component run exposed it (221 pass / 1 fail).
+- Integration 28/112 and RLS simulator 8/24 passed before the date-only sweep;
+  neither is real PostgreSQL evidence.
+- Windows Playwright shutdown was isolated to restricted-context taskkill
+  access denial; approved scoped execution exits normally. Earlier dev-type
+  corruption was cleared only from verified generated output; its cause is
+  separate and unproven.
+
+Pending / next decisions:
+
+1. Address residual density: mobile shell/header height and other list/drawer
+   surfaces. Mobile filters and My Work whole-row entry are locally corrected
+   by X010-B-7C-14; S015-P2-140 failure/file-switch handling is locally corrected
+   by X010-B-7C-15. Do not reimplement them. Real media expiry/decoding and
+   owner recheck remain pending. D15/D16 shell/directory browser gates pass;
+   final build passed. Do not reimplement completed slices.
+   Next density selection must target remaining surfaces and receive a
+   bounded design decision before new presentation changes.
+2. Explicit permission to send the two named rollover files to Z.ai/GLM.
+   Subscription is user-confirmed Samawah; no external source review dispatched.
+3. Docker readiness: approved read-only probe timed out after 8 seconds.
+   No reset/settings change. Corrected rollover real-DB/RLS and valid-save/
+   retry persistent-browser verification remain unexecuted.
+4. Exact-HEAD CI, explicitly authorized 9E hosted rehearsal, corrected Preview,
+   and owner walkthrough. No local result waives these gates.
+
+Delegation uses Astra lead and reused workers with disjoint ownership.
+Google route recovered on 2026-09-07 (see current handoff). Spark CLI worked but its 49,312-token
+context overhead is unsuitable for repeated tiny tasks; no cost is inferred.
+Detailed commands, RED/GREEN, failed attempts, screenshots and limitations:
+[delegation queue](../specs/015-persistent-mvp-pilot-completion/evidence/delegation-queue.md),
+[visual evidence](../specs/015-persistent-mvp-pilot-completion/evidence/visual-check-20260907.md),
+[gate status](../specs/015-persistent-mvp-pilot-completion/evidence/gate-status.md).
+
+## Spec 015 owner-feedback correction batch 6 (local) - 2026-09-03
+
+Status: `LOCAL_BATCH_6_CODE_COMPLETE_HOSTED_CI_PREVIEW_OWNER_PENDING`.
+X010-B-7C-9A-D are complete locally for S015-P2-128/S015-P2-139: the
+clean-workspace rollover selects exactly one shared active source per persona
+(tolerating any number of historical inactive memberships), provisions and
+verifies the empty target, persists a deterministic append-only binding to the
+exact source set before quarantining it, makes applied-run replay a verified
+no-op, fails closed on conflicting/missing identity and on zero/multiple/
+mismatched active sources, and rolls back exactly the recorded set. Nothing is
+deleted: no business rows, files, Storage metadata, audit, or ledger history;
+client-only personas never receive automatic access; output stays
+category/count-only.
+
+Local PASS: clean-workspace unit 21/21 (failing-first); full unit 73 files /
+373 tests; typecheck; lint; RLS simulator 8/24; clean local Supabase reset;
+pgTAP 16 files / 755 tests (11 new); persistent rollover journey 10/10 against
+real local Supabase; production build; secret scan; diff check exit 0.
+
+X010-B-7C-9E remains open: no hosted Supabase/Vercel command (including
+read-only), no hosted migration, no invitations, no commit/push/merge/deploy,
+and no Production action occurred. Exact-HEAD CI, hosted
+rehearsal/apply/rollback, corrected Preview persona verification, owner
+recheck, and all 20 unchecked owner-acceptance items remain pending. This is
+not Owner PASS, `TEAM_UAT_READY`, merge approval, or release approval.
+
+## Spec 015 next correction batch locked - 2026-09-03
+
+Status: `X010_B7C9_PLANNED_LOCAL_NOT_STARTED`. The next implementation batch is
+X010-B-7C-9 for S015-P2-128/S015-P2-139. It will reuse and harden the existing
+X009-B clean-workspace rollover so repeated owner-UAT records disappear from
+the team's natural entry without deleting clients, contracts, packages,
+deliverables, files, Audit, or Ledger history. The known gap is source
+discovery after one prior rollover: approved personas can now have several
+historical inactive memberships, while the old tool expected exactly one
+non-target membership.
+
+The implementation prompt, Spec 015 acceptance contract, plan, tasks, and
+defect register now require exact shared-active-source selection, deterministic
+run-scoped target rows, provision-before-quarantine ordering, compensation,
+idempotent replay, exact rollback, client-persona denial, and category/count-
+only evidence. No implementation, hosted mutation, deployment, invitation,
+merge, or Production action is claimed by this planning entry.
+
+## Spec 015 batch 5 independent review correction - 2026-09-03
+
+Status: `LOCAL_UX_BATCH_5_REVIEWED_CI_PREVIEW_OWNER_RECHECK_PENDING`.
+Independent review reproduced an uncovered field-validation edge case: after a
+user entered a reversed optional package period and collapsed that disclosure,
+advance recorded the end-date error against an unmounted field, so neither the
+inline message nor deterministic focus was available. The wizard now reopens
+the optional package-period disclosure before focusing the exact invalid end
+date. The error summary copy was also corrected so it no longer claims that
+field errors appear below it when they are rendered beside their fields.
+
+Independent PASS: lint; typecheck; unit 73 files / 364 tests; component 31 files
+/ 152 tests, including wizard 20/20 and the new collapsed-disclosure regression.
+The focused Playwright spec passed 10 tests with 2 intentional mobile-only
+skips across desktop, mobile, and Arabic RTL. Its first launch aborted during
+the local Next web-server warm-up before any test ran; a clean retry completed
+successfully. The earlier batch pgTAP, persistent, integration, RLS simulator,
+build, secret-scan, and diff-check evidence was inspected but not rerun in this
+independent correction. Exact-HEAD CI, corrected Preview, owner recheck, and
+all 20 owner acceptance checks remain pending.
+
+## Spec 015 owner-feedback correction batch 5 - 2026-09-03
+
+Status: `LOCAL_UX_BATCH_5_COMPLETE_CI_PREVIEW_OWNER_RECHECK_PENDING`. X010-B-7C-8
+corrects S015-P2-138: the first-client wizard's final review now presents the
+client, contract reference/period, package services with quantities and units,
+the primary owner and every contributor by human name and Arabic role, and the
+first deliverable's description, type, priority, all provided dates (one Arabic
+Gregorian formatter), and the internal/client approval settings as explicit
+«نعم/لا» rows — omitting empty optionals and never rendering raw IDs or enums.
+Step validation became field-addressable: invalid advance keeps the step,
+focuses the first actually-invalid field (company name, never the optional
+phone), shows an inline error bound to that field via stable
+aria-invalid/aria-describedby wiring, and clears only the corrected field while
+preserving all entered values across back/forward navigation.
+
+Local PASS: lint; typecheck; unit 73/364; integration 28/112; component 31/152
+(wizard 20/20 after independent correction); RLS simulator 8/24; pgTAP 16/744; onboarding-review browser
+10/10 across desktop 3, mobile 4 (no horizontal overflow, review screenshots),
+Arabic RTL 3; persistent onboarding journey 4/4 against real local Supabase
+with the new focus/inline-error and human-team review assertions; production
+build; secret scan; diff check. Docker Desktop recovered without destructive
+action during this slice, unblocking local pgTAP — including the batch-4
+multi-client invitation test file, which now executes locally and passes.
+
+No migration, dependency, ADR, workflow, RLS, permission, audit, hosted
+migration, UAT mutation, invitation, merge, or Production action occurred.
+Exact-HEAD CI, corrected Preview, owner recheck, and all 20 unchecked owner
+acceptance items remain pending; this is not Owner PASS or `TEAM_UAT_READY`.
+
+## Spec 015 owner-feedback correction batch 4 - 2026-09-01
+
+Status: `LOCAL_UX_BATCH_4_CODE_COMPLETE_DB_CI_PREVIEW_OWNER_RECHECK_PENDING`.
+X010-B-7C-7 removes risky invitation defaults, supports one exact internal role
+across one or more explicitly selected active clients, keeps pending links
+actionable, removes accepted-member duplication, and moves revoked/superseded
+records into a compact keyboard-accessible history. The additive migration
+extends create/read/accept while preserving exact-email acceptance, tenant
+isolation, disabled-membership denial, idempotency, and per-client audit.
+
+Local PASS: lint; typecheck; unit 73/364; component 31/144; integration 28/112;
+RLS simulator 8/24; invitation browser 6/6 across desktop/mobile/Arabic RTL
+plus final visual refresh 3/3; manual screenshot review; production build;
+secret scan; diff check. PostgreSQL/pgTAP is authored but local execution is
+blocked: after the power outage Docker Desktop 4.79.0 crashes while recreating
+its stale `dockerInference` runtime socket. No hosted migration, UAT mutation,
+real invitation, merge, or Production action occurred.
+
+The parent batch and X010-B-7C-7C remain open until database-backed pgTAP and
+exact-HEAD CI pass. Corrected Preview, owner recheck, and all 20 owner checks
+also remain pending; this is not Owner PASS or `TEAM_UAT_READY`.
+
+## Spec 015 owner-feedback correction batch 3 - 2026-09-01
+
+Status: `LOCAL_UX_BATCH_3_COMPLETE_CI_PREVIEW_OWNER_RECHECK_PENDING`.
+X010-B-7C-6 restores the commercial presentation boundary for S015-P2-135:
+management and client surfaces share scoped counts, expose delivered quantity,
+flag fractional count units and negative availability instead of presenting
+them as trustworthy balances, and use explicit Arabic Gregorian period ranges.
+Management contract/package lists are searchable, status-filterable, and
+paginated; known run-scoped UAT contracts are quarantined from human lists with
+the existing predicate while all database/audit/ledger history is preserved.
+
+Manual screenshot QA found and fixed a separate client-shell mobile overflow:
+the document measured 541px on a 390px viewport before the grid correction and
+390px afterward. Local PASS: lint plus exact-source targeted ESLint; typecheck;
+unit 73/362; component 31/142; integration 28/112; commercial browser 9/9 across
+desktop/mobile/Arabic RTL plus final mobile overflow 1/1; production build;
+secret scan; and diff check. No migration, dependency, ADR,
+ledger/workflow/RLS/permission change, hosted mutation, UAT deletion,
+invitation, merge, or Production action occurred.
+
+Exact-HEAD CI, corrected Preview, safe UAT cleanup, owner recheck, and all 20
+owner acceptance items remain pending. This status is not Owner PASS,
+`TEAM_UAT_READY`, merge approval, or release approval.
+
+## Spec 015 owner-feedback correction batch 2 - 2026-09-01
+
+Status: `LOCAL_UX_BATCH_2_COMPLETE_CI_PREVIEW_OWNER_RECHECK_PENDING`. The
+canonical tasks/spec now track X010-B-7C-5. Management client cards,
+client-workspace path cards, and assigned-client cards expose their primary
+destination across the card surface and keyboard focus while secondary actions
+remain separate valid links. The universal Drawer uses a sticky responsive
+two/four-column tab grid instead of mandatory horizontal tab scrolling and
+retains RTL arrows/Home/End, focus return, mounted form values, role-filtered
+tabs, and 44px targets. Known channel/format values and corrected Drawer/content
+card dates use Arabic display labels with safe fallbacks instead of leaking
+`Instagram`, `Post`, unknown enums, or raw ISO dates.
+
+Local PASS: lint; typecheck; unit 72 files / 358 tests; component 31 files / 139
+tests; management + assigned-team whole-card browser 2/2; Drawer visual browser 3/3 across
+desktop/mobile/Arabic RTL with manual screenshot review; production build;
+secret scan; diff check. The first parallel Vitest run hit worker pressure and
+one intentionally obsolete English assertion; after correcting that assertion,
+both complete suites passed serially. No migration, dependency, ADR, workflow,
+RLS, permission, hosted mutation, invitation, merge, or Production action was
+introduced. All 20 owner-acceptance checklist items remain deferred and
+unchecked; this batch is not Owner PASS or `TEAM_UAT_READY`.
+
+## Spec 015 owner-UAT P1 continuation local correction - 2026-09-01
+
+Status: `LOCAL_CORRECTIVE_COMPLETE_CI_PREVIEW_OWNER_RECHECK_PENDING`. The
+owner-trial missing-image report was traced to a synthetic review item with no
+file row; future owner-trial preparation now uses the audited durable-upload
+path for a real staged visual file plus client preview/download assertions.
+Assigned-team client workspaces now use
+an explicit scoped deliverable-read permission and RLS-visible deliverables for
+non-commercial counts instead of showing false zeros when contract/ledger access
+is denied; the team view shows scoped completion instead of a false package
+zero. Local lint/typecheck, unit 71/355, integration 28/112, component 30/137,
+RLS simulator 8/24, desktop browser 1/1, owner-test transform/list, secret scan,
+diff check, and production build pass. No existing UAT data, password,
+Production resource, invitation, or history was changed. Owner acceptance
+remains deferred and no team-readiness claim exists.
+
 ## Spec 015 X010-B-7 ready for owner trial - 2026-08-04
 
 Status: `X010_B7_READY_FOR_OWNER_TRIAL`. The correct protected Preview and
@@ -79,6 +516,7 @@ Status: `X010_B6A_CI_GREEN_OWNER_UAT_PENDING`. Starting HEAD
 S015-P2-121, S015-P2-122, S015-P2-123, and the visual-density part of D18.
 
 Delivered:
+
 - The universal drawer is now organized into seven keyboard-accessible RTL tabs:
   overview, content/versions, files, execution tasks, comments, internal
   quality, and activity. Overview is intentionally minimal: status, progress,
@@ -128,6 +566,7 @@ at `https://shrik-nzrv6pwrc-samawahs-projects.vercel.app`.
 
 Delivered (S015-P2-120 -> `technical-fixed; CI-verified;
 final-owner-UAT-pending`):
+
 - Additive database/storage authorization for active same-tenant/same-client
   client access to `contract_file`, `report_file`, and `brand_asset`; preserves
   `internal_only` denial, Client A/B isolation, and disabled-membership denial.
@@ -161,6 +600,7 @@ Vercel `2JGvwkkjYc4QRfH6JVFUeeN5aMSR` Ready in `samawahs-projects/shrik`;
 CodeRabbit SUCCESS.
 
 Delivered (S015-P2-120 → `technical-fixed; CI-verified; final-owner-UAT-pending`):
+
 - Client files `/client/files` retitled «ملفاتي» and rebuilt as grouped folders
   (final/review/uploaded/contract) with counters, empty states, image
   thumbnails, safe inline video/PDF preview, honest fallback, keyboard-
@@ -231,6 +671,7 @@ reassignment notifications, and removes a relative-time hydration mismatch.
 Local implementation is closed; DB/CI/Preview/owner UAT remain pending.
 
 Delivered (S015-P2-119 → `technical-fixed; final-owner-UAT-pending`):
+
 - Additive migration `202608010002_s015_x010b4_in_app_notifications.sql` (after
   `202608010001`) — persistent, person-scoped, deduped `public.notifications`
   (id, tenant_id, client_id nullable, recipient_user_id, event_type, title,
@@ -243,7 +684,7 @@ Delivered (S015-P2-119 → `technical-fixed; final-owner-UAT-pending`):
   core events; a SECURITY DEFINER `AFTER INSERT/UPDATE of assignee_user_id`
   trigger on `deliverable_tasks` covers assignment/reassignment. Both call
   `s015_enqueue_notification` with `ON CONFLICT (recipient_user_id, dedupe_key)
-  DO NOTHING`. Actor excluded from recipients.
+DO NOTHING`. Actor excluded from recipients.
 - Routing: assignment/reassignment → assignee; submit version → management;
   internal change request → owner + execution contributors; send to client →
   client approver/viewer (client-safe copy, `/client/pending`); client change
@@ -259,11 +700,12 @@ Delivered (S015-P2-119 → `technical-fixed; final-owner-UAT-pending`):
   loading/error/empty states, per-item + mark-all-read.
 
 Local non-DB matrix PASS: lint; typecheck; unit 66/333 (new `notification-labels`
-+ `notifications-read`); integration 28/112; component 29/119 (new
-`notification-bell` + `notification-list`); RLS simulator 8/24; fixture E2E 12/12
-new (`notifications-center.spec.ts`) + 17/17 regression
-(app-shell/client-work/pending-inbox/visual-qa); secret scan; `git diff --check`
-(LF/CRLF warnings only); production build (`/notifications` present).
+
+- `notifications-read`); integration 28/112; component 29/119 (new
+  `notification-bell` + `notification-list`); RLS simulator 8/24; fixture E2E 12/12
+  new (`notifications-center.spec.ts`) + 17/17 regression
+  (app-shell/client-work/pending-inbox/visual-qa); secret scan; `git diff --check`
+  (LF/CRLF warnings only); production build (`/notifications` present).
 
 Corrective checks PASS: focused notification components 13/13 and desktop
 notification E2E 4/4 after the hydration correction, with no hydration warning.
@@ -288,6 +730,7 @@ Local non-DB gates green; exact-HEAD CI, DB-backed gates, Preview, and owner
 final UAT pending. **GREEN / TEAM_UAT_READY are NOT declared.**
 
 Corrections (no workflow/permissions/RLS change):
+
 - **Decision date removed.** Approximate `lastDecisionAt` (from
   `deliverable.updated_at`) deleted — it represents any update, not a decision.
   Reliable timestamp needs a scoped `approval_decisions` query + client RLS read
@@ -322,6 +765,7 @@ DB-backed gates, Preview, and owner final UAT pending. **GREEN /
 TEAM_UAT_READY are NOT declared.**
 
 Delivered (no workflow/permissions/RLS change):
+
 - Central client status mapper `src/modules/deliverables/client-labels.ts`
   (`clientStatusLabel`/`clientVisibleStatusLabel`/`clientNextAction`/`clientWorkSections`);
   raw status enum carried on the client detail types; scattered inline maps
@@ -363,6 +807,7 @@ run, DB-backed gates are environment-blocked, and the Preview migration
 `202607310001` has not been applied to UAT. **X010_B2_GREEN is NOT declared.**
 
 Two defects found in self-review and fixed in place (no new migration):
+
 1. `client_contact_phone_input` moved to the **end** of `s015_onboard_first_client`
    (it was a defaulted param before mandatory params). DROP/CREATE/REVOKE/GRANT
    and pgTAP signatures updated.
@@ -385,6 +830,7 @@ deploy. X010-A-9 / S015-P1-111 / S015-P1-112 remain `code-fixed + CI-green +
 hosted-blocked`.
 
 ## Spec 015 X010-B-2 onboarding journey simplification — 2026-07-31 (initial draft)
+
 `2c03bca0138614860090c8905d46813ad56874cf` on
 `codex/015-persistent-mvp-pilot-completion`. Implements the bounded onboarding
 simplification inside Spec 015 only.
@@ -532,7 +978,6 @@ S015-P1-078/S015-P2-078). Per the task's explicit rule, GREEN is NOT declared
 and S015-P1-111/112 remain open until the corrective hosted UAT passes.
 Production, real data, merge, external invitations, public signup, and alias
 promotion remain outside the boundary; no Production action occurred.
-
 
 ## Spec 015 X010-A GREEN — 2026-07-29
 

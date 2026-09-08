@@ -86,7 +86,7 @@ export default async function ClientDeliverablesPage({
 
   const canViewDeliverables = evaluatePermission({
     actor: runtime.actor,
-    permission: PERMISSIONS.CONTRACT_VIEW,
+    permission: PERMISSIONS.DELIVERABLE_VIEW,
     resource: { tenantId: client.tenantId, clientId: client.id },
   }).allowed;
   const canCreateDeliverables = evaluatePermission({
@@ -129,15 +129,14 @@ export default async function ClientDeliverablesPage({
     return <DeliverableDeniedState />;
   }
 
-  const summary =
-    canUseRouteActorFixtures()
-      ? { ok: true as const, value: fixtureManagementCommercialSummary }
-      : await readCommercialSummary({
-          supabase: await createSupabaseServerClient(),
-          tenantId: client.tenantId,
-          clientId: client.id,
-          audience: "management",
-        });
+  const summary = canUseRouteActorFixtures()
+    ? { ok: true as const, value: fixtureManagementCommercialSummary }
+    : await readCommercialSummary({
+        supabase: await createSupabaseServerClient(),
+        tenantId: client.tenantId,
+        clientId: client.id,
+        audience: "management",
+      });
   const stats =
     summary.ok && summary.value.audience === "management"
       ? buildManagementMvpStats(summary.value)

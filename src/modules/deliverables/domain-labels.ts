@@ -27,6 +27,28 @@ export const deliverableTypeLabels: Record<string, string> = {
   marketing_coordination: "تنسيق تسويقي",
 };
 
+const contentChannelLabels: Record<string, string> = {
+  instagram: "إنستغرام",
+  facebook: "فيسبوك",
+  linkedin: "لينكدإن",
+  tiktok: "تيك توك",
+  twitter: "إكس",
+  x: "إكس",
+  youtube: "يوتيوب",
+};
+
+const contentFormatLabels: Record<string, string> = {
+  ...deliverableTypeLabels,
+  carousel: "منشور شرائح",
+  image: "صورة",
+};
+
+const normalizeDisplayToken = (displayToken?: string) =>
+  displayToken?.trim().toLocaleLowerCase("en") ?? "";
+
+const isNaturalArabicLabel = (label: string) =>
+  /[\u0600-\u06ff]/.test(label) && !label.includes("_");
+
 export const priorityLabels: Record<string, string> = {
   low: "منخفضة",
   normal: "عادية",
@@ -95,6 +117,26 @@ export const deliverableStatusLabel = (status: string) =>
 
 export const deliverableTypeLabel = (type: string) =>
   deliverableTypeLabels[type] ?? "مخرج مخصص";
+
+export const contentChannelLabel = (channel?: string) => {
+  const normalizedChannel = normalizeDisplayToken(channel);
+
+  if (!normalizedChannel) return "قناة رقمية";
+  if (isNaturalArabicLabel(normalizedChannel))
+    return channel?.trim() ?? "قناة رقمية";
+
+  return contentChannelLabels[normalizedChannel] ?? "قناة رقمية";
+};
+
+export const contentFormatLabel = (format?: string) => {
+  const normalizedFormat = normalizeDisplayToken(format);
+
+  if (!normalizedFormat) return "صيغة مخصصة";
+  if (isNaturalArabicLabel(normalizedFormat))
+    return format?.trim() ?? "صيغة مخصصة";
+
+  return contentFormatLabels[normalizedFormat] ?? "صيغة مخصصة";
+};
 
 export const priorityLabel = (priority: string) =>
   priorityLabels[priority] ?? "عادية";

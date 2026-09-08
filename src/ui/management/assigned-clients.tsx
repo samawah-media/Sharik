@@ -1,5 +1,6 @@
 import type { ClientRecord } from "@/modules/clients/client-repository";
 import { ButtonLink } from "@/ui/core/button";
+import { cardPrimaryLinkOverlay } from "@/ui/core/card";
 import { formatMvpClientName } from "@/ui/mvp/hadna-mvp-summary";
 
 export function AssignedClients({
@@ -28,7 +29,8 @@ export function AssignedClients({
 
         return (
           <article
-            className="grid gap-4 rounded-lg border border-border p-4"
+            className="relative grid gap-4 rounded-lg border border-border p-4"
+            data-testid={`assigned-client-card-${client.id}`}
             key={client.id}
           >
             <div>
@@ -40,6 +42,7 @@ export function AssignedClients({
             </div>
             <div className="flex flex-wrap gap-2">
               <ButtonLink
+                className={cardPrimaryLinkOverlay}
                 href={`/clients/${client.id}`}
                 size="sm"
                 variant="primary"
@@ -47,6 +50,7 @@ export function AssignedClients({
                 فتح {displayName}
               </ButtonLink>
               <ButtonLink
+                className="relative z-10"
                 href={`/clients/${client.id}/deliverables`}
                 size="sm"
                 variant="secondary"
@@ -54,6 +58,7 @@ export function AssignedClients({
                 المخرجات
               </ButtonLink>
               <ButtonLink
+                className="relative z-10"
                 href={`/clients/${client.id}/commercial`}
                 size="sm"
                 variant="secondary"

@@ -114,17 +114,23 @@ export function buildEmptyMvpStats(): MvpSnapshotStats {
   };
 }
 
-const statCards = (stats: MvpSnapshotStats) => [
+const statCards = (stats: MvpSnapshotStats, showPackageLineCount: boolean) => [
   {
     label: "عدد الأعمال",
     value: stats.deliverablesCount,
     help: "كل الأعمال المتفق عليها ضمن النطاق",
   },
-  {
-    label: "الباقة",
-    value: `${stats.packageLineCount} بنود`,
-    help: "بنود العقد أو الباقة الفعالة",
-  },
+  showPackageLineCount
+    ? {
+        label: "الباقة",
+        value: `${stats.packageLineCount} بنود`,
+        help: "بنود العقد أو الباقة الفعالة",
+      }
+    : {
+        label: "المكتمل",
+        value: stats.completedCount,
+        help: "أعمال اكتملت ضمن نطاقك المصرح",
+      },
   {
     label: "ما ينتظر العمل",
     value: stats.waitingWorkCount,
@@ -137,14 +143,20 @@ const statCards = (stats: MvpSnapshotStats) => [
   },
 ];
 
-export function MvpSnapshotCards({ stats }: { stats: MvpSnapshotStats }) {
+export function MvpSnapshotCards({
+  showPackageLineCount = true,
+  stats,
+}: {
+  showPackageLineCount?: boolean;
+  stats: MvpSnapshotStats;
+}) {
   return (
     <section
       aria-label="ملخص مساحة العميل"
       className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
       dir="rtl"
     >
-      {statCards(stats).map((item) => (
+      {statCards(stats, showPackageLineCount).map((item) => (
         <Card className="min-h-32" key={item.label}>
           <p className="text-sm text-muted">{item.label}</p>
           <p className="mt-2 text-3xl font-semibold">{item.value}</p>
@@ -159,11 +171,13 @@ export function HadnaMvpHero({
   clientName,
   roleLabel,
   children,
+  showPackageLineCount = true,
   stats,
 }: {
   clientName: string;
   roleLabel: string;
   children?: ReactNode;
+  showPackageLineCount?: boolean;
   stats: MvpSnapshotStats;
 }) {
   const displayClientName = formatMvpClientName(clientName);
@@ -190,7 +204,10 @@ export function HadnaMvpHero({
         </div>
         <div className="flex flex-wrap gap-2">{children}</div>
       </div>
-      <MvpSnapshotCards stats={stats} />
+      <MvpSnapshotCards
+        showPackageLineCount={showPackageLineCount}
+        stats={stats}
+      />
     </section>
   );
 }

@@ -49,10 +49,21 @@ describe("file-groups formatting", () => {
     expect(canPreviewInline("application/msword")).toBe(false);
   });
 
-  it("formats dates in Arabic and returns empty for invalid input", () => {
-    expect(formatDateArabic("2026-08-02T00:00:00Z")).toMatch(/2026/);
-    expect(formatDateArabic("not-a-date")).toBe("");
-  });
+  it.each([
+    ["2026-07-03", "٣ يوليو ٢٠٢٦"],
+    ["2026-07-03T20:59:59Z", "٣ يوليو ٢٠٢٦"],
+    ["2026-07-03T21:00:00Z", "٤ يوليو ٢٠٢٦"],
+    ["2026-07-04T00:00:00+03:00", "٤ يوليو ٢٠٢٦"],
+    [undefined, "غير محدد"],
+    ["", "غير محدد"],
+    ["not-a-date", "تاريخ غير صالح"],
+    ["2026-13-03", "تاريخ غير صالح"],
+  ])(
+    "displays file date %s in Gregorian/Riyadh or calm Arabic fallback",
+    (iso, expected) => {
+      expect(formatDateArabic(iso)).toBe(expected);
+    },
+  );
 
   it("never surfaces a raw visibility enum on the client surface", () => {
     expect(clientFileStatus(file({ visibility: "client_visible" }))).toBeNull();

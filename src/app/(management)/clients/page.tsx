@@ -8,7 +8,13 @@ import {
 import { ClientEmptyState } from "@/ui/management/client-form";
 import { Badge } from "@/ui/core/badge";
 import { ButtonLink } from "@/ui/core/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/ui/core/card";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  cardPrimaryLinkOverlay,
+} from "@/ui/core/card";
 import { PageHeader } from "@/ui/layout/page-header";
 import { formatMvpClientName } from "@/ui/mvp/hadna-mvp-summary";
 import {
@@ -86,7 +92,11 @@ export default async function ClientsPage({
           className="grid gap-3 md:grid-cols-2 xl:grid-cols-3"
         >
           {visibleClients.map((client) => (
-            <Card className="grid content-between gap-4" key={client.id}>
+            <Card
+              className="relative grid content-between gap-4"
+              data-testid={`management-client-card-${client.id}`}
+              key={client.id}
+            >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <CardHeader>
                   <CardTitle>{formatMvpClientName(client.name)}</CardTitle>
@@ -95,10 +105,15 @@ export default async function ClientsPage({
                 <Badge tone="success">نشط</Badge>
               </div>
               <div className="grid gap-3">
-                <ButtonLink href={`/clients/${client.id}`} variant="primary">
+                <ButtonLink
+                  aria-label={`فتح مساحة ${formatMvpClientName(client.name)}`}
+                  className={cardPrimaryLinkOverlay}
+                  href={`/clients/${client.id}`}
+                  variant="primary"
+                >
                   فتح المساحة
                 </ButtonLink>
-                <div className="flex flex-wrap gap-2">
+                <div className="relative z-10 flex flex-wrap gap-2">
                   <ButtonLink
                     href={`/clients/${client.id}/deliverables`}
                     size="sm"

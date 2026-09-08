@@ -4,6 +4,8 @@ import { ButtonLink } from "@/ui/core/button";
 import { EmptyState, ErrorState, LoadingSkeleton } from "@/ui/core/states";
 import { PageHeader } from "@/ui/layout/page-header";
 import { ProductShell } from "@/ui/layout/product-shell";
+import { ClientShell } from "@/ui/client/client-shell";
+import userEvent from "@testing-library/user-event";
 
 const { pathnameState } = vi.hoisted(() => ({
   pathnameState: {
@@ -23,6 +25,102 @@ afterEach(() => {
 });
 
 describe("management product shell", () => {
+  it("reveals the focused client navigation link with nearest scrolling", async () => {
+    const user = userEvent.setup();
+    render(
+      <ClientShell>
+        <main>المحتوى</main>
+      </ClientShell>,
+    );
+    const links = within(
+      screen.getByRole("navigation", { name: "تنقل بوابة العميل" }),
+    ).getAllByRole("link");
+    // JSDOM has no scrolling implementation. Mock only this DOM boundary;
+    // the real browser regression still requires full visible geometry.
+    const scrolls = links.map((link) => {
+      const scroll = vi.fn();
+      link.scrollIntoView = scroll;
+      return scroll;
+    });
+    await user.tab();
+    expect(screen.getByRole("link", { name: /مساحة العميل/ })).toHaveFocus();
+    for (const [index, link] of links.entries()) {
+      await user.tab();
+      expect(link).toHaveFocus();
+      expect(scrolls[index]).toHaveBeenCalledExactlyOnceWith({
+        block: "nearest",
+        inline: "nearest",
+      });
+      expect(scrolls[index].mock.contexts[0]).toBe(link);
+    }
+  });
+
+  it("preserves every deep breadcrumb destination when the mobile trail becomes scrollable", () => {
+    render(
+      <ProductShell>
+        <main>المحتوى</main>
+      </ProductShell>,
+    );
+    const trail = within(
+      screen.getByRole("navigation", { name: "مسار الصفحة" }),
+    );
+    expect(
+      trail.getAllByRole("link").map((link) => link.getAttribute("href")),
+    ).toEqual([
+      "/clients",
+      "/clients",
+      "/clients/b0060000-0000-4000-8000-000000000301",
+      "/clients/b0060000-0000-4000-8000-000000000301/deliverables",
+    ]);
+    expect(trail.getByText("لوحة العمل")).toBeVisible();
+  });
+
+  it.each([
+    [true, "بانتظار موافقتي"],
+    [false, "قيد المراجعة"],
+  ])(
+    "preserves client navigation and notification interaction for canApprove=%s",
+    async (canApprove, pendingLabel) => {
+      pathnameState.value = "/client/pending";
+      const user = userEvent.setup();
+      render(
+        <ClientShell canApprove={canApprove}>
+          <main>المحتوى</main>
+        </ClientShell>,
+      );
+      const nav = within(
+        screen.getByRole("navigation", { name: "تنقل بوابة العميل" }),
+      );
+      expect(
+        nav.getAllByRole("link").map((link) => link.getAttribute("href")),
+      ).toEqual([
+        "/client",
+        "/client/work",
+        "/client/pending",
+        "/client/files",
+        "/client/commercial",
+      ]);
+      expect(nav.getByRole("link", { name: pendingLabel })).toHaveAttribute(
+        "aria-current",
+        "page",
+      );
+      // JSDOM has no responsive Tailwind layout; browser tests enforce one
+      // visible account/sign-out and exclude the inactive copy from tab order.
+      expect(screen.getAllByText("حسابي").length).toBeGreaterThan(0);
+      for (const signOut of screen.getAllByRole("button", {
+        name: "تسجيل الخروج",
+      })) {
+        expect(signOut).toBeEnabled();
+      }
+      const bell = screen.getByRole("button", { name: "الإشعارات" });
+      await user.click(bell);
+      expect(screen.getByRole("menu", { name: "آخر الإشعارات" })).toBeVisible();
+      await user.keyboard("{Escape}");
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+      expect(bell).toHaveFocus();
+    },
+  );
+
   it("renders an RTL shell with sidebar navigation, top context, breadcrumbs, and bounded content", () => {
     render(
       <ProductShell>
@@ -122,6 +220,33 @@ describe("management product shell", () => {
     expect(within(breadcrumbs).getByText("مهامي")).toBeInTheDocument();
     expect(within(breadcrumbs).queryByText("work")).not.toBeInTheDocument();
   });
+
+  it.each([
+    ["/notifications", "الإشعارات", "notifications"],
+    ["/clients/onboard", "إضافة عميل جديد", "onboard"],
+  ])(
+    "renders %s as an Arabic breadcrumb without leaking the route segment",
+    (pathname, arabicLabel, rawSegment) => {
+      pathnameState.value = pathname;
+
+      render(
+        <ProductShell
+          breadcrumbRootHref="/portfolio"
+          breadcrumbRootLabel="لوحة الإدارة"
+        >
+          <main>{arabicLabel}</main>
+        </ProductShell>,
+      );
+
+      const breadcrumbs = screen.getByRole("navigation", {
+        name: "مسار الصفحة",
+      });
+      expect(within(breadcrumbs).getByText(arabicLabel)).toBeInTheDocument();
+      expect(
+        within(breadcrumbs).queryByText(rawSegment),
+      ).not.toBeInTheDocument();
+    },
+  );
 
   it("renders shared safe states without leaking technical details", () => {
     render(

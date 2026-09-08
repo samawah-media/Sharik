@@ -53,6 +53,8 @@ const segmentLabels: Record<string, string> = {
   members: "الفريق",
   invitations: "الدعوات",
   internal: "دعوة داخلية",
+  notifications: "الإشعارات",
+  onboard: "إضافة عميل جديد",
   portfolio: "لوحة الإدارة",
   work: "مهامي",
   readiness: "الجاهزية",
@@ -123,8 +125,11 @@ function Breadcrumbs({
   }));
 
   return (
-    <nav aria-label="مسار الصفحة" className="min-w-0 text-xs text-muted">
-      <ol className="flex min-w-0 flex-wrap items-center gap-1">
+    <nav
+      aria-label="مسار الصفحة"
+      className="min-w-0 max-w-full overflow-x-auto p-0.5 text-xs text-muted lg:overflow-visible lg:p-0"
+    >
+      <ol className="flex w-max min-w-full items-center gap-1 lg:w-auto lg:min-w-0 lg:flex-wrap">
         <li>
           <Link
             className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md px-3 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
@@ -137,7 +142,10 @@ function Breadcrumbs({
           const isLast = index === crumbs.length - 1;
 
           return (
-            <li className="flex min-w-0 items-center gap-1" key={crumb.href}>
+            <li
+              className="flex min-w-0 shrink-0 items-center gap-1 lg:shrink"
+              key={crumb.href}
+            >
               <ChevronLeft aria-hidden="true" size={14} />
               {isLast ? (
                 <span className="truncate font-medium text-foreground">
@@ -185,19 +193,21 @@ export function ProductShell({
       data-testid="product-shell"
       dir="rtl"
     >
-      <div className="grid min-h-screen lg:grid-cols-[18rem_minmax(0,1fr)]">
-        <aside className="border-b border-border bg-surface/95 px-3 py-3 shadow-sm lg:border-b-0 lg:border-l lg:px-4 lg:py-5 lg:shadow-none">
-          <div className="mx-auto grid max-w-7xl gap-4 lg:sticky lg:top-5">
+      <div className="grid min-h-screen grid-rows-[auto_minmax(0,1fr)] lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:grid-rows-1">
+        <aside className="min-w-0 border-b border-shell-border bg-shell px-3 py-1 text-shell-foreground lg:border-b-0 lg:border-l lg:px-3 lg:py-4">
+          <div className="mx-auto grid gap-0 lg:sticky lg:top-4 lg:gap-4">
             <Link
-              className="flex items-center gap-3 rounded-xl px-2 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              className="flex min-h-11 items-center gap-3 rounded-xl px-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent lg:py-2"
               href={homeHref}
             >
-              <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-sm font-bold text-white shadow-sm">
+              <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-sm font-bold text-white shadow-sm shadow-black/20">
                 ش
               </span>
               <span className="grid">
-                <span className="text-sm font-semibold">شريك</span>
-                <span className="text-xs text-muted">تشغيل سماوة</span>
+                <span className="text-sm font-semibold text-shell-foreground">
+                  شريك
+                </span>
+                <span className="text-xs text-shell-muted">تشغيل سماوة</span>
               </span>
             </Link>
             {navigationItems.length > 0 ? (
@@ -212,11 +222,11 @@ export function ProductShell({
                   return (
                     <Link
                       className={cn(
-                        "flex min-h-11 min-w-fit snap-start items-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors",
-                        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent",
+                        "flex min-h-11 min-w-fit snap-start items-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-semibold transition-colors",
+                        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
                         active
-                          ? "border-accent/20 bg-accent-soft text-accent"
-                          : "border-transparent text-muted hover:bg-accent-soft/50 hover:text-foreground",
+                          ? "border-accent bg-accent-soft text-accent"
+                          : "border-transparent text-shell-muted hover:bg-accent-soft/50 hover:text-shell-foreground",
                       )}
                       href={item.href}
                       key={`${item.href}-${item.label}`}
@@ -229,15 +239,17 @@ export function ProductShell({
                 })}
               </nav>
             ) : null}
-            <div className="hidden rounded-xl border border-border bg-background p-3 lg:grid lg:gap-2">
-              <p className="text-xs font-semibold text-muted">الحساب الحالي</p>
+            <div className="hidden rounded-xl border border-shell-border bg-background p-3 text-shell-foreground lg:grid lg:gap-2 [&_button]:border-shell-border [&_button]:hover:bg-accent-soft">
+              <p className="text-xs font-semibold text-shell-muted">
+                الحساب الحالي
+              </p>
               <SignOutButton />
             </div>
           </div>
         </aside>
         <div className="min-w-0">
-          <header className="sticky top-0 z-20 border-b border-border bg-background/90 px-4 py-3 backdrop-blur sm:py-4">
-            <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <header className="sticky top-0 z-20 border-b border-border bg-background/92 px-4 py-0.5 backdrop-blur sm:px-5 lg:py-2.5">
+            <div className="mx-auto flex max-w-[90rem] flex-col gap-0 sm:flex-row sm:items-center sm:justify-between lg:gap-1.5">
               <Breadcrumbs
                 pathname={pathname}
                 rootHref={breadcrumbRootHref}
@@ -252,7 +264,7 @@ export function ProductShell({
               </div>
             </div>
           </header>
-          <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <div className="mx-auto w-full max-w-[90rem] px-4 py-5 sm:px-5 lg:px-6">
             {children}
           </div>
         </div>

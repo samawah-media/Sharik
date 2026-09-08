@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { FileText } from "lucide-react";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableWorkspaceSummary } from "@/modules/deliverables/deliverable-workspace";
 import { deriveSlaStatus } from "@/modules/sla/sla-policy";
@@ -13,7 +14,9 @@ import {
   priorityLabels,
   slaLabels,
 } from "./deliverable-board";
-import { DeliverableContentCard } from "@/ui/deliverables/deliverable-content-card";
+import { contentChannelLabel } from "@/modules/deliverables/domain-labels";
+import { formatArabicDate } from "@/modules/localization/arabic-display";
+import { WorkspaceInlineMedia } from "@/ui/deliverables/workspace-files";
 
 type Action = (formData: FormData) => void | Promise<void>;
 
@@ -62,21 +65,25 @@ export function TeamWorkspace({
 
   return (
     <section className="grid gap-4" dir="rtl">
-      <div className="grid gap-3 rounded-xl border border-border bg-surface p-4 lg:grid-cols-[1fr_auto_auto]">
-        <label className="grid gap-1 text-sm font-semibold">
+      <div
+        role="group"
+        aria-label="فلاتر مهامي"
+        className="grid min-w-0 grid-cols-2 gap-3 rounded-xl border border-border bg-surface p-4 lg:grid-cols-[minmax(0,1fr)_auto_auto]"
+      >
+        <label className="col-span-2 grid min-w-0 gap-1 text-sm font-semibold lg:col-span-1">
           بحث
           <input
-            className="min-h-11 rounded-lg border border-border bg-background px-3"
+            className="min-h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3"
             onChange={(event) => setSearch(event.target.value)}
             placeholder="اسم المخرج أو العميل أو النوع"
             type="search"
             value={search}
           />
         </label>
-        <label className="grid gap-1 text-sm font-semibold">
+        <label className="grid min-w-0 gap-1 text-sm font-semibold">
           الأولوية
           <select
-            className="min-h-11 rounded-lg border border-border bg-background px-3"
+            className="min-h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3"
             onChange={(event) => setPriority(event.target.value)}
             value={priority}
           >
@@ -87,10 +94,10 @@ export function TeamWorkspace({
             <option value="low">منخفضة</option>
           </select>
         </label>
-        <label className="grid gap-1 text-sm font-semibold">
+        <label className="grid min-w-0 gap-1 text-sm font-semibold">
           SLA
           <select
-            className="min-h-11 rounded-lg border border-border bg-background px-3"
+            className="min-h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3"
             onChange={(event) => setSla(event.target.value)}
             value={sla}
           >
@@ -146,8 +153,30 @@ export function TeamWorkspace({
         />
       ) : (
         <div className="grid gap-3" data-testid="team-work-list">
+          {filtered.length === 0 ? (
+            <div
+              className="rounded-lg border border-border bg-surface p-4"
+              role="status"
+            >
+              <p className="text-sm font-semibold">
+                {deliverables.length === 0
+                  ? "لا توجد مخرجات مسندة إليك حالياً"
+                  : "لا توجد مخرجات تطابق الفلاتر الحالية."}
+              </p>
+              {deliverables.length > 0 ? (
+                <p className="mt-1 text-sm text-muted">
+                  جرّب تعديل البحث أو فلاتر الأولوية وSLA.
+                </p>
+              ) : null}
+            </div>
+          ) : null}
           {filtered.map((deliverable) => {
             const summary = workspaces[deliverable.id];
+            const dueDate =
+              deliverable.internalDueDate ??
+              deliverable.clientDueDate ??
+              deliverable.finalDueDate ??
+              deliverable.plannedPublishDate;
             const slaStatus = deriveSlaStatus({
               status: deliverable.status,
               now,
@@ -158,48 +187,92 @@ export function TeamWorkspace({
             }).status;
             return (
               <article
-                className="grid gap-3 rounded-lg border border-border bg-surface p-3 lg:grid-cols-[minmax(18rem,28rem)_minmax(0,1fr)] lg:items-start"
+                className="relative grid min-w-0 gap-3 rounded-lg border border-border bg-surface p-3 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-center"
                 key={deliverable.id}
               >
-                <DeliverableContentCard
-                  clientName={clientNames[deliverable.clientId] ?? "عميل مصرح"}
-                  deliverable={deliverable}
-                  statusLabel={kanbanStatusLabels[deliverable.status]}
-                  summary={summary}
-                  typeLabel={getDeliverableTypeLabel(deliverable.type)}
-                />
-                <div className="grid min-w-0 gap-3 px-1 py-2">
-                  <h2 className="text-base font-semibold">الخطوة التالية</h2>
-                  <p className="text-sm leading-7 text-muted">
+                <div className="flex min-w-0 items-start gap-3">
+                  <div
+                    data-testid="team-work-thumbnail"
+                    className="size-16 shrink-0 rounded-lg bg-accent-soft text-accent [&>*]:min-h-0 [&>img]:h-16 [&>img]:rounded-lg [&>div]:h-16 [&>p]:p-0 [&>p]:text-[10px] [&>p]:leading-3"
+                  >
+                    {summary?.previewFile?.fileType.startsWith("image/") ? (
+                      <WorkspaceInlineMedia
+                        key={summary.previewFile.id}
+                        fileId={summary.previewFile.id}
+                        fileType={summary.previewFile.fileType}
+                        label="معاينة المخرج"
+                      />
+                    ) : (
+                      <div
+                        className="grid size-16 place-items-center"
+                        role="img"
+                        aria-label="معاينة رمزية للمخرج"
+                      >
+                        <FileText size={28} aria-hidden="true" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="grid min-w-0 gap-2 break-words">
+                    <h2 className="text-base font-semibold leading-6">
+                      {deliverable.name}
+                    </h2>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
+                      <span className="min-w-0 break-words">
+                        {clientNames[deliverable.clientId] ?? "عميل مصرح"}
+                      </span>
+                      <span>{getDeliverableTypeLabel(deliverable.type)}</span>
+                      {summary?.currentVersion?.channel ? (
+                        <span>
+                          {contentChannelLabel(summary.currentVersion.channel)}
+                        </span>
+                      ) : null}
+                    </div>
+                    <dl className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                      <div className="flex flex-wrap gap-1">
+                        <dt className="text-muted">المسؤول:</dt>
+                        <dd>
+                          {deliverable.ownerDisplay?.displayName ??
+                            "بانتظار الإسناد"}
+                        </dd>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        <dt className="text-muted">الموعد:</dt>
+                        <dd>{formatArabicDate(dueDate)}</dd>
+                      </div>
+                    </dl>
+                    {deliverable.contentStage ? (
+                      <p className="text-xs text-muted">
+                        المرحلة: {deliverable.contentStage}
+                      </p>
+                    ) : null}
+                    <div className="flex flex-wrap gap-2">
+                      <Badge tone="muted">
+                        {kanbanStatusLabels[deliverable.status]}
+                      </Badge>
+                      <Badge
+                        tone={
+                          slaStatus === "overdue"
+                            ? "danger"
+                            : slaStatus === "at_risk"
+                              ? "warning"
+                              : "accent"
+                        }
+                      >
+                        {slaLabels[slaStatus]}
+                      </Badge>
+                      <Badge tone="muted">
+                        {priorityLabels[deliverable.priority]}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid min-w-0 gap-2 break-words border-t border-border pt-3 lg:border-t-0 lg:border-s lg:ps-3 lg:pt-0">
+                  <p className="text-sm leading-6 text-muted">
+                    <span className="font-semibold text-foreground">
+                      الخطوة التالية:{" "}
+                    </span>
                     {nextActionLabels[deliverable.status]}
                   </p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <Badge tone="neutral">
-                      {getDeliverableTypeLabel(deliverable.type)}
-                    </Badge>
-                    <Badge tone="muted">
-                      {kanbanStatusLabels[deliverable.status]}
-                    </Badge>
-                    <Badge
-                      tone={
-                        slaStatus === "overdue"
-                          ? "danger"
-                          : slaStatus === "at_risk"
-                            ? "warning"
-                            : "accent"
-                      }
-                    >
-                      {slaLabels[slaStatus]}
-                    </Badge>
-                    <Badge tone="muted">
-                      {priorityLabels[deliverable.priority]}
-                    </Badge>
-                  </div>
-                  {deliverable.contentStage ? (
-                    <p className="mt-1 text-xs text-muted">
-                      المرحلة: {deliverable.contentStage}
-                    </p>
-                  ) : null}
                   <p className="text-xs text-muted">
                     {summary?.counts.versions ?? 0} نسخ ·{" "}
                     {summary?.counts.tasks ?? 0} مهام ·{" "}
@@ -207,6 +280,7 @@ export function TeamWorkspace({
                     {summary?.counts.comments ?? 0} تعليقات
                   </p>
                   <UniversalDeliverableDrawer
+                    triggerClassName="after:absolute after:inset-0 after:rounded-lg after:content-[''] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-accent"
                     approvalAction={approvalAction}
                     canPublishClientComment={Boolean(approvalAction)}
                     deliverable={deliverable}
@@ -226,7 +300,8 @@ const nextActionLabels = {
   not_started: "ابدأ التنفيذ أو حدّث حالة المخرج.",
   in_progress: "أكمل النسخة الحالية ثم أرسلها للمراجعة الداخلية.",
   ready_for_internal_review: "بانتظار مراجعة الإدارة للنسخة الحالية.",
-  internal_changes_requested: "نفّذ التعديلات الداخلية المطلوبة وارفع نسخة محدثة.",
+  internal_changes_requested:
+    "نفّذ التعديلات الداخلية المطلوبة وارفع نسخة محدثة.",
   internally_approved: "النسخة معتمدة داخليًا وجاهزة للإرسال للعميل.",
   waiting_client_approval: "بانتظار قرار العميل، ووقت SLA متوقف.",
   client_changes_requested: "نفّذ تعديلات العميل وارفع نسخة جديدة.",

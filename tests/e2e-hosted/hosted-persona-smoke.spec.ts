@@ -81,7 +81,7 @@ test("hosted client viewer is read-only in pending inbox", async ({ page }) => {
     page.getByRole("heading", { name: "للاطلاع" }).first(),
   ).toBeVisible();
   await expect(page.getByText("قرارك مطلوب", { exact: true })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "اعتماد المخرج" })).toHaveCount(
+  await expect(page.getByRole("button", { name: "اعتماد النسخة" })).toHaveCount(
     0,
   );
   await expect(page.getByRole("button", { name: "طلب تعديل" })).toHaveCount(0);
@@ -108,7 +108,7 @@ test("hosted client approver reaches pending inbox without internal leakage", as
   await expect(page.locator('[data-review-ready="false"]')).toHaveCount(0);
   await expectEveryPendingItemHasReviewPayload(page);
   await expect(
-    page.getByRole("button", { name: "اعتماد المخرج" }).first(),
+    page.getByRole("button", { name: "اعتماد النسخة" }).first(),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "طلب تعديل" }).first(),

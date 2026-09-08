@@ -1,5 +1,6 @@
 import { Badge } from "@/ui/core/badge";
 import { Button } from "@/ui/core/button";
+import { formatDueDateLabel } from "@/modules/localization/arabic-display";
 
 export type ClientApprovalFormAction = (
   formData: FormData,
@@ -71,7 +72,7 @@ export function ClientApprovalPanel({
   return (
     <section
       aria-label="قرار اعتماد العميل"
-      className="grid gap-4 rounded-lg border border-border bg-surface p-4"
+      className="grid min-w-0 gap-4 rounded-lg border border-border bg-surface p-4"
       data-testid="client-approval-actions"
       dir="rtl"
     >
@@ -79,7 +80,9 @@ export function ClientApprovalPanel({
         <>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="grid gap-1">
-              <p className="text-sm text-muted">بانتظار قرارك</p>
+              <p className="text-sm text-muted">
+                {canSubmitDecision ? "بانتظار قرارك" : "للاطلاع"}
+              </p>
               <h2 className="text-base font-semibold leading-7">
                 {item.displayName}
               </h2>
@@ -98,14 +101,19 @@ export function ClientApprovalPanel({
             </div>
             <div>
               <dt className="font-semibold text-foreground">الموعد</dt>
-              <dd className="mt-1">{item.dueDateLabel ?? "غير محدد"}</dd>
+              <dd className="mt-1">{formatDueDateLabel(item.dueDateLabel)}</dd>
             </div>
           </dl>
         </>
       ) : (
-        <h3 className="text-base font-semibold">
-          {canApprove ? "قرار الاعتماد" : "صلاحية الحساب"}
-        </h3>
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-base font-semibold">
+            {canApprove ? "قرار الاعتماد" : "صلاحية الحساب"}
+          </h3>
+          <span className="min-w-0 break-words text-sm text-muted">
+            {item.versionLabel}
+          </span>
+        </div>
       )}
 
       {!canSubmitDecision ? (
@@ -116,12 +124,12 @@ export function ClientApprovalPanel({
 
       {canSubmitDecision && !hasServerActions ? (
         <p className="rounded-md bg-background px-3 py-2 text-sm text-muted">
-          إجراءات الاعتماد تحتاج أمر خادم محمي قبل التفعيل.
+          إجراءات الموافقة غير متاحة الآن.
         </p>
       ) : null}
 
       {canSubmitDecision && hasServerActions ? (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 sm:items-start">
           <form action={approveAction} className="grid gap-2">
             <HiddenApprovalFields
               actionKind="approve"
@@ -130,7 +138,7 @@ export function ClientApprovalPanel({
               reason="client_approval"
             />
             <Button type="submit" variant="primary">
-              اعتماد المخرج
+              اعتماد النسخة
             </Button>
           </form>
 
@@ -146,6 +154,7 @@ export function ClientApprovalPanel({
                 className="min-h-16 rounded-md border border-border bg-background px-3 py-2 text-sm"
                 maxLength={500}
                 name="reason"
+                placeholder="وش التعديل المطلوب على النسخة؟"
                 required
               />
             </label>

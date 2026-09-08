@@ -50,10 +50,11 @@ describe("client pending inbox", () => {
 
     expect(screen.getAllByText("فيديو الحملة")).not.toHaveLength(0);
     expect(screen.getAllByText("منشور الأسبوع")).not.toHaveLength(0);
-    expect(screen.getAllByText("Instagram")).not.toHaveLength(0);
+    expect(screen.getAllByText("إنستغرام")).not.toHaveLength(0);
+    expect(screen.queryByText("Instagram")).toBeNull();
     expect(document.querySelectorAll("[data-content-card]")).toHaveLength(2);
     expect(
-      screen.getAllByRole("button", { name: "اعتماد المخرج" }),
+      screen.getAllByRole("button", { name: "اعتماد النسخة" }),
     ).toHaveLength(2);
     expect(
       screen.getAllByRole("button", { name: "إضافة التعليق" }),
@@ -81,7 +82,7 @@ describe("client pending inbox", () => {
       <ClientPendingInbox canApprove={false} details={[detail("d1")]} />,
     );
     expect(
-      screen.queryByRole("button", { name: "اعتماد المخرج" }),
+      screen.queryByRole("button", { name: "اعتماد النسخة" }),
     ).not.toBeInTheDocument();
     expect(screen.queryByText("client_a")).not.toBeInTheDocument();
     expect(
@@ -140,7 +141,7 @@ describe("client pending inbox", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/لا يمكن اتخاذ قرار عليها/)).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "اعتماد المخرج" }),
+      screen.queryByRole("button", { name: "اعتماد النسخة" }),
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "طلب تعديل" }),

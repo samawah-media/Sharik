@@ -1,7 +1,4 @@
-import {
-  InternalInviteEmptyState,
-  InternalInviteForm,
-} from "@/ui/management/internal-invite-form";
+import { InternalInviteForm } from "@/ui/management/internal-invite-form";
 import {
   canUseRouteActorFixtures,
   guardManagementRoute,
@@ -26,12 +23,38 @@ const fixtureInvitations: InternalTeamInvitation[] = [
     invitedDisplayName: "مصمم هدنة",
     invitedEmail: "designer@example.com",
     roleKey: "designer",
-    clientId: "client_a",
-    clientName: "هدنة",
+    clientIds: ["client_a"],
+    clientNames: ["هدنة"],
     status: "pending",
     deliveryState: "queued",
     createdAt: "2026-07-26T10:00:00.000Z",
     expiresAt: "2026-08-02T10:00:00.000Z",
+  },
+  {
+    id: "fixture-internal-invite-accepted",
+    tenantId: "tenant_a",
+    invitedDisplayName: "عضو مقبول يظهر في الفريق",
+    invitedEmail: "accepted@example.test",
+    roleKey: "content_writer",
+    clientIds: ["client_a", "client_b"],
+    clientNames: ["هدنة", "عميل تجريبي ب"],
+    status: "accepted",
+    deliveryState: "sent",
+    createdAt: "2026-07-24T10:00:00.000Z",
+    expiresAt: "2026-07-31T10:00:00.000Z",
+  },
+  {
+    id: "fixture-internal-invite-revoked",
+    tenantId: "tenant_a",
+    invitedDisplayName: "دعوة ملغاة سابقة",
+    invitedEmail: "revoked@example.test",
+    roleKey: "designer",
+    clientIds: ["client_a"],
+    clientNames: ["هدنة"],
+    status: "revoked",
+    deliveryState: "sent",
+    createdAt: "2026-07-22T10:00:00.000Z",
+    expiresAt: "2026-07-29T10:00:00.000Z",
   },
 ];
 
@@ -74,8 +97,8 @@ export default async function InternalInvitationPage({
       <header className="grid gap-2">
         <h1 className="text-2xl font-semibold">إضافة عضو إلى الفريق</h1>
         <p className="text-sm text-muted">
-          حدّد بيانات العضو ودوره والعميل، ثم شارك معه رابط الدعوة عبر قناة
-          موثوقة. لن تُمنح الصلاحية قبل قبول الدعوة بنفس البريد.
+          حدّد بيانات العضو ودوره والعملاء بدقة، ثم شارك معه رابط الدعوة عبر
+          قناة موثوقة. لن تُمنح أي صلاحية قبل قبول الدعوة بنفس البريد.
         </p>
       </header>
       {!invitationResult.ok ? (
@@ -84,28 +107,38 @@ export default async function InternalInvitationPage({
           title="تعذر تحميل الدعوات الآن"
         />
       ) : null}
-      {invitations.length === 0 ? <InternalInviteEmptyState /> : null}
-      <InternalInviteForm
-        action={createInternalTeamInvitationAction}
-        clients={clients}
-        idempotencyKey={`s015-invite-${crypto.randomUUID()}`}
-        invitationToken={`${crypto.randomUUID().replaceAll("-", "")}${crypto.randomUUID().replaceAll("-", "")}`}
-      />
-      <InvitationList
-        invitations={invitations}
-        operationInputs={Object.fromEntries(
-          invitations.map((invitation) => [
-            invitation.id,
-            {
-              resendIdempotencyKey: `s015-resend-${crypto.randomUUID()}`,
-              revokeIdempotencyKey: `s015-revoke-${crypto.randomUUID()}`,
-              invitationToken: `${crypto.randomUUID().replaceAll("-", "")}${crypto.randomUUID().replaceAll("-", "")}`,
-            },
-          ]),
-        )}
-        resendAction={resendInternalTeamInvitationAction}
-        revokeAction={revokeInternalTeamInvitationAction}
-      />
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(20rem,0.8fr)_minmax(0,1.2fr)]">
+        <section className="grid gap-4 rounded-xl border border-border bg-surface p-4 xl:sticky xl:top-4">
+          <div>
+            <h2 className="text-lg font-semibold">بيانات الدعوة</h2>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              لا توجد اختيارات افتراضية. راجع الدور وكل نطاق عميل قبل إنشاء
+              الرابط.
+            </p>
+          </div>
+          <InternalInviteForm
+            action={createInternalTeamInvitationAction}
+            clients={clients}
+            idempotencyKey={`s015-invite-${crypto.randomUUID()}`}
+            invitationToken={`${crypto.randomUUID().replaceAll("-", "")}${crypto.randomUUID().replaceAll("-", "")}`}
+          />
+        </section>
+        <InvitationList
+          invitations={invitations}
+          operationInputs={Object.fromEntries(
+            invitations.map((invitation) => [
+              invitation.id,
+              {
+                resendIdempotencyKey: `s015-resend-${crypto.randomUUID()}`,
+                revokeIdempotencyKey: `s015-revoke-${crypto.randomUUID()}`,
+                invitationToken: `${crypto.randomUUID().replaceAll("-", "")}${crypto.randomUUID().replaceAll("-", "")}`,
+              },
+            ]),
+          )}
+          resendAction={resendInternalTeamInvitationAction}
+          revokeAction={revokeInternalTeamInvitationAction}
+        />
+      </div>
     </main>
   );
 }

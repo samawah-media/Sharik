@@ -958,29 +958,49 @@ export function WorkspaceInlineMedia({
   fit?: "cover" | "contain";
   label: string;
 }) {
-  const [url, setUrl] = useState<string>();
-  const [unavailable, setUnavailable] = useState(false);
+  const [preview, setPreview] = useState<
+    | { fileId: string; status: "pending" | "unavailable" }
+    | { fileId: string; status: "ready"; url: string }
+  >({ fileId, status: "pending" });
+
+  // Reset before committing a different file so an old URL/failure cannot
+  // flash, including when navigation returns to a previously viewed file.
+  if (preview.fileId !== fileId) {
+    setPreview({ fileId, status: "pending" });
+  }
 
   useEffect(() => {
     let active = true;
-    void createWorkspaceFilePreview(fileId).then((preview) => {
-      if (!active) return;
-      if (preview.ok) setUrl(preview.url);
-      else setUnavailable(true);
-    });
+    void createWorkspaceFilePreview(fileId).then(
+      (result) => {
+        if (!active) return;
+        setPreview(result.ok
+          ? { fileId, status: "ready", url: result.url }
+          : { fileId, status: "unavailable" });
+      },
+      () => {
+        if (active) setPreview({ fileId, status: "unavailable" });
+      },
+    );
     return () => {
       active = false;
     };
   }, [fileId]);
 
-  if (unavailable) {
+  const markUnavailable = () => {
+    setPreview((current) => current.fileId === fileId
+      ? { fileId, status: "unavailable" }
+      : current);
+  };
+
+  if (preview.fileId === fileId && preview.status === "unavailable") {
     return (
       <p className="grid min-h-36 place-items-center p-4 text-center text-xs text-muted">
         تعذرت معاينة الأصل المرئي بأمان.
       </p>
     );
   }
-  if (!url) {
+  if (preview.fileId !== fileId || preview.status !== "ready") {
     return (
       <div
         aria-label="جارٍ تحميل المعاينة"
@@ -999,7 +1019,8 @@ export function WorkspaceInlineMedia({
             ? "max-h-[32rem] min-h-56 w-full bg-background object-contain"
             : "h-full min-h-36 w-full object-cover"
         }
-        src={url}
+        onError={markUnavailable}
+        src={preview.url}
       />
     );
   }
@@ -1012,8 +1033,9 @@ export function WorkspaceInlineMedia({
           : "h-full min-h-36 w-full object-cover"
       }
       controls
+      onError={markUnavailable}
       preload="metadata"
-      src={url}
+      src={preview.url}
     />
   );
 }

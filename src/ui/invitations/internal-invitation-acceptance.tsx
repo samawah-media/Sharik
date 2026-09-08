@@ -36,7 +36,9 @@ export function InternalInvitationAcceptance({
           مرحبًا {invitation.invitedDisplayName}
         </h1>
         <p className="text-sm leading-6 text-muted">
-          ستنضم بصفة {roleLabelAr(invitation.roleKey)} للعمل على {invitation.clientName} فقط.
+          ستنضم بصفة {roleLabelAr(invitation.roleKey)} للعمل على العملاء المحددين:
+          {" "}
+          {invitation.clientNames.join("، ")} فقط.
         </p>
       </div>
       {denied ? (
@@ -53,7 +55,8 @@ export function InternalInvitationAcceptance({
         <Button type="submit">قبول الدعوة وفتح مساحة العمل</Button>
       </form>
       <p className="text-xs leading-5 text-muted">
-        القبول يفعّل هذا الدور ونطاق العميل فقط، ويسجل العملية في سجل التدقيق.
+        القبول يفعّل هذا الدور ضمن العملاء الموضحين فقط، ويسجل كل إسناد في سجل
+        التدقيق.
       </p>
     </section>
   );

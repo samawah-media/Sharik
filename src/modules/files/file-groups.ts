@@ -6,6 +6,8 @@
 // files through the existing tenant/client-scoped repositories. These helpers
 // only decide how an already-authorized file list is displayed.
 
+import { formatArabicDate } from "@/modules/localization/arabic-display";
+
 export type FileVisibility =
   | "internal_only"
   | "client_visible"
@@ -213,12 +215,4 @@ export const clientFileStatus = (file: GroupedFile): string | null => {
   return clientFacingVisibilityLabels[file.visibility] ?? null;
 };
 
-export const formatDateArabic = (iso: string): string => {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat("ar", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(date);
-};
+export const formatDateArabic = (iso?: string): string => formatArabicDate(iso);

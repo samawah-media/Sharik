@@ -5,6 +5,8 @@ import {
   applyCleanWorkspace,
   assertCleanWorkspaceCounts,
   createPersistentActorClient,
+  driftPersonaSource,
+  readCleanWorkspaceSourceBinding,
   rollbackCleanWorkspace,
   seedLegacyWorkspaceForCleanTrial,
   type CleanWorkspaceSeed,
@@ -23,6 +25,34 @@ const signIntoCleanWorkspace = async (page: Page, persona: keyof CleanWorkspaceS
   await expect(page).not.toHaveURL(/\/sign-in(?:\?|$)/u);
 };
 
+const countActiveMembershipsInTenant = async (
+  tenantId: string,
+  userIds?: string[],
+): Promise<number> => {
+  let query = seeded.client
+    .from("tenant_memberships")
+    .select("id", { count: "exact", head: true })
+    .eq("tenant_id", tenantId)
+    .eq("status", "active");
+  if (userIds) {
+    query = query.in("auth_user_id", userIds);
+  }
+  const { count, error } = await query;
+  expect(error, "active membership count").toBeNull();
+  return count ?? 0;
+};
+
+const internalPersonaUserIds = () =>
+  (
+    [
+      "tenantAdmin",
+      "accountManager",
+      "contentWriter",
+      "designer",
+      "unassignedWriter",
+    ] as const
+  ).map((persona) => seeded.actors[persona].id);
+
 test("X009-B apply creates an empty clean workspace and hides the legacy tenant", async ({
   page,
 }) => {
@@ -40,6 +70,13 @@ test("X009-B apply creates an empty clean workspace and hides the legacy tenant"
   await expect(page.getByText("X009B_LEGACY_INTERNAL_SECRET")).toHaveCount(0);
   await expect(page.getByText("سماوة - Hadna/Glass")).toHaveCount(0);
   await expect(page.getByText("Glass Legacy")).toHaveCount(0);
+
+  // X010-B-7C-9: the apply persisted the deterministic append-only binding to
+  // the exact source set before disabling it.
+  const binding = await readCleanWorkspaceSourceBinding(seeded);
+  expect(binding, "source binding recorded").not.toBeNull();
+  expect(binding?.sourceTenantId).toBe(seeded.legacyTenantId);
+  expect(binding?.sourceMembershipIds).toHaveLength(5);
 
   await assertCleanWorkspaceCounts(seeded, {
     cleanActiveMemberships: 5,
@@ -103,6 +140,8 @@ test("X009-B client personas do not receive automatic clean-workspace access", a
 
 test("X009-B replay is idempotent: no duplicate tenant, memberships, or roles", async () => {
   const beforeTenantId = cleanWorkspaceTenantId(seeded.runId);
+  // The first replay resolves the recorded binding with the source already
+  // disabled (verified no-op); a second replay behaves identically.
   await applyCleanWorkspace(seeded);
   await applyCleanWorkspace(seeded);
 
@@ -145,4 +184,150 @@ test("X009-B rollback restores the legacy entry without touching audit or ledger
     legacyAuditRows: seeded.legacyBaseline.auditRows,
     legacyLedgerRows: seeded.legacyBaseline.ledgerRows,
   });
+});
+
+test("X010-B-7C-9 re-apply after rollback resolves the binding and re-provisions safely", async () => {
+  // The recorded source is active again after the rollback above; a replay of
+  // the same run must re-select exactly the bound set and succeed.
+  await applyCleanWorkspace(seeded);
+
+  await assertCleanWorkspaceCounts(seeded, {
+    cleanActiveMemberships: 5,
+    cleanOperationalZero: true,
+    legacyAuditRows: seeded.legacyBaseline.auditRows,
+    legacyLedgerRows: seeded.legacyBaseline.ledgerRows,
+  });
+  const legacyActive = await countActiveMembershipsInTenant(
+    seeded.legacyTenantId,
+    internalPersonaUserIds(),
+  );
+  expect(legacyActive).toBe(0);
+  // Client personas are never part of the internal rollover: their legacy
+  // entry stays exactly as it was.
+  expect(
+    await countActiveMembershipsInTenant(seeded.legacyTenantId, [
+      seeded.actors.clientViewer.id,
+    ]),
+  ).toBe(1);
+});
+
+test("X010-B-7C-9 a second rollover tolerates historical inactive memberships", async ({
+  page,
+}) => {
+  const secondRunId = `${seeded.runId}-r2`;
+
+  // Personas are now active in the first clean workspace; every persona also
+  // still carries the original legacy membership plus two historical inactive
+  // memberships. The old selector failed here as ambiguous.
+  await applyCleanWorkspace(seeded, secondRunId);
+
+  const firstRunTenant = cleanWorkspaceTenantId(seeded.runId);
+  const secondRunTenant = cleanWorkspaceTenantId(secondRunId);
+
+  expect(await countActiveMembershipsInTenant(secondRunTenant)).toBe(5);
+  expect(await countActiveMembershipsInTenant(firstRunTenant)).toBe(0);
+  expect(
+    await countActiveMembershipsInTenant(
+      seeded.legacyTenantId,
+      internalPersonaUserIds(),
+    ),
+  ).toBe(0);
+
+  const binding2 = await readCleanWorkspaceSourceBinding(seeded, secondRunId);
+  expect(binding2, "second rollover binding recorded").not.toBeNull();
+  expect(binding2?.sourceTenantId).toBe(firstRunTenant);
+  expect(binding2?.sourceMembershipIds).toHaveLength(5);
+
+  // The natural entry is the new empty workspace; the quarantined source data
+  // and append-only history remain untouched.
+  await signIntoCleanWorkspace(page, "tenantAdmin");
+  await page.goto("/clients", { waitUntil: "domcontentloaded" });
+  await expect(page.getByText("Glass")).toHaveCount(0);
+  await expect(page.getByText("X009B_LEGACY_INTERNAL_SECRET")).toHaveCount(0);
+
+  await assertCleanWorkspaceCounts(
+    seeded,
+    {
+      cleanActiveMemberships: 5,
+      cleanOperationalZero: true,
+      legacyAuditRows: seeded.legacyBaseline.auditRows,
+      legacyLedgerRows: seeded.legacyBaseline.ledgerRows,
+    },
+    secondRunId,
+  );
+});
+
+test("X010-B-7C-9 rollback of the second rollover restores exactly the first workspace", async () => {
+  const secondRunId = `${seeded.runId}-r2`;
+  await rollbackCleanWorkspace(seeded, secondRunId);
+
+  const firstRunTenant = cleanWorkspaceTenantId(seeded.runId);
+  const secondRunTenant = cleanWorkspaceTenantId(secondRunId);
+
+  // Only the first workspace's memberships — the exact set recorded in the
+  // second run's binding — become active again.
+  expect(await countActiveMembershipsInTenant(firstRunTenant)).toBe(5);
+  expect(await countActiveMembershipsInTenant(secondRunTenant)).toBe(0);
+  // The original legacy workspace must stay quarantined: it is not part of the
+  // second run's binding.
+  expect(
+    await countActiveMembershipsInTenant(
+      seeded.legacyTenantId,
+      internalPersonaUserIds(),
+    ),
+  ).toBe(0);
+
+  await assertCleanWorkspaceCounts(
+    seeded,
+    {
+      cleanActiveMemberships: 0,
+      cleanOperationalZero: true,
+      legacyAuditRows: seeded.legacyBaseline.auditRows,
+      legacyLedgerRows: seeded.legacyBaseline.ledgerRows,
+    },
+    secondRunId,
+  );
+});
+
+test("X010-B-7C-9 an extra active membership fails closed as ambiguous without mutation", async () => {
+  const thirdRunId = `${seeded.runId}-r3`;
+  const thirdRunTenant = cleanWorkspaceTenantId(thirdRunId);
+
+  const driftId = await driftPersonaSource(seeded, "designer", "activate-extra");
+
+  await expect(applyCleanWorkspace(seeded, thirdRunId)).rejects.toThrow(
+    /CLEAN_WORKSPACE_ACTIVE_SOURCE_AMBIGUOUS/u,
+  );
+
+  // Fail-closed before mutation: the new target workspace stays empty and the
+  // current active workspace is untouched.
+  expect(await countActiveMembershipsInTenant(thirdRunTenant)).toBe(0);
+  expect(
+    await countActiveMembershipsInTenant(cleanWorkspaceTenantId(seeded.runId)),
+  ).toBe(5);
+
+  const { error } = await seeded.client
+    .from("tenant_memberships")
+    .delete()
+    .eq("id", driftId!);
+  expect(error, "drift cleanup").toBeNull();
+});
+
+test("X010-B-7C-9 a swapped persona source fails closed as a tenant mismatch without mutation", async () => {
+  const fourthRunId = `${seeded.runId}-r4`;
+  const fourthRunTenant = cleanWorkspaceTenantId(fourthRunId);
+
+  await driftPersonaSource(seeded, "designer", "swap-current");
+
+  await expect(applyCleanWorkspace(seeded, fourthRunId)).rejects.toThrow(
+    /CLEAN_WORKSPACE_SOURCE_TENANT_MISMATCH/u,
+  );
+
+  expect(await countActiveMembershipsInTenant(fourthRunTenant)).toBe(0);
+  expect(
+    await countActiveMembershipsInTenant(cleanWorkspaceTenantId(seeded.runId)),
+  ).toBe(4);
+
+  // No audit binding exists for the rejected runs.
+  expect(await readCleanWorkspaceSourceBinding(seeded, fourthRunId)).toBeNull();
 });

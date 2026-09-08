@@ -15,6 +15,7 @@ export { canUseRouteActorFixtures } from "./route-fixture-env";
 export type RouteActorKey =
   | "tenant_admin_a"
   | "assigned_internal_a"
+  | "assigned_writer_a"
   | "tenant_viewer_a"
   | "client_viewer_a"
   | "client_approver_a"
@@ -122,6 +123,19 @@ export const resolveRouteActor = (
         id: "ra_internal_client_a",
         membershipId: membership.id,
         roleKey: "account_manager",
+        scopeType: "client",
+        scopeId: "client_a",
+      }),
+    ]);
+  }
+
+  if (key === "assigned_writer_a") {
+    const membership = tenantMembership("tm_writer_a", key);
+    return actor(key, membership, [
+      role({
+        id: "ra_writer_client_a",
+        membershipId: membership.id,
+        roleKey: "content_writer",
         scopeType: "client",
         scopeId: "client_a",
       }),

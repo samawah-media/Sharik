@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useId, useRef, useState, type FormEvent } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
@@ -126,7 +126,7 @@ export function VersionContentForm({
           />
         </label>
         <label className="grid gap-1 text-sm font-semibold sm:col-span-2">
-          مؤشر القياس
+          مؤشر النجاح
           <input
             className="min-h-11 rounded-lg border border-border bg-surface px-3"
             {...form.register("kpi")}
@@ -181,7 +181,7 @@ export function VersionContentForm({
           type="button"
           variant="primary"
         >
-          حفظ وإرسال للمراجعة
+          حفظ وإرسال للمراجعة الداخلية
         </Button>
       </div>
     </form>
@@ -355,11 +355,15 @@ export function TaskForm({
   const router = useRouter();
   const [feedback, setFeedback] = useState<string>();
   const canCreate = taskCapabilities?.canCreateTask ?? false;
+  const fieldId = useId();
+  const formRef = useRef<HTMLFormElement>(null);
+  const saveAttempt = useRef<{ fingerprint: string; key: string } | null>(null);
   const canAssignOthers = taskCapabilities?.canAssignOthers ?? false;
   const showAssignee =
     canAssignOthers && eligibleAssignees && eligibleAssignees.length > 0;
   const form = useForm<TaskValues>({
     resolver: zodResolver(deliverableTaskInputSchema),
+    shouldFocusError: false,
     defaultValues: editingTask
       ? {
           clientId: deliverable.clientId,
@@ -405,52 +409,117 @@ export function TaskForm({
     );
   }
 
-  const submit = form.handleSubmit(async (values) => {
-    setFeedback(undefined);
-    const result = await upsertDeliverableTask({
-      ...values,
-      idempotencyKey: crypto.randomUUID(),
-    });
-    setFeedback(
-      result.ok
-        ? editingTask
-          ? "تم تحديث المهمة."
-          : "تمت إضافة المهمة."
-        : "تعذر حفظ المهمة. راجع الصلاحية والحالة.",
-    );
-    if (result.ok) {
+  type VisibleTaskField =
+    | "title"
+    | "description"
+    | "priority"
+    | "dueDate"
+    | "assigneeUserId";
+  const fieldMessages: Record<VisibleTaskField, string> = {
+    title:
+      form.formState.errors.title?.type === "too_big"
+        ? "يجب ألا يتجاوز عنوان المهمة ٢٠٠ حرف."
+        : "أدخل عنوان المهمة من حرفين إلى ٢٠٠ حرف.",
+    description: "يجب ألا يتجاوز الوصف ٢٠٠٠ حرف.",
+    priority: "اختر أولوية صحيحة للمهمة.",
+    dueDate: "أدخل تاريخ استحقاق صحيحًا أو اتركه فارغًا.",
+    assigneeUserId: "اختر شخصًا من قائمة المسند إليهم أو اترك الإسناد فارغًا.",
+  };
+  const fieldAccessibility = (field: VisibleTaskField) => ({
+    id: `${fieldId}-${field}`,
+    "aria-invalid": Boolean(form.formState.errors[field]),
+    "aria-describedby": form.formState.errors[field]
+      ? `${fieldId}-${field}-error`
+      : undefined,
+  });
+  const fieldError = (field: VisibleTaskField) =>
+    form.formState.errors[field] ? (
+      <span className="text-sm text-danger" id={`${fieldId}-${field}-error`}>
+        {fieldMessages[field]}
+      </span>
+    ) : null;
+
+  const submit = (event: FormEvent<HTMLFormElement>) => form.handleSubmit(
+    async (values) => {
+      setFeedback(undefined);
+      // Replays must keep both the validated payload and its key unchanged.
+      const fingerprint = JSON.stringify({
+        ...values,
+        idempotencyKey: undefined,
+      });
+      if (saveAttempt.current?.fingerprint !== fingerprint) {
+        saveAttempt.current = { fingerprint, key: crypto.randomUUID() };
+      }
+      let result: Awaited<ReturnType<typeof upsertDeliverableTask>>;
+      try {
+        result = await upsertDeliverableTask({
+          ...values,
+          idempotencyKey: saveAttempt.current.key,
+        });
+      } catch {
+        setFeedback(
+          "تعذر حفظ المهمة. تحقق من الاتصال ثم حاول مرة أخرى دون تغيير البيانات لإعادة المحاولة نفسها.",
+        );
+        return;
+      }
+      if (!result.ok) {
+        setFeedback("تعذر حفظ المهمة. راجع الصلاحية والحالة ثم حاول مرة أخرى.");
+        return;
+      }
+      saveAttempt.current = null;
+      setFeedback(editingTask ? "تم تحديث المهمة." : "تمت إضافة المهمة.");
       if (!editingTask) form.reset({ ...values, title: "", description: "" });
       onMutated?.();
       router.refresh();
-    }
-  });
+    },
+    (errors) => {
+      setFeedback("تعذر حفظ المهمة. راجع الحقول المحددة ثم حاول مرة أخرى.");
+      const controls = formRef.current?.querySelectorAll<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >("input, textarea, select");
+      const firstInvalid = Array.from(controls ?? []).find(
+        (control) =>
+          control.type !== "hidden" &&
+          !control.disabled &&
+          errors[control.name as keyof TaskValues],
+      );
+      firstInvalid?.focus();
+    },
+  )(event);
 
   return (
     <form
       className="grid gap-3 rounded-xl border border-border bg-background p-4"
+      noValidate
       onSubmit={submit}
+      ref={formRef}
     >
-      <label className="grid gap-1 text-sm font-semibold">
-        عنوان المهمة
+      <div className="grid gap-1 text-sm font-semibold">
+        <label htmlFor={`${fieldId}-title`}>عنوان المهمة</label>
         <input
           className="min-h-11 rounded-lg border border-border bg-surface px-3"
+          {...fieldAccessibility("title")}
           {...form.register("title")}
         />
-      </label>
+        {fieldError("title")}
+      </div>
       {taskCapabilities?.canEditTaskFields !== false && (
-        <label className="grid gap-1 text-sm font-semibold">
-          الوصف
+        <div className="grid gap-1 text-sm font-semibold">
+          <label htmlFor={`${fieldId}-description`}>الوصف</label>
           <textarea
             className="min-h-20 rounded-lg border border-border bg-surface p-3"
+            {...fieldAccessibility("description")}
             {...form.register("description")}
           />
-        </label>
+          {fieldError("description")}
+        </div>
       )}
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className="grid gap-1 text-sm font-semibold">
-          الأولوية
+        <div className="grid gap-1 text-sm font-semibold">
+          <label htmlFor={`${fieldId}-priority`}>الأولوية</label>
           <select
             className="min-h-11 rounded-lg border border-border bg-surface px-3"
+            {...fieldAccessibility("priority")}
             {...form.register("priority")}
           >
             <option value="normal">عادية</option>
@@ -458,15 +527,20 @@ export function TaskForm({
             <option value="high">عالية</option>
             <option value="urgent">عاجلة</option>
           </select>
-        </label>
-        <label className="grid gap-1 text-sm font-semibold">
-          تاريخ الاستحقاق
+          {fieldError("priority")}
+        </div>
+        <div className="grid gap-1 text-sm font-semibold">
+          <label htmlFor={`${fieldId}-dueDate`}>تاريخ الاستحقاق</label>
           <input
             className="min-h-11 rounded-lg border border-border bg-surface px-3"
             type="date"
-            {...form.register("dueDate")}
+            {...fieldAccessibility("dueDate")}
+            {...form.register("dueDate", {
+              setValueAs: (date: string | null) => (date === "" ? null : date),
+            })}
           />
-        </label>
+          {fieldError("dueDate")}
+        </div>
       </div>
       <input
         type="hidden"
@@ -474,11 +548,15 @@ export function TaskForm({
         {...form.register("status")}
       />
       {showAssignee ? (
-        <label className="grid gap-1 text-sm font-semibold">
-          المسند إليه
+        <div className="grid gap-1 text-sm font-semibold">
+          <label htmlFor={`${fieldId}-assigneeUserId`}>المسند إليه</label>
           <select
             className="min-h-11 rounded-lg border border-border bg-surface px-3"
-            {...form.register("assigneeUserId")}
+            {...fieldAccessibility("assigneeUserId")}
+            {...form.register("assigneeUserId", {
+              setValueAs: (assignee: string | null) =>
+                assignee === "" ? null : assignee,
+            })}
           >
             <option value="">بدون إسناد</option>
             {eligibleAssignees!.map((m) => (
@@ -487,7 +565,8 @@ export function TaskForm({
               </option>
             ))}
           </select>
-        </label>
+          {fieldError("assigneeUserId")}
+        </div>
       ) : null}
       {feedback ? (
         <p aria-live="polite" className="text-sm text-muted">

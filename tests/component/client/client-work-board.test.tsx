@@ -135,7 +135,7 @@ describe("client work board", () => {
       "استلم فريق سماوة ملاحظاتك",
     );
     expect(
-      screen.queryByRole("button", { name: "اعتماد المخرج" }),
+      screen.queryByRole("button", { name: "اعتماد النسخة" }),
     ).not.toBeInTheDocument();
   });
 

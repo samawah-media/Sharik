@@ -82,8 +82,25 @@ describe("notification bell", () => {
 
     await user.click(screen.getByRole("button", { name: "الإشعارات" }));
     expect(
-      screen.getByText("لا لديك إشعارات جديدة."),
+      screen.getByText("لا توجد إشعارات حديثة."),
     ).toBeInTheDocument();
+  });
+
+  it("shows an honest retry route when recent notifications cannot be loaded", async () => {
+    const user = userEvent.setup();
+    render(
+      <NotificationBell
+        data={{ unreadCount: 15, recent: [], recentReadFailed: true }}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: /15 إشعار غير مقروء/ }));
+    expect(screen.getByText("تعذر تحميل آخر الإشعارات.")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", {
+        name: "فتح مركز الإشعارات والمحاولة مجددًا",
+      }),
+    ).toHaveAttribute("href", "/notifications");
   });
 
   it("renders the badge node only for unread items in the popover", async () => {

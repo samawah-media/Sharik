@@ -52,6 +52,27 @@ describe("Hadna MVP summary", () => {
     expect(screen.queryByText("Commercial")).not.toBeInTheDocument();
   });
 
+  it("replaces inaccessible package data with a scoped completion count for team roles", () => {
+    render(
+      <HadnaMvpHero
+        clientName="جلاس"
+        roleLabel="كاتب المحتوى"
+        showPackageLineCount={false}
+        stats={{
+          deliverablesCount: 4,
+          packageLineCount: 0,
+          waitingWorkCount: 2,
+          waitingClientCount: 1,
+          completedCount: 1,
+        }}
+      />,
+    );
+
+    expect(screen.getByText("المكتمل")).toBeInTheDocument();
+    expect(screen.queryByText("الباقة")).not.toBeInTheDocument();
+    expect(screen.queryByText("0 بنود")).not.toBeInTheDocument();
+  });
+
   it("never labels Glass as Hadna", () => {
     render(
       <HadnaMvpHero

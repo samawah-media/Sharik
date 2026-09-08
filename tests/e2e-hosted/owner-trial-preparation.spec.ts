@@ -177,13 +177,24 @@ test("prepares one scoped owner-trial item and verifies both client roles", asyn
     "Owner-trial preparation mutates the approved UAT exactly once.",
   );
   if (process.env.S015_B7_PREPARE_CONFIRM !== "1") {
-    throw new Error("Owner-trial preparation requires S015_B7_PREPARE_CONFIRM=1.");
+    throw new Error(
+      "Owner-trial preparation requires S015_B7_PREPARE_CONFIRM=1.",
+    );
   }
   if (!baseURL) throw new Error("Owner-trial preparation requires a base URL.");
 
   await ensureUnassignedContributorScope();
   const { client, seed } = await seedHostedLifecycle({ ownerTrial: true });
   const versionId = crypto.randomUUID();
+  const reviewUploadAttemptId = crypto.randomUUID();
+  const reviewFileId = crypto.randomUUID();
+  const reviewFileName = `owner-review-${seed.runId.slice(-10)}.png`;
+  const reviewStoragePath = `${seed.tenantId}/${seed.clientId}/${seed.deliverableId}/${versionId}/${reviewFileName}`;
+  const reviewUploadIdempotencyKey = `${seed.runId}-owner-review-image`;
+  const reviewPng = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+    "base64",
+  );
   const writer = await createHostedActorClient({
     actor: seed.actors.CONTENT_WRITER,
     seed,
@@ -217,22 +228,96 @@ test("prepares one scoped owner-trial item and verifies both client roles", asyn
       "submit owner-trial version",
     );
 
-    for (const command of ["approve_internal", "send_to_client"] as const) {
-      expectRpcSuccess(
-        await admin.rpc("s015_execute_internal_workflow", {
-          target_client_id: seed.clientId,
-          target_deliverable_id: seed.deliverableId,
-          target_version_id: versionId,
-          target_command: command,
-          target_version_number: null,
-          command_comment: "تجهيز مادة صناعية لتجربة المالك المنظمة.",
-          request_id: crypto.randomUUID(),
-          audit_event_id: crypto.randomUUID(),
-          request_idempotency_key: `${seed.runId}-${command}`,
+    expectRpcSuccess(
+      await writer.rpc("s015_begin_file_upload_attempt", {
+        target_attempt_id: reviewUploadAttemptId,
+        target_file_id: reviewFileId,
+        target_client_id: seed.clientId,
+        target_deliverable_id: seed.deliverableId,
+        target_version_id: versionId,
+        target_bucket_id: "deliverable-assets",
+        target_storage_path: reviewStoragePath,
+        target_file_name: reviewFileName,
+        target_file_type: "image/png",
+        target_file_size: reviewPng.byteLength,
+        target_visibility: "internal_only",
+        target_is_final: false,
+        target_replaces_file_id: null,
+        target_run_id: seed.runId,
+        request_idempotency_key: reviewUploadIdempotencyKey,
+        audit_event_id: crypto.randomUUID(),
+      }),
+      "begin owner-trial review image upload",
+    );
+    expectRpcSuccess(
+      await writer.storage
+        .from("deliverable-assets")
+        .upload(reviewStoragePath, reviewPng, {
+          contentType: "image/png",
+          upsert: false,
         }),
-        command,
-      );
-    }
+      "upload owner-trial review image",
+    );
+    expectRpcSuccess(
+      await writer.rpc("s015_register_file_asset", {
+        target_file_id: reviewFileId,
+        target_client_id: seed.clientId,
+        target_deliverable_id: seed.deliverableId,
+        target_version_id: versionId,
+        target_bucket_id: "deliverable-assets",
+        target_storage_path: reviewStoragePath,
+        target_file_name: reviewFileName,
+        target_file_type: "image/png",
+        target_file_size: reviewPng.byteLength,
+        target_visibility: "internal_only",
+        target_is_final: false,
+        request_id: crypto.randomUUID(),
+        audit_event_id: crypto.randomUUID(),
+        request_idempotency_key: reviewUploadIdempotencyKey,
+      }),
+      "register owner-trial review image",
+    );
+
+    expectRpcSuccess(
+      await admin.rpc("s015_execute_internal_workflow", {
+        target_client_id: seed.clientId,
+        target_deliverable_id: seed.deliverableId,
+        target_version_id: versionId,
+        target_command: "approve_internal",
+        target_version_number: null,
+        command_comment: "تجهيز مادة صناعية لتجربة المالك المنظمة.",
+        request_id: crypto.randomUUID(),
+        audit_event_id: crypto.randomUUID(),
+        request_idempotency_key: `${seed.runId}-approve_internal`,
+      }),
+      "approve_internal",
+    );
+    expectRpcSuccess(
+      await admin.rpc("s015_stage_file_for_client_review", {
+        target_client_id: seed.clientId,
+        target_deliverable_id: seed.deliverableId,
+        target_version_id: versionId,
+        target_file_id: reviewFileId,
+        request_id: crypto.randomUUID(),
+        audit_event_id: crypto.randomUUID(),
+        request_idempotency_key: `${seed.runId}-stage-review-image`,
+      }),
+      "stage owner-trial review image",
+    );
+    expectRpcSuccess(
+      await admin.rpc("s015_execute_internal_workflow", {
+        target_client_id: seed.clientId,
+        target_deliverable_id: seed.deliverableId,
+        target_version_id: versionId,
+        target_command: "send_to_client",
+        target_version_number: null,
+        command_comment: "تجهيز مادة صناعية لتجربة المالك المنظمة.",
+        request_id: crypto.randomUUID(),
+        audit_event_id: crypto.randomUUID(),
+        request_idempotency_key: `${seed.runId}-send_to_client`,
+      }),
+      "send_to_client",
+    );
 
     const persisted = await client
       .from("deliverables")
@@ -245,6 +330,31 @@ test("prepares one scoped owner-trial item and verifies both client roles", asyn
       current_version_id: versionId,
       import_run_id: seed.runId,
     });
+    const stagedFile = await client
+      .from("file_assets")
+      .select("id, visibility, version_id, upload_state")
+      .eq("id", reviewFileId)
+      .single();
+    expect(stagedFile.error).toBeNull();
+    expect(stagedFile.data).toMatchObject({
+      id: reviewFileId,
+      visibility: "client_visible",
+      version_id: versionId,
+      upload_state: "ready",
+    });
+    const uploadAudit = await client
+      .from("audit_events")
+      .select("action, target_id")
+      .eq("tenant_id", seed.tenantId)
+      .eq("client_id", seed.clientId)
+      .eq("target_id", reviewUploadAttemptId);
+    expect(uploadAudit.error).toBeNull();
+    expect((uploadAudit.data ?? []).map((event) => event.action)).toEqual(
+      expect.arrayContaining([
+        "FileUploadAttemptStarted",
+        "FileUploadAttemptReady",
+      ]),
+    );
 
     await withPersona({
       actor: seed.actors.CLIENT_VIEWER,
@@ -254,8 +364,18 @@ test("prepares one scoped owner-trial item and verifies both client roles", asyn
         await page.goto("/client/pending", { waitUntil: "domcontentloaded" });
         const detail = page.getByTestId("client-approval-detail");
         await expect(detail).toContainText(seed.deliverableName);
-        await expect(detail.getByRole("button", { name: "اعتماد" })).toHaveCount(0);
-        await expect(detail.getByRole("button", { name: "طلب تعديل" })).toHaveCount(0);
+        await expect(
+          detail.getByRole("img", { name: reviewFileName }),
+        ).toBeVisible({ timeout: 60_000 });
+        await expect(
+          detail.getByRole("button", { name: "تنزيل" }),
+        ).toBeVisible();
+        await expect(
+          detail.getByRole("button", { name: "اعتماد" }),
+        ).toHaveCount(0);
+        await expect(
+          detail.getByRole("button", { name: "طلب تعديل" }),
+        ).toHaveCount(0);
       },
     });
 
@@ -267,8 +387,15 @@ test("prepares one scoped owner-trial item and verifies both client roles", asyn
         await page.goto("/client/pending", { waitUntil: "domcontentloaded" });
         const detail = page.getByTestId("client-approval-detail");
         await expect(detail).toContainText(seed.deliverableName);
-        await expect(detail.getByRole("button", { name: "اعتماد" })).toBeVisible();
-        await expect(detail.getByRole("button", { name: "طلب تعديل" })).toBeVisible();
+        await expect(
+          detail.getByRole("img", { name: reviewFileName }),
+        ).toBeVisible({ timeout: 60_000 });
+        await expect(
+          detail.getByRole("button", { name: "اعتماد" }),
+        ).toBeVisible();
+        await expect(
+          detail.getByRole("button", { name: "طلب تعديل" }),
+        ).toBeVisible();
       },
     });
 

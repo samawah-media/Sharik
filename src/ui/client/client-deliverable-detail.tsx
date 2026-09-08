@@ -1,6 +1,10 @@
 import type { FileAssetVisibility } from "@/modules/files/file-visibility-rules";
 import { firstMeaningfulReviewText } from "@/modules/approvals/client-review-readiness";
 import { clientVisibleStatusLabel } from "@/modules/deliverables/client-labels";
+import {
+  formatArabicDate,
+  formatDueDateLabel,
+} from "@/modules/localization/arabic-display";
 import type { ClientApprovalFormAction } from "./client-approval-panel";
 import {
   ClientApprovalPanel,
@@ -66,8 +70,6 @@ const visibilityLabels: Record<FileAssetVisibility, string> = {
   brand_asset: "أصل للهوية",
 };
 
-const formatDate = (value: string) => value.slice(0, 10);
-
 export function ClientDeliverableDetail({
   approveAction,
   canApprove,
@@ -122,41 +124,44 @@ export function ClientDeliverableDetail({
           <div className="rounded-md bg-surface px-3 py-2">
             <dt className="font-semibold text-foreground">الموعد</dt>
             <dd className="mt-1">
-              {detail.approvalItem.dueDateLabel ?? "غير محدد"}
+              {formatDueDateLabel(detail.approvalItem.dueDateLabel)}
             </dd>
           </div>
         </dl>
       </div>
 
-      <ContentPreviewCard
-        caption={firstMeaningfulReviewText(
-          detail.content?.caption,
-          detail.content?.body,
-        )}
-        channel={detail.content?.channel}
-        clientName={detail.clientName}
-        eyebrow={detail.approvalItem.versionLabel}
-        format={detail.content?.format ?? detail.approvalItem.typeLabel}
-        status={visibleStatusLabel}
-        title={detail.approvalItem.displayName}
-        media={
-          detail.previewFile ? (
-            <WorkspaceInlineMedia
-              fileId={detail.previewFile.id}
-              fileType={detail.previewFile.fileType}
-              label={detail.previewFile.label}
-            />
-          ) : undefined
-        }
-      />
+      <div className="grid min-w-0 items-start gap-5 lg:grid-cols-2">
+        <ContentPreviewCard
+          caption={firstMeaningfulReviewText(
+            detail.content?.caption,
+            detail.content?.body,
+          )}
+          channel={detail.content?.channel}
+          clientName={detail.clientName}
+          eyebrow={detail.approvalItem.versionLabel}
+          format={detail.content?.format ?? detail.approvalItem.typeLabel}
+          fullText
+          status={visibleStatusLabel}
+          title={detail.approvalItem.displayName}
+          media={
+            detail.previewFile ? (
+              <WorkspaceInlineMedia
+                fileId={detail.previewFile.id}
+                fileType={detail.previewFile.fileType}
+                label={detail.previewFile.label}
+              />
+            ) : undefined
+          }
+        />
 
-      <ClientApprovalPanel
-        approveAction={approveAction}
-        canApprove={canApprove}
-        item={visibleApprovalItem}
-        requestChangesAction={requestChangesAction}
-        showSummary={false}
-      />
+        <ClientApprovalPanel
+          approveAction={approveAction}
+          canApprove={canApprove}
+          item={visibleApprovalItem}
+          requestChangesAction={requestChangesAction}
+          showSummary={false}
+        />
+      </div>
 
       {detail.content?.objective || detail.content?.kpi ? (
         <section
@@ -227,7 +232,7 @@ export function ClientDeliverableDetail({
               >
                 <p className="break-words text-sm leading-6">{comment.body}</p>
                 <p className="mt-1 text-xs text-muted">
-                  {comment.authorName} · {formatDate(comment.createdAt)}
+                  {comment.authorName} · {formatArabicDate(comment.createdAt)}
                 </p>
               </li>
             ))}

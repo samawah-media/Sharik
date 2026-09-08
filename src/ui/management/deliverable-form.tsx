@@ -11,6 +11,7 @@ import {
 import type { PackageLineSafeSummary } from "@/modules/packages/package-repository";
 import { isCountUnitLabel } from "@/modules/packages/package-quantity";
 import type { MemberDisplay } from "@/modules/members/member-directory";
+import { formatArabicDate } from "@/modules/localization/arabic-display";
 import { Badge } from "@/ui/core/badge";
 import { Button } from "@/ui/core/button";
 import { Card, CardHeader, CardTitle, SectionPanel } from "@/ui/core/card";
@@ -55,14 +56,6 @@ const typeLabels: Record<string, string> = {
   video: "فيديو",
   campaign: "حملة",
   article: "مقال",
-};
-
-const formatDate = (value?: string) => {
-  if (!value) {
-    return "غير محدد";
-  }
-
-  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : value.slice(0, 10);
 };
 
 function SubmitButton({ approvedExtra }: { approvedExtra?: boolean }) {
@@ -529,7 +522,7 @@ export function DeliverableList({
                 <div className="rounded-md bg-background px-3 py-2">
                   <dt className="font-semibold text-foreground">التاريخ</dt>
                   <dd className="mt-1">
-                    {formatDate(
+                    {formatArabicDate(
                       deliverable.clientDueDate ??
                         deliverable.finalDueDate ??
                         deliverable.plannedPublishDate,

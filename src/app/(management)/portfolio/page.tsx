@@ -67,16 +67,22 @@ export default async function PortfolioPage({
   const isManagementPortfolio = navigation.items.some(
     (navigationItem) => navigationItem.id === "management.clients",
   );
-  const scopedDeliverables = (
-    await Promise.all(
-      visibleClients.map((client) =>
-        listScopedDeliverables({
-          tenantId: client.tenantId,
-          clientId: client.id,
-        }),
-      ),
-    )
-  ).flatMap((result) => (result.ok ? result.deliverables : []));
+  const results = await Promise.allSettled(
+    visibleClients.map((client) =>
+      listScopedDeliverables({
+        tenantId: client.tenantId,
+        clientId: client.id,
+      }),
+    ),
+  );
+  const unavailable = results.some(
+    (result) => result.status === "rejected" || !result.value.ok,
+  );
+  const scopedDeliverables = results.flatMap((result) =>
+    result.status === "fulfilled" && result.value.ok
+      ? result.value.deliverables
+      : [],
+  );
 
   return (
     <main className="grid gap-6">
@@ -94,13 +100,22 @@ export default async function PortfolioPage({
         }
         title={isManagementPortfolio ? "لوحة الإدارة" : "مساحة العمل"}
       />
-      <ManagementExceptionDashboard
-        clientNames={Object.fromEntries(
-          visibleClients.map((client) => [client.id, client.name]),
-        )}
-        deliverables={scopedDeliverables}
-        now={new Date().toISOString()}
-      />
+      {unavailable ? (
+        <section role="alert" className="rounded-lg border border-border bg-surface p-5">
+          <h2 className="font-semibold">ما قدرنا نحمّل ملخص الأعمال.</h2>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            الأرقام غير متاحة الآن. تقدر تفتح مساحة العميل أو تعيد تحميل الصفحة.
+          </p>
+        </section>
+      ) : (
+        <ManagementExceptionDashboard
+          clientNames={Object.fromEntries(
+            visibleClients.map((client) => [client.id, client.name]),
+          )}
+          deliverables={scopedDeliverables}
+          now={new Date().toISOString()}
+        />
+      )}
       <h2 className="text-xl font-semibold">عملائي</h2>
       <AssignedClients clients={visibleClients} />
     </main>

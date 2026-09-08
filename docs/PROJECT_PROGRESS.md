@@ -2,6 +2,11 @@
 
 ## CI recovery approved — publication still pending — 2026-09-08
 
+Reviewed batch is committed locally as0a69924. Push rejected403 for the default
+Git account; automatic safety review blocked use of the other saved account
+without explicit identity approval. No push/CI/deployment/migration occurred.
+Next: owner authorizes the repository-owning account, then normal reviewed push.
+
 Owner approved runner-local GitHub database/persistent testing after bounded
 Docker recovery failed. No hosted data transfer; socket backups remain outside
 the repository. Branch-specific automatic deployment hold and exact-source CI

@@ -7,6 +7,15 @@ Continue in Spec015; do not create another release roadmap.
 
 ## Owner-approved recovery continuation
 
+Latest checkpoint: reviewed batch committed locally as0a69924. Normal push was
+rejected403 because the default Git identity lacks repository permission. A
+process-scoped attempt to use the existing organization-account credential was
+blocked by automatic safety review before execution; do not work around it.
+Explicit owner approval for that account identity is required before retrying.
+No remote push, CI run, deployment or migration occurred. Working-tree generated
+next-env.d.ts is retained outside the reviewed commit. Existing browser session
+is usable for read-only management checks; saved persona credentials remain invalid.
+
 After the Docker crash, the owner approved disposable GitHub CI as a substitute
 for local Docker-dependent gates, not a waiver of verification or a data transfer.
 Two socket-only directories were retained under timestamped backup names outside

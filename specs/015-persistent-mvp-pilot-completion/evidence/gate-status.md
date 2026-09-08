@@ -2,6 +2,10 @@
 
 ## CI recovery exception — 2026-09-08
 
+Local commit0a69924 is ready. Push failed403 with default Git identity. Safety
+review blocked alternate saved-account use pending explicit owner identity
+approval. Do not bypass. No remote CI/deployment/migration has occurred.
+
 HOSTED_TEAM_UAT_BLOCKED pending exact-source CI and UAT compatibility/Auth.
 Owner now permits Docker-dependent gates on disposable GitHub runner Supabase
 after reviewed push; no test waiver/data transfer. Automatic deployment hold is

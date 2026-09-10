@@ -1,8 +1,14 @@
 # Project Progress
 
-## SIL-52 / SIL-54 exact-source CI succeeded — 2026-09-10
+## SIL-52 / SIL-54 published to UAT Preview; fresh journey in progress — 2026-09-10
 
-Owner-approved GitHub execution completed successfully at2236507:966 unit/integration/simulator/component tests,993 real DB assertions,263 fixture browser passes with37 skips,24 persistent browser passes; build and static/secret gates PASS. First CI fixture error corrected without weakening product constraints. Both migrations remain unapplied to hosted UAT and source is not yet deployed. Next: bounded UAT compatibility/publication and new fictional acceptance journey; do not close owner/manual tests. [Evidence](../specs/015-persistent-mvp-pilot-completion/evidence/sil52-sil54-checkpoint.md).
+The linked non-Production project `sharik-uat` (`jnvuccapgsabrwwkxnbh`) was verified `ACTIVE_HEALTHY`. A pre-apply dry-run listed exactly migrations `202609100001` and `202609100002`; both were applied, the follow-up dry-run reported the remote database up to date, and local/remote migration inventories matched. The Docker catalog-cache warning happened after the successful push and did not affect the hosted database.
+
+Exact tested source `2236507f08209c1a9ecdfc8e5f49a322e2be559d` was exported without the dirty working tree and deployed as Vercel Preview `dpl_5uzbdQCTRWcCovZhA4c3Hx1KegCp` (`Ready`). The existing trial alias now points to that Preview; Production was not touched. A fresh fictional client `مقهى وهج — تجربة النسخ 0910` was created through the UI. Onboarding, contract/package creation, first reservation, internal submission/approval, client send and SLA pause succeeded. SIL-54's first hosted checkpoint is correct: agreed 2, in work 1, delivered 0, remaining 1. Final post-delivery balance and SIL-52 client-visible retained-snapshot behavior still require an independent client session; OWNER_UAT remains HOLD. Measured Kanban content is 2344px inside a 1171px scroll region at the observed desktop layout; page-level overflow is absent, but owner-reported horizontal interaction remains open for hands-on mouse/touch/keyboard acceptance.
+
+## SIL-52 / SIL-54 exact-source CI succeeded — pre-publication record, 2026-09-10
+
+This historical checkpoint preceded the hosted publication recorded above. Owner-approved GitHub execution completed successfully at2236507:966 unit/integration/simulator/component tests,993 real DB assertions,263 fixture browser passes with37 skips,24 persistent browser passes; build and static/secret gates PASS. First CI fixture error corrected without weakening product constraints. At that checkpoint the migrations and source were not yet hosted. [Evidence](../specs/015-persistent-mvp-pilot-completion/evidence/sil52-sil54-checkpoint.md).
 
 ## SIL-52 / SIL-54 delegated correction candidate — 2026-09-10
 

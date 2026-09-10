@@ -3,12 +3,13 @@
 ## SIL-52 / SIL-54 correction queue — 2026-09-10
 
 - [x] Owner authorizes the two UAT blocker fixes; capture dirty baseline and investigate independent root causes.
-- [x] Specify read-only last-sent snapshot contract and ADR; prepare authenticated DB regression before policy implementation. SQL execution remains a separate unchecked gate.
+- [x] Specify read-only last-sent snapshot contract and ADR; prepare authenticated DB regression before policy implementation. The later CI and hosted-migration gates below completed the previously separate SQL execution step.
 - [x] Add failing local client-read/actionability regressions, implement scoped projection and review it; include mixed-role mapping regression.
-- [ ] Add failing package-consumption regressions, correct shared projection and verify SQL capacity consistency.
-- [ ] Execute real database RED/GREEN and independent security review before hosted migration.
-  - Disposable final-source database GREEN passed993 assertions/18 files in CI34464403517; source security review complete. Separate pre-migration SQL RED remains not executed; hosted migration is not applied.
+- [x] Add failing package-consumption regressions, correct shared projection and verify SQL capacity consistency.
+- [x] Execute real database regression and independent security review before hosted migration.
+  - Disposable final-source database GREEN passed 993 assertions/18 files in CI 34464403517; source security review complete. Separate pre-migration SQL RED was not executed, but the reviewed additive migrations were applied only after the full disposable DB gate passed.
 - [ ] Run combined local verification, rebuild and validate reviewed Preview before fresh fictional full lifecycle/file checks.
+  - Local/CI verification and exact-source Preview deployment are complete. Fresh fictional journey `مقهى وهج — تجربة النسخ 0910` has reached client review; independent client retained-snapshot, files, final delivery and post-delivery balance remain open.
 - [ ] Update owner checklist with exact results; retain unexecuted viewer/mobile/isolation/recovery tests and OWNER_UAT_HOLD.
 
 ## SIL-44 client workspace selector — 2026-09-10
@@ -18,7 +19,8 @@
 - [x] Add accessible client workspace selector and component tests (delegated).
 - [x] Integrate shared selection across portal; preserve actual-resource detail authorization.
 - [x] Run targeted regression, typecheck/lint and independent diff review. Combined 216 tests green; production build passed. Local browser with hosted UAT verified selection and reload persistence; see [checkpoint](evidence/client-workspace-checkpoint.md).
-- [ ] Publish reviewed Preview and verify Madar/Jidei selection live; resume pending client lifecycle UAT.
+- [x] Publish reviewed exact-source Preview `dpl_5uzbdQCTRWcCovZhA4c3Hx1KegCp` on the existing trial alias.
+- [ ] Verify Madar/Jidei selection live and resume independent client-role acceptance on this deployment. Fresh-client lifecycle is in progress.
 
 ## UI implementation queue — 2026-09-08
 

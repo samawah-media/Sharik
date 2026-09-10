@@ -1,5 +1,18 @@
 # SIL-52 / SIL-54 correction checkpoint — 2026-09-10
 
+## Hosted UAT publication and fresh acceptance checkpoint
+
+- Target verification: linked project `sharik-uat` / `jnvuccapgsabrwwkxnbh`, `ACTIVE_HEALTHY`, non-Production.
+- Reviewed migration hashes: `202609100001` = `167A7AF351F3DE3C85C204F5EA0E61762BE15539B411941C6D21DFF6A8ED2539`; `202609100002` = `C156D681BB9FAB6C6D737FFDAFFE28DD064FB9974E37DFAF5AF480BD483AE3AE`.
+- Pre-apply dry-run listed exactly those two migrations. Apply completed; post-apply dry-run reported `Remote database is up to date`; local and remote inventories match through `202609100002`. A Docker catalog-cache warning occurred only after the successful hosted push.
+- Exact tested source `2236507f08209c1a9ecdfc8e5f49a322e2be559d` deployed to Preview `dpl_5uzbdQCTRWcCovZhA4c3Hx1KegCp`, status `Ready`; the existing trial alias was moved to it. Production was not accessed.
+- Fresh fictional case: client `43b5327a-2098-4d33-9401-be6633efdef2`, `مقهى وهج — تجربة النسخ 0910`; package quantity 2; one reserved deliverable. UI showed 2 agreed / 1 in work / 0 delivered / 1 remaining. Version 1 was submitted, internally approved and sent to client review; progress 80% and SLA paused waiting for client.
+- Console error/warning scan after the exercised route returned none. No valid media file was uploaded in this partial journey.
+- SIL-52 is not owner-accepted yet: a separate client session is still required to request changes and prove retained v1 visibility while v2 remains internal. SIL-54 still requires the final 2/0/1/1 post-delivery check. Viewer, files, mobile, isolation and recovery remain open; overall status is HOLD.
+- Kanban measurement at the observed desktop layout: board scroll container 1171px, content scroll width 2344px, body overflow 0. This confirms containment but not usable horizontal interaction; owner-reported scroll friction remains open.
+
+The remaining sections are chronological pre-publication evidence unless they explicitly state a later result; statements that hosted work had not yet occurred describe their original checkpoint and are superseded by the section above.
+
 Baseline HEAD `8f719715e2b6c53e88c4530c81520c3807a5ab71`; no staged changes. Dirty/untracked hashes captured before writers. [Plan](sil52-sil54-plan.md) and canonical Spec015 govern this round.
 
 | Task | Worker | Mode / state | Actual evidence |

@@ -14,11 +14,11 @@ Canonical reproduction and actual execution evidence: [owner walkthrough](owner-
 | SIL-49 | P2 | Bookmarked work from one allowed client shown with another selected workspace label | Open; actual resource stayed correct |
 | SIL-50 | P2 | Unsent-work denial suggests selecting workspace even when already selected | Open; must not reveal hidden resource existence |
 | SIL-51 | Investigation | No initial SLA timeline before first send | Open; later pause/resume/completion verified, initial-start path not verified |
-| SIL-52 | P1 | Saving new internal draft makes previously sent work inaccessible to client | Open; returning visibility only after resend is reproduced |
+| SIL-52 | P1 | Saving new internal draft makes previously sent work inaccessible to client | Fix migrated and exact-source Preview published; fresh v1 reached client review, but retained v1 while v2 is internal still needs an independent client-session check |
 | SIL-53 | P2 | Client decisions silently return to empty pending inbox, including stale-tab replay | Open; duplicate approval did not create duplicate decision |
-| SIL-54 | P1 | Delivered unit remains counted as both in-work and delivered, reducing available package capacity twice | Open; UI2/1/1/0 and DB reserved1+consumed1 on the sole delivered Madar work corroborate |
+| SIL-54 | P1 | Delivered unit remains counted as both in-work and delivered, reducing available package capacity twice | Fix migrated and initial hosted check passed at 2 agreed / 1 in work / 0 delivered / 1 remaining; final post-delivery 2/0/1/1 check remains open |
 
-Next correction priority: SIL-52 and SIL-54, with isolated regression and fresh end-to-end case. No manual ledger rewrite, security relaxation or owner acceptance implied.
+Next acceptance priority: finish SIL-52's independent client snapshot check and SIL-54's post-delivery balance on the fresh fictional case. No manual ledger rewrite, security relaxation or owner acceptance implied.
 
 Governance: P0/P1 blocks completion. P2 requires explicit owner disposition. P3 may be deferred only with rationale. `Fixed` requires an executed regression test; a regression that exists but cannot execute is not PASS.
 

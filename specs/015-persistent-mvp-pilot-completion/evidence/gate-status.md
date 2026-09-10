@@ -1,6 +1,12 @@
 # Spec 015 gate status
 
+## Current: exact-source CI PASS; hosted correction acceptance still HOLD — 2026-09-10
+
+[Run34464403517](https://github.com/samawah-media/Sharik/actions/runs/34464403517) completed SUCCESS on `2236507f08209c1a9ecdfc8e5f49a322e2be559d`: local-equivalent966 tests, real DB993 assertions/18 files, fixture browser263PASS/37SKIP, persistent browser24PASS; lint/types/build/secrets/reset PASS. Earlier candidate and identity-pending entries are historical. No hosted migration or deployment; SIL-52/SIL-54 still require new Preview/UAT acceptance. Owner20, conditional notification proof and unexecuted manual checks remain open. [Checkpoint](sil52-sil54-checkpoint.md).
+
 ## SIL-52 / SIL-54 correction candidate — 2026-09-10
+
+Current remote gate: owner-approved `samawah-media` push succeeded. Run [34464403517](https://github.com/samawah-media/Sharik/actions/runs/34464403517) at `2236507` passed database reset and the full RLS step; browser gates are running. First run failed on invalid not-started test progress, corrected without changing production constraints. Identity approval is resolved. No hosted migration/deployment; older pending-account and SQL-NOT-RUN entries below are historical.
 
 Final local source: **966 tests / 157 files PASS**, lint/types/build/secret scan PASS; independent DB/application source review complete. The following initial-round history is superseded for local counts only; SQL/CI/hosted/UAT gates remain open.
 

@@ -35,6 +35,20 @@ Docker read-only probe: installed CLI, missing daemon pipe; no reset/reinstall p
 
 ## GitHub execution — owner-authorized
 
+### Final result: SUCCESS
+
+Run34464403517 completed SUCCESS in22m49s on exact SHA `2236507f08209c1a9ecdfc8e5f49a322e2be559d`. Unit499, integration112, RLS simulator24, components331 (966 total); real PostgreSQL pgTAP **993 assertions / 18 files PASS**; fixture browser **263 PASS / 37 SKIP**; persistent browser **24 PASS**. Lint, typecheck, clean no-seed database reset, secret scan and build all passed. The37 skipped checks remain skipped, not accepted; prior conditional notification-proof gap and owner/manual/mobile/files/isolation acceptance remain open. SQL baseline-before-migration RED was not separately executed; actual prior UAT reproduction and local behavioral RED are documented separately. No hosted migration/deployment or business-data change occurred.
+
+Next bounded stage: verify linked non-Production UAT and exactly the two reviewed migration checksums, then apply only within the approved hosted window; verify no-op dry-run, publish exact tested source to Preview, and rerun a fresh fictional retained-version/file/capacity journey. Do not reuse old delivered Madar as proof of new behavior. Do not call the fixes deployed or owner-accepted based on CI.
+
+### Final result: SUCCESS
+
+Run34464403517 completed SUCCESS in22m49s on exact SHA `2236507f08209c1a9ecdfc8e5f49a322e2be559d`. Unit499, integration112, RLS simulator24, components331 (966 total); real PostgreSQL pgTAP **993 assertions / 18 files PASS**; fixture browser **263 PASS / 37 SKIP**; persistent browser **24 PASS**. Lint, typecheck, clean no-seed database reset, secret scan and build all passed. The37 skipped checks remain skipped, not accepted; prior conditional notification-proof gap and owner/manual/mobile/files/isolation acceptance remain open. SQL baseline-before-migration RED was not separately executed; actual prior UAT reproduction and local behavioral RED are documented separately. No hosted migration/deployment or business-data change occurred.
+
+Next bounded stage: verify linked non-Production UAT and exactly the two reviewed migration checksums, then apply only within the approved hosted window; verify no-op dry-run, publish exact tested source to Preview, and rerun a fresh fictional retained-version/file/capacity journey. Do not reuse old delivered Madar as proof of new behavior. Do not call the fixes deployed or owner-accepted based on CI.
+
+Second exact-source run: https://github.com/samawah-media/Sharik/actions/runs/34464403517 at `2236507` (fixture-only correction plus evidence). Database reset and full RLS step **SUCCESS**; browser E2E currently running. Overall quality result still pending. This supersedes earlier NOT RUN statements for disposable SQL only, not hosted acceptance.
+
 - `samawah-media` active identity verified with repository push permission.
 - Reviewed candidate committed and pushed: `7abaf9ae946851f6ac031e827d624c7cd45a2d4c`.
 - Disposable full quality run started: https://github.com/samawah-media/Sharik/actions/runs/34463859953 . Result pending, not a pass.

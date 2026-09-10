@@ -1,6 +1,12 @@
 # Project Progress
 
+## SIL-52 / SIL-54 exact-source CI succeeded — 2026-09-10
+
+Owner-approved GitHub execution completed successfully at2236507:966 unit/integration/simulator/component tests,993 real DB assertions,263 fixture browser passes with37 skips,24 persistent browser passes; build and static/secret gates PASS. First CI fixture error corrected without weakening product constraints. Both migrations remain unapplied to hosted UAT and source is not yet deployed. Next: bounded UAT compatibility/publication and new fictional acceptance journey; do not close owner/manual tests. [Evidence](../specs/015-persistent-mvp-pilot-completion/evidence/sil52-sil54-checkpoint.md).
+
 ## SIL-52 / SIL-54 delegated correction candidate — 2026-09-10
+
+Owner approved the existing samawah-media identity; reviewed code pushed as7abaf9a, followed by fixture-only correction2236507. [GitHub run34464403517](https://github.com/samawah-media/Sharik/actions/runs/34464403517) passed real disposable database reset/RLS and is running browser checks. Identity access is no longer blocked. No UAT database migration or deployment yet.
 
 Final-source local verification completed: **966 tests / 157 files**, lint/typecheck/build/secret scan PASS. Independent review resolved its findings. SQL/CI/hosted gates remain blocked pending GitHub identity approval; no publication or UAT completion claimed.
 

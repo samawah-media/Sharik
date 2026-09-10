@@ -7,6 +7,7 @@
 - [x] Add failing local client-read/actionability regressions, implement scoped projection and review it; include mixed-role mapping regression.
 - [ ] Add failing package-consumption regressions, correct shared projection and verify SQL capacity consistency.
 - [ ] Execute real database RED/GREEN and independent security review before hosted migration.
+  - Disposable final-source database GREEN passed993 assertions/18 files in CI34464403517; source security review complete. Separate pre-migration SQL RED remains not executed; hosted migration is not applied.
 - [ ] Run combined local verification, rebuild and validate reviewed Preview before fresh fictional full lifecycle/file checks.
 - [ ] Update owner checklist with exact results; retain unexecuted viewer/mobile/isolation/recovery tests and OWNER_UAT_HOLD.
 

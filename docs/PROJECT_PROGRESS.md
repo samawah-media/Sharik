@@ -1,6 +1,115 @@
 # Project Progress
 
+## SIL-52 / SIL-54 delegated correction candidate — 2026-09-10
+
+Final-source local verification completed: **966 tests / 157 files**, lint/typecheck/build/secret scan PASS. Independent review resolved its findings. SQL/CI/hosted gates remain blocked pending GitHub identity approval; no publication or UAT completion claimed.
+
+Retained client snapshot and package double-consumption fixes are implemented locally with independent review. Review additionally identified and addressed decimal arithmetic and required authoritative publication mapping/audit protection; final integration checks are underway. SQL runtime/CI and hosted acceptance remain unexecuted; no deployed-fix claim. Existing GitHub active identity is read-only; owner approval to use the available samawah-media identity is pending. [Current checkpoint](../specs/015-persistent-mvp-pilot-completion/evidence/sil52-sil54-checkpoint.md). Preserve all prior unexecuted owner/viewer/files/mobile/isolation/recovery items.
+
+## Madar client lifecycle reached delivery; acceptance HOLD — 2026-09-10
+
+Actual UI trial completed send-v2 → client changes → v3 draft/internal review/approval → resend → client approval → preparation → delivery. DB verified delivered100%, version3 final, one client approval despite old-tab replay, one consumption of1 and SLA pause/resume/completion timestamps. Two P1 findings block acceptance: SIL-52 previously sent work disappears during internal draft; SIL-54 package shows both reserved1 and consumed1 for the same delivered unit, leaving0 instead of1 available. Local915 tests and selector geometry1440/375 pass; extended navigation runner times out and full mobile/files/viewer/security acceptance remains open. Updated owner walkthrough, defect register and gates; no product-code fix or deployment this round.
+
+## Continued acceptance testing — 2026-09-10
+
+Fresh full local unit/component/simulator suite 803 PASS and integration suite112 PASS (915 unique). Client browser verified keyboard scope switching, bookmark/resource stability, internal-board denial and unsent Madar detail denial. Read-only Madar database checkpoint confirms internal decision/audit records and no client decision/SLA timeline yet. New SIL-49–51 recorded; no business-state writes or deployment. Client lifecycle needs an accessible management session; overall UAT remains HOLD. See canonical owner walkthrough and gate status for current boundaries.
+
+## SIL-44 workspace selector — local implementation verified — 2026-09-10
+
+Approved selector implemented with delegated UI/route work and independent source review. Combined 216 tests passed; scoped lint, TypeScript, production build and secret scan passed. Real browser against local production build + hosted UAT switched Jidei to Madar, retained selection after reload and displayed the correct contract; unshared work, pending approvals and files remained absent. No membership/RLS/business changes or deployment. Hosted Preview acceptance, mobile/isolation checks and client decision/SLA lifecycle remain pending; full UAT HOLD. [Checkpoint](../specs/015-persistent-mvp-pilot-completion/evidence/client-workspace-checkpoint.md).
+
+## Client browser UAT: multi-scope navigation blocker — 2026-09-10
+
+Owner opened test approver. Reloaded portal and inspected home/work/pending/files/commercial plus one synthetic delivered Jidei detail, read-only. Portal selects Jidei without a Madar switcher; local primaryClient clients.find selection corroborates the observed limitation (deployed SHA not verified). Recorded SIL-44–48 in owner walkthrough: scope navigation, ambiguous counts/copy, invalid 51-byte video preview fallback, delivered-state messaging. No account/business changes or client decisions. Madar send/change/approval/SLA still unexecuted; full UAT HOLD. Preserve both granted scopes; do not work around by suspending Jidei.
+
+## Approved Madar-only client grant applied and verified — 2026-09-10
+
+After explicit owner approval, executed scoped atomic DO through linked UAT CLI: additive Madar client membership/approver role plus audit, no existing-scope updates. Operational SQL saved in evidence/madar-client-access-20260910.sql (not product migration). Verified one audit event and both active Jidei/Madar roles under test-client session. Jidei deliverable count remains11; Madar returns0 before client send despite new grant. No client send, policy change, new account or Production action. Browser client sign-in and remaining lifecycle tests next; viewer credential issue and full acceptance remain HOLD. Replay/rollback not executed.
+
+## UAT administrative connection recovered; Madar grant awaiting confirmation — 2026-09-10
+
+Preview host verified. Separate gitignored Preview env download did not supply service-role value; cached Supabase CLI2.107.0 successfully authenticated to sharik-uat and supplied administrative access in process memory without exposing or persisting the key. Read-only checks confirmed Madar tenant and existing test approver active tenant/Jidei memberships, with no Madar membership. Proposed additive Madar-only client_approver membership/role plus audit, preserving existing scopes; not applied. No production/client send. Owner confirmation and remaining UAT pending/HOLD.
+
+## Supabase signed-in identity lacks UAT project access — 2026-09-10
+
+Owner signed in as visible samawah-media. Opening the exact UAT project redirected to organizations with “You do not have access to this project”. No other projects inspected or permissions changed. Need project-authorized identity; Madar client preparation remains HOLD, not a missing sign-in alone.
+
+## Client Auth and isolation checked; Supabase dashboard sign-in needed — 2026-09-10
+
+Public-key Auth verified existing test approver, scoped only to Jidei; viewer returned invalid_credentials. Read-only deliverable counts under approver session: assigned scope11, unassigned Madar0. Partial RLS evidence only, not browser/client acceptance. No grants, data edits or global sign-out. Dashboard requires owner sign-in; kept handoff tab open. Administrative key was not needed for this verification. Existing persona scope-moving script remains unapplied; full acceptance HOLD.
+
+## Madar client preparation blocked before network access — 2026-09-10
+
+Owner requested minimal-cost setup. Existing persona attachment tool reviewed; apply would suspend other persona scopes, so it was not run. Dry-run using secure UAT config plus .env.local stopped at missing SUPABASE_SERVICE_ROLE_KEY before network access. No account existence verified, permissions changed or client send performed. Need secure local administrative configuration or an already authorized client session; HOLD remains.
+
+## Management internally approved Madar revision2; client boundary pending — 2026-09-10
+
+Refreshed owner-confirmed management session. Verified latest Madar review notification and revised version2 text. Quality tab had no saved items; tested internal approval once without creating/completing checklist. Redirected board showed internally approved/70%; Activity displayed accepted internal decision with management actor/time. Pre-send summary identifies Madar/version2, caption/body and zero files. Did not click review-confirmation or send to client. Canonical walkthrough records REV2-01–06/SIL-42–43: indistinguishable version notifications and unclear advisory/mandatory quality policy. Approval is synthetic text-workflow testing, not final creative acceptance. Next needs a confirmed Madar-scoped test-client session before client visibility/approval/SLA tests; no permissions or accounts changed. Same deployment indicator, SHA unverified. No code/deployment; full acceptance HOLD.
+
+## Writer revision2 resubmitted; management verification next — 2026-09-09
+
+Owner-confirmed writer session refreshed. Named change-request notification and management internal reason visible; notification links to generic /work. New version2 form was blank except number, requiring manual copy of unchanged metadata. Saved two-line synthetic caption as draft, reloaded and verified persistence; old technical file remains in Files but version2 has no image. Resubmitted version2 internally, reloaded and verified ready-for-internal-review/50%, two versions/one file and revised text; history renders unknown status. Canonical walkthrough records WR-REV-01–06 and SIL-39–41 with confirmations of SIL-08/35. Comment-editor automation could not set its value, so no new comment was saved; this is a tool limitation, not a proven product failure. No client send, approval, task/file mutation, code or deployment. Next management checks revised text/notification. Full acceptance HOLD; same visible deployment indicator, SHA unverified.
+
+## Management requested Madar internal changes; writer follow-up pending — 2026-09-09
+
+Refreshed owner-confirmed management session. Verified named review notification, writer text and designer technical image together in version1. Empty internal-change reason triggered native English validation. Submitted one reasoned change request on synthetic Madar only; full reload confirmed internal_changes_requested/45%, retained content/file and success message. Internal comment retained reason/management actor/time; Activity renders “قرار داخلي: قرار غير معروف”, while review-time version history showed unknown version status. Canonical walkthrough records REV-LIVE-01–05 and SIL-35–38. No database audit inspection, internal approval, client send, task completion, code fix or deployment. Next writer must verify reason/notification and revision/resubmission. Visible deployment dpl_9x7AafDPSsTFbgtE1t8h1EtnnDVx; SHA unverified. Full acceptance HOLD.
+
+## Designer upload and internal submission persisted; deployment changed mid-trial — 2026-09-09
+
+Owner replaced queued invitation screenshot with a desktop PNG selected for technical testing. Uploaded once as internal file, verified image on version1 alongside writer text, then submitted to internal review. Full reload retained ready_for_internal_review, one version/file and preview. Tasks remained writer in-progress/designer scheduled; no completion claims or client send. Recorded DES-06–10/SIL-32–34 (technical replacement copy, no incomplete-task warning, contradictory role next-step). Vercel indicator changed on reload from dpl_62yfYUbqL8jMk3nYDp5joS3gB49R to dpl_9x7AafDPSsTFbgtE1t8h1EtnnDVx; agent did not deploy and SHA is unverified. Next management verifies same content/file and review notification. Full acceptance HOLD.
+
+## Designer UX trial: cross-role draft visible, upload paused for safe asset — 2026-09-09
+
+Owner-confirmed designer session showed Madar and the exact writer version1 draft after reload. Recorded DES-01–05/SIL-27–31: weak role-specific next action, duplicated read/edit content, mixed-language uploader, missing upload context and nested scrolling. File chooser subsequently showed a queued PNG whose thumbnail resembles an invitation page with browser URL; agent did not choose its path or upload it. Await a non-sensitive synthetic asset, not credentials or an invitation screenshot. No persisted changes this round. Cross-role writer-to-designer read passes for this case only; upload and full acceptance remain pending/HOLD.
+
+## Writer saved Madar draft; designer verification next — 2026-09-09
+
+Owner-confirmed writer session showed assignment notification naming Madar task; its link returned generic /work. Writer read instructions behind task edit, started only own task and saved version1 as draft. Full reload confirmed body/caption/brief/channel/format/objective persisted and draft history remained. No file or review submission; deliverable still not_started/0%. Activity calls text-only draft save a version upload. Canonical walkthrough records WR-MAD-01–07 and SIL-24–26; other-assignee edit controls observed but not exercised or declared a security failure. Next designer must confirm cross-role visibility and upload a synthetic asset. Full acceptance remains HOLD.
+
+## Management assigned Madar tasks; writer handoff pending — 2026-09-09
+
+Verified refreshed management UI; created exactly two tasks on the existing synthetic Madar deliverable: writer copy due Sep11 and designer visual due Sep12, both normal priority/scheduled. Full browser reload and reopened drawer retained both assignees/dates; writer edit form retained description. Recorded MAD-07–10 and SIL-22–23 in canonical walkthrough: task save reloads drawer and loses focus; management Activity remains empty (not proof of missing database audit records). No role policy change, existing-client mutation, content submission, upload or deployment. Next writer session must verify task visibility/instructions/notification and save a draft. Full acceptance remains HOLD.
+
+## Account-manager trial: discovery passes, team assignment blocked — 2026-09-09
+
+After owner-confirmed account-manager sign-in and reload, /work listed Madar among five deliverables; search narrowed correctly to one. Drawer showed writer/designer contributors but no task-assignee selector. Canonical walkthrough records ACC-LIVE-01–04 and SIL-21: local read capability restricts assign/reassign to management; account_manager is a team role even as deliverable owner. Deployed SHA remains unverified; UI lacks explicit role identity. No task creation or permissions mutation attempted. Stop at this workflow boundary; next safe continuation is management assigning the synthetic case's writer/designer tasks, not silently expanding account-manager powers. Full-role acceptance remains HOLD.
+
+## Madar fictional lifecycle trial created; next account manager — 2026-09-09
+
+Supersedes the session prerequisite below: refreshed management role stayed consistent through navigation. Created one authorized fictional Preview client `c546ec7e-f65d-488f-a656-fca612f8d8c1` with contract, three service lines (2 posts/1 video/1 report), one post reserving one unit, account-manager owner and writer/designer participants. Verified post-save commercial counters and drawer participants. Canonical owner walkthrough records MAD-01–06 and SIL-17–20, including required-field focus, ambiguous service fields/reservation review, weak post-create guidance and unlabeled differing date types. Screenshot succeeded; full wheel/mobile tests remain pending. Next: verified account-manager session and task distribution, then writer/designer/client lifecycle. No existing-client edits, real email, code fix, deployment or acceptance claim. Visible deployment SHA still unverified; all pending gates remain HOLD.
+
+## Full-role trial requested; account-session prerequisite — 2026-09-09
+
+Owner requested a new fictional-client full lifecycle trial. Before creation, old management tab showed management UI but navigation changed it to writer UI (15 unread, no client-create action), demonstrating stale role presentation/shared sign-in context rather than two verified sessions. No client created or persisted mutation performed. Canonical walkthrough records SIL-16 and the handoff requirement: independent browser profiles, or deliberate sequential sign-in with refresh and role verification. Full journey remains pending; do not treat opened tabs as separate role sessions.
+
+## Writer usability trial — 2026-09-09
+
+Owner provided writer session. Recorded WR-01–09 and SIL-11–15 in canonical owner walkthrough. Live reproduction: search with Arabic diacritics finds Silal, undiacritized query returns zero; writer-facing commercial/SLA link leads to access denied. Unsaved text survived content/tasks/files tab switching and was cleared without saving; Escape restored focus. Team assignment selector absent in writer task form (UI-only observation). Role/breadcrumb mismatch, next-action discoverability and long content form recorded as UX findings. No business mutations, code fixes, authorization changes or owner acceptance. Other personas and full lifecycle remain untested.
+
+## Live agent trial, partial management round — 2026-09-09
+
+Owner authorized browser-led testing and notes. Canonical owner walkthrough now records LIVE-01–07 and SIL-06–10. Management session visibly sees the writer's content under September acceptance client, not Silal. Silal's single card reserves all four posts; no further reservations created. Unsaved text persisted across tabs and was cleared without saving; Escape restored trigger focus. Unread notification filter showed one matching review notification. Screenshot capture timed out; scrolling/mobile not passed. Other role sessions unavailable pending handoff. Visible Vercel deployment indicator differs from prior recorded publish; current SHA unverified. No persisted business mutation, permissions change, code fix or deployment. Full owner acceptance remains HOLD.
+
+## Owner trial started: Silal checklist and observations — 2026-09-09
+
+Owner supplied screenshots of Silal onboarding, summary and a pending invitation whose link displayed unavailable. Canonical [owner walkthrough](../specs/015-persistent-mvp-pilot-completion/evidence/owner-acceptance-walkthrough-ar.md) now starts with a per-role checklist, result/notes fields, existing-case data and SIL-01–SIL-05 observations. No duplicate client was created. All unexecuted checks remain pending; invitation acceptance is blocked pending correct-account/latest-link verification, not confirmed revoked. Source confirms email delivery is disabled, summary counts deliverable records and package lines, and invitation preview requires invited-email matching but maps every read failure to the revoked view. Custom job title versus permission role is a proposal only, not implemented. No application, hosted data, permission or deployment changes. Formal owner acceptance remains HOLD; old 20 requirement checks are not waived.
+
+## Updated Preview READY for owner trial — 2026-09-08
+
+Exact-head CI34235275648 on8f71971 SUCCESS: unit400/integration112/
+RLS-simulator24, real DB PASS, components317, fixture263PASS/37SKIP,
+persistent24PASS; secret scan/build PASS. Applied only reviewed202609010001
+to verified UAT; post-apply dry-run confirms up to date. No data import/reset.
+Vercel Preview dpl_6FeynGE1zYadBFwVhccKi23n6nps READY; existing branch Preview
+alias updated. Owner's existing authenticated Chrome session renders updated
+management dashboard and status chart; lead visually inspected desktop.
+Production untouched. All20 owner checks, hosted all-persona/mobile acceptance
+and the recorded conditional notification-proof gap remain OPEN.
+
 ## Preview accepted; persistent test selector corrected — 2026-09-08
+
+Correction8f71971 pushed. Replacement CI34235275648 is IN_PROGRESS; publication
+remains held. Resume from this run, not from the failed6ab50e2 run.
 
 Owner chose Preview-first trial. CI34231310152 on6ab50e2 failed only the persistent
 invitation journey:23PASS/1FAIL,22.4m. The test waited for the removed single-client

@@ -1,5 +1,21 @@
 # Spec 015: Persistent MVP Pilot Completion
 
+## SIL-52 / SIL-54 — approved UAT blockers correction — 2026-09-10
+
+Security acceptance: authoritative send events cannot be directly forged by authenticated users; trusted send commands still emit them. Explicit client-readable work/version mapping must remain correct for accounts holding both client and team roles. Retained fallback uses send history; existing exact-current public/final compatibility does not require historical backfill. See ADR-013 for these reviewed boundaries.
+
+Owner approved correction after the Madar text lifecycle exposed both defects. Keep the internal working-version pointer unchanged. During a subsequent rework cycle the client must retain read-only access to exactly the last explicitly sent version, including only that version's client-visible comments and permitted files. An internal draft, submission or internal approval must not replace that snapshot. Explicit resend replaces it; never-sent work, older superseded snapshots, internal content and unauthorized scopes remain hidden. Reads must derive publication from authoritative send history, not the largest version number or submission timestamp. Existing current-version/status/role checks remain mandatory for decisions, comments and uploads; historical read access grants no write authority. Internal rework is shown as client-safe “قيد التعديل لدى فريق سماوة”. See ADR-013 for the read/mutation separation.
+
+Package consumption converts the same work's reservation into delivered usage; it must not charge capacity twice. For two committed posts and one reserved-then-delivered post, the result is reserved=0, consumed=1, available=1. Preserve append-only entries and idempotency. Cancellation/release, adjustments, fractional units and reservations of other works must remain correct. No manual ledger repair, historical migration rewrite, new technology or permission expansion.
+
+Acceptance requires failing-then-passing local regression, authenticated database policy/capacity tests and a fresh fictional browser cycle. Local tests are not proof of deployed behavior. Existing viewer/files/mobile/isolation and owner acceptance items remain open. No Production deployment or hosted migration is included without the established reviewed CI gate.
+
+## SIL-44 — approved client workspace selection — 2026-09-10
+
+Client portal users with multiple active authorized client scopes can select a workspace in the shared Arabic RTL shell. Show only minimal authorized id/name options; one workspace is labelled without a redundant picker. A server-validated, HTTP-only session cookie remembers the preference across home/work/pending/files/commercial. It is never authorization: every request rechecks tenant membership, client membership, active client, and scoped client-view role. Reject invalid selection mutations without writing a cookie; stale stored preferences may fall back only to a currently authorized client. Runtime failures deny access. Switching navigates to the client home so an open form cannot be retargeted. Detail reads and writes continue to authorize the actual deliverable/client/version, independently of preference, with existing audit and SLA contracts unchanged.
+
+Acceptance: A/B switching and reload persistence; no C metadata; revoked/disabled/cross-tenant scopes excluded; approver A/viewer B cannot approve B; invalid action writes nothing; no internal or unsent content exposure; keyboard/mobile labelled picker with pending/error feedback. No schema/RLS/role grants, new dependencies, changes to approval/SLA, production deployment, or unrelated SIL-45–48 repairs in this slice. Local evidence and hosted acceptance remain separate.
+
 ## Owner-approved verification location exception — 2026-09-08
 
 Docker-dependent clean reset, real database/RLS and persistent journey gates may

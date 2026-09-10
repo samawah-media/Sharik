@@ -31,10 +31,12 @@ export function ClientShell({
   canApprove = true,
   children,
   notifications = emptyNotifications,
+  workspaceSelector,
 }: {
   canApprove?: boolean;
   children: React.ReactNode;
   notifications?: NotificationBellData;
+  workspaceSelector?: React.ReactNode;
 }) {
   const pathname = usePathname() ?? "/client";
   const pendingLabel = canApprove ? "بانتظار موافقتي" : "قيد المراجعة";
@@ -59,6 +61,7 @@ export function ClientShell({
               <span className="text-xs text-shell-muted">تشغيل سماوة</span>
             </span>
           </Link>
+          {workspaceSelector}
           <nav
             aria-label="تنقل بوابة العميل"
             className="mt-1 flex min-w-0 max-w-full gap-2 overflow-x-auto lg:mt-5 lg:grid"

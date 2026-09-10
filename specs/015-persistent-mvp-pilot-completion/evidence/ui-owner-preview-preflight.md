@@ -1,12 +1,40 @@
 # UI1–UI4 owner Preview preflight — 2026-09-08
 
-Status: HOSTED_TEAM_UAT_BLOCKED. UI1–UI4 LOCAL PASS remains valid.
+Status: PREVIEW_READY_FOR_OWNER_TRIAL. Owner acceptance pending.
 Owner authorized hands-on Preview publication, then explicitly requested
 Production on2026-09-08. Production preparation is blocked on target configuration
 and database choice; this request does not waive compatibility or acceptance gates.
 Continue in Spec015; do not create another release roadmap.
 
 ## Latest remote checkpoint — 2026-09-08
+
+Deployment dpl_6FeynGE1zYadBFwVhccKi23n6nps is READY, target Preview,
+source8f71971. Build completed in51s; CLI deployment completed successfully.
+Existing branch Preview alias explicitly assigned to this deployment. The
+owner's authenticated Chrome session loaded /portfolio successfully; updated
+dashboard/status-distribution chart verified in accessibility state and desktop
+screenshot. Tab retained for owner trial. No customer screenshots or records
+copied into repository evidence. This is not hosted all-persona/mobile QA.
+All20 owner checks and conditional notification-proof gap remain OPEN.
+
+CI34235275648 on8f71971 completed SUCCESS: unit400, integration112,
+RLS-simulator24, real DB PASS, components317, fixture browser263PASS/37SKIP,
+persistent browser24PASS; secret scan/build PASS. Conditional notification-proof
+gap below remains OPEN despite the suite's exit0; all20 owner checks stay pending.
+Rechecked linked UAT target, exact migration checksum and one-file dry-run.
+Applied202609010001 only, exit0; subsequent dry-run says remote database up to
+date. CLI warned that local migration-catalog caching could not use broken Docker;
+this did not prevent the remote apply. No seed/import/reset or data transfer.
+Clean8f71971 source submitted to the existing Vercel project as Preview;
+deployment6FeynGE1zYadBFwVhccKi23n6nps currently BUILDING. No Production changes.
+
+Correction committed/pushed as `8f719715e2b6c53e88c4530c81520c3807a5ab71`.
+Replacement exact-head CI: `34235275648`, currently IN_PROGRESS. Do not deploy
+the earlier6ab50e2 snapshot or treat the failed run as green. Clean corrected
+source export is prepared outside the repository; no ignored secrets copied.
+Next: require this run's full success, recheck bounded UAT migration dry-run,
+apply/verify the single pending migration, then deliberate Preview deployment
+and authenticated browser verification. No hosted changes have happened.
 
 Final CI result34231310152: FAIL, persistent23PASS/1FAIL in22.4m. Failure is
 `locator.selectOption` waiting for the removed single-client label. Lead replaced

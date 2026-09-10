@@ -215,11 +215,18 @@ export const resolveRouteActor = (
 
 export const resolveRouteRuntime = async (key?: string) => {
   if (canUseRouteActorFixtures()) {
+    const fixtureActor = resolveRouteActor(key);
     return {
       ok: true as const,
-      actor: resolveRouteActor(key),
+      actor: fixtureActor,
       clients: routeClients,
-      clientMemberships: [],
+      clientMemberships: fixtureActor.roleAssignments.filter((assignment) => assignment.scopeType === "client" && assignment.roleKey.startsWith("client_")).map((assignment) => ({
+        id: `fixture_membership_${assignment.scopeId}`,
+        tenantId: fixtureActor.tenantId,
+        userId: fixtureActor.userId,
+        clientId: assignment.scopeId,
+        status: assignment.status,
+      })),
     };
   }
 

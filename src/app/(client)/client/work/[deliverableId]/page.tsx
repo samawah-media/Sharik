@@ -1,6 +1,8 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getClientWorkspaces } from "@/server/auth/client-workspace";
+import { readClientForDeliverable } from "@/server/navigation/client-workspace";
 import { revalidatePath } from "next/cache";
 import {
   canUseRouteActorFixtures,
@@ -121,16 +123,18 @@ export default async function ClientWorkDetailPage({
     return <AccessDeniedState returnHref="/sign-in" />;
   }
 
-  const { actor, clients } = runtime;
-  const primaryClient = clients.find((client) =>
-    actor.roleAssignments.some(
-      (assignment) =>
-        assignment.status === "active" &&
-        assignment.scopeType === "client" &&
-        assignment.scopeId === client.id,
-    ),
-  );
-  if (!primaryClient) return <NoAssignedClientState returnHref="/sign-in" />;
+  const { actor } = runtime;
+  const clients = getClientWorkspaces(runtime);
+  if (clients.length === 0) return <NoAssignedClientState returnHref="/sign-in" />;
+  const supabase = !usingFixtures && isValidPersistentDeliverableId(safeDeliverableId)
+    ? await createSupabaseServerClient()
+    : undefined;
+  const primaryClient = usingFixtures
+    ? clients.find((client) => buildFixtureWorkDetail(safeDeliverableId, client.id))
+    : supabase
+      ? await readClientForDeliverable({ runtime, supabase, deliverableId: safeDeliverableId })
+      : undefined;
+  if (!primaryClient) return <ResourceNotFoundState returnHref="/client/work" />;
   if (
     !guardClientDetailRoute({ actor, clientId: primaryClient.id, clients })
       .allowed
@@ -146,9 +150,9 @@ export default async function ClientWorkDetailPage({
   let detail: ClientSafeDeliverableDetail | undefined;
   if (usingFixtures) {
     detail = buildFixtureWorkDetail(safeDeliverableId, primaryClient.id);
-  } else if (isValidPersistentDeliverableId(safeDeliverableId)) {
+  } else if (supabase) {
     detail = await readPersistentClientWorkDetail({
-      supabase: await createSupabaseServerClient(),
+      supabase,
       tenantId: primaryClient.tenantId,
       clientId: primaryClient.id,
       deliverableId: safeDeliverableId,

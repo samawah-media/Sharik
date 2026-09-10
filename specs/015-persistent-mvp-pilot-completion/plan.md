@@ -1,5 +1,13 @@
 # Plan: Persistent MVP Pilot Completion
 
+## SIL-52 / SIL-54 correction — 2026-09-10
+
+Execute [bounded plan](evidence/sil52-sil54-plan.md), under the top Spec015 amendment and ADR-013. Existing dirty SIL-44 is preserved. Native workers have disjoint source/test ownership; coordinator serializes test/build output and owns shared docs/review. No commit, push, migration apply or publication in worker assignments. Docker currently has no daemon endpoint; authenticated DB tests remain a separate required gate, not inferred from mock or unit results.
+
+## SIL-44 bounded implementation — 2026-09-10
+
+Owner approved the selector design. Lead owns common authorization/selection helper, server cookie action, route integration and canonical evidence. A native worker owns the isolated selector component and component tests only. Use test-first checks, then targeted unit/component/route regression, typecheck and lint. Preserve all existing dirty evidence and operational SQL. No database/schema or authorization model changes; no ADR needed for a UI preference using the existing server-action stack. Deliberate Preview publication and live A/B acceptance follow reviewed local verification; never mark pending owner tests passed.
+
 ## Owner-approved CI recovery — 2026-09-08
 
 Owner approved moving Docker-dependent verification to disposable GitHub runner

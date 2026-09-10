@@ -1,5 +1,28 @@
 # Spec 015 gate status
 
+## SIL-52 / SIL-54 correction candidate — 2026-09-10
+
+Final local source: **966 tests / 157 files PASS**, lint/types/build/secret scan PASS; independent DB/application source review complete. The following initial-round history is superseded for local counts only; SQL/CI/hosted/UAT gates remain open.
+
+Delegated fixes and independent review are in progress under ADR-013. Initial local regression passed 960 tests/157 files plus lint/types/build/secret scan; subsequent decimal and mixed-role review amendments require final-source rerun. SQL migrations and authenticated pgTAP cases are authored, **NOT EXECUTED or applied**. Owner approved commit/push and disposable GitHub tests, but active GitHub identity has read-only repository access; permission to use the existing samawah-media login is awaiting reply. No deployment, database mutation, OWNER_UAT_PASS or closure of SIL-52/SIL-54. See [live correction checkpoint](sil52-sil54-checkpoint.md). All prior unexecuted viewer/files/mobile/isolation/recovery checks remain open.
+
+## Latest: Madar text lifecycle delivered; two P1 findings — 2026-09-10
+
+Madar-only UI lifecycle reached delivered100%, version3 final. Read-only DB verified one client approval for v3 despite old-tab replay, one unit consumed once, decision/audit alignment and pause/resume/completed SLA segments. Management session access was resolved through its direct board route. New P1 SIL-52: previously sent work becomes inaccessible when a newer internal draft is saved. New P1 SIL-54: package summary double-counts the reserved-and-consumed unit (2 agreed,1 in work,1 delivered,0 available with one delivered work). These block acceptance. SIL-48 technical comment label confirmed on fresh decision. Full local915 tests PASS; selector geometry1440/375 PASS, extended automated navigation TIMEOUT/unresolved. Viewer/files/isolation/recovery/full-mobile and exact-source hosted gates remain OPEN; old20 not checked. No deployment or Production change. Canonical walkthrough contains detailed evidence and next queue; earlier checkpoint below is historical.
+
+## Current UAT continuation — 2026-09-10
+
+SIL-44 is locally implemented, not published. Current local verification: 803 unit/component/RLS-simulator tests plus 112 integration tests passed (915 unique, 155 files). Real client browser on local production build + hosted UAT verified keyboard switching, persistent scope, bookmarked authorized resource stability, denial of internal board and denial of unsent Madar detail. Scoped database read verified existing internal decision/audit records, but no client decisions or SLA timeline rows yet. Full lifecycle, real backend negative writes/files, mobile and exact-source hosted acceptance remain open. Owner20 remain unchecked requirements review items, not 20 executable test cases. No OWNER_UAT_PASS, TEAM_UAT_READY or Production readiness. Current details and new SIL-49–51 are in the owner walkthrough; historical September8 release evidence below does not cover dirty SIL-44 source.
+
+## Preview publication verified — 2026-09-08
+
+CI34235275648 exact8f71971 SUCCESS, including persistent24PASS and fixture
+263PASS/37SKIP. Reviewed UAT migration applied, post-apply dry-run no-op.
+Preview dpl_6FeynGE1zYadBFwVhccKi23n6nps READY; branch alias updated and
+authenticated desktop dashboard visually verified. Owner20, hosted multi-role/
+mobile acceptance and recorded notification E2E proof remain OPEN. Production
+is not deployed or configured by this execution.
+
 ## Preview release held for corrected CI — 2026-09-08
 
 Owner accepted Preview-first. Run34231310152 failed persistent invitation only:

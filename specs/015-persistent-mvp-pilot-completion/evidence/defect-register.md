@@ -1,5 +1,25 @@
 # Spec 015 defect register
 
+## Active human-style UAT findings — 2026-09-10
+
+Canonical reproduction and actual execution evidence: [owner walkthrough](owner-acceptance-walkthrough-ar.md). These entries supplement, not replace, the historical register below. No P1 is closed by the915 local test result.
+
+| ID | Priority | Finding | Current disposition |
+| --- | --- | --- | --- |
+| SIL-44 | P1 | No authorized workspace selector | Implemented locally; hosted publication and full acceptance pending |
+| SIL-45 | P2 | Client work totals imply all contracted work is visible | Open |
+| SIL-46 | P2 | Ambiguous client empty-state/action copy | Open |
+| SIL-47 | P2 | Failed video preview lacks helpful Arabic fallback | Open; valid video acceptance pending |
+| SIL-48 | P2 | Delivered-state copy and raw client_approval comment | Open; raw label reproduced by fresh Madar approval |
+| SIL-49 | P2 | Bookmarked work from one allowed client shown with another selected workspace label | Open; actual resource stayed correct |
+| SIL-50 | P2 | Unsent-work denial suggests selecting workspace even when already selected | Open; must not reveal hidden resource existence |
+| SIL-51 | Investigation | No initial SLA timeline before first send | Open; later pause/resume/completion verified, initial-start path not verified |
+| SIL-52 | P1 | Saving new internal draft makes previously sent work inaccessible to client | Open; returning visibility only after resend is reproduced |
+| SIL-53 | P2 | Client decisions silently return to empty pending inbox, including stale-tab replay | Open; duplicate approval did not create duplicate decision |
+| SIL-54 | P1 | Delivered unit remains counted as both in-work and delivered, reducing available package capacity twice | Open; UI2/1/1/0 and DB reserved1+consumed1 on the sole delivered Madar work corroborate |
+
+Next correction priority: SIL-52 and SIL-54, with isolated regression and fresh end-to-end case. No manual ledger rewrite, security relaxation or owner acceptance implied.
+
 Governance: P0/P1 blocks completion. P2 requires explicit owner disposition. P3 may be deferred only with rationale. `Fixed` requires an executed regression test; a regression that exists but cannot execute is not PASS.
 
 | ID          | Severity | Affected role                                   | Affected workflow                                                                   | Reproduction                                                                                                                                                                                                                                      | Security/data impact                                                                                                                                                                                                                                                                                                                          | Owner                         | Fix status                                                                                                      | Regression test                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Evidence reference                                                                                                                                                             |

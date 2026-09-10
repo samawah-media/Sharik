@@ -6,6 +6,7 @@ import type {
 } from "@/modules/commercial/commercial-summary";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableLifecycleStatus } from "@/modules/deliverables/deliverable-rules";
+import { deriveClientReadableVersion } from "@/modules/approvals/client-readable-version";
 import {
   isHumanTrialContract,
   isHumanTrialDeliverable,
@@ -321,16 +322,41 @@ export const readCommercialSummary = async ({
   const packageRows = (
     (packageResponse.data ?? []) as PackageWriteRow[]
   ).filter((row) => humanTrialContractIds.has(row.contract_id));
-  const deliverableRows = (
+  let deliverableRows = (
     (deliverableResponse.data ?? []) as DeliverableWriteRow[]
   ).filter(
     (row) =>
       isHumanTrialDeliverable(row) &&
-      (!row.contract_id || humanTrialContractIds.has(row.contract_id)) &&
-      (audience === "management" ||
-        (clientVisibleStatuses.has(row.status as DeliverableLifecycleStatus) &&
-          Boolean(row.current_version_id))),
+      (!row.contract_id || humanTrialContractIds.has(row.contract_id)),
   );
+
+  if (audience === "client" && deliverableRows.length > 0) {
+    // Resolve publication explicitly: mixed team/client roles can read multiple table versions.
+    const versionResponse = await supabase.rpc("s015_client_readable_versions", {
+      target_tenant_id: tenantId,
+      target_client_id: clientId,
+      target_deliverable_ids: deliverableRows.map((row) => row.id),
+    });
+    if (versionResponse.error) return { ok: false };
+    const readableVersions = new Map<string, string>();
+    for (const version of versionResponse.data ?? []) {
+      if (readableVersions.has(version.deliverable_id)) return { ok: false };
+      readableVersions.set(version.deliverable_id, version.version_id);
+    }
+    deliverableRows = deliverableRows.flatMap((row) => {
+      const clientState = deriveClientReadableVersion({
+        status: row.status,
+        currentVersionId: row.current_version_id,
+        readableVersionId: readableVersions.get(row.id),
+        hasReviewPayload: false,
+      });
+      return clientState ? [{
+        ...row,
+        status: clientState.status,
+        progress_percentage: clientState.progressPercentage,
+      }] : [];
+    });
+  }
   const packageIds = packageRows.map((row) => row.id);
   const deliverableIds = deliverableRows.map((row) => row.id);
 

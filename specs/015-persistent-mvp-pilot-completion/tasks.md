@@ -1,5 +1,24 @@
 # Tasks: Persistent MVP Pilot Completion
 
+## SIL-52 / SIL-54 correction queue — 2026-09-10
+
+- [x] Owner authorizes the two UAT blocker fixes; capture dirty baseline and investigate independent root causes.
+- [x] Specify read-only last-sent snapshot contract and ADR; prepare authenticated DB regression before policy implementation. SQL execution remains a separate unchecked gate.
+- [x] Add failing local client-read/actionability regressions, implement scoped projection and review it; include mixed-role mapping regression.
+- [ ] Add failing package-consumption regressions, correct shared projection and verify SQL capacity consistency.
+- [ ] Execute real database RED/GREEN and independent security review before hosted migration.
+- [ ] Run combined local verification, rebuild and validate reviewed Preview before fresh fictional full lifecycle/file checks.
+- [ ] Update owner checklist with exact results; retain unexecuted viewer/mobile/isolation/recovery tests and OWNER_UAT_HOLD.
+
+## SIL-44 client workspace selector — 2026-09-10
+
+- [x] Owner approves bounded design; independent security review completed.
+- [x] Add tested authorized-scope resolver and validated session-cookie action.
+- [x] Add accessible client workspace selector and component tests (delegated).
+- [x] Integrate shared selection across portal; preserve actual-resource detail authorization.
+- [x] Run targeted regression, typecheck/lint and independent diff review. Combined 216 tests green; production build passed. Local browser with hosted UAT verified selection and reload persistence; see [checkpoint](evidence/client-workspace-checkpoint.md).
+- [ ] Publish reviewed Preview and verify Madar/Jidei selection live; resume pending client lifecycle UAT.
+
 ## UI implementation queue — 2026-09-08
 
 - [ ] CI recovery: review and commit the approved source without secrets/client

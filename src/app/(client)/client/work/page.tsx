@@ -13,6 +13,8 @@ import {
   SessionExpiredState,
 } from "@/ui/shared/access-states";
 
+import { readClientWorkspace } from "@/server/navigation/client-workspace";
+
 export const dynamic = "force-dynamic";
 
 const emptyClientCommercialSummary: ClientCommercialSummary = {
@@ -43,15 +45,8 @@ export default async function ClientWorkPage({
     return <AccessDeniedState returnHref="/sign-in" />;
   }
 
-  const { actor, clients } = runtime;
-  const primaryClient = clients.find((client) =>
-    actor.roleAssignments.some(
-      (assignment) =>
-        assignment.status === "active" &&
-        assignment.scopeType === "client" &&
-        assignment.scopeId === client.id,
-    ),
-  );
+  const { actor } = runtime;
+  const { clients, selectedClient: primaryClient } = await readClientWorkspace(runtime);
   if (!primaryClient) return <NoAssignedClientState returnHref="/sign-in" />;
   if (
     !guardClientDetailRoute({ actor, clientId: primaryClient.id, clients })

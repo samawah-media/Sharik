@@ -38,6 +38,7 @@ export type ClientPortalCommentSummary = {
 
 export type ClientSafeDeliverableDetail = {
   clientName?: string;
+  canComment?: boolean;
   approvalItem: ClientApprovalPanelItem;
   status?: string;
   statusLabel: string;
@@ -242,7 +243,7 @@ export function ClientDeliverableDetail({
             لا توجد تعليقات ظاهرة الآن.
           </p>
         )}
-        {canApprove ? (
+        {canApprove && detail.canComment !== false ? (
           <ClientWorkspaceCommentForm
             clientId={detail.approvalItem.clientId}
             deliverableId={detail.approvalItem.deliverableId}

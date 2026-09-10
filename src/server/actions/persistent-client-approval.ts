@@ -5,6 +5,7 @@ import { z } from "zod";
 import type { ClientSafeDeliverableDetail } from "@/ui/client/client-deliverable-detail";
 import { isHumanTrialDeliverable } from "@/modules/deliverables/human-trial-visibility";
 import { hasClientReviewPayload } from "@/modules/approvals/client-review-readiness";
+import { deriveClientReadableVersion } from "@/modules/approvals/client-readable-version";
 import { clientStatusLabel } from "@/modules/deliverables/client-labels";
 
 const decisionSchema = z.object({
@@ -21,6 +22,10 @@ export type PersistentClientDecisionInput = z.infer<typeof decisionSchema>;
 export type PersistentClientApprovalInboxItem = ClientSafeDeliverableDetail;
 
 const clientVisibleDeliverableStatuses = [
+  "in_progress",
+  "ready_for_internal_review",
+  "internal_changes_requested",
+  "internally_approved",
   "waiting_client_approval",
   "client_changes_requested",
   "client_approved",
@@ -99,46 +104,57 @@ async function readClientApprovalDetailForDeliverable(
   deliverable: ClientVisibleDeliverable,
   clientName?: string,
 ): Promise<ClientSafeDeliverableDetail | undefined> {
-  const [{ data: version, error: versionError }, filesResult, commentsResult] =
-    await Promise.all([
-      supabase
-        .from("deliverable_versions")
-        .select(
-          "id, version_number, status, brief, content_body, caption, channel, format, objective, kpi",
-        )
-        .eq("tenant_id", tenantId)
-        .eq("client_id", clientId)
-        .eq("deliverable_id", deliverable.id)
-        .eq("id", deliverable.current_version_id)
-        .in("status", clientVisibleVersionStatuses)
-        .maybeSingle(),
-      supabase
-        .from("file_assets")
-        .select(
-          "id, visibility, file_name, file_type, file_size, version_number, is_final, created_at",
-        )
-        .eq("tenant_id", tenantId)
-        .eq("client_id", clientId)
-        .eq("deliverable_id", deliverable.id)
-        .eq("version_id", deliverable.current_version_id)
-        .in("visibility", [
-          "client_visible",
-          "client_uploaded",
-          "final_delivery",
-        ]),
-      supabase
-        .from("comments")
-        .select("id, body, created_at, author_user_id, comment_type")
-        .eq("tenant_id", tenantId)
-        .eq("client_id", clientId)
-        .eq("deliverable_id", deliverable.id)
-        .eq("version_id", deliverable.current_version_id)
-        .eq("visibility", "client_visible")
-        .order("created_at", { ascending: true }),
-    ]);
+  // Team roles may broaden table RLS; the RPC resolves the client publication boundary.
+  const { data: readableVersions, error: readableVersionsError } = await supabase.rpc(
+    "s015_client_readable_versions",
+    {
+      target_tenant_id: tenantId,
+      target_client_id: clientId,
+      target_deliverable_ids: [deliverable.id],
+    },
+  );
+  if (readableVersionsError || readableVersions?.length !== 1) return undefined;
+  const readableVersion = readableVersions[0];
+  if (readableVersion.deliverable_id !== deliverable.id) return undefined;
 
-  if (versionError || !version || filesResult.error || commentsResult.error)
-    return undefined;
+  const { data: version, error: versionError } = await supabase
+    .from("deliverable_versions")
+    .select("id, version_number, status, brief, content_body, caption, channel, format, objective, kpi")
+    .eq("tenant_id", tenantId)
+    .eq("client_id", clientId)
+    .eq("deliverable_id", deliverable.id)
+    .eq("id", readableVersion.version_id)
+    .in("status", clientVisibleVersionStatuses)
+    .maybeSingle();
+  if (versionError || !version) return undefined;
+
+  const [filesResult, commentsResult] = await Promise.all([
+    supabase
+      .from("file_assets")
+      .select(
+        "id, visibility, file_name, file_type, file_size, version_number, is_final, created_at",
+      )
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .eq("deliverable_id", deliverable.id)
+      .eq("version_id", version.id)
+      .in("visibility", [
+        "client_visible",
+        "client_uploaded",
+        "final_delivery",
+      ]),
+    supabase
+      .from("comments")
+      .select("id, body, created_at, author_user_id, comment_type")
+      .eq("tenant_id", tenantId)
+      .eq("client_id", clientId)
+      .eq("deliverable_id", deliverable.id)
+      .eq("version_id", version.id)
+      .eq("visibility", "client_visible")
+      .order("created_at", { ascending: true }),
+  ]);
+
+  if (filesResult.error || commentsResult.error) return undefined;
 
   const authorIds = [
     ...new Set(
@@ -162,7 +178,6 @@ async function readClientApprovalDetailForDeliverable(
     ]),
   );
 
-  const delivered = deliverable.status === "delivered";
   const previewFile = (filesResult.data ?? []).find(
     (file) =>
       file.file_type.startsWith("image/") ||
@@ -176,31 +191,34 @@ async function readClientApprovalDetailForDeliverable(
       visibility: file.visibility,
     })),
   });
-  const waitingForDecision =
-    !delivered && deliverable.status === "waiting_client_approval";
-  const resolvedStatusLabel = clientStatusLabel(deliverable.status);
+  const clientState = deriveClientReadableVersion({
+    status: deliverable.status,
+    currentVersionId: deliverable.current_version_id,
+    readableVersionId: version.id,
+    hasReviewPayload: reviewPayloadAvailable,
+  });
+  if (!clientState) return undefined;
+  const resolvedStatusLabel = clientStatusLabel(clientState.status);
   return {
     clientName,
+    canComment: clientState.canComment,
     approvalItem: {
       clientId,
       deliverableId: deliverable.id,
       versionId: version.id,
       expectedRevision: deliverable.revision,
-      isActionable: waitingForDecision && reviewPayloadAvailable,
-      actionabilityReason:
-        waitingForDecision && !reviewPayloadAvailable
-          ? "missing_review_payload"
-          : undefined,
+      isActionable: clientState.isActionable,
+      actionabilityReason: clientState.actionabilityReason,
       displayName: deliverable.name,
       typeLabel: deliverable.type,
-      status: deliverable.status,
+      status: clientState.status,
       statusLabel: resolvedStatusLabel,
       versionLabel: `النسخة ${version.version_number}`,
       dueDateLabel: deliverable.client_due_date ?? undefined,
     },
-    status: deliverable.status,
+    status: clientState.status,
     statusLabel: resolvedStatusLabel,
-    progressPercentage: deliverable.progress_percentage,
+    progressPercentage: clientState.progressPercentage,
     content: {
       brief: version.brief ?? undefined,
       body: version.content_body ?? undefined,

@@ -1,6 +1,9 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { ClientShell } from "@/ui/client/client-shell";
+import { ClientWorkspaceSelector } from "@/ui/client/client-workspace-selector";
+import { readClientWorkspace } from "@/server/navigation/client-workspace";
+import { selectClientWorkspaceAction } from "@/server/actions/select-client-workspace";
 import { redirect } from "next/navigation";
 import { resolveRuntimeContext } from "@/server/auth/runtime-context";
 import {
@@ -21,6 +24,7 @@ export default async function ClientLayout({
   const usesFixtures = canUseRouteActorFixtures();
   let canApprove = usesFixtures;
   let notifications: NotificationBellPayload = emptyBellData;
+  let workspaceSelector: React.ReactNode;
 
   if (!usesFixtures) {
     const runtime = await resolveRuntimeContext();
@@ -30,13 +34,13 @@ export default async function ClientLayout({
     }
 
     if (runtime.ok) {
-      const primaryClient = runtime.clients.find((client) =>
-        runtime.actor.roleAssignments.some(
-          (assignment) =>
-            assignment.status === "active" &&
-            assignment.scopeType === "client" &&
-            assignment.scopeId === client.id,
-        ),
+      const { clients, selectedClient: primaryClient } = await readClientWorkspace(runtime);
+      workspaceSelector = (
+        <ClientWorkspaceSelector
+          clients={clients.map(({ id, name }) => ({ id, name }))}
+          selectedClientId={primaryClient?.id}
+          onSelect={selectClientWorkspaceAction}
+        />
       );
       if (primaryClient) {
         canApprove = evaluatePermission({
@@ -58,7 +62,7 @@ export default async function ClientLayout({
   }
 
   return (
-    <ClientShell canApprove={canApprove} notifications={notifications}>
+    <ClientShell canApprove={canApprove} notifications={notifications} workspaceSelector={workspaceSelector}>
       {children}
     </ClientShell>
   );

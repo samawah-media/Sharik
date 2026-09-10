@@ -33,6 +33,16 @@ Docker read-only probe: installed CLI, missing daemon pipe; no reset/reinstall p
 
 ## Final-source local regression
 
+## GitHub execution — owner-authorized
+
+- `samawah-media` active identity verified with repository push permission.
+- Reviewed candidate committed and pushed: `7abaf9ae946851f6ac031e827d624c7cd45a2d4c`.
+- Disposable full quality run started: https://github.com/samawah-media/Sharik/actions/runs/34463859953 . Result pending, not a pass.
+- Result: **FAIL** at SQL test fixture line282, not a migration failure. Supabase start/reset succeeded; SIL52 completed150 passing assertions before `not_started` with progress30 violated `deliverables_initial_progress_status`. SIL54 and every other SQL file returned ok. Corrected that fixture to progress0; no policy, assertion or production constraint weakened. Full rerun required; later browser/build steps were skipped by failed gate.
+- Only pre-existing `next-env.d.ts` remained dirty after commit. No secrets/environment file committed. Vercel automatic deployment remains disabled; no hosted migration or deployment occurred.
+
+### Local evidence before that push
+
 Owner subsequently approved using the existing `samawah-media` GitHub login. Account switch succeeded. Prior waiting-for-identity entries below are historical. Fresh local repeat passed **966 tests / 157 files** (40.08s). Reviewed source push and disposable CI are authorized; automatic Vercel deployment remains disabled.
 
 - After decimal and explicit mapping corrections: **966 tests / 157 files PASS**, exit 0, 57.28 seconds. Command: `node node_modules/vitest/vitest.mjs run --project unit --project component --project integration --project rls-simulator`.

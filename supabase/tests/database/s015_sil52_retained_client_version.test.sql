@@ -279,7 +279,8 @@ set local role authenticated;
 select * from pg_temp.sil52_assert_reads(null, 'archived is not rework');
 reset role;
 
-update public.deliverables set status = 'not_started' where id = pg_temp.sil52_id(501);
+update public.deliverables set status = 'not_started', progress_percentage = 0
+where id = pg_temp.sil52_id(501);
 set local role authenticated;
 select * from pg_temp.sil52_assert_reads(null, 'not_started is not rework');
 reset role;

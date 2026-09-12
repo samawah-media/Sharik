@@ -2,16 +2,17 @@
 
 ## Current reconciliation wave — X010-B-7C-23 — 2026-09-12
 
-### Current batch — SIL-57 LOCAL PASS, not published
+### Current batch — SIL-57 CI/Preview PASS, hosted mutation pending
 
 The lead reviewed the current local implementation and corrective diff. SIL-55
-and SIL-56 publication records below remain intact. SIL-57 exact-head CI ran and
-failed on a real feedback regression; no green rerun, deployment, hosted
-behavioral recheck or owner acceptance exists.
+and SIL-56 publication records below remain intact. The first SIL-57 exact-head
+CI exposed a real feedback regression; replacement run `34712402420` succeeded
+on exact HEAD `2c7b00f81504a9a5fdaf5f36cedb2f970e782ecb`, and its source-git Preview is
+READY. Hosted mutation and owner acceptance remain pending.
 
 | Slice | Model / mode | State / review | Checks | Revisions / usage |
 | --- | --- | --- | --- | --- |
-| SIL-57 | Native `gpt-5.6-luna`, medium effort; agent `01a096bf-ced0-7de0-88aa-405385b309b1`; independent Native `gpt-5.6-sol`, low reviewer `01a096c7-524a-7cc3-965c-81a7b6528aef` | LOCAL PASS after corrections and final reviewer approval; exact-head CI RED; hosted and owner acceptance pending; not fully closed | Initial worker RED: unit 1 expected failure; component 2 expected failures. CI `34710511672`: persistent E2E 21 pass / 2 fail / 1 not run. First post-CI RED 4 component failures / 29 pass → focused 2 files / 33 PASS. Lead then ran full unit 79/501, full component 45/355, typecheck, lint, build and diff-check PASS. Second lifecycle RED 2 failed / 32 passed → focused 2 files / 35 PASS; lead-fresh after it: focused 35/35 + diff-check PASS only. Earlier full integration 28/113 and focused unit 1/7 remain local evidence | One lead-requested test refinement; reviewer initial HOLD → APPROVED, post-CI HOLD → final APPROVED with no actionable findings; usage/cost unknown |
+| SIL-57 | Native `gpt-5.6-luna`, medium effort; agent `01a096bf-ced0-7de0-88aa-405385b309b1`; independent Native `gpt-5.6-sol`, low reviewer `01a096c7-524a-7cc3-965c-81a7b6528aef` | LOCAL PASS with exact-head CI SUCCESS and Preview READY; hosted mutation and owner acceptance pending; not fully closed | Initial worker RED: unit 1 expected failure; component 2 expected failures. CI `34710511672`: persistent E2E 21 pass / 2 fail / 1 not run. First post-CI RED 4 component failures / 29 pass → focused 2 files / 33 PASS. Lead then ran full unit 79/501, full component 45/355, typecheck, lint, build and diff-check PASS. Second lifecycle RED 2 failed / 32 passed → focused 2 files / 35 PASS; lead-fresh after it: focused 35/35 + diff-check PASS only. Replacement CI `34712402420` SUCCESS on exact HEAD `2c7b00f81504a9a5fdaf5f36cedb2f970e782ecb`; all gates including persistent E2E, secret scan and build PASS | One lead-requested test refinement; reviewer initial HOLD → APPROVED, post-CI HOLD → final APPROVED with no actionable findings; usage/cost unknown |
 
 - **Root cause:** `versionStatusLabel` omitted persisted `internal_only`, `final`
   and `superseded`. The open drawer also held stale local workspace after save
@@ -53,10 +54,17 @@ behavioral recheck or owner acceptance exists.
   run after the first post-CI correction, not after the second. Full integration
   28/113 and focused unit 1/7 remain earlier local evidence. No database result is
   claimed, and the failed persistent E2E has not been rerun.
-- **Publication / acceptance:** exact-head CI is not green; persistent E2E has not
-  been rerun after the feedback correction. No deployment, hosted result or owner
-  acceptance exists. Classification remains LOCAL PASS, pending reconciliation;
-  no acceptance checkbox is changed.
+- **Publication:** replacement GitHub Actions run `34712402420` completed
+  **SUCCESS** on exact HEAD `2c7b00f81504a9a5fdaf5f36cedb2f970e782ecb`.
+  Every gate passed, including persistent E2E, secret scan and build. Source-git
+  Vercel Preview `dpl_7yVJmytN6EJctnMgVdJHUxm4kzv5` is **READY** on the exact
+  same SHA. Branch alias:
+  https://shrik-git-codex-preview-ui-batch-20260912-samawahs-projects.vercel.app.
+  Hosted page smoke load succeeded.
+- **Hosted / acceptance:** the page-load smoke is not a SIL-57 mutation recheck.
+  Hosted mutation and owner acceptance remain pending; SIL-57 is not fully
+  closed and no acceptance checkbox is changed. SIL-55 hosted save recheck also
+  remains blocked by current sample package capacity 0.
 
 ### SIL-55 read-only audit routing record
 

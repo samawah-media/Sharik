@@ -58,6 +58,14 @@ const typeLabels: Record<string, string> = {
   article: "مقال",
 };
 
+const typeTokensByLabel = Object.fromEntries(
+  Object.entries(typeLabels).map(([token, label]) => [label, token]),
+);
+
+function canonicalizeDeliverableType(value: string) {
+  return typeTokensByLabel[value] ?? value;
+}
+
 function SubmitButton({ approvedExtra }: { approvedExtra?: boolean }) {
   const { pending } = useFormStatus();
 
@@ -174,6 +182,15 @@ export function DeliverableForm({
   const selectedLine =
     packageLines?.find((line) => line.id === selectedPackageLineId) ??
     packageLines?.[0];
+  const initialType = state.values?.type ?? selectedLine?.deliverableTypeHint ?? "";
+  const [typeDisplayEdit, setTypeDisplayEdit] = useState<{
+    packageLineId: string;
+    value: string;
+  }>();
+  const typeDisplay =
+    typeDisplayEdit?.packageLineId === selectedPackageLineId
+      ? typeDisplayEdit.value
+      : typeLabels[initialType] ?? initialType;
   const quantity = Number(state.values?.reservedQuantity ?? "1");
   const selectedContributorIds = new Set(
     state.values?.contributorUserIds
@@ -232,11 +249,21 @@ export function DeliverableForm({
           نوع العمل
           <input
             className="rounded-md border border-border bg-background px-3 py-2"
-            name="type"
+            name="typeDisplay"
             required
-            defaultValue={
-              state.values?.type ?? selectedLine?.deliverableTypeHint ?? ""
-            }
+            value={typeDisplay}
+            onChange={(event) => {
+              setTypeDisplayEdit({
+                packageLineId: selectedPackageLineId,
+                value: event.currentTarget.value,
+              });
+            }}
+          />
+          <input
+            name="type"
+            type="hidden"
+            value={canonicalizeDeliverableType(typeDisplay)}
+            readOnly
           />
         </label>
         {approvedExtra ? (

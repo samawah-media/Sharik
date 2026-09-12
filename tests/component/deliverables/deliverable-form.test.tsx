@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { PackageLineSafeSummary } from "@/modules/packages/package-repository";
@@ -130,6 +130,40 @@ describe("deliverable creation form and reservation preview", () => {
     expect(
       screen.getByRole("button", { name: "حفظ المخرج وحجز الكمية" }),
     ).toBeInTheDocument();
+  });
+
+  it("displays a canonical package hint in Arabic while submitting its token", () => {
+    render(
+      <DeliverableForm
+        clientId="client_a"
+        packageId="package_a"
+        packageLines={[packageLineSummary]}
+        idempotencyKey="f002c-deliverable-client-a"
+      />,
+    );
+
+    const typeInput = screen.getByLabelText("نوع العمل");
+    const form = screen.getByRole("form", { name: "إنشاء مخرج" });
+    expect(typeInput).toHaveValue("منشور");
+    expect(
+      new FormData(form as HTMLFormElement).get("type"),
+    ).toBe("post");
+  });
+
+  it("preserves a user-entered custom type in the submitted value", () => {
+    render(
+      <DeliverableForm
+        clientId="client_a"
+        packageLines={[packageLineSummary]}
+        idempotencyKey="f002c-deliverable-client-a"
+      />,
+    );
+
+    const typeInput = screen.getByLabelText("نوع العمل");
+    const form = screen.getByRole("form", { name: "إنشاء مخرج" });
+    fireEvent.change(typeInput, { target: { value: "جلسة استشارة" } });
+
+    expect(new FormData(form as HTMLFormElement).get("type")).toBe("جلسة استشارة");
   });
 
   it("shows reservation impact and over-capacity recovery actions without internal details", () => {

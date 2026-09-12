@@ -2,6 +2,37 @@
 
 ## Current reconciliation wave — X010-B-7C-23 — 2026-09-12
 
+### Current batch — SIL-55 local implementation, not shipped
+
+Baseline HEAD `eb7b783` on `codex/015-persistent-mvp-pilot-completion`
+(verified locally by the steward). Results below are supplied by the lead,
+not rerun or independently checked against external services by the steward.
+
+| Slice | Model / mode | State / review | Checks | Revisions / usage |
+| --- | --- | --- | --- | --- |
+| SIL-55 | Native `gpt-5.6-luna`, low effort; agent `01a095f2-1dc9-72c3-93cf-73873df87a20` | Implemented locally, uncommitted; independently reviewed and corrected by lead; not shipped | Focused Vitest 7/7 PASS; full component 45 files / 352 tests PASS; unit 79 files / 501 tests PASS; integration 28 files / 113 tests PASS; full lint, typecheck, production build and diff checks PASS | One lead-requested worker revision plus one lead test-type correction; usage/cost unknown |
+
+- **Implementation:** bounded to `src/ui/management/deliverable-form.tsx` and
+  `tests/component/deliverables/deliverable-form.test.tsx`; current local changes
+  address SIL-55. Baseline HEAD is not a commit containing these changes.
+- **Local:** only the checks recorded in the ledger above are claimed for SIL-55;
+  no hosted or visual result is claimed in this update. An initial parallel unit
+  run timed out in two fixture-boundary tests under concurrent build load; the
+  complete unit suite then passed 501/501 when rerun alone.
+- **CI / publication:** SIL-55 exact-head CI, commit/push and Preview remain pending.
+- **Hosted:** no SIL-55 hosted verification is established.
+- **Owner:** no SIL-55 owner acceptance is established.
+
+Preceding shipped batch only: commit `eb7b783`; F-001 run `34697922090`
+**SUCCESS**; Vercel Preview `dpl_8sUW8usRkXsP1fF3y9ha9yJwkb1m` **READY**.
+Temporary PR #38 was closed without merge; canonical PR remains #37.
+These lead-reported results supersede the older failed-CI/pending-publication
+snapshot for that preceding batch, not for uncommitted SIL-55. Preview READY
+does not establish owner acceptance. Prior snapshots and inventory counts are
+retained below; aggregate reclassification awaits explicit lead reconciliation.
+Documentation steward returns to idle/reusable after this queue-only update;
+no commit, push, deploy or further delegation is performed.
+
 ### Current status — R23-D / SIL-06 locally accepted
 
 Lead-authorized classification: **52 unimplemented, 10 pending verification/acceptance,

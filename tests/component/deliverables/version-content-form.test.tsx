@@ -61,6 +61,39 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("UI3 real version content form", () => {
+  it("clears a prior success before a later failed attempt without refreshing", async () => {
+    const onMutationStarted = vi.fn();
+    const onMutated = vi.fn();
+    render(
+      <VersionContentForm
+        deliverable={deliverable}
+        currentVersion={draft}
+        onMutationStarted={onMutationStarted}
+        onMutated={onMutated}
+      />,
+    );
+
+    const saveDraft = screen.getByRole("button", { name: "حفظ مسودة" });
+    fireEvent.click(saveDraft);
+    expect(await screen.findByText("تم حفظ المسودة.")).toBeVisible();
+
+    saveVersion.mockResolvedValueOnce({ ok: false, reason: "denied" });
+    fireEvent.click(saveDraft);
+
+    expect(
+      await screen.findByText(
+        "تعذر حفظ النسخة. راجع الصلاحية والحالة ثم حاول مجددًا.",
+      ),
+    ).toBeVisible();
+    expect(screen.queryByText("تم حفظ المسودة.")).not.toBeInTheDocument();
+    expect(onMutationStarted).toHaveBeenCalledTimes(2);
+    expect(onMutated).toHaveBeenCalledExactlyOnceWith(
+      draft.id,
+      "تم حفظ المسودة.",
+    );
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
   it("notifies the workspace after a successful mutation", async () => {
     const onMutated = vi.fn();
     render(
@@ -74,7 +107,10 @@ describe("UI3 real version content form", () => {
     fireEvent.click(screen.getByRole("button", { name: "حفظ وإرسال للمراجعة الداخلية" }));
 
     await screen.findByText("تم إرسال النسخة للمراجعة الداخلية.");
-    expect(onMutated).toHaveBeenCalledExactlyOnceWith(draft.id);
+    expect(onMutated).toHaveBeenCalledExactlyOnceWith(
+      draft.id,
+      "تم إرسال النسخة للمراجعة الداخلية.",
+    );
   });
 
   it.each(actions)("$name preserves the draft identity and sends every edited field", async ({ name, submit, feedback }) => {
@@ -156,7 +192,7 @@ describe("UI3 real version content form", () => {
       versionId: draft.id, submit, contentBody: "محتوى بعد التصحيح",
     }));
     expect(refresh).toHaveBeenCalledTimes(1);
-    expect(onMutated).toHaveBeenCalledExactlyOnceWith(draft.id);
+    expect(onMutated).toHaveBeenCalledExactlyOnceWith(draft.id, feedback);
   });
 
   it.each([

@@ -4,13 +4,14 @@
 
 ### Current batch — SIL-57 LOCAL PASS, not published
 
-The lead reviewed the current local implementation diff. SIL-55 and SIL-56
-publication records below remain intact; this SIL-57 batch has no commit, CI,
-deployment, hosted behavioral recheck or owner acceptance.
+The lead reviewed the current local implementation and corrective diff. SIL-55
+and SIL-56 publication records below remain intact. SIL-57 exact-head CI ran and
+failed on a real feedback regression; no green rerun, deployment, hosted
+behavioral recheck or owner acceptance exists.
 
 | Slice | Model / mode | State / review | Checks | Revisions / usage |
 | --- | --- | --- | --- | --- |
-| SIL-57 | Native `gpt-5.6-luna`, medium effort; agent `01a096bf-ced0-7de0-88aa-405385b309b1`; independent Native `gpt-5.6-sol`, low reviewer `01a096c7-524a-7cc3-965c-81a7b6528aef` | LOCAL PASS after correction and reviewer re-approval; hosted and owner acceptance pending; not fully closed | Initial worker RED: unit 1 expected failure; component 2 expected failures. Corrective TDD RED: 4 component failures / 29 pass. Lead GREEN: focused unit 1 file / 7 tests; focused component 2 files / 33 tests; full component 45 files / 355 tests; full unit 79 files / 501 tests; full integration 28 files / 113 tests; full typecheck, full lint, production build and git diff check PASS | One lead-requested test refinement; reviewer initially HOLD, then APPROVED with no actionable findings; usage/cost unknown |
+| SIL-57 | Native `gpt-5.6-luna`, medium effort; agent `01a096bf-ced0-7de0-88aa-405385b309b1`; independent Native `gpt-5.6-sol`, low reviewer `01a096c7-524a-7cc3-965c-81a7b6528aef` | LOCAL PASS after corrections and final reviewer approval; exact-head CI RED; hosted and owner acceptance pending; not fully closed | Initial worker RED: unit 1 expected failure; component 2 expected failures. CI `34710511672`: persistent E2E 21 pass / 2 fail / 1 not run. First post-CI RED 4 component failures / 29 pass → focused 2 files / 33 PASS. Lead then ran full unit 79/501, full component 45/355, typecheck, lint, build and diff-check PASS. Second lifecycle RED 2 failed / 32 passed → focused 2 files / 35 PASS; lead-fresh after it: focused 35/35 + diff-check PASS only. Earlier full integration 28/113 and focused unit 1/7 remain local evidence | One lead-requested test refinement; reviewer initial HOLD → APPROVED, post-CI HOLD → final APPROVED with no actionable findings; usage/cost unknown |
 
 - **Root cause:** `versionStatusLabel` omitted persisted `internal_only`, `final`
   and `superseded`. The open drawer also held stale local workspace after save
@@ -24,14 +25,37 @@ deployment, hosted behavioral recheck or owner acceptance.
   fetch occurred. The corrected success path passes the persisted `versionId`
   into the immediate drawer refresh. Its regression asserts the exact fetched
   ID and replacement of the old body by the new version, body and localized
-  status. Corrective TDD RED was 4 component failures / 29 pass. The same
-  reviewer re-reviewed and APPROVED with no actionable findings.
-- **Local:** only the focused unit 1/7, focused component 2/33, full component
-  45/355, full unit 79/501, full integration 28/113, full typecheck, full lint,
-  production build and git diff check results above are claimed. No database or
-  E2E result is claimed.
-- **Publication / acceptance:** no SIL-57 commit, CI, deployment, hosted result or
-  owner acceptance exists. Classification is LOCAL PASS, pending reconciliation;
+  status. The same reviewer re-reviewed and APPROVED with no actionable findings.
+- **Exact-head CI:** F-001 run `34710511672` on
+  `767bf11f4f59c6272455d007f85ad5983bc48b62` failed at
+  `test:e2e:persistent` after 21 pass / 2 fail / 1 not run. Both failures expected
+  visible «تم إرسال النسخة للمراجعة الداخلية.» after submission. This exposed
+  a real UI regression: immediate workspace refresh removed the form feedback.
+- **Post-CI correction:** tests first produced 4 component failures / 29 pass.
+  Version-success feedback now lives in the drawer header with `aria-live`, while
+  explicit refresh by the successfully persisted version ID remains and no timer
+  is introduced. The implementer reported focused component 2 files / 33 tests,
+  typecheck, lint and diff-check PASS; the lead independently reran focused
+  component 33/33 PASS. After this first post-CI correction, the lead also ran
+  full unit 79/501, full component 45/355, full typecheck, full lint, production
+  build and git diff check PASS.
+- **Post-CI lifecycle review and second correction:** the same reviewer HOLDed
+  because stale success could remain after a later failed save and the regression
+  lacked success→failure coverage. Second corrective TDD RED was 2 failed / 32
+  passed; GREEN focused component was 2 files / 35 tests. `onMutationStarted`
+  clears lifted feedback before every attempt without refresh. A failed save
+  retains its local failure and calls neither `onMutated` nor refresh. Close/reopen
+  reset is covered, and exact persisted-version-ID refresh remains preserved.
+  The same reviewer re-reviewed and APPROVED with no actionable findings.
+- **Evidence freshness:** after the second lifecycle correction, the lead freshly
+  ran focused component 35/35 and git diff check PASS only. The full unit 79/501,
+  full component 45/355, full typecheck, full lint and production build PASS were
+  run after the first post-CI correction, not after the second. Full integration
+  28/113 and focused unit 1/7 remain earlier local evidence. No database result is
+  claimed, and the failed persistent E2E has not been rerun.
+- **Publication / acceptance:** exact-head CI is not green; persistent E2E has not
+  been rerun after the feedback correction. No deployment, hosted result or owner
+  acceptance exists. Classification remains LOCAL PASS, pending reconciliation;
   no acceptance checkbox is changed.
 
 ### SIL-55 read-only audit routing record

@@ -8,6 +8,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableWorkspace } from "@/modules/deliverables/deliverable-workspace";
 import { UniversalDeliverableDrawer } from "@/ui/deliverables/universal-deliverable-drawer";
@@ -148,21 +149,46 @@ vi.mock("@/server/actions/deliverable-workspace-actions", () => ({
 }));
 
 vi.mock("@/ui/deliverables/workspace-forms", () => ({
-  VersionContentForm: ({
+  VersionContentForm: function VersionContentFormStub({
+    onMutationStarted,
     onMutated,
   }: {
-    onMutated?: (versionId: string) => void;
-  }) => (
-    <div>
-      <label>
-        مسودة اختبار
-        <input data-testid="stub-version-input" />
-      </label>
-      <button type="button" onClick={() => onMutated?.("version_2")}>
-        محاكاة حفظ النسخة
-      </button>
-    </div>
-  ),
+    onMutationStarted?: () => void;
+    onMutated?: (versionId: string, feedback: string) => void;
+  }) {
+    const [feedback, setFeedback] = useState<string>();
+    return (
+      <div>
+        <label>
+          مسودة اختبار
+          <input data-testid="stub-version-input" />
+        </label>
+        <button
+          type="button"
+          onClick={() =>
+            onMutated?.(
+              "version_2",
+              "تم إرسال النسخة للمراجعة الداخلية.",
+            )
+          }
+        >
+          محاكاة حفظ النسخة
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            onMutationStarted?.();
+            setFeedback(
+              "تعذر حفظ النسخة. راجع الصلاحية والحالة ثم حاول مجددًا.",
+            );
+          }}
+        >
+          محاكاة فشل حفظ النسخة
+        </button>
+        {feedback ? <p>{feedback}</p> : null}
+      </div>
+    );
+  },
   WorkspaceCommentForm: () => <div data-testid="stub-comment-form" />,
   TaskForm: () => <div data-testid="stub-task-form" />,
   TaskStatusControl: () => <div data-testid="stub-task-status" />,
@@ -269,6 +295,45 @@ describe("universal deliverable drawer localization", () => {
     expect(screen.getAllByText("النسخة 2").length).toBeGreaterThan(0);
     expect(screen.getByText(/مرسلة للمراجعة الداخلية/)).toBeVisible();
     expect(screen.queryByText("محتوى النسخة")).not.toBeInTheDocument();
+    expect(
+      screen.getByText("تم إرسال النسخة للمراجعة الداخلية."),
+    ).toBeVisible();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "محاكاة فشل حفظ النسخة" }),
+    );
+
+    expect(
+      screen.getByText(
+        "تعذر حفظ النسخة. راجع الصلاحية والحالة ثم حاول مجددًا.",
+      ),
+    ).toBeVisible();
+    expect(
+      screen.queryByText("تم إرسال النسخة للمراجعة الداخلية."),
+    ).not.toBeInTheDocument();
+    expect(fetchDeliverableWorkspace).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears version success when the drawer closes and reopens", async () => {
+    render(
+      <UniversalDeliverableDrawer
+        deliverable={deliverable}
+        workspace={workspace}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "فتح مساحة المخرج" }));
+    fireEvent.click(screen.getByRole("tab", { name: /المحتوى والنسخ/ }));
+    fireEvent.click(screen.getByRole("button", { name: "محاكاة حفظ النسخة" }));
+    expect(
+      screen.getByText("تم إرسال النسخة للمراجعة الداخلية."),
+    ).toBeVisible();
+
+    fireEvent.click(screen.getByRole("button", { name: "إغلاق" }));
+    fireEvent.click(screen.getByRole("button", { name: "فتح مساحة المخرج" }));
+
+    expect(
+      screen.queryByText("تم إرسال النسخة للمراجعة الداخلية."),
+    ).not.toBeInTheDocument();
   });
 
   it("names the available content actions as the next step for new work", () => {

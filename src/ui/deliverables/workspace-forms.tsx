@@ -36,11 +36,13 @@ type QualityValues = z.input<typeof qualityCheckInputSchema>;
 export function VersionContentForm({
   deliverable,
   currentVersion,
+  onMutationStarted,
   onMutated,
 }: {
   deliverable: DeliverableSafeSummary;
   currentVersion?: DeliverableVersionWorkspace;
-  onMutated?: (versionId: string) => void;
+  onMutationStarted?: () => void;
+  onMutated?: (versionId: string, feedback: string) => void;
 }) {
   const router = useRouter();
   const helpId = useId();
@@ -76,22 +78,24 @@ export function VersionContentForm({
   if (!editable) return null;
 
   const persist = async (values: VersionValues, submit: boolean) => {
+    onMutationStarted?.();
     setFeedback(undefined);
     const result = await saveOrSubmitVersionContent({
       ...values,
       submit,
       idempotencyKey: crypto.randomUUID(),
     });
+    const successFeedback = submit
+      ? "تم إرسال النسخة للمراجعة الداخلية."
+      : "تم حفظ المسودة.";
     setFeedback(
       result.ok
-        ? submit
-          ? "تم إرسال النسخة للمراجعة الداخلية."
-          : "تم حفظ المسودة."
+        ? successFeedback
         : "تعذر حفظ النسخة. راجع الصلاحية والحالة ثم حاول مجددًا.",
     );
     if (result.ok) {
       router.refresh();
-      onMutated?.(values.versionId);
+      onMutated?.(values.versionId, successFeedback);
     }
   };
 

@@ -296,6 +296,10 @@ export function UniversalDeliverableDrawer({
   const [uploadSafety, setUploadSafety] =
     useState<WorkspaceUploadSafetyState>("settled");
   const [closeFeedback, setCloseFeedback] = useState<string>();
+  const [versionFeedback, setVersionFeedback] = useState<{
+    deliverableId: string;
+    message: string;
+  }>();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLElement>(null);
@@ -304,15 +308,22 @@ export function UniversalDeliverableDrawer({
   >(undefined);
 
   const handleMutated = useCallback(
-    (versionId?: string) => {
+    (versionId?: string, feedback?: string) => {
       if (versionId) {
         refreshVersionRef.current = { deliverableId: deliverable.id, versionId };
+      }
+      if (feedback) {
+        setVersionFeedback({ deliverableId: deliverable.id, message: feedback });
       }
       setWorkspaceError(undefined);
       setLoading(true);
       setRefreshKey((key) => key + 1);
     },
     [deliverable.id],
+  );
+  const clearVersionFeedback = useCallback(
+    () => setVersionFeedback(undefined),
+    [],
   );
   const retryWorkspaceLoad = useCallback(() => {
     setWorkspaceError(undefined);
@@ -333,6 +344,7 @@ export function UniversalDeliverableDrawer({
   }, []);
 
   const handleOpen = () => {
+    setVersionFeedback(undefined);
     if (!workspace) {
       setWorkspaceError(undefined);
       setLoading(true);
@@ -544,6 +556,11 @@ export function UniversalDeliverableDrawer({
                     الخطوة التالية: {nextActionLabel}
                   </span>
                 </div>
+                {versionFeedback?.deliverableId === deliverable.id ? (
+                  <p aria-live="polite" className="mt-2 text-sm text-success">
+                    {versionFeedback.message}
+                  </p>
+                ) : null}
               </div>
               <button
                 aria-label="إغلاق"
@@ -808,6 +825,7 @@ export function UniversalDeliverableDrawer({
                     <VersionContentForm
                       currentVersion={currentVersion}
                       deliverable={deliverable}
+                      onMutationStarted={clearVersionFeedback}
                       onMutated={handleMutated}
                     />
                     <DeliverableApprovalWorkflowControl

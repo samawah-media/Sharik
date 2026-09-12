@@ -112,7 +112,7 @@ test("management can create a deliverable through the real persistent browser fl
   await form
     .locator('select[name="packageLineId"]')
     .selectOption(freshPackageLineId);
-  await form.locator('input[name="reservedQuantity"]').fill("2");
+  await expect(form.locator('input[name="reservedQuantity"]')).toHaveValue("1");
   await form
     .locator('select[name="ownerUserId"]')
     .selectOption(freshSeed.actors.assignedWriter.id);

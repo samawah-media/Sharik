@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   asDeliverableWriteError,
   capacityFailureMessage,
+  countUnitFailureMessage,
   duplicateFailureMessage,
   invalidContributorFailureMessage,
   invalidIdentifierFailureMessage,
@@ -110,6 +111,13 @@ describe("mapDeliverableWriteError", () => {
     expect(mapDeliverableWriteError({ code: "P0001" })).toBe(
       validationFailureMessage,
     );
+  });
+
+  it("maps the count-unit invariant to actionable Arabic guidance", () => {
+    expect(mapDeliverableWriteError({
+      code: "22023",
+      message: "count unit requires one deliverable per reserved unit",
+    })).toBe(countUnitFailureMessage);
   });
 
   it("maps 22P02 (invalid uuid cast) to the actionable identifier message and never echoes the raw Postgres text", () => {

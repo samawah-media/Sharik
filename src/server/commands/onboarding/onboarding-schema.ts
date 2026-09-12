@@ -150,11 +150,11 @@ export const onboardingSchema = z
     const firstLineUnit = value.packageLines[0]?.unitLabel ?? "";
     if (
       isCountUnitLabel(firstLineUnit) &&
-      !Number.isInteger(value.reservedQuantity)
+      value.reservedQuantity !== 1
     ) {
       context.addIssue({
         code: "custom",
-        message: "count_unit_requires_integer_reservation",
+        message: "count_unit_requires_single_deliverable",
         path: ["reservedQuantity"],
       });
     }

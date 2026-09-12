@@ -115,10 +115,13 @@ export async function createDeliverableAction(
     packageLineError ||
     !packageLine ||
     (isCountUnitLabel(packageLine.unit_label) &&
-      !Number.isInteger(parsed.data.reservedQuantity))
+      parsed.data.reservedQuantity !== 1)
   ) {
     return deliverableFormError({
-      message: validationFailureMessage,
+      message:
+        packageLine && isCountUnitLabel(packageLine.unit_label)
+          ? "كل مخرج من وحدات العد يحجز وحدة واحدة فقط. أنشئ مخرجًا مستقلًا لكل وحدة."
+          : validationFailureMessage,
       values,
     });
   }

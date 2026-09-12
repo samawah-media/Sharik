@@ -1,5 +1,5 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { InvitationList } from "@/ui/management/invitation-list";
 import {
   InternalTeamDirectory,
@@ -101,12 +101,33 @@ describe("member lifecycle UI", () => {
     expect(screen.queryByText(/00000000/u)).not.toBeInTheDocument();
   });
 
-  it("preserves directory order, all scopes and roles without inventing member controls", () => {
+  it("preserves directory order and exposes truthful management controls for active members", () => {
+    const action = vi.fn(async () => ({ status: "success" as const, message: "تم الحفظ." }));
     render(<InternalTeamDirectory members={[
-      { membershipId: "membership-multi", userId: "user-multi", displayName: "سارة مصممة المحتوى", status: "active", roleKeys: ["designer", "content_writer"], clientNames: ["هدنة", "Glass Studio"] },
-      { membershipId: "membership-admin", userId: "user-admin", displayName: "مدير المساحة", status: "active", roleKeys: ["samawah_admin"], clientNames: [] },
-      { membershipId: "membership-disabled", userId: "user-disabled", displayName: "عضو معطل", status: "disabled", roleKeys: ["account_manager"], clientNames: ["جلس"] },
-    ]} />);
+      {
+        membershipId: "membership-multi", userId: "user-multi", displayName: "سارة مصممة المحتوى", status: "active",
+        roleKeys: ["designer", "content_writer"], clientNames: ["هدنة", "Glass Studio"],
+        assignments: [
+          { assignmentId: "assignment-designer", roleKey: "designer", scopeType: "client", scopeId: "client-hudna", scopeName: "هدنة", status: "active" },
+          { assignmentId: "assignment-writer", roleKey: "content_writer", scopeType: "client", scopeId: "client-glass", scopeName: "Glass Studio", status: "active" },
+        ],
+        availableClients: [
+          { clientId: "client-hudna", clientName: "هدنة" },
+        ],
+      },
+      {
+        membershipId: "membership-admin", userId: "user-admin", displayName: "مدير المساحة", status: "active",
+        roleKeys: ["tenant_administrator"], clientNames: [],
+        assignments: [{ assignmentId: "assignment-admin", roleKey: "tenant_administrator", scopeType: "tenant", scopeId: "tenant-a", scopeName: "مساحة سماوة", status: "active" }],
+        availableClients: [],
+      },
+      {
+        membershipId: "membership-disabled", userId: "user-disabled", displayName: "عضو معطل", status: "disabled",
+        roleKeys: ["account_manager"], clientNames: ["جلس"],
+        assignments: [{ assignmentId: "assignment-old", roleKey: "account_manager", scopeType: "client", scopeId: "client-jalas", scopeName: "جلس", status: "removed" }],
+        availableClients: [],
+      },
+    ]} updateAssignmentAction={action} removeClientScopeAction={action} disableMembershipAction={action} />);
     const directory = screen.getByRole("region", { name: "أعضاء الفريق" });
     const rows = within(directory).getAllByRole("article");
     expect(rows).toHaveLength(3);
@@ -119,13 +140,24 @@ describe("member lifecycle UI", () => {
     expect(within(rows[0]).getByLabelText("عملاء العضو")).toHaveTextContent("هدنة");
     expect(within(rows[0]).getByLabelText("عملاء العضو")).toHaveTextContent("Glass Studio");
     expect(within(rows[0]).getByText("عضوية نشطة")).toBeVisible();
-    expect(within(rows[1]).getByText("إدارة سماوة")).toBeVisible();
+    expect(within(rows[1]).getAllByText("مدير النظام")[0]).toBeVisible();
     expect(within(rows[1]).getByText("صلاحية إدارية على مساحة سماوة.")).toBeVisible();
     expect(within(rows[2]).getByText("عضوية معطلة")).toBeVisible();
     expect(within(rows[2]).getByText("مدير الحساب")).toBeVisible();
     expect(within(rows[2]).getByLabelText("عملاء العضو")).toHaveTextContent("جلس");
-    expect(directory.querySelectorAll('button, a[href], input, select, textarea, [tabindex]')).toHaveLength(0);
-    expect(directory).not.toHaveTextContent(/membership-|user-|samawah_admin|content_writer|account_manager/);
+    expect(within(rows[0]).getByText("إدارة العضو")).toBeVisible();
+    expect(within(rows[0]).getAllByRole("combobox", { name: "الدور" })).toHaveLength(2);
+    expect(within(rows[0]).getAllByRole("combobox", { name: "نطاق العميل" })).toHaveLength(2);
+    expect(within(rows[0]).getByRole("option", { name: "Glass Studio (غير نشط)" })).toBeInTheDocument();
+    expect(within(rows[0]).getAllByRole("button", { name: "حفظ التعديل" })).toHaveLength(2);
+    expect(within(rows[0]).getAllByRole("button", { name: "إزالة نطاق العميل" })).toHaveLength(2);
+    expect(within(rows[0]).getAllByLabelText(/أؤكد إزالة دور .* للعضو «سارة مصممة المحتوى» من العميل/)).toHaveLength(2);
+    fireEvent.click(within(rows[0]).getByText("إدارة العضو"));
+    expect(within(rows[0]).getByLabelText("اكتب «تعطيل» للتأكيد")).toBeRequired();
+    expect(within(rows[0]).getByText(/سيُعطّل دخول «سارة مصممة المحتوى»/)).toBeVisible();
+    expect(within(rows[0]).getByRole("button", { name: "تعطيل العضوية" })).toBeVisible();
+    expect(within(rows[2]).queryByText("إدارة العضو")).not.toBeInTheDocument();
+    expect(directory).not.toHaveTextContent(/membership-|user-|assignment-|client-|tenant-|content_writer|account_manager/);
   });
 
   it("keeps the empty directory honest without placeholder members", () => {

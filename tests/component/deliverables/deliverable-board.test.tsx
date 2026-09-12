@@ -5,7 +5,7 @@ import {
   screen,
   within,
 } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import {
   DeliverableBoard,
@@ -81,6 +81,133 @@ const deliverables: DeliverableSafeSummary[] = [
 ];
 
 describe("internal deliverable work board", () => {
+  const renderScrollableBoard = () => {
+    render(
+      <DeliverableBoard
+        action={async () => undefined}
+        deliverables={[deliverables[0]]}
+        now="2026-07-01T10:00:00.000Z"
+      />,
+    );
+
+    const board = screen.getByTestId("kanban-board-scroll");
+    Object.defineProperties(board, {
+      clientWidth: { configurable: true, value: 640 },
+      scrollWidth: { configurable: true, value: 2240 },
+    });
+    return board;
+  };
+
+  it("owns bounded horizontal and vertical overflow inside the board", () => {
+    const board = renderScrollableBoard();
+
+    expect(board).toHaveClass(
+      "h-[70dvh]",
+      "lg:h-[calc(100dvh-16rem)]",
+      "overflow-auto",
+      "overscroll-contain",
+    );
+    expect(board).not.toHaveClass("overflow-x-auto");
+  });
+
+  it("translates a vertical wheel into RTL-aware horizontal movement", () => {
+    const board = renderScrollableBoard();
+    let logicalScrollLeft = 0;
+    Object.defineProperty(board, "scrollLeft", {
+      configurable: true,
+      get: () => logicalScrollLeft,
+      set: (value: number) => {
+        logicalScrollLeft = value;
+      },
+    });
+    const scrollBy = vi.fn(({ left }: ScrollToOptions) => {
+      logicalScrollLeft = Math.max(
+        -1600,
+        Math.min(0, logicalScrollLeft + (left ?? 0)),
+      );
+    });
+    board.scrollBy = scrollBy as HTMLElement["scrollBy"];
+    const event = new WheelEvent("wheel", {
+      bubbles: true,
+      cancelable: true,
+      deltaY: 120,
+    });
+
+    board.dispatchEvent(event);
+
+    expect(scrollBy).toHaveBeenCalledWith({ behavior: "auto", left: -120 });
+    expect(logicalScrollLeft).toBe(-120);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it("does not prevent page scrolling when horizontal wheel translation cannot move", () => {
+    const board = renderScrollableBoard();
+    let logicalScrollLeft = -1600;
+    Object.defineProperty(board, "scrollLeft", {
+      configurable: true,
+      get: () => logicalScrollLeft,
+      set: (value: number) => {
+        logicalScrollLeft = value;
+      },
+    });
+    const scrollBy = vi.fn(({ left }: ScrollToOptions) => {
+      logicalScrollLeft = Math.max(
+        -1600,
+        Math.min(0, logicalScrollLeft + (left ?? 0)),
+      );
+    });
+    board.scrollBy = scrollBy as HTMLElement["scrollBy"];
+    const event = new WheelEvent("wheel", {
+      bubbles: true,
+      cancelable: true,
+      deltaY: 120,
+    });
+
+    board.dispatchEvent(event);
+
+    expect(logicalScrollLeft).toBe(-1600);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it("preserves vertical scrolling inside a long board column before translating horizontally", () => {
+    const board = renderScrollableBoard();
+    board.scrollBy = vi.fn();
+    const dragHandle = screen.getByRole("button", {
+      name: /سحب منشور إطلاق الحملة/,
+    });
+    Object.defineProperties(dragHandle, {
+      clientHeight: { configurable: true, value: 300 },
+      scrollHeight: { configurable: true, value: 900 },
+      scrollTop: { configurable: true, value: 100, writable: true },
+    });
+    const event = new WheelEvent("wheel", {
+      bubbles: true,
+      cancelable: true,
+      deltaY: 120,
+    });
+
+    dragHandle.dispatchEvent(event);
+
+    expect(board.scrollBy).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it("scrolls with arrows only while the board itself is focused", () => {
+    const board = renderScrollableBoard();
+    board.scrollBy = vi.fn();
+
+    board.focus();
+    fireEvent.keyDown(board, { key: "ArrowLeft" });
+    expect(board.scrollBy).toHaveBeenCalledTimes(1);
+
+    const dragHandle = screen.getByRole("button", {
+      name: /سحب منشور إطلاق الحملة/,
+    });
+    dragHandle.focus();
+    fireEvent.keyDown(dragHandle, { key: "ArrowRight" });
+    expect(board.scrollBy).toHaveBeenCalledTimes(1);
+  });
+
   it("renders active columns, scoped cards, SLA, due dates, and status update forms", () => {
     render(
       <DeliverableBoard
@@ -92,7 +219,7 @@ describe("internal deliverable work board", () => {
 
     const board = screen.getByRole("region", { name: "لوحة العمل" });
     expect(screen.getByTestId("kanban-board-scroll")).toHaveClass(
-      "overflow-x-auto",
+      "overflow-auto",
     );
     expect(screen.getByTestId("kanban-board-scroll")).toHaveAttribute(
       "tabindex",
@@ -114,7 +241,9 @@ describe("internal deliverable work board", () => {
     expect(within(board).getAllByText("منشور إطلاق الحملة")).toHaveLength(1);
     expect(within(board).getAllByText("تصميم إعلان المنتج")).toHaveLength(1);
     expect(document.querySelectorAll("[data-content-card]")).toHaveLength(2);
-    expect(within(board).getAllByText("أحمد العتيبي").length).toBeGreaterThan(0);
+    expect(within(board).getAllByText("أحمد العتيبي").length).toBeGreaterThan(
+      0,
+    );
     expect(within(board).getByText("٣ يوليو ٢٠٢٦")).toBeInTheDocument();
     expect(within(board).getByText("0%")).toBeInTheDocument();
     expect(within(board).getByText("70%")).toBeInTheDocument();
@@ -153,7 +282,9 @@ describe("internal deliverable work board", () => {
     expect(
       screen.queryByRole("option", { name: "بانتظار اعتماد العميل" }),
     ).not.toBeInTheDocument();
-    expect(screen.getAllByText("إجراء محمي من مساحة المخرج.").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("إجراء محمي من مساحة المخرج.").length,
+    ).toBeGreaterThan(0);
   });
 
   it("keeps empty columns readable without stretching cards", () => {
@@ -182,9 +313,15 @@ describe("internal deliverable work board", () => {
       />,
     );
 
-    expect(screen.queryByRole("form", { name: /رفع نسخة/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole("form", { name: /إرسال للعميل/ })).not.toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "فتح مساحة المخرج" })).toHaveLength(2);
+    expect(
+      screen.queryByRole("form", { name: /رفع نسخة/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("form", { name: /إرسال للعميل/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getAllByRole("button", { name: "فتح مساحة المخرج" }),
+    ).toHaveLength(2);
   });
 
   it("renders a safe empty state", () => {

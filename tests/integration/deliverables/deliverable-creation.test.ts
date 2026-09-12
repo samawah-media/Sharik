@@ -63,6 +63,34 @@ const packagesWithCapacity = () =>
     ],
   });
 
+const divisiblePackageLine = {
+  ...activePackageLine,
+  id: "package_line_hours_a",
+  serviceLabel: "Consulting hours",
+  unitLabel: "ساعة",
+};
+
+const divisiblePackagesWithoutCapacity = () =>
+  new InMemoryPackageRepository({
+    packages: [activePackage],
+    lines: [divisiblePackageLine],
+    ledger: [
+      {
+        id: "commitment-hours",
+        tenantId: clientA.tenantId,
+        clientId: clientA.id,
+        contractId: contractA.id,
+        packageId: packageA.id,
+        packageLineId: divisiblePackageLine.id,
+        entryType: "commitment_added",
+        quantity: 2,
+        actorUserId: tenantAdminA.authorizationActor.userId,
+        idempotencyKey: "commitment-hours",
+        occurredAt: "2026-06-28T00:00:00.000Z",
+      },
+    ],
+  });
+
 const activeClientA = {
   id: clientA.id,
   tenantId: clientA.tenantId,
@@ -220,9 +248,9 @@ describe("F-002C deliverable creation and package reservation", () => {
     ).toHaveLength(1);
   });
 
-  it("denies normal deliverable creation when package capacity is insufficient", async () => {
+  it("still rejects insufficient capacity for a divisible package unit", async () => {
     const audit = new InMemoryAuditSink();
-    const packages = packagesWithCapacity();
+    const packages = divisiblePackagesWithoutCapacity();
     const deliverables = new InMemoryDeliverableRepository();
 
     const result = await createDeliverableCommand({
@@ -230,7 +258,11 @@ describe("F-002C deliverable creation and package reservation", () => {
       packages,
       deliverables,
       audit,
-      input: { ...baseDeliverableInput, reservedQuantity: 3 },
+      input: {
+        ...baseDeliverableInput,
+        packageLineId: divisiblePackageLine.id,
+        reservedQuantity: 3,
+      },
       deliverableIdFactory: () => "over-capacity-deliverable",
       allocationIdFactory: () => "over-capacity-allocation",
       ledgerIdFactory: () => "over-capacity-ledger",
@@ -250,7 +282,7 @@ describe("F-002C deliverable creation and package reservation", () => {
       packages.listLedgerByPackageLine(
         clientA.tenantId,
         clientA.id,
-        packageLinePostsA.id,
+        divisiblePackageLine.id,
       ),
     ).resolves.not.toEqual(
       expect.arrayContaining([
@@ -264,6 +296,38 @@ describe("F-002C deliverable creation and package reservation", () => {
         reason: "insufficient_capacity",
       }),
     );
+  });
+
+  it("denies reserving more than one unit for a count-based deliverable", async () => {
+    const audit = new InMemoryAuditSink();
+    const packages = packagesWithCapacity();
+    const deliverables = new InMemoryDeliverableRepository();
+
+    const result = await createDeliverableCommand({
+      actor: assignedInternalA.authorizationActor,
+      packages,
+      deliverables,
+      audit,
+      input: { ...baseDeliverableInput, reservedQuantity: 2 },
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      value: {
+        ok: false,
+        error: { code: "ACCESS_DENIED", exposeResource: false },
+      },
+    });
+    expect(audit.events).toContainEqual(
+      expect.objectContaining({
+        action: "DeliverableReservationDenied",
+        decision: "denied",
+        reason: "count_unit_requires_single_deliverable",
+      }),
+    );
+    await expect(
+      deliverables.listByTenantClient(clientA.tenantId, clientA.id),
+    ).resolves.toEqual([]);
   });
 
   it("creates an approved extra deliverable only for administrative authority and without package reservation", async () => {

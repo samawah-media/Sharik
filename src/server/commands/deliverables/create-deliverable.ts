@@ -77,7 +77,7 @@ export const createDeliverableCommand = async ({
 
       if (
         isCountUnitLabel(packageLine.unitLabel) &&
-        !Number.isInteger(parsed.data.reservedQuantity)
+        parsed.data.reservedQuantity !== 1
       ) {
         await audit.append({
           tenantId: packageLine.tenantId,
@@ -87,7 +87,7 @@ export const createDeliverableCommand = async ({
           decision: "denied",
           targetType: "package_line",
           targetId: packageLine.id,
-          reason: "count_unit_requires_integer_reservation",
+          reason: "count_unit_requires_single_deliverable",
         });
         return { ok: false as const, error: safeDeniedError("ACCESS_DENIED") };
       }

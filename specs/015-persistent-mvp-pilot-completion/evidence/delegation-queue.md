@@ -126,7 +126,18 @@ workaround used. Partial approval did not cover the broader operational brief.
 No Flash completion or zero-cost claim; actual token/cost total unavailable.
 Next gate: owner approval of screens, then scoped implementation planning.
 
-## Current D18 checkpoint — LOCAL PASS, no approved local successor
+## X010-B-7C-22 continuation — 2026-09-12
+
+The September 10 Kanban/member/count-unit correction batch is now identified
+as X010-B-7C-22; historical D17/D18 identifiers below are unchanged. One native
+Astra read-only worker verified the collision; the lead applied the correction.
+Earlier source review and local build/JS tests passed as recorded in tasks.md.
+Runtime gates remain pending. Docker startup currently stops at update recovery;
+the local Playwright warm-up aborted before scenarios executed. Use the already
+approved disposable GitHub CI route after reviewing/staging this batch only.
+The branch's automatic Vercel deployment remains disabled. Owner checks stay open.
+
+## Historical D18 checkpoint — LOCAL PASS at that checkpoint
 
 D17 / X010-B-7C-18 and D18 / X010-B-7C-19 are LOCAL PASS. Lead six-file
 regression session 31896 exited 0: 59 PASS / 25 intentional profile SKIP (5.5m),
@@ -135,7 +146,7 @@ Independent audit and viewed screenshots support acceptance. Lead accepts the
 installed Turbopack plus /work warmup for the shared local fixture harness;
 no dependency, guard or assertion changes and no proven root-cause claim.
 Fresh node check, scoped ESLint and diff check exited 0 (lead-reported).
-No local successor is approved. Exact-HEAD CI/target confirmation and owner
+At that historical checkpoint no local successor was approved. Exact-HEAD CI/target confirmation and owner
 walkthrough remain pending; all 20 owner checkboxes remain unchecked.
 Lead owns runtime and final results; no further worker implementation is
 requested. See [diagnostic evidence](d18-report.md#current-shared-harness-checkpoint--2026-09-07).

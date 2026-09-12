@@ -32,6 +32,7 @@ export function DeliverableContentCard({
 
   return (
     <ContentPreviewCard
+      compact
       caption={firstMeaningfulReviewText(version?.caption, version?.body)}
       channel={version?.channel ?? typeLabel}
       clientName={clientName}

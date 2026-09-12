@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableWorkspaceSummary } from "@/modules/deliverables/deliverable-workspace";
@@ -167,8 +167,10 @@ export function DeliverableForm({
     action ?? (async () => initialDeliverableFormState),
     initialDeliverableFormState,
   );
-  const selectedPackageLineId =
-    state.values?.packageLineId ?? packageLines?.[0]?.id ?? "";
+  const [selectedPackageLine, setSelectedPackageLine] = useState(
+    state.values?.packageLineId ?? packageLines?.[0]?.id ?? "",
+  );
+  const selectedPackageLineId = selectedPackageLine;
   const selectedLine =
     packageLines?.find((line) => line.id === selectedPackageLineId) ??
     packageLines?.[0];
@@ -258,6 +260,7 @@ export function DeliverableForm({
                 <select
                   className="rounded-md border border-border bg-background px-3 py-2"
                   name="packageLineId"
+                  onChange={(event) => setSelectedPackageLine(event.target.value)}
                   defaultValue={selectedPackageLineId}
                   required
                 >
@@ -268,26 +271,27 @@ export function DeliverableForm({
                   ))}
                 </select>
               </label>
-              <label className="grid gap-2 text-sm font-medium">
-                الكمية المحجوزة
-                <input
-                  className="rounded-md border border-border bg-background px-3 py-2"
-                  name="reservedQuantity"
-                  type="text"
-                  inputMode={
-                    isCountUnitLabel(selectedLine?.unitLabel ?? "")
-                      ? "numeric"
-                      : "decimal"
-                  }
-                  pattern={
-                    isCountUnitLabel(selectedLine?.unitLabel ?? "")
-                      ? "[1-9][0-9]*"
-                      : undefined
-                  }
-                  required
-                  defaultValue={state.values?.reservedQuantity ?? "1"}
-                />
-              </label>
+              {isCountUnitLabel(selectedLine?.unitLabel ?? "") ? (
+                <div className="grid gap-2 text-sm">
+                  <span className="font-medium">الكمية المحجوزة</span>
+                  <input name="reservedQuantity" type="hidden" value="1" />
+                  <p className="rounded-md border border-border bg-surface px-3 py-2 text-muted">
+                    كل مخرج يحجز وحدة واحدة من «{selectedLine?.unitLabel ?? "الخدمة"}». أنشئ مخرجًا مستقلًا لكل وحدة.
+                  </p>
+                </div>
+              ) : (
+                <label className="grid gap-2 text-sm font-medium">
+                  الكمية المحجوزة
+                  <input
+                    className="rounded-md border border-border bg-background px-3 py-2"
+                    name="reservedQuantity"
+                    type="text"
+                    inputMode="decimal"
+                    required
+                    defaultValue={state.values?.reservedQuantity ?? "1"}
+                  />
+                </label>
+              )}
             </div>
             <ReservationImpactPreview
               packageLine={selectedLine}

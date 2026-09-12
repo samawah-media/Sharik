@@ -15,7 +15,7 @@ import {
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableWorkspaceSummary } from "@/modules/deliverables/deliverable-workspace";
 import {
@@ -117,7 +117,11 @@ const macroLanes: readonly MacroLane[] = [
     label: "مراجعة العميل",
     statuses: ["waiting_client_approval"],
   },
-  { id: "client-approved", label: "معتمد من العميل", statuses: ["client_approved"] },
+  {
+    id: "client-approved",
+    label: "معتمد من العميل",
+    statuses: ["client_approved"],
+  },
   { id: "delivery", label: "جاهز للتسليم", statuses: ["ready_for_delivery"] },
   { id: "completed", label: "تم التسليم", statuses: ["delivered"] },
 ];
@@ -425,6 +429,7 @@ export function DeliverableBoard({
   const [items, setItems] = useState(deliverables);
   const [activeId, setActiveId] = useState<string>();
   const [dragFeedback, setDragFeedback] = useState<string>();
+  const boardRef = useRef<HTMLElement>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, {
@@ -435,23 +440,62 @@ export function DeliverableBoard({
     }),
   );
   const activeDeliverable = items.find((item) => item.id === activeId);
-  const scrollBoardWithKeyboard = (
-    event: React.KeyboardEvent<HTMLElement>,
-  ) => {
+  const scrollBoardWithKeyboard = (event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    if (
+      event.target !== event.currentTarget ||
+      document.activeElement !== event.currentTarget
+    ) {
+      return;
+    }
     event.preventDefault();
     event.currentTarget.scrollBy({
       left: event.key === "ArrowLeft" ? -320 : 320,
       behavior: "smooth",
     });
   };
-  const scrollBoardWithMouseWheel = (
-    event: React.WheelEvent<HTMLElement>,
-  ) => {
-    if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
-    event.preventDefault();
-    event.currentTarget.scrollLeft += event.deltaY;
-  };
+  useEffect(() => {
+    const board = boardRef.current;
+    if (!board) return;
+
+    const scrollBoardWithMouseWheel = (event: WheelEvent) => {
+      if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
+      if (board.scrollWidth <= board.clientWidth) return;
+
+      const canMoveVertically = (element: HTMLElement) => {
+        if (element.scrollHeight <= element.clientHeight) return false;
+        return event.deltaY > 0
+          ? element.scrollTop + element.clientHeight < element.scrollHeight
+          : element.scrollTop > 0;
+      };
+      let verticalTarget =
+        event.target instanceof HTMLElement
+          ? event.target
+          : event.target instanceof Element
+            ? event.target.parentElement
+            : null;
+      while (verticalTarget) {
+        if (canMoveVertically(verticalTarget)) return;
+        if (verticalTarget === board) break;
+        verticalTarget = verticalTarget.parentElement;
+      }
+
+      const previousScrollLeft = board.scrollLeft;
+      const direction = board.dir === "rtl" ? -1 : 1;
+      board.scrollBy({
+        behavior: "auto",
+        left: event.deltaY * direction,
+      });
+      if (board.scrollLeft !== previousScrollLeft) {
+        event.preventDefault();
+      }
+    };
+
+    board.addEventListener("wheel", scrollBoardWithMouseWheel, {
+      passive: false,
+    });
+    return () => board.removeEventListener("wheel", scrollBoardWithMouseWheel);
+  }, []);
 
   if (deliverables.length === 0) {
     return <DeliverableBoardEmptyState />;
@@ -516,11 +560,11 @@ export function DeliverableBoard({
   return (
     <section
       aria-label="لوحة العمل"
-      className="max-w-full overflow-x-auto overscroll-x-contain px-1 pb-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+      className="h-[70dvh] max-w-full overflow-auto overscroll-contain px-1 pb-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent lg:h-[calc(100dvh-16rem)]"
       data-testid="kanban-board-scroll"
       dir="rtl"
       onKeyDown={scrollBoardWithKeyboard}
-      onWheel={scrollBoardWithMouseWheel}
+      ref={boardRef}
       tabIndex={0}
     >
       <p className="mb-3 rounded-lg border border-border bg-surface px-3 py-2 text-sm leading-6 text-muted">

@@ -279,3 +279,35 @@ apply/replay/rollback, and append-only preservation; then run the scoped local
 matrix and update evidence. Hosted execution is a separate owner-authorized
 gate after exact-HEAD review. No migration or ADR is expected unless repository
 inspection proves that the existing model cannot satisfy this contract.
+
+## X010-B-7C-22 implementation plan
+
+1. Add failing regressions for bounded Kanban geometry, RTL wheel handling,
+   board-only arrow handling, and fixed media previews; implement the smallest
+   UI-only correction without changing dnd-kit or workflow commands.
+2. Add failing component, integration, and pgTAP coverage for real member
+   editing and disablement. Extend the management read model with exact
+   assignment/scope data, then add Supabase RPC/server-action/UI mutations with
+   server-derived responsibility checks, last-admin/self protection, atomic
+   audit, idempotency, and tenant isolation.
+3. Add failing command/onboarding tests that reject count-unit reservations
+   other than one. Update creation UI and server validation so each new
+   count-unit deliverable reserves one; preserve divisible-unit behavior and do
+   not rewrite historical records.
+4. Run focused suites after each slice, then combined typecheck, lint, database
+   tests when local Supabase is available, and browser checks. Update evidence
+   honestly; external CI, Preview, UAT, and Production remain separate gates.
+
+The three slices use existing architecture and require no ADR. Their write
+sets remain separate until lead integration and combined verification.
+
+### X010-B-7C-22 local verification status — 2026-09-10
+
+Implementation and independent review corrections are integrated locally.
+The production build, TypeScript, full ESLint, secret scan, 501 unit tests,
+338 component tests, and 113 integration tests pass; Playwright successfully
+collects 300 tests. Runtime Playwright did not start because the configured
+local web-server warm-up aborted, and PostgreSQL/pgTAP could not run because
+the local Docker/Supabase service is unavailable. Those are release holds:
+the batch is not marked fully accepted and no Preview, UAT, deployment, or
+Production result is implied.

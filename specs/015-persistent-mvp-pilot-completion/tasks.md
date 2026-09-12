@@ -391,6 +391,20 @@ invite the team. Parent disposition: X010-A-9 / S015-P1-111 / S015-P1-112 remain
   - X010-B-7C-10 continuation D08/D09 (2026-09-07): approval-panel due labels and client/management list date display locally corrected in disjoint parallel slices, preserving human labels/date precedence/ISO form values/permissions. Worker RED/GREEN and independent lead source/test review complete; combined D07-D09 component 7 files/75 tests, scoped lint and full typecheck PASS. One old display assertion updated after observed failure. Post-change browser/owner gates remain open; no real-DB/hosted action.
   - X010-B-7C-10 continuation D07 (2026-09-07): shared deliverable-card date and channel/format footer locally corrected using existing Arabic helpers. Lead-reviewed two-file scope; worker date/footer RED then GREEN, lead component 14/14, scoped lint, typecheck and diff check PASS. No layout or permission change. Post-change browser/owner acceptance and the confirmed client-approval-panel raw dueDateLabel residual remain open; see `evidence/delegation-queue.md`.
 
+## X010-B-7C-22 — approved correction batch (2026-09-10)
+
+Canonical identifier corrected on 2026-09-12 to avoid colliding with historical
+X010-B-7C-18 / D17. The D18-A–G subtask labels below are retained as legacy aliases
+for this section only; refer to this batch as X010-B-7C-22 in new handoffs.
+
+- [x] D18-A Added component and browser regressions for bounded media, board-contained geometry, RTL wheel translation, nested vertical scrolling, board-only keyboard handling, and mobile/desktop profiles. Browser collection succeeds; runtime Playwright remains blocked by local web-server warm-up.
+- [x] D18-B Implemented the bounded SIL-09 Kanban/media correction without changing dnd-kit, workflow transitions, optimistic rollback, or permissions.
+- [x] D18-C Extended the real member read contract and added component/pgTAP coverage for exact assignments/scopes, tenant/authority denial, audit/idempotency, self/last-admin protection, zero-client tenants, and server-derived responsibility blocking.
+- [x] D18-D Implemented management-only persistent role/scope update, client-scope removal, and membership disablement with explicit target/impact confirmations. Responsibility transfer/reactivation remain out of scope.
+- [x] D18-E Added command, server-action, onboarding, UI, legacy pgTAP, and new trigger regressions enforcing one count-unit deliverable per unit while preserving divisible units and historical rows.
+- [x] D18-F Implemented SIL-66 validation in UI, onboarding, server action, command, and database trigger with concise Arabic guidance. No child model or bulk helper was added.
+- [ ] D18-G Local static/build and JS suites pass: production build; TypeScript; ESLint; secret scan; unit 79 files/501 tests; component 43/338; integration 28/113; Playwright collection 300 tests. Independent review corrections are integrated. Keep this gate open until real PostgreSQL/pgTAP and runtime Playwright execute successfully; no CI, Preview, UAT, deployment, or Production acceptance is claimed.
+
 ## Correction note: task assignment authority (2026-07-15)
 
 Checkpoint 1A was reopened for a third corrective slice. Five defects (S015-P1-044 through S015-P1-047, S015-P2-048) were registered and addressed by additive migration `202607140005_s015_task_assignment_authority_correction.sql`: (1) `created_by` is no longer a permanent task-read grant; (2) deliverables SELECT RLS is narrowed so team roles see only owner/contributor/task-assignee deliverables while management sees all; (3) `s015_upsert_deliverable_task` restructures update authority into management/owner-contributor/assignee tiers with server-side protected-field preservation; (4) `s015_validate_task_assignee` links active role to active membership; (5) explicit server capabilities replace implicit UI inference. The canonical assignment model is documented in `defect-register.md`. This slice was superseded by the fourth bounded review correction below and remains part of the accepted Checkpoint 1A evidence.

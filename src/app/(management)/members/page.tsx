@@ -7,7 +7,12 @@ import {
 import {
   listInternalTeamInvitations,
 } from "@/server/actions/internal-team-invitations";
-import { listInternalTeamMembers } from "@/server/actions/internal-team-members";
+import {
+  disableInternalTeamMembershipAction,
+  listInternalTeamMembers,
+  removeInternalMemberClientScopeAction,
+  updateInternalMemberAssignmentAction,
+} from "@/server/actions/internal-team-members";
 import { ErrorState } from "@/ui/core/states";
 import { InvitationList } from "@/ui/management/invitation-list";
 import {
@@ -170,7 +175,12 @@ export default async function MembersPage({
               title="تعذر تحميل أعضاء الفريق"
             />
           ) : (
-            <InternalTeamDirectory members={memberResult.members} />
+            <InternalTeamDirectory
+              disableMembershipAction={disableInternalTeamMembershipAction}
+              members={memberResult.members}
+              removeClientScopeAction={removeInternalMemberClientScopeAction}
+              updateAssignmentAction={updateInternalMemberAssignmentAction}
+            />
           )}
           {!invitationResult.ok ? (
             <ErrorState

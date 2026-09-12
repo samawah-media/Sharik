@@ -342,3 +342,48 @@ source-backed current-status and per-client delivery bars, concise Saudi static
 copy, and truthful unavailable summaries on partial/failed scoped reads. Keep
 the installed stack, scoped reads/guards and operational calculations unchanged.
 No UI1/owner/hosted acceptance is implied by this execution-order decision.
+
+## X010-B-7C-22 owner correction batch — 2026-09-10
+
+Identifier corrected on 2026-09-12: this batch was initially labelled
+X010-B-7C-18 / D18-A–G, colliding with the historical D17/D18 work.
+X010-B-7C-22 is the canonical identifier; historical acceptance is unchanged.
+
+### Member lifecycle (SIL-73 / S015-P1-136)
+
+The real management team directory must support editing an internal member's
+exact active role assignments and authorized client scopes and disabling the
+membership. Every mutation is management-only, tenant-scoped, atomic, audited,
+and idempotent. The server derives active deliverable/task responsibilities;
+caller-supplied responsibility claims are never trusted. Disablement fails
+closed while responsibilities remain, must not disable the acting user or the
+last active tenant owner/administrator, and must revoke active assignments and
+pending invitations only after all checks pass. Responsibility transfer and
+reactivation are outside this batch. Human Arabic labels are shown; raw tenant,
+membership, assignment, and client identifiers are not rendered.
+
+### Kanban scrolling and preview geometry (SIL-09)
+
+The internal board owns its horizontal and vertical overflow inside a bounded
+responsive viewport. Long image/video previews cannot stretch cards or lanes.
+Mouse-wheel translation is RTL-aware and prevents page scrolling only when the
+board can actually move horizontally. Arrow scrolling runs only when the board
+itself is focused, preserving dnd-kit keyboard controls on the drag handle.
+Existing workflow transitions, optimistic rollback, permissions, sensors, and
+audit behavior remain unchanged.
+
+### Count-unit deliverables (SIL-66)
+
+For count-based package lines, one unit is one independently managed
+deliverable. A newly created deliverable reserves exactly one count unit and
+has its own content, versions, files, comments, SLA, approvals, audit history,
+and delivery lifecycle. A future bulk helper may create several ordinary
+deliverables, but no parent/child aggregate is introduced. Existing historical
+multi-quantity deliverables are not split or rewritten automatically, and
+fractional/non-count package units retain their current semantics.
+
+Acceptance requires focused unit/component/integration/database/browser tests
+for tenant and authority denial, audit/idempotency, responsibility blocking,
+last-admin protection, board desktop/mobile/RTL/keyboard/touch behavior, and
+independent count-unit reservation/consumption/cancellation. No ADR, new
+dependency, hosted mutation, deployment, or Production action is authorized.

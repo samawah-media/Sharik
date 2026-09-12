@@ -15,6 +15,8 @@ export const invalidContributorFailureMessage =
   "أحد معرّفات المساهمين غير صالح. اترك الحقل فارغًا أو اختر المساهمين من القائمة.";
 export const invalidIdentifierFailureMessage =
   "تأكّد من معرّفات المسؤول والمساهمين ثم حاول مرة أخرى.";
+export const countUnitFailureMessage =
+  "كل مخرج من وحدات العد يحجز وحدة واحدة فقط. أنشئ مخرجًا مستقلًا لكل وحدة.";
 
 export type DeliverableWriteError = {
   code?: string;
@@ -70,6 +72,10 @@ export const mapDeliverableWriteError = (error: DeliverableWriteError): string =
     return validationFailureMessage;
   }
 
+  if (code === "22023" && message === "count unit requires one deliverable per reserved unit") {
+    return countUnitFailureMessage;
+  }
+
   // PostgREST casts RPC parameters before the function executes; an invalid
   // UUID reaches the database as 22P02. Surface the same actionable Arabic
   // guidance used by the action-side identifier pre-check, and never echo the
@@ -101,4 +107,3 @@ export const asDeliverableWriteError = (
 
   return { code, message };
 };
-

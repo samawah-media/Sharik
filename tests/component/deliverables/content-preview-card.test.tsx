@@ -5,6 +5,39 @@ import { ContentPreviewCard } from "@/ui/deliverables/content-preview-card";
 afterEach(cleanup);
 
 describe("content preview card localization", () => {
+  it("keeps supplied media inside a bounded compact-card preview", () => {
+      render(
+        <ContentPreviewCard
+          compact
+          media={<video aria-label="معاينة طويلة" src="/tall-preview.mp4" />}
+          title="منشور طويل"
+        />,
+      );
+
+      const mediaFrame = screen.getByTestId("content-preview-media");
+      expect(mediaFrame).toHaveClass("h-36", "overflow-hidden");
+      expect(mediaFrame).not.toHaveClass("min-h-36", "min-h-52");
+      expect(mediaFrame).toHaveClass(
+        "[&>*]:h-full",
+        "[&>*]:w-full",
+        "[&>*]:object-cover",
+      );
+  });
+
+  it("keeps full-detail media uncropped", () => {
+    render(
+      <ContentPreviewCard
+        fullText
+        media={<video aria-label="معاينة كاملة" src="/full-preview.mp4" />}
+        title="مراجعة العميل"
+      />,
+    );
+
+    const mediaFrame = screen.getByTestId("content-preview-media");
+    expect(mediaFrame).toHaveClass("min-h-52");
+    expect(mediaFrame).not.toHaveClass("h-52", "overflow-hidden", "[&>*]:object-cover");
+  });
+
   it.each([
     [undefined, false],
     [false, false],
@@ -25,7 +58,9 @@ describe("content preview card localization", () => {
         />,
       );
       const titleElement = screen.getByText(title.trim());
-      const captionElement = screen.getByText(caption.trim().replace(/\s+/g, " "));
+      const captionElement = screen.getByText(
+        caption.trim().replace(/\s+/g, " "),
+      );
       expect(titleElement.classList.contains("line-clamp-2")).toBe(!fullText);
       expect(captionElement.classList.contains("line-clamp-3")).toBe(!fullText);
       expect(titleElement.textContent).toBe(title);

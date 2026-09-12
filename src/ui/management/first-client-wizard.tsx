@@ -353,11 +353,11 @@ function collectStepErrors(
     if (
       isCountUnitLabel(firstLineUnit) &&
       Number.isFinite(reserved) &&
-      !Number.isInteger(reserved)
+      reserved !== 1
     ) {
       errors.push({
         field: "reservedQuantity",
-        message: "الكمية المحجوزة لوحدات العدّ يجب أن تكون عددًا صحيحًا.",
+        message: "كل مخرج من وحدات العد يحجز وحدة واحدة فقط.",
       });
     }
   }
@@ -433,6 +433,10 @@ export function FirstClientWizard({
   ) => {
     const nextData = {
       ...dataRef.current,
+      reservedQuantity:
+        index === 0 && field === "unitLabel" && isCountUnitLabel(value)
+          ? "1"
+          : dataRef.current.reservedQuantity,
       packageLines: dataRef.current.packageLines.map((line, i) =>
         i === index ? { ...line, [field]: value } : line,
       ),
@@ -574,7 +578,6 @@ export function FirstClientWizard({
       <input name="finalDueDate" type="hidden" value={data.finalDueDate} />
       <input name="requiresInternalApproval" type="hidden" value={data.requiresInternalApproval ? "true" : "false"} />
       <input name="requiresClientApproval" type="hidden" value={data.requiresClientApproval ? "true" : "false"} />
-      <input name="reservedQuantity" type="hidden" value={data.reservedQuantity} />
 
       <div className="grid gap-5">
         <StepIndicator current={step} total={stepLabels.length} />
@@ -1018,35 +1021,36 @@ export function FirstClientWizard({
                 </select>
               </label>
             </div>
-            <label className="grid gap-2 text-sm font-medium">
-              الكمية المحجوزة من أول خدمة في الباقة
-              <input
-                aria-label="الكمية المحجوزة"
-                className={inputClass("reservedQuantity")}
-                data-wizard-field="reservedQuantity"
-                inputMode={
-                  isCountUnitLabel(data.packageLines[0]?.unitLabel ?? "")
-                    ? "numeric"
-                    : "decimal"
-                }
-                pattern={
-                  isCountUnitLabel(data.packageLines[0]?.unitLabel ?? "")
-                    ? "[1-9][0-9]*"
-                    : undefined
-                }
-                onChange={(e) => update("reservedQuantity", e.target.value)}
-                type="text"
-                value={data.reservedQuantity}
-                {...fieldAria("reservedQuantity")}
-              />
-              <FieldError
-                field="reservedQuantity"
-                message={errorFor("reservedQuantity")}
-              />
-              <span className={helperClass}>
-                تُحجز من الكمية المتفق عليها عند إنشاء المخرج وتُستهلك عند التسليم.
-              </span>
-            </label>
+            {isCountUnitLabel(data.packageLines[0]?.unitLabel ?? "") ? (
+              <div className="grid gap-2 text-sm">
+                <span className="font-medium">الكمية المحجوزة من أول خدمة في الباقة</span>
+                <input name="reservedQuantity" type="hidden" value="1" />
+                <p className={helperClass}>
+                  كل مخرج يحجز وحدة واحدة من «{data.packageLines[0]?.unitLabel || "الخدمة"}». أنشئ مخرجًا مستقلًا لكل وحدة.
+                </p>
+              </div>
+            ) : (
+              <label className="grid gap-2 text-sm font-medium">
+                الكمية المحجوزة من أول خدمة في الباقة
+                <input
+                  aria-label="الكمية المحجوزة"
+                  className={inputClass("reservedQuantity")}
+                  data-wizard-field="reservedQuantity"
+                  inputMode="decimal"
+                  onChange={(e) => update("reservedQuantity", e.target.value)}
+                  type="text"
+                  value={data.reservedQuantity}
+                  {...fieldAria("reservedQuantity")}
+                />
+                <FieldError
+                  field="reservedQuantity"
+                  message={errorFor("reservedQuantity")}
+                />
+                <span className={helperClass}>
+                  تُحجز من الكمية المتفق عليها عند إنشاء المخرج وتُستهلك عند التسليم.
+                </span>
+              </label>
+            )}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <label className="grid gap-2 text-sm font-medium">
                 تاريخ البدء

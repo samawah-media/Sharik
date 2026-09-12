@@ -101,14 +101,13 @@ describe("deliverable creation form and reservation preview", () => {
     expect(screen.getByLabelText("سطر الباقة")).toHaveValue(
       "package_line_posts_a",
     );
-    expect(screen.getByLabelText("الكمية المحجوزة")).toHaveAttribute(
-      "pattern",
-      "[1-9][0-9]*",
+    expect(screen.queryByLabelText("الكمية المحجوزة")).not.toBeInTheDocument();
+    expect(document.querySelector('input[name="reservedQuantity"]')).toHaveValue(
+      "1",
     );
-    expect(screen.getByLabelText("الكمية المحجوزة")).toHaveAttribute(
-      "type",
-      "text",
-    );
+    expect(
+      screen.getByText("كل مخرج يحجز وحدة واحدة من «منشور». أنشئ مخرجًا مستقلًا لكل وحدة."),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText(/^يتطلب تعميدًا داخليًا/)).toBeChecked();
     expect(screen.getByLabelText(/^يتطلب اعتماد العميل/)).toBeChecked();
     expect(screen.getByLabelText("المسؤول")).toHaveTextContent("سارة علي");

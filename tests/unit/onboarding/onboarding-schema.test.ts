@@ -139,7 +139,7 @@ describe("onboarding schema", () => {
       packageLines: [
         {
           serviceLabel: "منشورات",
-          unitLabel: "منشور",
+          unitLabel: "ساعة",
           committedQuantity: 3,
         },
       ],
@@ -151,7 +151,7 @@ describe("onboarding schema", () => {
     }
   });
 
-  it("accepts reserved quantity equal to first package line capacity", () => {
+  it("rejects a multi-unit reservation for one count-based deliverable", () => {
     const result = onboardingSchema.safeParse({
       ...validBase,
       packageLines: [
@@ -163,7 +163,17 @@ describe("onboarding schema", () => {
       ],
       reservedQuantity: 5,
     });
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            message: "count_unit_requires_single_deliverable",
+            path: ["reservedQuantity"],
+          }),
+        ]),
+      );
+    }
   });
 
   it("rejects invalid email format", () => {

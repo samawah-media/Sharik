@@ -35,7 +35,12 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
     page.getByRole("region", { name: "لوحة العمل" }),
   ).toBeVisible();
   const firstColumn = page.getByTestId("kanban-column").first();
+  const board = page.getByTestId("kanban-board-scroll");
   await expect(firstColumn).toBeVisible();
+  await expect.poll(async () => {
+    const box = await board.boundingBox();
+    return box ? box.y + box.height <= (await page.evaluate(() => innerHeight)) : false;
+  }).toBe(true);
   await expect
     .poll(async () => {
       const box = await firstColumn.boundingBox();
@@ -47,6 +52,50 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
       .getByRole("region", { name: "لوحة العمل" })
       .getByText("ستوري هدنة 43", { exact: true }),
   ).toBeVisible({ timeout: 30_000 });
+
+  const boardBox = await board.boundingBox();
+  if (boardBox) {
+    const nestedScrollProbe = board.locator('[data-testid="nested-scroll-probe"]');
+    await board.evaluate((element) => {
+      const probe = document.createElement("div");
+      probe.dataset.testid = "nested-scroll-probe";
+      probe.style.cssText = "position:absolute;inset:8px auto auto 8px;width:80px;height:60px;overflow:auto;z-index:50;background:white";
+      probe.innerHTML = '<div style="height:240px">اختبار تمرير داخلي</div>';
+      element.append(probe);
+    });
+    const probeBox = await nestedScrollProbe.boundingBox();
+    if (probeBox) {
+      const initialBoardLeft = await board.evaluate((element) => element.scrollLeft);
+      await page.mouse.move(probeBox.x + probeBox.width / 2, probeBox.y + 20);
+      await page.mouse.wheel(0, 120);
+      await expect.poll(() => nestedScrollProbe.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+      await expect.poll(() => board.evaluate((element) => element.scrollLeft)).toBe(initialBoardLeft);
+
+      await nestedScrollProbe.evaluate((element) => {
+        element.scrollTop = element.scrollHeight;
+      });
+      await page.mouse.wheel(0, 120);
+      await expect.poll(() => board.evaluate((element) => element.scrollLeft)).not.toBe(initialBoardLeft);
+    }
+    await nestedScrollProbe.evaluate((element) => element.remove());
+
+    await board.evaluate((element) => {
+      element.scrollTop = 0;
+      element.scrollLeft = 0;
+    });
+    await page.mouse.move(boardBox.x + boardBox.width / 2, boardBox.y + boardBox.height / 2);
+    await page.mouse.wheel(0, 180);
+    await expect.poll(() => board.evaluate((element) => ({
+      left: element.scrollLeft,
+      top: element.scrollTop,
+      verticallyScrollable: element.scrollHeight > element.clientHeight,
+    }))).toMatchObject({ left: 0, top: expect.any(Number) });
+    const scroll = await board.evaluate((element) => ({
+      top: element.scrollTop,
+      verticallyScrollable: element.scrollHeight > element.clientHeight,
+    }));
+    if (scroll.verticallyScrollable) expect(scroll.top).toBeGreaterThan(0);
+  }
 
   await page
     .getByRole("button", { name: "تغيير الحالة ستوري هدنة 43" })

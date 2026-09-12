@@ -104,12 +104,21 @@ export function ContentPreviewCard({
     >
       <div className="relative isolate overflow-hidden bg-accent-soft text-foreground">
         {media ? (
-          <div className={compact ? "min-h-36" : "min-h-52"}>{media}</div>
+          <div
+            className={cn(
+              compact
+                ? "h-36 overflow-hidden [&>*]:h-full [&>*]:w-full [&>*]:object-cover"
+                : "min-h-52",
+            )}
+            data-testid="content-preview-media"
+          >
+            {media}
+          </div>
         ) : (
           <div
             className={cn(
               "grid place-items-center border-b border-border p-5 text-center",
-              compact ? "min-h-36" : "min-h-52",
+              compact ? "h-36" : "min-h-52",
             )}
             data-media-fallback
           >

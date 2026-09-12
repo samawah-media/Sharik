@@ -311,3 +311,10 @@ local web-server warm-up aborted, and PostgreSQL/pgTAP could not run because
 the local Docker/Supabase service is unavailable. Those are release holds:
 the batch is not marked fully accepted and no Preview, UAT, deployment, or
 Production result is implied.
+
+### X010-B-7C-22 CI continuation — 2026-09-12
+
+The authorized disposable CI route has now executed a clean database reset
+and passed PostgreSQL/RLS and component gates on `5e1e283`. Browser and later
+gates are still pending; see [exact-source CI checkpoint](evidence/x010-b-7c-22-ci-checkpoint.md).
+This does not change the hosted publication hold or close owner acceptance.

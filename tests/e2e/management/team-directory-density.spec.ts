@@ -16,7 +16,36 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 375, height: 812
     await expect(rows.nth(0).getByLabel("عملاء العضو")).toContainText("Glass Studio");
     await expect(rows.nth(1)).toContainText("صلاحية إدارية على مساحة سماوة.");
     await expect(rows.nth(2)).toContainText("عضوية معطلة");
-    await expect(directory.locator('button, a[href], input, select, textarea, [tabindex]')).toHaveCount(0);
+    for (const index of [0, 1, 3]) {
+      const row = rows.nth(index);
+      const management = row.getByText("إدارة العضو", { exact: true });
+      const disable = row.getByRole("button", { name: "تعطيل العضوية", exact: true });
+      await expect(row.getByText("عضوية نشطة", { exact: true })).toBeVisible();
+      await expect(management).toBeVisible();
+      await expect(disable).toBeHidden();
+      await management.click();
+      await expect(disable).toBeVisible();
+      await expect(disable).toBeEnabled();
+      await expect(row.getByLabel("سبب تعطيل العضوية", { exact: true })).toBeVisible();
+      await expect(row.getByLabel("سبب تعطيل العضوية", { exact: true })).toBeRequired();
+      await expect(row.getByLabel("اكتب «تعطيل» للتأكيد", { exact: true })).toBeVisible();
+      await expect(row.getByLabel("اكتب «تعطيل» للتأكيد", { exact: true })).toBeRequired();
+      // This compact fixture has no assignments, so it must not invent role/scope editors.
+      await expect(row.getByRole("combobox", { includeHidden: true })).toHaveCount(0);
+      await expect(row.getByRole("button", {
+        name: /حفظ التعديل|إزالة نطاق العميل/, includeHidden: true,
+      })).toHaveCount(0);
+      // Measure the same collapsed directory density after exercising the disclosure.
+      await management.click();
+      await expect(disable).toBeHidden();
+    }
+    const disabledRow = rows.nth(2);
+    await expect(disabledRow.getByText("إدارة العضو", { exact: true })).toHaveCount(0);
+    await expect(disabledRow.getByRole("button", { includeHidden: true })).toHaveCount(0);
+    await expect(disabledRow.getByRole("combobox", { includeHidden: true })).toHaveCount(0);
+    await expect(disabledRow.getByText(
+      "السجل محفوظ للرجوع إليه. إعادة التفعيل غير متاحة في هذه الدفعة.", { exact: true },
+    )).toBeVisible();
     await expect(directory).not.toContainText(/directory-member-|directory-user-/);
     await page.evaluate(() => document.fonts.ready);
 

@@ -458,6 +458,27 @@ export function DeliverableBoard({
     const board = boardRef.current;
     if (!board) return;
 
+    const fitBoardToViewport = () => {
+      const top = Math.max(0, board.getBoundingClientRect().top);
+      board.style.maxHeight = `${Math.max(0, window.innerHeight - top - 16)}px`;
+    };
+    fitBoardToViewport();
+    window.addEventListener("resize", fitBoardToViewport);
+    const layoutObserver = typeof ResizeObserver === "undefined"
+      ? undefined
+      : new ResizeObserver(fitBoardToViewport);
+    if (board.parentElement) layoutObserver?.observe(board.parentElement);
+
+    return () => {
+      window.removeEventListener("resize", fitBoardToViewport);
+      layoutObserver?.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const board = boardRef.current;
+    if (!board) return;
+
     const scrollBoardWithMouseWheel = (event: WheelEvent) => {
       if (Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
       if (board.scrollWidth <= board.clientWidth) return;

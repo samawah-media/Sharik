@@ -136,6 +136,9 @@ Runtime gates remain pending. Docker startup currently stops at update recovery;
 the local Playwright warm-up aborted before scenarios executed. Use the already
 approved disposable GitHub CI route after reviewing/staging this batch only.
 The branch's automatic Vercel deployment remains disabled. Owner checks stay open.
+The lead has since pushed the reviewed batch through the authorized CI route;
+follow [the exact-source checkpoint](x010-b-7c-22-ci-checkpoint.md) for runtime
+results rather than treating this historical pending state as the latest result.
 
 ## Historical D18 checkpoint — LOCAL PASS at that checkpoint
 

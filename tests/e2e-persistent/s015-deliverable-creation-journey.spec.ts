@@ -108,10 +108,11 @@ test("management can create a deliverable through the real persistent browser fl
 
   await form.locator('input[name="name"]').fill(deliverableName);
   await form.locator('textarea[name="description"]').fill("وصف تجريبي");
-  await form.locator('input[name="type"]').fill("post");
   await form
     .locator('select[name="packageLineId"]')
     .selectOption(freshPackageLineId);
+  await expect(form.getByLabel("نوع العمل")).toHaveValue("منشور");
+  await expect(form.locator('input[name="type"]')).toHaveValue("post");
   await expect(form.locator('input[name="reservedQuantity"]')).toHaveValue("1");
   await form
     .locator('select[name="ownerUserId"]')
@@ -184,10 +185,11 @@ test("tampered owner identifier returns an actionable Arabic error instead of th
   await form.locator('input[name="name"]').fill(
     `X009 reject ${Date.now()}`,
   );
-  await form.locator('input[name="type"]').fill("post");
   await form
     .locator('select[name="packageLineId"]')
     .selectOption(freshPackageLineId);
+  await expect(form.getByLabel("نوع العمل")).toHaveValue("منشور");
+  await expect(form.locator('input[name="type"]')).toHaveValue("post");
   await form.evaluate((formElement) => {
     const ownerSelect = formElement.querySelector<HTMLSelectElement>(
       'select[name="ownerUserId"]',

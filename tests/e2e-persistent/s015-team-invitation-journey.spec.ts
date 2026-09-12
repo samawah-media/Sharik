@@ -96,7 +96,9 @@ test("a scoped team invitation is created, denied to the wrong email, and accept
   await expect(
     invitedMemberCard.getByRole("heading", { name: "مصمم العميل الثاني" }),
   ).toBeVisible();
-  await expect(invitedMemberCard.getByText("المصمم", { exact: true })).toBeVisible();
+  await expect(
+    invitedMemberCard.getByLabel("أدوار العضو").getByText("المصمم", { exact: true }),
+  ).toBeVisible();
   await expect(
     invitedMemberCard.getByLabel("عملاء العضو").getByText("Glass", { exact: true }),
   ).toBeVisible();

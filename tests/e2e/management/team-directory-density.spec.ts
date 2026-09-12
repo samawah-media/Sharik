@@ -92,6 +92,8 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 375, height: 812
       const rowRect = row.getBoundingClientRect();
       return Array.from(row.querySelectorAll("h3, span, p")).filter((element) => {
         const rect = element.getBoundingClientRect();
+        // Closed management disclosures are not part of the visible row geometry.
+        if (rect.width === 0 && rect.height === 0) return false;
         return (element.clientWidth > 0 && element.scrollWidth > element.clientWidth + 1)
           || (element.clientHeight > 0 && element.scrollHeight > element.clientHeight + 1)
           || rect.left < rowRect.left - 1 || rect.right > rowRect.right + 1

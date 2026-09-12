@@ -41,6 +41,7 @@ export function VersionContentForm({
   currentVersion?: DeliverableVersionWorkspace;
 }) {
   const router = useRouter();
+  const helpId = useId();
   const [feedback, setFeedback] = useState<string>();
   const editable = [
     "not_started",
@@ -133,27 +134,45 @@ export function VersionContentForm({
           />
         </label>
       </div>
-      <label className="grid gap-1 text-sm font-semibold">
-        الموجز
-        <textarea
-          className="min-h-24 rounded-lg border border-border bg-surface p-3"
-          {...form.register("brief")}
-        />
-      </label>
-      <label className="grid gap-1 text-sm font-semibold">
-        المحتوى
-        <textarea
-          className="min-h-36 rounded-lg border border-border bg-surface p-3"
-          {...form.register("contentBody")}
-        />
-      </label>
-      <label className="grid gap-1 text-sm font-semibold">
-        الكابشن
-        <textarea
-          className="min-h-28 rounded-lg border border-border bg-surface p-3"
-          {...form.register("caption")}
-        />
-      </label>
+      <div className="grid gap-1">
+        <label className="grid gap-1 text-sm font-semibold">
+          الموجز
+          <textarea
+            aria-describedby={`${helpId}-brief`}
+            className="min-h-24 rounded-lg border border-border bg-surface p-3"
+            {...form.register("brief")}
+          />
+        </label>
+        <p className="text-xs leading-5 text-muted" id={`${helpId}-brief`}>
+          وش المطلوب؟ وضّح الفكرة والجمهور وأهم التفاصيل للفريق.
+        </p>
+      </div>
+      <div className="grid gap-1">
+        <label className="grid gap-1 text-sm font-semibold">
+          المحتوى
+          <textarea
+            aria-describedby={`${helpId}-content`}
+            className="min-h-36 rounded-lg border border-border bg-surface p-3"
+            {...form.register("contentBody")}
+          />
+        </label>
+        <p className="text-xs leading-5 text-muted" id={`${helpId}-content`}>
+          اكتب النص اللي بيظهر داخل التصميم أو الفيديو.
+        </p>
+      </div>
+      <div className="grid gap-1">
+        <label className="grid gap-1 text-sm font-semibold">
+          الكابشن
+          <textarea
+            aria-describedby={`${helpId}-caption`}
+            className="min-h-28 rounded-lg border border-border bg-surface p-3"
+            {...form.register("caption")}
+          />
+        </label>
+        <p className="text-xs leading-5 text-muted" id={`${helpId}-caption`}>
+          اكتب النص اللي بينزل مع المنشور، مثل الدعوة للتفاعل والوسوم.
+        </p>
+      </div>
       <label className="grid gap-1 text-sm font-semibold">
         مرجع المصدر
         <input

@@ -61,7 +61,15 @@ export function ClientHome({
       {children ?? null}
       <div className="grid gap-3 sm:grid-cols-3">
         <HomeSectionCard
-          ctaLabel={pendingCount > 0 ? `${pendingCount} بانتظار قرارك` : "لا يوجد ما ينتظر قرارك الآن"}
+          ctaLabel={
+            canApprove
+              ? pendingCount > 0
+                ? `${pendingCount} بانتظار قرارك`
+                : "لا يوجد ما ينتظر قرارك الآن"
+              : pendingCount > 0
+                ? `${pendingCount} أعمال قيد المراجعة`
+                : "لا توجد أعمال قيد المراجعة"
+          }
           description={
             canApprove
               ? "راجع الأعمال التي أرسلها فريق سماوة واعتمدها أو اطلب تعديلًا."
@@ -73,7 +81,11 @@ export function ClientHome({
         />
         <HomeSectionCard
           ctaLabel="عرض كل الأعمال"
-          description="كل أعمالك: ما ينتظر قرارك، وما قيد التعديل، وما تم تسليمه."
+          description={
+            canApprove
+              ? "كل أعمالك: ما ينتظر قرارك، وما قيد التعديل، وما تم تسليمه."
+              : "تابع الأعمال قيد المراجعة والتعديل، والأعمال المسلّمة."
+          }
           heading="أعمالي"
           href="/client/work"
           icon={<BriefcaseBusiness aria-hidden="true" size={18} />}

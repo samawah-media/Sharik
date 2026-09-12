@@ -11,6 +11,7 @@ import userEvent from "@testing-library/user-event";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableWorkspace } from "@/modules/deliverables/deliverable-workspace";
 import { UniversalDeliverableDrawer } from "@/ui/deliverables/universal-deliverable-drawer";
+import { TeamWorkspace } from "@/ui/management/team-workspace";
 
 const deliverable: DeliverableSafeSummary = {
   id: "deliverable_a",
@@ -210,6 +211,76 @@ beforeEach(() => {
 });
 
 describe("universal deliverable drawer localization", () => {
+  it.each([undefined, "", "   "])(
+    "shows a safe header fallback for unavailable client name: %s",
+    (clientName) => {
+      render(
+        <UniversalDeliverableDrawer
+          clientName={clientName}
+          deliverable={deliverable}
+          workspace={workspace}
+        />,
+      );
+      fireEvent.click(screen.getByRole("button", { name: "فتح مساحة المخرج" }));
+      const header = screen.getByRole("dialog").querySelector("header")!;
+      expect(within(header).getByText("العميل غير متاح")).toBeVisible();
+      expect(header).not.toHaveTextContent(deliverable.clientId);
+    },
+  );
+
+  it("distinguishes identical work titles by client in a wrapping RTL header", () => {
+    const names = ["شركة ألف للحلول التسويقية والمحتوى الإبداعي", "شركة باء"];
+    const { rerender } = render(
+      <UniversalDeliverableDrawer
+        clientName={names[0]}
+        deliverable={deliverable}
+        workspace={workspace}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "فتح مساحة المخرج" }));
+    let header = screen.getByRole("dialog").querySelector("header")!;
+    const identity = within(header).getByText(names[0]);
+    expect(identity).toBeVisible();
+    expect(identity).toHaveClass("break-words");
+    expect(identity.closest('[dir="rtl"]')).not.toBeNull();
+    expect(within(header).getByRole("button", { name: "إغلاق" })).toHaveClass("shrink-0");
+    rerender(
+      <UniversalDeliverableDrawer
+        clientName={names[1]}
+        deliverable={{ ...deliverable, id: "deliverable_b", clientId: "client_b" }}
+        workspace={{ ...workspace, deliverableId: "deliverable_b" }}
+      />,
+    );
+    header = screen.getByRole("dialog").querySelector("header")!;
+    expect(within(header).getByText(names[1])).toBeVisible();
+    expect(within(header).queryByText(names[0])).not.toBeInTheDocument();
+    expect(within(header).getByRole("heading", { name: deliverable.name })).toBeVisible();
+  });
+
+  it("opens My Tasks with the actual deliverable client name for identical work titles", async () => {
+    render(
+      <TeamWorkspace
+        clientNames={{ client_a: "شركة ألف", client_b: "شركة باء" }}
+        deliverables={[
+          deliverable,
+          { ...deliverable, id: "deliverable_b", clientId: "client_b" },
+        ]}
+        now="2026-07-03T00:00:00Z"
+        workspaces={{}}
+      />,
+    );
+    const rows = screen.getAllByRole("article");
+    for (const [index, name] of ["شركة ألف", "شركة باء"].entries()) {
+      fireEvent.click(within(rows[index]).getByRole("button", { name: "فتح مساحة المخرج" }));
+      const dialog = screen.getByRole("dialog");
+      const header = dialog.querySelector("header")!;
+      expect(within(header).getByText(name)).toBeVisible();
+      expect(within(header).getByRole("heading", { name: deliverable.name })).toBeVisible();
+      await within(dialog).findByRole("heading", { name: "نظرة عامة" });
+      fireEvent.click(within(header).getByRole("button", { name: "إغلاق" }));
+    }
+  });
+
   it.each(["{Enter}", " "])(
     "retains native activation and focus return with a stretched trigger: %s",
     async (key) => {

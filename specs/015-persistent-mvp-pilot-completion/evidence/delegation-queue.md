@@ -1,5 +1,182 @@
 # Astra-led correction queue — 2026-09-07
 
+## Current reconciliation wave — X010-B-7C-23 — 2026-09-12
+
+### Current status — R23-D / SIL-06 locally accepted
+
+Lead-authorized classification: **52 unimplemented, 10 pending verification/acceptance,
+9 decision/investigation, 2 narrowly verified; total 73**. SIL-06 moves from
+unimplemented to pending after local acceptance; SIL-59/SIL-63 remain pending.
+Older counts and assignment statements below are preserved historical snapshots.
+
+Lead-reported evidence, recorded by the steward (not rerun here):
+
+- **Implementation:** lead reviewed the actual three-file diff. Drawer header uses
+  the existing authorized client name/fallback; MyTasks maps the correct clientId.
+  No permission or fetch changes. Curie's bounded implementation is locally complete.
+- **Local:** worker RED 5 fail / 21 pass → GREEN 26; lead independently ran focused
+  26/26 PASS, TypeScript PASS and scoped ESLint PASS. CSS review was source-only;
+  visual verification remains pending. Exact acceptance revision/run IDs pending lead.
+- **CI:** no rerun; latest recorded 34694447510 remains FAILED six directory tests.
+  The local assertion correction remains pending rerun; no SIL-06 CI pass is implied.
+- **Hosted:** pending for SIL-06; no publication or hosted verification claimed.
+- **Owner:** pending; no owner-acceptance item closed.
+
+### الحصر الموحد للملاحظات — نقطة البداية
+
+راجع الوكيل سجل العيوب وقائمة تجربة المالك والمهام والكود على61da798.
+الحصر يشمل SIL-01 إلى SIL-73 بلا فجوات: 55 بندًا لم يثبت اكتمال تنفيذها،
+7 بنود موجودة/منفذة وتحتاج تحققًا، 9 قرارات أو تحقيقات، وبندان ناجحان في
+سيناريو مستضاف محدد. الأرقام تخص معرفات SIL لا عدد مهام البرمجة؛ نجمع المتداخل
+في حزم مع الاحتفاظ بكل معيار قبول. SIL-59 وSIL-63 انتقلا أثناء هذه الجولة
+إلى تنفيذ محلي مقبول بالمراجعة، ولا يعني ذلك نجاح تجربة المالك.
+الحالة بعد R23-B: 53 لم يثبت تنفيذها، 9 تنتظر التحقق/القبول، 9 قرارات/تحقيقات،
+وبندان ناجحان مستضافًا ضمن نطاقهما. لم يُغلق أي بند قبول مالك بهذه الجولة.
+
+المصادر: [سجل العيوب](defect-register.md)،
+[تجربة المالك](owner-acceptance-walkthrough-ar.md)، [المهام](../tasks.md).
+الحالات التاريخية لا تُحذف؛ هذا القسم هو طابور التنفيذ الحالي.
+
+| الحزمة | معرفات SIL | المتبقي | الاعتماد/التبعية |
+| --- | --- | --- | --- |
+| هوية وسياق العمل | 06،10،16 | اسم العميل داخل مساحة المخرج، وهوية ودور المستخدم، وضوح جلسة التبويب القديم | الأولوية التالية بعد البوابات الحالية؛ لا توسيع صلاحيات |
+| إدخال العميل والباقة | 01،17،18،19،20 | شرح أول مخرج والخدمة والوحدة، تخصيص الخدمة ومراجعة الحجز، إرشاد ما بعد الإنشاء وعناوين المواعيد | خطة مستقلة؛ لا تغيير محاسبة الباقة ضمن تصحيح النص |
+| الأعداد وأنواع الأعمال | 02،07،45،55 | فصل عدد البطاقات عن المتفق والمنفذ والظاهر للعميل؛ حفظ نوع المخرج القياسي | فصل55 كإصلاح بيانات إدخال عن تسميات الأعداد |
+| رحلة الفريق | 12،14،15،34،56،58،69،70 | الخطوة المناسبة للدور، مهامي/عملائي، ترتيب الأولويات والروابط المسموحة | تصميم واجهة ضمن الصلاحيات الحالية، لا منح صلاحيات لتجاوز رفض |
+| البحث | 11 | تطبيع التشكيل في البحث العربي | مستقل بعد تحديد حقول البحث |
+| محتوى واضح | 13،59،63 | أمثلة الموجز/المحتوى/الكابشن وتخفيف الحقول؛ نص العميل المشاهد | 59/63 مقبولان محليًا في R23-B وينتظران القبول المستضاف؛ تقليل الحقول في13 ما زال لاحقًا |
+| المهام والمصمم | 22،23،24،26،27،28 | حفظ بلا فقد السياق، ظهور نشاط المهمة، قراءة التعليمات، تسمية حفظ المسودة، أولوية التصميم وإزالة التكرار | قرارات21/25/68/72 قبل أي تغيير صلاحيات/حالات |
+| الملفات والرفع | 29،30،31،32،62،64 | تعريب كامل، معنى النسخة والرؤية، تقليل التعقيد، الاستبدال واسم التنزيل العربي | الحفاظ على signed URLs والعزل والرؤية |
+| النسخ والمراجعة | 35،36،37،38،39،40،41،57،60،61 | حالة النسخة، تحقق السبب والتغذية الراجعة، النص العربي، إعادة الاستخدام وسياق التعديل السابق | لا كشف مسودة أو تعليق داخلي للعميل |
+| إشعارات وسياق القرار | 08،42،53 | عميل/عمل/نسخة ووجهة دقيقة، تأكيد القرار، إزالة الالتباس والطلبات القديمة والتكرار | منع القرار المكرر ليس إغلاقًا لمشكلة العرض |
+| بوابة العميل | 46،48،49،50 | الفراغ والتسليم، سياق رابط محفوظ، رسالة رفض صحيحة | لا كشف وجود عمل غير مصرح |
+| الجوال | 65،67 | وضوح التنقل واحتواء قائمة الإشعارات داخل الشاشة | قياسات فعلية ولمس/لوحة مفاتيح |
+
+### منفّذ/موجود ويحتاج تحققًا — لا يعاد بناؤه من الصفر
+
+| SIL | ما ثبت | ما بقي |
+| --- | --- | --- |
+| 04 | الشاشة تصرح بأن الدعوة رابط وليست بريدًا | رسالة ما بعد الإنشاء نفسها |
+| 05 | مسار الدعوة موجود | قبول أحدث رابط بالبريد الصحيح وحالات الرابط؛ السبب القديم غير مثبت |
+| 06 | قبول القائد المحلي R23-D بعد مراجعة3 ملفات؛ اسم العميل المصرح/fallback وربط clientId الصحيح؛ 26/26 وTypeScript وESLint ناجحة | تحقق بصري وCI ومستضاف وقبول المالك؛ مراجعة CSS مصدرية فقط |
+| 09 | تصحيح Kanban واجتياز الكمبيوتر والجوال وRTL في CI الأخير | قبول الاستخدام المستضاف بالماوس/اللمس وإكمال بوابة الدفعة |
+| 44 | اختيار مساحة العميل منفذ وله تجربة مستضافة موثقة | الجوال والتبويبات وسحب النطاق واختلاف الدور بين المساحات |
+| 47 | معالجة محلية لأخطاء الوسائط | فيديو صالح/تالف وانتهاء الرابط ورسالة عربية على النسخة المنشورة |
+| 59 | إرشادات الحقول مقبولة محليًا في R23-B؛ focused7/7 وcombined230 وTypeScript وlint ناجحة للدفعة | CI والقبول المستضاف والمالك؛ النجاح المحلي ليس قبولًا نهائيًا |
+| 63 | نص العميل المشاهد مقبول محليًا في R23-B بنفس أدلة الدفعة | CI والقبول المستضاف والمالك؛ لا توسيع صلاحيات |
+| 66 | كل بطاقة جديدة لوحدة عد تحجز1؛ قاعدة البيانات تمنع غير ذلك | التحقق المنشور وحسم البطاقات القديمة متعددة الوحدات دون إعادة كتابة صامتة |
+| 73 | تعديل دور/نطاق العضو وتعطيله موجود محليًا | دورة الحياة المستضافة والجلسة القديمة؛ النقل وإعادة التفعيل غير منفذين |
+
+### قرارات أو تحقيقات قبل التنفيذ
+
+| SIL | المطلوب من المسؤول الأول |
+| --- | --- |
+| 03 | فصل المسمى الوظيفي الحر عن الدور الأمني المحدد؛ لا أدوار أمنية نصية حرة |
+| 21 | تحديد حق مدير الحساب في إسناد المهام قبل تعديل القاعدة الحالية |
+| 25 | تحديد علاقة حفظ المسودة/المهمة ببدء المخرج وSLA؛ لا بدء تلقائي صامت |
+| 33،43 | هل إكمال المهام وقائمة الجودة إرشادي أم شرط مانع؟ |
+| 51 | اختبار بدء SLA والزمن والتأخر؛ ليست فجوة كود مثبتة |
+| 68،72 | حسم تحرير مهام الآخرين ودور المصمم؛ تحسين العرض منفصل عن تفويض الكتابة |
+| 71 | تأكيد مصدر بيانات UAT الشبيهة بالشخصية؛ لا نسخ قيمها أو استبدال بيانات مستضافة بلا إذن |
+
+### نجاح مستضاف محدود
+
+- SIL-52: بقاء النسخة المرسلة للعميل أثناء إعداد مسودة داخلية جديدة دون كشفها.
+- SIL-54: احتساب التسليم بدل الحجز مرة واحدة وثبات الرصيد بعد التنقل.
+- المصدر: تجربة المالك، جولة مدار02 بتاريخ2026-09-10. لا يُستنتج قبول شامل.
+
+### ديون السجل التاريخي — مرتبطة ولا تُضاعف العدد
+
+| المعرف التاريخي | التصرف الحالي |
+| --- | --- |
+| S015-P2-098 | متبقٍ في تجربة إدخال العميل/الباقة؛ يربط01/17/18/19/66 |
+| S015-P2-132،136 | الكثافة العامة والتواريخ/اتجاه النص لم تغلق بالكامل؛ تربط حزم UX الحالية |
+| S015-P2-111،112،114 | حلّت محلها132/133/SIL-09؛ ليست3 أعمال جديدة |
+| S015-P2-115 إلى126 | تنفيذ تاريخي موجود؛ احتفظ بالقبول المتبقي مع SIL المقابل، لا تعِد تنفيذ الكل |
+| S015-P2-128،139 | مسار تنظيف/عزل واحد قابل للتراجع؛ التطبيق المستضاف والتحقق يتطلبان سلطة منفصلة |
+| S015-P2-131 | تعافي Drawer الجزئي مثبت؛ أول فشل قراءة وبقية الشاشات تحتاج تحققًا |
+| S015-P2-133،134 | دخول البطاقة والتبويبات منفذان؛ إعادة قبول الاستخدام الأوسع باقية |
+| S015-P2-135 | العرض تحسن لكن بيانات/أرصدة قديمة تحتاج حسمًا؛ SIL-54 لا يغلقها |
+| S015-P2-137،138 | تحسينات الدعوة ومراجعة الإنشاء منفذة؛ قبول متعدد العملاء/المالك باقٍ |
+| S015-P2-140 | نفس مسار الوسائط SIL-47 |
+| S015-P1-135،136 | تحقق نطاق الفريق ودورة العضوية؛136 يقابل SIL-73 |
+| S015-P2-078،082،087،127 | تنظيف ترميز قديم، مواءمة Git/Preview، محتوى غير جاهز، وإرسال البريد: قرارات/بوابات منفصلة |
+| S015-P1-133،134 | نجاح محدود للإشعار والملف النهائي؛ لا يغلق إشعارات53 أو عزل الملف المباشر |
+
+اختبارات قبول لا تسقط: رابط ملف لعميل آخر، جلسة عضو معطّل، حواف الدعوات،
+فشل/إلغاء الرفع، فقد استجابة الحفظ وإعادة المحاولة، تعافي القراءات، الفيديو
+وصلاحية الرابط، بدء/تأخرSLA، وقبول المالك الصريح. الاختبارات القديمة غير المؤشرة
+تُطابق بالنجاحات الحديثة قبل إعادة تنفيذها، لا تُعتبر ناجحة أو فاشلة بالتخمين.
+
+Plan: [remaining findings](remaining-findings-plan.md). Baseline
+`61da7985bcd1a00802e1846291cf769710cbccd1`. No item is accepted merely because a
+worker reports completion. Keep source, automated, hosted and owner gates distinct.
+
+| Job | Scope | Native model / agent | Ownership | State | Checks / usage |
+| --- | --- | --- | --- | --- | --- |
+| R23-A | Reconcile every historical and active finding | Astra / Archimedes `01a095b0-1210-7b42-8a07-12a76c952dd6` | Read-only evidence audit | Accepted, closed | All73 SIL IDs accounted for; historical aliases reconciled; usage/cost unknown |
+| R23-B | SIL-59/SIL-63 accessible Saudi form help and viewer-safe copy | Astra / Schrodinger `01a095b1-4391-7550-b154-3b3a6c8a55c1` | workspace-forms.tsx, client-home.tsx, two new scoped component tests | Local accepted, closed | RED5fail/2pass → GREEN7/7; lead typecheck/lint PASS; usage/cost unknown |
+| R23-B review | Spec compliance + code quality | Astra / Halley `01a095b5-436c-71e1-b74e-f63ac6318a1b` | Read-only four-file diff review | PASS, closed | No findings, no duplicate tests; usage/cost unknown |
+| Lead | Integrate inventory, prioritize dependencies, review changes and CI | Astra | Canonical docs; previous directory test correction | Running | No hosted mutation or publication |
+
+Lead combined regression after R23-B: `npm run test:component -- tests/component/client tests/component/deliverables`
+passed 28 files / 230 tests, exit0. TypeScript, scoped ESLint and diff whitespace
+also passed. No new CI, hosted or owner result is implied. No worker remains live.
+Next dispatch priority is SIL-06 (drawer client identity), then SIL-55 (canonical
+type), in disjoint source/test slices after their file-level plans are recorded.
+
+Preflight: audit and copy tasks have disjoint writes; copy has no dependency on
+inventory for its already reproduced two findings. All runtime/build/DB processes
+stay with the lead; only the copy worker runs its two new component tests.
+Existing next-env.d.ts, defect-register.md and owner walkthrough edits are preserved.
+The owner's canonical-file preference takes precedence over a second scratch
+roadmap. Native fresh-context workers are used; no external payload dispatch or
+assumed zero-cost claim. No permissions or data policy is decided by the copy task.
+
+Previous-batch gate: run34694447510 is FAILED (257 passed, 37 skips, six copies
+of one directory clipping assertion). Kanban passed desktop/mobile/RTL. The lead
+prepared a closed-details filter; real rerun, persistent tests and build still
+remain before that batch can be considered fully verified.
+
+### Permanent ROLE / recall protocol — documentation steward
+
+The lead recalls this same dedicated documentation steward for each batch and
+supplies reviewed results and identifiers. This is a reusable role, not a
+background daemon: no polling, scheduled automation, or autonomous continuation;
+await the next lead message. Re-read the current R23 queue and remaining-findings
+plan on recall, preserve all existing dirty content, and append scoped updates.
+Only this delegation queue is writable; no other edits, commit, push, deploy,
+runtime execution, or subdelegation is authorized for this role.
+
+Record evidence separately as **implementation / local / CI / hosted / owner**,
+with source revision, run/check identifiers and outcome when supplied by the lead.
+Missing identifiers remain pending lead; never invent them or promote one level
+to another. Assignment is not completion. Preserve the reconciled counts until
+lead evidence authorizes reclassification. Current lead-authorized counts after
+R23-D: **52 unimplemented, 10 pending,
+9 decision/investigation, 2 narrowly verified; total 73**.
+
+| Role / slice | State | Agent / batch identifiers | Evidence boundary |
+| --- | --- | --- | --- |
+| Documentation steward | Idle, reusable; awaiting lead recall after this update | Confucius `01a095bd-de14-7b70-8e99-99a9c9584aeb` | Queue-only evidence maintenance; no background daemon; cost/usage unknown |
+| R23-D / SIL-06 implementation | Completed locally; accepted by lead | Curie `01a095be-97ad-7343-99b4-a3af946fdc25`; native inherited Astra | Drawer/team workspace + focused tests only; lead diff review, 26/26, typecheck/scoped ESLint PASS; visual/CI/hosted/owner pending; cost/usage unknown |
+
+Historical assignment snapshot — superseded by the current R23-D status above:
+
+Lead reports R23-D plan/spec now exists and confirms the bounded ownership above.
+This records the supplied assignment, not an independent plan/spec review or a
+test result. Counts and all separate acceptance gates remain unchanged.
+
+Latest lead instruction supersedes only the earlier “next dispatch” / “no worker
+remains live” snapshot for current role status: SIL-06 is now assigned for
+implementation, not completed; its inventory category and all counts stay unchanged.
+R23-B (SIL-59/SIL-63) remains accepted **locally only**: focused 7/7, combined
+28 files / 230 tests, TypeScript and scoped lint PASS, as recorded above and in
+the remaining-findings plan. These checks do not cover SIL-06 or establish CI,
+hosted, or owner acceptance. Latest recorded CI **34694447510 FAILED six directory
+tests**; the local assertion correction is pending rerun. No new CI, hosted, or
+owner result is claimed by this documentation update.
+
 ## Persistent selector review — 2026-09-08
 
 Peirce native Astra medium, fresh read-only context, baseline6ab50e2; reviewed

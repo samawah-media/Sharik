@@ -521,6 +521,9 @@ export function UniversalDeliverableDrawer({
                 <h2 className="mt-1 break-words text-lg font-semibold">
                   {deliverable.name}
                 </h2>
+                <p className="mt-1 break-words text-sm text-muted">
+                  {clientName?.trim() || "العميل غير متاح"}
+                </p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <Badge tone="muted">
                     {deliverableStatusLabel(deliverable.status)}
@@ -532,7 +535,7 @@ export function UniversalDeliverableDrawer({
               </div>
               <button
                 aria-label="إغلاق"
-                className="grid min-h-11 min-w-11 place-items-center rounded-lg border border-border bg-background text-foreground hover:bg-border/30"
+                className="grid min-h-11 min-w-11 shrink-0 place-items-center rounded-lg border border-border bg-background text-foreground hover:bg-border/30"
                 onClick={requestClose}
                 ref={closeRef}
                 type="button"

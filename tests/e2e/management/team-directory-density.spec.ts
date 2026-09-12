@@ -91,6 +91,7 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 375, height: 812
     const clipping = await longRow.evaluate((row) => {
       const rowRect = row.getBoundingClientRect();
       return Array.from(row.querySelectorAll("h3, span, p")).filter((element) => {
+        if (element.closest("details:not([open])")) return false;
         const rect = element.getBoundingClientRect();
         // Closed management disclosures are not part of the visible row geometry.
         if (rect.width === 0 && rect.height === 0) return false;

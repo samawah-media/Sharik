@@ -283,6 +283,7 @@ export function TeamWorkspace({
                     triggerClassName="after:absolute after:inset-0 after:rounded-lg after:content-[''] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-accent"
                     approvalAction={approvalAction}
                     canPublishClientComment={Boolean(approvalAction)}
+                    clientName={clientNames[deliverable.clientId]}
                     deliverable={deliverable}
                     summary={summary}
                   />

@@ -1,5 +1,31 @@
 # Spec 015: Persistent MVP Pilot Completion
 
+## X010-B-7C-23 — remaining findings reconciliation and copy correction — 2026-09-12
+
+Owner requests a complete remaining-findings inventory with delegated execution
+and lead acceptance. Preserve historical findings and distinguish implementation,
+automated verification, hosted verification and owner acceptance. Unverified
+findings cannot be silently closed or dropped from the queue.
+
+First independent implementation slice covers SIL-59 and SIL-63 only: explain
+brief, content and caption fields using short natural Saudi Arabic, associated
+accessible help text, without changing field names, payloads, permissions or
+save behavior. A viewer must never be told a decision is waiting for them;
+existing `canApprove` determines client-home decision copy, with correct empty
+and nonempty states. Existing navigation and approver actions remain unchanged.
+No migrations, dependencies, stored-content rewrite, publishing or hosted-data
+mutation. Other findings receive dependency/ownership triage before dispatch.
+
+### R23-D / SIL-06 — client identity in the deliverable drawer
+
+Show the authorized client name beside the work identity in the drawer header,
+including when opened from My Tasks. Use the existing clientName prop and
+clientNames[deliverable.clientId] mapping, never the globally selected workspace.
+Missing/blank names use `العميل غير متاح`; do not expose IDs or query more data.
+Long names wrap in RTL without displacing the close control. Preserve work title,
+permissions, payloads, audit and SLA. Test two clients with identical work names,
+missing names and the My Tasks prop wiring. Hosted/owner acceptance stays open.
+
 ## SIL-52 / SIL-54 — approved UAT blockers correction — 2026-09-10
 
 Security acceptance: authoritative send events cannot be directly forged by authenticated users; trusted send commands still emit them. Explicit client-readable work/version mapping must remain correct for accounts holding both client and team roles. Retained fallback uses send history; existing exact-current public/final compatibility does not require historical backfill. See ADR-013 for these reviewed boundaries.

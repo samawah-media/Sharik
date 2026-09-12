@@ -1,5 +1,8 @@
 begin;
 
+create extension if not exists pgtap with schema extensions;
+set search_path = public, extensions;
+
 select plan(3);
 
 insert into public.tenants (id, name, status)

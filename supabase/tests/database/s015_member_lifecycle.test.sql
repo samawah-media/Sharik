@@ -216,7 +216,7 @@ select is(
 select col_has_check(
   'public',
   'mvp_command_requests',
-  'client_id',
+  array['client_id', 'deliverable_id', 'version_id', 'command_name'],
   'nullable client ids remain constrained to tenant-only member commands'
 );
 set local role authenticated;

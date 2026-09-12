@@ -57,9 +57,12 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
   if (boardBox) {
     const nestedScrollProbe = board.locator('[data-testid="nested-scroll-probe"]');
     await board.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+      element.scrollLeft = 0;
+      const bounds = element.getBoundingClientRect();
       const probe = document.createElement("div");
       probe.dataset.testid = "nested-scroll-probe";
-      probe.style.cssText = "position:absolute;inset:8px auto auto 8px;width:80px;height:60px;overflow:auto;z-index:50;background:white";
+      probe.style.cssText = `position:fixed;top:${bounds.top + 8}px;left:${bounds.left + 8}px;width:80px;height:60px;overflow:auto;z-index:50;background:white`;
       probe.innerHTML = '<div style="height:240px">اختبار تمرير داخلي</div>';
       element.append(probe);
     });
@@ -85,16 +88,13 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
     });
     await page.mouse.move(boardBox.x + boardBox.width / 2, boardBox.y + boardBox.height / 2);
     await page.mouse.wheel(0, 180);
-    await expect.poll(() => board.evaluate((element) => ({
-      left: element.scrollLeft,
-      top: element.scrollTop,
-      verticallyScrollable: element.scrollHeight > element.clientHeight,
-    }))).toMatchObject({ left: 0, top: expect.any(Number) });
-    const scroll = await board.evaluate((element) => ({
-      top: element.scrollTop,
-      verticallyScrollable: element.scrollHeight > element.clientHeight,
-    }));
-    if (scroll.verticallyScrollable) expect(scroll.top).toBeGreaterThan(0);
+    const verticallyScrollable = await board.evaluate((element) => element.scrollHeight > element.clientHeight);
+    if (verticallyScrollable) {
+      await expect.poll(() => board.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+      expect(await board.evaluate((element) => element.scrollLeft)).toBe(0);
+    } else {
+      await expect.poll(() => board.evaluate((element) => element.scrollLeft)).not.toBe(0);
+    }
   }
 
   await page

@@ -433,9 +433,10 @@ select is(
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '6b000000-0000-4000-8000-000000000302', true);
-select is(
-  (select count(*)::integer from public.s015_list_internal_team_members()),
-  0,
+select throws_ok(
+  $$select * from public.s015_list_internal_team_members()$$,
+  '42501',
+  'not authorized',
   'non-management members cannot enumerate the team directory'
 );
 

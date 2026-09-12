@@ -47,7 +47,7 @@ import {
 import { DeliverableApprovalWorkflowControl } from "@/ui/management/deliverable-actions";
 
 const nextAction: Record<string, string> = {
-  not_started: "بدء التنفيذ",
+  not_started: "ابدأ بالمحتوى، ثم احفظ مسودة أو أرسلها للمراجعة",
   in_progress: "إكمال المحتوى ورفع نسخة",
   ready_for_internal_review: "مراجعة النسخة الحالية",
   internal_changes_requested: "تنفيذ التعديلات الداخلية",

@@ -211,6 +211,25 @@ beforeEach(() => {
 });
 
 describe("universal deliverable drawer localization", () => {
+  it("names the available content actions as the next step for new work", () => {
+    render(
+      <UniversalDeliverableDrawer
+        clientName="شركة ألف"
+        deliverable={{ ...deliverable, status: "not_started" }}
+        workspace={{ ...workspace, deliverableId: deliverable.id }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "فتح مساحة المخرج" }));
+
+    const header = screen.getByRole("dialog").querySelector("header")!;
+    expect(
+      within(header).getByText(
+        "الخطوة التالية: ابدأ بالمحتوى، ثم احفظ مسودة أو أرسلها للمراجعة",
+      ),
+    ).toBeVisible();
+  });
+
   it.each([undefined, "", "   "])(
     "shows a safe header fallback for unavailable client name: %s",
     (clientName) => {

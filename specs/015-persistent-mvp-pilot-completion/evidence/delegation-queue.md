@@ -2,34 +2,69 @@
 
 ## Current reconciliation wave — X010-B-7C-23 — 2026-09-12
 
-### Current batch — SIL-55 local implementation, not shipped
+### Current batch — SIL-56 local implementation, not shipped
 
-Baseline HEAD `eb7b783` on `codex/015-persistent-mvp-pilot-completion`
-(verified locally by the steward). Results below are supplied by the lead,
-not rerun or independently checked against external services by the steward.
+Preceding SIL-55 technical publication is complete on canonical exact HEAD
+`3859ad4fce4f79420e5aff8f4be82be43446f778`: replacement F-001 run
+`34702118292` is **SUCCESS** and the source-git Preview is **READY**. SIL-55
+still lacks hosted behavioral recheck and owner acceptance. SIL-56 has no
+commit, CI, Preview or hosted publication.
 
 | Slice | Model / mode | State / review | Checks | Revisions / usage |
 | --- | --- | --- | --- | --- |
-| SIL-55 | Native `gpt-5.6-luna`, low effort; agent `01a095f2-1dc9-72c3-93cf-73873df87a20` | Implemented locally, uncommitted; independently reviewed and corrected by lead; not shipped | Focused Vitest 7/7 PASS; full component 45 files / 352 tests PASS; unit 79 files / 501 tests PASS; integration 28 files / 113 tests PASS; full lint, typecheck, production build and diff checks PASS | One lead-requested worker revision plus one lead test-type correction; usage/cost unknown |
+| SIL-56 | Native `gpt-5.6-luna`, low effort; agent `01a0961a-7616-7002-b223-8b077e5bfb19` | Implemented locally, uncommitted; lead independently verified the local checks; not shipped | Focused 1 file / 15 tests PASS after a small wording refinement; full component 45 files / 353 tests PASS; full lint, full typecheck, production build and git diff check PASS | Worker-reported 34/34 is not accepted; record only lead-confirmed results; usage/cost unknown |
+
+- **Implementation:** SIL-56 changes the `not_started` next-step guidance from
+  «بدء التنفيذ» to «ابدأ بالمحتوى، ثم احفظ مسودة أو أرسلها للمراجعة».
+- **Local:** lead confirmed focused 1 file / 15 tests and full component 45 files /
+  353 tests PASS, plus full lint, full typecheck, production build and git diff
+  check PASS. No unit or integration result is claimed for SIL-56. These are
+  local results, not CI, Preview, hosted verification or owner acceptance.
+- **CI / publication:** SIL-56 has no commit or CI success; Preview is pending.
+- **Hosted / owner:** no SIL-56 hosted verification or owner acceptance exists.
+- **Classification:** leave aggregate counts pending reconciliation; do not
+  promote this local result to shipped or accepted.
+
+### Preceding batch — SIL-55 technically published, acceptance pending
+
+Canonical branch exact HEAD after the test-only correction is
+`3859ad4fce4f79420e5aff8f4be82be43446f778`. Results below are supplied by the
+lead and recorded by the steward.
+
+| Slice | Model / mode | State / review | Checks | Revisions / usage |
+| --- | --- | --- | --- | --- |
+| SIL-55 | Native `gpt-5.6-luna`, low effort; agent `01a095f2-1dc9-72c3-93cf-73873df87a20` | Technical implementation committed, exact-head CI successful and Preview ready; hosted behavior and owner acceptance pending | Focused Vitest 7/7 PASS; full component 45 files / 352 tests PASS; unit 79 files / 501 tests PASS; integration 28 files / 113 tests PASS; full lint, typecheck, production build and diff checks PASS; F-001 `34702118292` SUCCESS | One lead-requested worker revision plus one lead test-type correction; test-only E2E correction `3859ad4`; usage/cost unknown |
 
 - **Implementation:** bounded to `src/ui/management/deliverable-form.tsx` and
-  `tests/component/deliverables/deliverable-form.test.tsx`; current local changes
-  address SIL-55. Baseline HEAD is not a commit containing these changes.
+  `tests/component/deliverables/deliverable-form.test.tsx`; the canonical branch
+  contains the SIL-55 implementation at exact HEAD
+  `3859ad4fce4f79420e5aff8f4be82be43446f778` after the test correction.
 - **Local:** only the checks recorded in the ledger above are claimed for SIL-55;
   no hosted or visual result is claimed in this update. An initial parallel unit
   run timed out in two fixture-boundary tests under concurrent build load; the
   complete unit suite then passed 501/501 when rerun alone.
-- **CI / publication:** SIL-55 exact-head CI, commit/push and Preview remain pending.
-- **Hosted:** no SIL-55 hosted verification is established.
+- **CI / publication:** first exact-head run `34700421494` failed only because
+  persistent E2E attempted to fill the new hidden readonly `input[name=type]`
+  and timed out; the product implementation and local tests were not the cause.
+  Test-only corrective commit `3859ad4` updated the two E2E points to assert the
+  visible Arabic «منشور» and hidden canonical `post`. Replacement F-001 run
+  `34702118292` completed **SUCCESS** on exact HEAD
+  `3859ad4fce4f79420e5aff8f4be82be43446f778`.
+- **Preview:** source-git deployment `dpl_BSB7rafsZLZjNgGfR6PrFQeTPkXN` is
+  **READY** on exact SHA `3859ad4`. Immutable URL:
+  https://shrik-jmlchlr5r-samawahs-projects.vercel.app. Branch alias:
+  https://shrik-git-codex-preview-ui-batch-20260912-samawahs-projects.vercel.app.
+  PR #38 was closed without merge after deployment; canonical PR remains #37.
+- **Hosted:** no SIL-55 hosted behavioral recheck is established.
 - **Owner:** no SIL-55 owner acceptance is established.
 
-Preceding shipped batch only: commit `eb7b783`; F-001 run `34697922090`
+Earlier shipped checkpoint: commit `eb7b783`; F-001 run `34697922090`
 **SUCCESS**; Vercel Preview `dpl_8sUW8usRkXsP1fF3y9ha9yJwkb1m` **READY**.
-Temporary PR #38 was closed without merge; canonical PR remains #37.
-These lead-reported results supersede the older failed-CI/pending-publication
-snapshot for that preceding batch, not for uncommitted SIL-55. Preview READY
-does not establish owner acceptance. Prior snapshots and inventory counts are
-retained below; aggregate reclassification awaits explicit lead reconciliation.
+That checkpoint is retained as historical evidence and does not replace the
+newer SIL-55 exact-head publication above. Preview READY does not establish
+hosted behavioral verification or owner acceptance. Prior snapshots and
+inventory counts are retained below; aggregate reclassification awaits explicit
+lead reconciliation.
 Documentation steward returns to idle/reusable after this queue-only update;
 no commit, push, deploy or further delegation is performed.
 

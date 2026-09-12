@@ -33,6 +33,12 @@ exercise member-management disclosures and disabled-member read-only behavior,
 retaining all density checks. Focused board component tests passed 10/10 locally.
 The follow-up browser run remains required.
 
+Source `4e77e8e`, [run 34694216356](https://github.com/samawah-media/Sharik/actions/runs/34694216356),
+stopped at TypeScript because the delegated test used `toBeRequired`, which is
+not a Playwright matcher. The lead replaced it with the actual required-attribute
+assertion and reran full local TypeScript successfully. No browser result is
+claimed for that run.
+
 ## Remaining gates
 
 - Successful complete CI, including PostgreSQL and runtime browser tests.

@@ -27,9 +27,9 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 375, height: 812
       await expect(disable).toBeVisible();
       await expect(disable).toBeEnabled();
       await expect(row.getByLabel("سبب تعطيل العضوية", { exact: true })).toBeVisible();
-      await expect(row.getByLabel("سبب تعطيل العضوية", { exact: true })).toBeRequired();
+      await expect(row.getByLabel("سبب تعطيل العضوية", { exact: true })).toHaveAttribute("required", "");
       await expect(row.getByLabel("اكتب «تعطيل» للتأكيد", { exact: true })).toBeVisible();
-      await expect(row.getByLabel("اكتب «تعطيل» للتأكيد", { exact: true })).toBeRequired();
+      await expect(row.getByLabel("اكتب «تعطيل» للتأكيد", { exact: true })).toHaveAttribute("required", "");
       // This compact fixture has no assignments, so it must not invent role/scope editors.
       await expect(row.getByRole("combobox", { includeHidden: true })).toHaveCount(0);
       await expect(row.getByRole("button", {

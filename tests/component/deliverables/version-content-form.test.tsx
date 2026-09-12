@@ -61,6 +61,22 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("UI3 real version content form", () => {
+  it("notifies the workspace after a successful mutation", async () => {
+    const onMutated = vi.fn();
+    render(
+      <VersionContentForm
+        deliverable={deliverable}
+        currentVersion={draft}
+        onMutated={onMutated}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "حفظ وإرسال للمراجعة الداخلية" }));
+
+    await screen.findByText("تم إرسال النسخة للمراجعة الداخلية.");
+    expect(onMutated).toHaveBeenCalledExactlyOnceWith(draft.id);
+  });
+
   it.each(actions)("$name preserves the draft identity and sends every edited field", async ({ name, submit, feedback }) => {
     render(<VersionContentForm deliverable={deliverable} currentVersion={draft} />);
     expect(screen.getByLabelText("المحتوى")).toHaveValue("محتوى الكاتب");
@@ -102,8 +118,15 @@ describe("UI3 real version content form", () => {
   });
 
   it.each(actions)("$name failure keeps inputs editable and can be retried", async ({ name, submit, feedback }) => {
+    const onMutated = vi.fn();
     saveVersion.mockResolvedValueOnce({ ok: false, reason: "denied" });
-    render(<VersionContentForm deliverable={deliverable} currentVersion={draft} />);
+    render(
+      <VersionContentForm
+        deliverable={deliverable}
+        currentVersion={draft}
+        onMutated={onMutated}
+      />,
+    );
     fireEvent.change(screen.getByLabelText("المحتوى"), { target: { value: "محتوى غير محفوظ" } });
     const button = screen.getByRole("button", { name });
     fireEvent.click(button);
@@ -121,6 +144,7 @@ describe("UI3 real version content form", () => {
     expect(screen.getByLabelText("رقم النسخة")).toHaveValue(2);
     expect(screen.queryByText(feedback)).not.toBeInTheDocument();
     expect(refresh).not.toHaveBeenCalled();
+    expect(onMutated).not.toHaveBeenCalled();
     await waitFor(() => expect(button).toBeEnabled());
     fireEvent.change(screen.getByLabelText("المحتوى"), { target: { value: "محتوى بعد التصحيح" } });
     fireEvent.click(button);
@@ -132,6 +156,7 @@ describe("UI3 real version content form", () => {
       versionId: draft.id, submit, contentBody: "محتوى بعد التصحيح",
     }));
     expect(refresh).toHaveBeenCalledTimes(1);
+    expect(onMutated).toHaveBeenCalledExactlyOnceWith(draft.id);
   });
 
   it.each([

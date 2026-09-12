@@ -299,12 +299,21 @@ export function UniversalDeliverableDrawer({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLElement>(null);
+  const refreshVersionRef = useRef<
+    { deliverableId: string; versionId: string } | undefined
+  >(undefined);
 
-  const handleMutated = useCallback(() => {
-    setWorkspaceError(undefined);
-    setLoading(true);
-    setRefreshKey((key) => key + 1);
-  }, []);
+  const handleMutated = useCallback(
+    (versionId?: string) => {
+      if (versionId) {
+        refreshVersionRef.current = { deliverableId: deliverable.id, versionId };
+      }
+      setWorkspaceError(undefined);
+      setLoading(true);
+      setRefreshKey((key) => key + 1);
+    },
+    [deliverable.id],
+  );
   const retryWorkspaceLoad = useCallback(() => {
     setWorkspaceError(undefined);
     setLoading(true);
@@ -371,7 +380,10 @@ export function UniversalDeliverableDrawer({
     fetchDeliverableWorkspace({
       clientId: deliverable.clientId,
       deliverableId: deliverable.id,
-      currentVersionId: summary?.currentVersionId ?? null,
+      currentVersionId:
+        refreshVersionRef.current?.deliverableId === deliverable.id
+          ? refreshVersionRef.current.versionId
+          : (summary?.currentVersionId ?? null),
     })
       .then((result) => {
         if (cancelled) return;
@@ -796,6 +808,7 @@ export function UniversalDeliverableDrawer({
                     <VersionContentForm
                       currentVersion={currentVersion}
                       deliverable={deliverable}
+                      onMutated={handleMutated}
                     />
                     <DeliverableApprovalWorkflowControl
                       action={approvalAction}

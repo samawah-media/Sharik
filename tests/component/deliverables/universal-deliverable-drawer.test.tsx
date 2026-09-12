@@ -148,11 +148,20 @@ vi.mock("@/server/actions/deliverable-workspace-actions", () => ({
 }));
 
 vi.mock("@/ui/deliverables/workspace-forms", () => ({
-  VersionContentForm: () => (
-    <label>
-      مسودة اختبار
-      <input data-testid="stub-version-input" />
-    </label>
+  VersionContentForm: ({
+    onMutated,
+  }: {
+    onMutated?: (versionId: string) => void;
+  }) => (
+    <div>
+      <label>
+        مسودة اختبار
+        <input data-testid="stub-version-input" />
+      </label>
+      <button type="button" onClick={() => onMutated?.("version_2")}>
+        محاكاة حفظ النسخة
+      </button>
+    </div>
   ),
   WorkspaceCommentForm: () => <div data-testid="stub-comment-form" />,
   TaskForm: () => <div data-testid="stub-task-form" />,
@@ -211,6 +220,57 @@ beforeEach(() => {
 });
 
 describe("universal deliverable drawer localization", () => {
+  it("refreshes the open drawer with the newly persisted version ID", async () => {
+    const updatedWorkspace: DeliverableWorkspace = {
+      ...workspace,
+      currentVersionId: "version_2",
+      versions: [
+        {
+          id: "version_2",
+          versionNumber: 2,
+          status: "internal_only",
+          submittedAt: "2026-07-04T00:00:00.000Z",
+          brief: "موجز النسخة الجديدة",
+          body: "محتوى النسخة الجديدة",
+          caption: "كابشن النسخة الجديدة",
+        },
+        ...workspace.versions,
+      ],
+      counts: { ...workspace.counts, versions: 2 },
+    };
+    fetchDeliverableWorkspace.mockResolvedValueOnce({
+      ok: true,
+      workspace: updatedWorkspace,
+    });
+    render(
+      <UniversalDeliverableDrawer
+        deliverable={deliverable}
+        summary={{
+          deliverableId: deliverable.id,
+          currentVersionId: "version_1",
+          counts: workspace.counts,
+        }}
+        workspace={workspace}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "فتح مساحة المخرج" }));
+    fireEvent.click(screen.getByRole("tab", { name: /المحتوى والنسخ/ }));
+    expect(screen.getByText("محتوى النسخة")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "محاكاة حفظ النسخة" }));
+
+    await waitFor(() =>
+      expect(fetchDeliverableWorkspace).toHaveBeenCalledExactlyOnceWith({
+        clientId: deliverable.clientId,
+        deliverableId: deliverable.id,
+        currentVersionId: "version_2",
+      }),
+    );
+    expect(await screen.findByText("محتوى النسخة الجديدة")).toBeVisible();
+    expect(screen.getAllByText("النسخة 2").length).toBeGreaterThan(0);
+    expect(screen.getByText(/مرسلة للمراجعة الداخلية/)).toBeVisible();
+    expect(screen.queryByText("محتوى النسخة")).not.toBeInTheDocument();
+  });
+
   it("names the available content actions as the next step for new work", () => {
     render(
       <UniversalDeliverableDrawer

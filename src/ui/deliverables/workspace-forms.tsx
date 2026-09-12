@@ -36,9 +36,11 @@ type QualityValues = z.input<typeof qualityCheckInputSchema>;
 export function VersionContentForm({
   deliverable,
   currentVersion,
+  onMutated,
 }: {
   deliverable: DeliverableSafeSummary;
   currentVersion?: DeliverableVersionWorkspace;
+  onMutated?: (versionId: string) => void;
 }) {
   const router = useRouter();
   const helpId = useId();
@@ -87,7 +89,10 @@ export function VersionContentForm({
           : "تم حفظ المسودة."
         : "تعذر حفظ النسخة. راجع الصلاحية والحالة ثم حاول مجددًا.",
     );
-    if (result.ok) router.refresh();
+    if (result.ok) {
+      router.refresh();
+      onMutated?.(values.versionId);
+    }
   };
 
   return (

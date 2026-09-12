@@ -2,17 +2,61 @@
 
 ## Current reconciliation wave — X010-B-7C-23 — 2026-09-12
 
-### Current batch — SIL-56 local implementation, not shipped
+### Current batch — SIL-57 LOCAL PASS, not published
 
-Preceding SIL-55 technical publication is complete on canonical exact HEAD
-`3859ad4fce4f79420e5aff8f4be82be43446f778`: replacement F-001 run
-`34702118292` is **SUCCESS** and the source-git Preview is **READY**. SIL-55
-still lacks hosted behavioral recheck and owner acceptance. SIL-56 has no
-commit, CI, Preview or hosted publication.
+The lead reviewed the current local implementation diff. SIL-55 and SIL-56
+publication records below remain intact; this SIL-57 batch has no commit, CI,
+deployment, hosted behavioral recheck or owner acceptance.
 
 | Slice | Model / mode | State / review | Checks | Revisions / usage |
 | --- | --- | --- | --- | --- |
-| SIL-56 | Native `gpt-5.6-luna`, low effort; agent `01a0961a-7616-7002-b223-8b077e5bfb19` | Implemented locally, uncommitted; lead independently verified the local checks; not shipped | Focused 1 file / 15 tests PASS after a small wording refinement; full component 45 files / 353 tests PASS; full lint, full typecheck, production build and git diff check PASS | Worker-reported 34/34 is not accepted; record only lead-confirmed results; usage/cost unknown |
+| SIL-57 | Native `gpt-5.6-luna`, medium effort; agent `01a096bf-ced0-7de0-88aa-405385b309b1`; independent Native `gpt-5.6-sol`, low reviewer `01a096c7-524a-7cc3-965c-81a7b6528aef` | LOCAL PASS after correction and reviewer re-approval; hosted and owner acceptance pending; not fully closed | Initial worker RED: unit 1 expected failure; component 2 expected failures. Corrective TDD RED: 4 component failures / 29 pass. Lead GREEN: focused unit 1 file / 7 tests; focused component 2 files / 33 tests; full component 45 files / 355 tests; full unit 79 files / 501 tests; full integration 28 files / 113 tests; full typecheck, full lint, production build and git diff check PASS | One lead-requested test refinement; reviewer initially HOLD, then APPROVED with no actionable findings; usage/cost unknown |
+
+- **Root cause:** `versionStatusLabel` omitted persisted `internal_only`, `final`
+  and `superseded`. The open drawer also held stale local workspace after save
+  because `VersionContentForm` called only `router.refresh()`.
+- **Implementation:** maps the three persisted states to Arabic labels;
+  `VersionContentForm` invokes optional `onMutated` only on successful mutation,
+  and the drawer wires it to `handleMutated` to refresh its local workspace.
+- **Independent review and correction:** Native `gpt-5.6-sol` low reviewer
+  `01a096c7-524a-7cc3-965c-81a7b6528aef` initially HOLDed because the immediate
+  refresh could use stale `currentVersionId` and the test proved only that a
+  fetch occurred. The corrected success path passes the persisted `versionId`
+  into the immediate drawer refresh. Its regression asserts the exact fetched
+  ID and replacement of the old body by the new version, body and localized
+  status. Corrective TDD RED was 4 component failures / 29 pass. The same
+  reviewer re-reviewed and APPROVED with no actionable findings.
+- **Local:** only the focused unit 1/7, focused component 2/33, full component
+  45/355, full unit 79/501, full integration 28/113, full typecheck, full lint,
+  production build and git diff check results above are claimed. No database or
+  E2E result is claimed.
+- **Publication / acceptance:** no SIL-57 commit, CI, deployment, hosted result or
+  owner acceptance exists. Classification is LOCAL PASS, pending reconciliation;
+  no acceptance checkbox is changed.
+
+### SIL-55 read-only audit routing record
+
+- `zai-coding-plan/glm-4.7` was selected for a SIL-55 read-only audit, but an
+  external-source safety review blocked execution before payload transmission.
+  There is no GLM result and no GLM usage claim.
+- Native `gpt-5.6-luna` low audit agent
+  `01a096bc-d410-7232-bfeb-d8babd133030` returned code-level SIL-55 PASS. The
+  lead independently reran the focused file: 1 file / 7 tests PASS.
+- SIL-55 hosted save verification remains blocked by current sample package
+  capacity 0; owner acceptance remains pending. This audit note does not alter
+  the preserved SIL-55 technical publication evidence below.
+
+### Current batch — SIL-56 technically published, acceptance pending
+
+SIL-56 technical publication is complete on canonical exact HEAD
+`7a262f4378008df5a5f29aef6b20449ab111d65f`: F-001 run `34703646855` is
+**SUCCESS** and the source-git Preview is **READY**. Hosted behavioral recheck
+and owner acceptance remain pending. The preceding SIL-55 publication evidence
+below is preserved unchanged and its acceptance gates also remain open.
+
+| Slice | Model / mode | State / review | Checks | Revisions / usage |
+| --- | --- | --- | --- | --- |
+| SIL-56 | Native `gpt-5.6-luna`, low effort; agent `01a0961a-7616-7002-b223-8b077e5bfb19` | Technical implementation committed, exact-head CI successful and Preview ready; hosted behavior and owner acceptance pending | Focused 1 file / 15 tests PASS after a small wording refinement; full component 45 files / 353 tests PASS; full lint, full typecheck, production build and git diff check PASS; F-001 `34703646855` SUCCESS | Worker-reported 34/34 is not accepted; record only lead-confirmed results; commit `7a262f4`; usage/cost unknown |
 
 - **Implementation:** SIL-56 changes the `not_started` next-step guidance from
   «بدء التنفيذ» to «ابدأ بالمحتوى، ثم احفظ مسودة أو أرسلها للمراجعة».
@@ -20,10 +64,26 @@ commit, CI, Preview or hosted publication.
   353 tests PASS, plus full lint, full typecheck, production build and git diff
   check PASS. No unit or integration result is claimed for SIL-56. These are
   local results, not CI, Preview, hosted verification or owner acceptance.
-- **CI / publication:** SIL-56 has no commit or CI success; Preview is pending.
-- **Hosted / owner:** no SIL-56 hosted verification or owner acceptance exists.
+- **CI / publication:** commit `7a262f4` has message
+  `fix: clarify first deliverable action`. F-001 Quality run `34703646855`
+  completed **SUCCESS** on canonical exact HEAD
+  `7a262f4378008df5a5f29aef6b20449ab111d65f`.
+- **Preview:** source-git deployment `dpl_EQDG8tbZXMLmJSucyHEUdLmZWxZJ` is
+  **READY** on the exact SHA. Immutable URL:
+  https://shrik-5dwhs9k8i-samawahs-projects.vercel.app. Branch alias:
+  https://shrik-git-codex-preview-ui-batch-20260912-samawahs-projects.vercel.app.
+  The protected Preview responded with the expected Vercel-auth 302; this is an
+  access-protection preflight, not a SIL-56 behavioral recheck.
+- **PR:** PR #38 was closed without merge after the evidence comment; canonical
+  PR #37 remains open.
+- **Hosted / owner:** no SIL-56 hosted behavioral recheck or owner acceptance
+  exists, so SIL-56 is not fully closed.
 - **Classification:** leave aggregate counts pending reconciliation; do not
-  promote this local result to shipped or accepted.
+  promote technical publication to owner acceptance.
+
+This final documentation-only update is local and uncommitted. It is intended
+to be included with the next implementation batch, avoiding a third full CI run
+solely for evidence metadata.
 
 ### Preceding batch — SIL-55 technically published, acceptance pending
 

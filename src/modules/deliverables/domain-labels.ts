@@ -65,6 +65,7 @@ export const taskStatusLabels: Record<string, string> = {
 
 export const versionStatusLabels: Record<string, string> = {
   draft: "مسودة",
+  internal_only: "مرسلة للمراجعة الداخلية",
   ready_for_internal_review: "جاهزة للمراجعة الداخلية",
   internal_changes_requested: "تحتاج تعديل داخلي",
   internally_approved: "معتمدة داخليًا",
@@ -73,6 +74,8 @@ export const versionStatusLabels: Record<string, string> = {
   client_changes_requested: "طلب العميل تعديلها",
   client_approved: "معتمدة من العميل",
   delivered: "مُسلَّمة",
+  final: "نسخة نهائية",
+  superseded: "نسخة سابقة",
   cancelled: "ملغية",
 };
 

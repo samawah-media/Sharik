@@ -408,6 +408,23 @@ deliverables, but no parent/child aggregate is introduced. Existing historical
 multi-quantity deliverables are not split or rewritten automatically, and
 fractional/non-count package units retain their current semantics.
 
+After an authorized manager creates one count-unit deliverable, the redirect
+must carry the exact newly persisted deliverable identity; a generic
+`saved=created` flag or list ordering is not sufficient. The client deliverables
+page must resolve that identity from its already tenant/client-scoped result and
+explain the result as one unit from the selected package
+line, show the remaining available units from the existing ledger projection,
+and offer a clear «إضافة المخرج التالي» action while capacity remains. That
+action carries the exact active package and line identities and may preselect
+only a line that belongs to the current client/package; it may suggest a human
+name such as «منشور 2 من 4». A newer active package must not silently replace
+the explicitly selected package. The server
+continues to validate every submitted identifier and quantity. Execution-only
+roles see the independent cards and a concise one-card/one-unit explanation,
+but never receive a create action. Exhausted capacity must not offer the next
+unit action. This is guidance over ordinary deliverables, not bulk creation,
+automatic legacy splitting, or a new parent/child entity.
+
 Acceptance requires focused unit/component/integration/database/browser tests
 for tenant and authority denial, audit/idempotency, responsibility blocking,
 last-admin protection, board desktop/mobile/RTL/keyboard/touch behavior, and

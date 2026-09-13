@@ -18,6 +18,9 @@ import {
   DeliverableDeniedState,
   DeliverableEmptyState,
   DeliverableList,
+  findExactCreatedDeliverable,
+  findCreatedCountUnitLine,
+  NextCountUnitGuidance,
 } from "@/ui/management/deliverable-form";
 import { Badge } from "@/ui/core/badge";
 import { ButtonLink } from "@/ui/core/button";
@@ -40,7 +43,7 @@ export default async function ClientDeliverablesPage({
   searchParams,
 }: {
   params: Promise<{ clientId: string }>;
-  searchParams?: Promise<{ as?: string; saved?: string }>;
+  searchParams?: Promise<{ as?: string; saved?: string; deliverableId?: string }>;
 }) {
   const [{ clientId }, query] = await Promise.all([params, searchParams]);
   const runtime = await resolveRouteRuntime(query?.as);
@@ -150,6 +153,22 @@ export default async function ClientDeliverablesPage({
       currentVersionId: deliverable.currentVersionId,
     })),
   });
+  const createdDeliverable = findExactCreatedDeliverable({
+    clientId: client.id,
+    saved: query?.saved,
+    deliverableId: query?.deliverableId,
+    deliverables: deliverableList.deliverables,
+  });
+  const createdPackageLine =
+    summary.ok && summary.value.audience === "management"
+      ? findCreatedCountUnitLine({
+          clientId: client.id,
+          saved: query?.saved,
+          deliverableId: query?.deliverableId,
+          deliverables: deliverableList.deliverables,
+          packages: summary.value.packages,
+        })
+      : undefined;
 
   return (
     <main className="grid gap-5" dir="rtl">
@@ -185,7 +204,7 @@ export default async function ClientDeliverablesPage({
         description={displayClientName}
         status={
           <div className="flex flex-wrap gap-2">
-            {query?.saved === "created" ? (
+            {createdDeliverable ? (
               <Badge tone="success">تم حفظ المخرج وحجز الكمية.</Badge>
             ) : null}
             {query?.saved === "extra-created" ? (
@@ -201,6 +220,13 @@ export default async function ClientDeliverablesPage({
         }
         title={`مخرجات ${displayClientName}`}
       />
+      {createdPackageLine ? (
+        <NextCountUnitGuidance
+          canCreate={canCreateDeliverables}
+          clientId={client.id}
+          packageLine={createdPackageLine}
+        />
+      ) : null}
       <MvpSnapshotCards stats={stats} />
       {deliverableList.deliverables.length > 0 ? (
         <DeliverableList

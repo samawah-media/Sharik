@@ -1,4 +1,5 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { projectPackageBalance } from "@/modules/packages/package-ledger";
 import type { PackageLineSafeSummary } from "@/modules/packages/package-repository";
@@ -21,6 +22,7 @@ import {
 import {
   DeliverableDeniedState,
   DeliverableForm,
+  resolveCountUnitPreselection,
 } from "@/ui/management/deliverable-form";
 import {
   AccessDeniedState,
@@ -32,12 +34,37 @@ import {
 const toNumber = (value: number | string) =>
   typeof value === "number" ? value : Number(value);
 
+export const loadActivePackageRows = ({
+  supabase,
+  tenantId,
+  clientId,
+  requestedPackageId,
+}: {
+  supabase: SupabaseClient;
+  tenantId: string;
+  clientId: string;
+  requestedPackageId?: string;
+}) => {
+  let query = supabase
+    .from("packages")
+    .select(
+      "id, tenant_id, client_id, contract_id, name, period_start, period_end, status, idempotency_key, created_by, created_at, updated_at",
+    )
+    .eq("tenant_id", tenantId)
+    .eq("client_id", clientId)
+    .eq("status", "active");
+  if (requestedPackageId) query = query.eq("id", requestedPackageId);
+  return query.order("created_at", { ascending: false }).limit(1);
+};
+
 const listFirstActivePackageLines = async ({
   tenantId,
   clientId,
+  requestedPackageId,
 }: {
   tenantId: string;
   clientId: string;
+  requestedPackageId?: string;
 }): Promise<
   | {
       ok: true;
@@ -52,16 +79,13 @@ const listFirstActivePackageLines = async ({
   }
 
   const supabase = await createSupabaseServerClient();
-  const { data: packageRows, error: packageError } = await supabase
-    .from("packages")
-    .select(
-      "id, tenant_id, client_id, contract_id, name, period_start, period_end, status, idempotency_key, created_by, created_at, updated_at",
-    )
-    .eq("tenant_id", tenantId)
-    .eq("client_id", clientId)
-    .eq("status", "active")
-    .order("created_at", { ascending: false })
-    .limit(1);
+  const { data: packageRows, error: packageError } =
+    await loadActivePackageRows({
+      supabase,
+      tenantId,
+      clientId,
+      requestedPackageId,
+    });
 
   if (packageError || !packageRows?.[0]) {
     return { ok: false };
@@ -140,7 +164,12 @@ export default async function NewClientDeliverablePage({
   searchParams,
 }: {
   params: Promise<{ clientId: string }>;
-  searchParams?: Promise<{ as?: string; mode?: string }>;
+  searchParams?: Promise<{
+    as?: string;
+    mode?: string;
+    packageId?: string;
+    packageLine?: string;
+  }>;
 }) {
   const [{ clientId }, query] = await Promise.all([params, searchParams]);
   const runtime = await resolveRouteRuntime(query?.as);
@@ -201,6 +230,7 @@ export default async function NewClientDeliverablePage({
       : listFirstActivePackageLines({
           tenantId: client.tenantId,
           clientId: client.id,
+          requestedPackageId: query?.packageId,
         }),
     listEligibleDeliverableMembers({
       tenantId: client.tenantId,
@@ -211,6 +241,16 @@ export default async function NewClientDeliverablePage({
   if (!approvedExtra && (!packageContext || !packageContext.ok)) {
     return <DeliverableDeniedState />;
   }
+
+  const preselection =
+    packageContext?.ok
+      ? resolveCountUnitPreselection({
+          clientId: client.id,
+          packageId: packageContext.packageId,
+          packageLines: packageContext.packageLines,
+          requestedPackageLineId: query?.packageLine,
+        })
+      : undefined;
 
   return (
     <main className="grid max-w-4xl gap-5" dir="rtl">
@@ -233,6 +273,8 @@ export default async function NewClientDeliverablePage({
         memberDirectoryAvailable={eligibleMembers.ok}
         packageId={packageContext?.ok ? packageContext.packageId : undefined}
         packageLines={packageContext?.ok ? packageContext.packageLines : []}
+        initialPackageLineId={preselection?.packageLineId}
+        suggestedName={preselection?.suggestedName}
         idempotencyKey={crypto.randomUUID()}
       />
     </main>

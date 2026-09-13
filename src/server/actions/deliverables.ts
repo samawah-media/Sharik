@@ -126,10 +126,11 @@ export async function createDeliverableAction(
     });
   }
 
+  const deliverableId = crypto.randomUUID();
   const result = await createDeliverableViaRpc({
     supabase,
     input: {
-      deliverableId: crypto.randomUUID(),
+      deliverableId,
       allocationId: crypto.randomUUID(),
       ledgerEntryId: crypto.randomUUID(),
       auditEventId: crypto.randomUUID(),
@@ -162,7 +163,9 @@ export async function createDeliverableAction(
   }
 
   revalidatePath(`/clients/${client.id}/deliverables`);
-  redirect(`/clients/${client.id}/deliverables?saved=created`);
+  redirect(
+    `/clients/${client.id}/deliverables?saved=created&deliverableId=${result.value.id}`,
+  );
 }
 
 export async function createApprovedExtraDeliverableAction(

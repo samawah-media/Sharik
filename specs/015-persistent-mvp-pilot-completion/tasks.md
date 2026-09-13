@@ -6,6 +6,7 @@
 - [x] R23-B Implement and review SIL-59/SIL-63 accessible, role-correct Saudi copy; see evidence/remaining-findings-plan.md. LOCAL ONLY: focused RED5/2 then GREEN7/7, independent spec/quality PASS, lead TypeScript and scoped lint PASS. Hosted/owner acceptance remains open.
 - [ ] R23-C Assign next waves from the reconciled inventory with disjoint file ownership and acceptance criteria; do not silently close blocked product/data or owner checks.
 - [x] R23-D SIL-06: authorized client identity in drawer/My Tasks implemented and lead-reviewed locally; focused26/26, TypeScript and scoped lint PASS. Bounded plan in evidence/remaining-findings-plan.md. Hosted/visual/owner acceptance remains open.
+- [x] R23-E SIL-66 follow-through implemented and independently approved locally: exact persisted-ID success binding, ledger-derived remaining units, authorized exact-package/line «إضافة المخرج التالي», and fail-closed query handling. RED/GREEN evidence and lead full unit/component/integration/typecheck/lint/build PASS recorded in defect-register.md. CI/Preview/hosted/owner acceptance remain open.
 
 ## SIL-52 / SIL-54 correction queue — 2026-09-10
 

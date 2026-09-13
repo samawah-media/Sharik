@@ -9,7 +9,11 @@ import {
   DeliverableEmptyState,
   DeliverableForm,
   DeliverableList,
+  findExactCreatedDeliverable,
+  findCreatedCountUnitLine,
+  NextCountUnitGuidance,
   ReservationImpactPreview,
+  resolveCountUnitPreselection,
 } from "@/ui/management/deliverable-form";
 
 afterEach(() => cleanup());
@@ -80,6 +84,146 @@ const deliverableSummary: DeliverableSafeSummary = {
 };
 
 describe("deliverable creation form and reservation preview", () => {
+  it.each([
+    { saved: "created", deliverableId: undefined, expectedId: undefined },
+    { saved: "created", deliverableId: "wrong_id", expectedId: undefined },
+    { saved: undefined, deliverableId: "deliverable_a", expectedId: undefined },
+    { saved: "created", deliverableId: "deliverable_a", expectedId: "deliverable_a" },
+  ])("resolves only an exact created deliverable", ({ saved, deliverableId, expectedId }) => {
+    expect(
+      findExactCreatedDeliverable({
+        clientId: "client_a",
+        saved,
+        deliverableId,
+        deliverables: [deliverableSummary],
+      })?.id,
+    ).toBe(expectedId);
+  });
+
+  it.each([
+    { saved: "created", deliverableId: undefined, expected: undefined },
+    { saved: "created", deliverableId: "wrong_id", expected: undefined },
+    { saved: undefined, deliverableId: "deliverable_a", expected: undefined },
+    { saved: "created", deliverableId: "deliverable_a", expected: packageLineSummary },
+  ])("binds success guidance to the exact scoped deliverable ID", ({ saved, deliverableId, expected }) => {
+    expect(
+      findCreatedCountUnitLine({
+        clientId: "client_a",
+        saved,
+        deliverableId,
+        deliverables: [
+          { ...deliverableSummary, id: "newer_deliverable" },
+          deliverableSummary,
+        ],
+        packages: [
+          {
+            id: "package_a",
+            clientId: "client_a",
+            status: "active",
+            lines: [packageLineSummary],
+          },
+        ],
+      }),
+    ).toEqual(expected);
+  });
+
+  it("preselects a scoped active count line and suggests the next independent unit name", () => {
+    const preselection = resolveCountUnitPreselection({
+      clientId: "client_a",
+      packageId: "package_a",
+      packageLines: [packageLineSummary],
+      requestedPackageLineId: "package_line_posts_a",
+    });
+
+    render(
+      <DeliverableForm
+        clientId="client_a"
+        contractId="contract_a"
+        packageId="package_a"
+        packageLines={[packageLineSummary]}
+        initialPackageLineId={preselection?.packageLineId}
+        suggestedName={preselection?.suggestedName}
+        idempotencyKey="sil66-next-post"
+      />,
+    );
+
+    expect(screen.getByLabelText("سطر الباقة")).toHaveValue(
+      "package_line_posts_a",
+    );
+    expect(screen.getByLabelText("اسم العمل")).toHaveValue("منشور 2 من 4");
+  });
+
+  it.each([
+    {
+      label: "foreign client",
+      line: { ...packageLineSummary, clientId: "client_b" },
+    },
+    {
+      label: "foreign package",
+      line: { ...packageLineSummary, packageId: "package_b" },
+    },
+    {
+      label: "inactive line",
+      line: { ...packageLineSummary, status: "archived" as const },
+    },
+  ])("ignores $label preselection", ({ line }) => {
+    expect(
+      resolveCountUnitPreselection({
+        clientId: "client_a",
+        packageId: "package_a",
+        packageLines: [line],
+        requestedPackageLineId: "package_line_posts_a",
+      }),
+    ).toBeUndefined();
+  });
+
+  it("explains a created count unit and offers the next unit only to authorized management", () => {
+    render(
+      <NextCountUnitGuidance
+        canCreate
+        clientId="client_a"
+        packageLine={packageLineSummary}
+      />,
+    );
+
+    const guidance = screen.getByRole("region", { name: "الوحدة العددية التالية" });
+    expect(within(guidance).getByText(/تم إنشاء مخرج مستقل لوحدة واحدة/u)).toBeInTheDocument();
+    expect(within(guidance).getByText("المتبقي: 3 منشور")).toBeInTheDocument();
+    expect(
+      within(guidance).getByRole("link", { name: "إضافة المخرج التالي" }),
+    ).toHaveAttribute(
+      "href",
+      "/clients/client_a/deliverables/new?packageId=package_a&packageLine=package_line_posts_a",
+    );
+  });
+
+  it("does not offer a next-unit action when capacity is exhausted or creation is unauthorized", () => {
+    const { rerender } = render(
+      <NextCountUnitGuidance
+        canCreate
+        clientId="client_a"
+        packageLine={{
+          ...packageLineSummary,
+          balance: { ...packageLineSummary.balance, available: 0 },
+        }}
+      />,
+    );
+
+    expect(screen.getByText("المتبقي: 0 منشور")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "إضافة المخرج التالي" })).not.toBeInTheDocument();
+
+    rerender(
+      <NextCountUnitGuidance
+        canCreate={false}
+        clientId="client_a"
+        packageLine={packageLineSummary}
+      />,
+    );
+
+    expect(screen.getByText(/كل بطاقة تمثل وحدة مستقلة/u)).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "إضافة المخرج التالي" })).not.toBeInTheDocument();
+  });
+
   it("renders Arabic RTL in-package deliverable fields with scoped hidden values", () => {
     render(
       <DeliverableForm

@@ -1,5 +1,18 @@
 # Astra-led correction queue — 2026-09-07
 
+## Owner authorization and next wave — 2026-09-13
+
+- Owner acceptance is recorded for the published SIL-55 and SIL-57 corrections only. Their unexecuted hosted save/mutation checks remain honestly pending; no overall release acceptance is inferred.
+- The owner explicitly authorized task-bounded transmission of the files named in each brief to the saved Z.ai/GLM route. The first SIL-09 read-only attempt selected `zai-coding-plan/glm-4.7`, but external safety review still rejected that exact dispatch before transmission and required separate payload confirmation. No project file was sent, no model result exists, and reported usage/cost remain unknown.
+- Next priority wave: reconcile SIL-09 against the already-present bounded-scroll/RTL/media-containment implementation and real hosted behavior; independently shape SIL-66 before code because it changes count-unit operational semantics. The lead retains canonical docs, integration, tests, commit/push/deploy and acceptance.
+
+### SIL-06 / SIL-09 reconciliation and SIL-66 implementation
+
+- SIL-06 and SIL-09 were reconciled against source, focused tests and the exact-head CI/Preview ancestry. Both already have technical corrections; their stale `Open` labels were replaced with honest technical-published states while desktop/mobile hosted rechecks remain pending.
+- Native agent `01a099ad-f01e-7991-961a-2f324e93992a` first performed a read-only SIL-66 product/architecture audit, then implemented the bounded next-unit guidance with TDD. No recursive delegation occurred.
+- Independent `gpt-5.6-sol` reviewer `01a099bb-f470-7330-adc4-523092f20c0a` returned HOLD twice: first for `deliverables[0]`/generic success misidentification and latest-package substitution risk, then for using the proposed UUID instead of the persisted idempotent RPC result. Both were corrected with new RED/GREEN regressions. Final reviewer verdict: APPROVE, no actionable findings.
+- Lead-fresh SIL-66 evidence: focused component 21/21, focused unit 4/4, full unit 80/504, full component 45/371, integration 28/113, full TypeScript, full ESLint, production build and diff check PASS. CI, Preview publication, hosted behavior and owner acceptance are not yet claimed.
+
 ## Current reconciliation wave — X010-B-7C-23 — 2026-09-12
 
 ### Current batch — SIL-57 CI/Preview PASS, hosted mutation pending

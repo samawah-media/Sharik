@@ -13,7 +13,7 @@ import { isCountUnitLabel } from "@/modules/packages/package-quantity";
 import type { MemberDisplay } from "@/modules/members/member-directory";
 import { formatArabicDate } from "@/modules/localization/arabic-display";
 import { Badge } from "@/ui/core/badge";
-import { Button } from "@/ui/core/button";
+import { Button, ButtonLink } from "@/ui/core/button";
 import { Card, CardHeader, CardTitle, SectionPanel } from "@/ui/core/card";
 import { EmptyState, ErrorState } from "@/ui/core/states";
 import { DeliverableCancellationControl } from "./deliverable-actions";
@@ -64,6 +64,140 @@ const typeTokensByLabel = Object.fromEntries(
 
 function canonicalizeDeliverableType(value: string) {
   return typeTokensByLabel[value] ?? value;
+}
+
+export function resolveCountUnitPreselection({
+  clientId,
+  packageId,
+  packageLines,
+  requestedPackageLineId,
+}: {
+  clientId: string;
+  packageId?: string;
+  packageLines: PackageLineSafeSummary[];
+  requestedPackageLineId?: string;
+}) {
+  if (!requestedPackageLineId || !packageId) return undefined;
+
+  const line = packageLines.find(
+    (candidate) =>
+      candidate.id === requestedPackageLineId &&
+      candidate.clientId === clientId &&
+      candidate.packageId === packageId &&
+      candidate.status === "active" &&
+      candidate.balance.available > 0 &&
+      isCountUnitLabel(candidate.unitLabel),
+  );
+  if (!line) return undefined;
+
+  const nextOrdinal = Math.max(
+    1,
+    Math.floor(line.committedQuantity - line.balance.available) + 1,
+  );
+  return {
+    packageLineId: line.id,
+    suggestedName: `${line.unitLabel} ${nextOrdinal} من ${line.committedQuantity}`,
+  };
+}
+
+export function findExactCreatedDeliverable({
+  clientId,
+  saved,
+  deliverableId,
+  deliverables,
+}: {
+  clientId: string;
+  saved?: string;
+  deliverableId?: string;
+  deliverables: DeliverableSafeSummary[];
+}) {
+  if (saved !== "created" || !deliverableId) return undefined;
+  return deliverables.find(
+    (candidate) =>
+      candidate.id === deliverableId && candidate.clientId === clientId,
+  );
+}
+
+export function findCreatedCountUnitLine({
+  clientId,
+  saved,
+  deliverableId,
+  deliverables,
+  packages,
+}: {
+  clientId: string;
+  saved?: string;
+  deliverableId?: string;
+  deliverables: DeliverableSafeSummary[];
+  packages: Array<{
+    id: string;
+    clientId: string;
+    status: string;
+    lines?: PackageLineSafeSummary[];
+  }>;
+}) {
+  const deliverable = findExactCreatedDeliverable({
+    clientId,
+    saved,
+    deliverableId,
+    deliverables,
+  });
+  if (
+    !deliverable?.packageId ||
+    !deliverable.packageLineId ||
+    deliverable.clientId !== clientId
+  ) {
+    return undefined;
+  }
+
+  return packages
+    .filter(
+      (packageSummary) =>
+        packageSummary.id === deliverable.packageId &&
+        packageSummary.clientId === clientId &&
+        packageSummary.status === "active",
+    )
+    .flatMap((packageSummary) => packageSummary.lines ?? [])
+    .find(
+      (line) =>
+        line.id === deliverable.packageLineId &&
+        line.clientId === clientId &&
+        line.packageId === deliverable.packageId &&
+        line.status === "active" &&
+        isCountUnitLabel(line.unitLabel),
+    );
+}
+
+export function NextCountUnitGuidance({
+  canCreate,
+  clientId,
+  packageLine,
+}: {
+  canCreate: boolean;
+  clientId: string;
+  packageLine: PackageLineSafeSummary;
+}) {
+  return (
+    <SectionPanel
+      label="الوحدة العددية التالية"
+      className="grid gap-3 text-sm shadow-none"
+    >
+      <p>تم إنشاء مخرج مستقل لوحدة واحدة. كل بطاقة تمثل وحدة مستقلة بسير عملها.</p>
+      <p className="font-semibold">
+        المتبقي: {packageLine.balance.available} {packageLine.unitLabel}
+      </p>
+      {canCreate && packageLine.balance.available > 0 ? (
+        <div>
+          <ButtonLink
+            href={`/clients/${clientId}/deliverables/new?packageId=${encodeURIComponent(packageLine.packageId)}&packageLine=${encodeURIComponent(packageLine.id)}`}
+            variant="primary"
+          >
+            إضافة المخرج التالي
+          </ButtonLink>
+        </div>
+      ) : null}
+    </SectionPanel>
+  );
 }
 
 function SubmitButton({ approvedExtra }: { approvedExtra?: boolean }) {
@@ -160,6 +294,8 @@ export function DeliverableForm({
   memberDirectoryAvailable = true,
   idempotencyKey,
   approvedExtra = false,
+  initialPackageLineId,
+  suggestedName,
 }: {
   action?: DeliverableFormAction;
   clientId: string;
@@ -170,13 +306,15 @@ export function DeliverableForm({
   memberDirectoryAvailable?: boolean;
   idempotencyKey: string;
   approvedExtra?: boolean;
+  initialPackageLineId?: string;
+  suggestedName?: string;
 }) {
   const [state, formAction] = useActionState(
     action ?? (async () => initialDeliverableFormState),
     initialDeliverableFormState,
   );
   const [selectedPackageLine, setSelectedPackageLine] = useState(
-    state.values?.packageLineId ?? packageLines?.[0]?.id ?? "",
+    state.values?.packageLineId ?? initialPackageLineId ?? packageLines?.[0]?.id ?? "",
   );
   const selectedPackageLineId = selectedPackageLine;
   const selectedLine =
@@ -234,7 +372,7 @@ export function DeliverableForm({
             name="name"
             required
             minLength={2}
-            defaultValue={state.values?.name}
+            defaultValue={state.values?.name ?? suggestedName}
           />
         </label>
         <label className="grid gap-2 text-sm font-medium">

@@ -6,17 +6,19 @@ const {
   createDeliverableViaRpc,
   createSupabaseServerClient,
   evaluatePermission,
+  redirect,
   resolveRuntimeContext,
 } = vi.hoisted(() => ({
   createDeliverableViaRpc: vi.fn(),
   createSupabaseServerClient: vi.fn(),
   evaluatePermission: vi.fn(),
+  redirect: vi.fn(),
   resolveRuntimeContext: vi.fn(),
 }));
 
 vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
-vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
+vi.mock("next/navigation", () => ({ redirect }));
 vi.mock("@/lib/supabase/server", () => ({ createSupabaseServerClient }));
 vi.mock("@/server/auth/runtime-context", () => ({ resolveRuntimeContext }));
 vi.mock("@/modules/authorization/evaluator", () => ({ evaluatePermission }));
@@ -44,6 +46,52 @@ const validForm = () => {
 afterEach(() => vi.clearAllMocks());
 
 describe("create deliverable server action", () => {
+  it("uses one generated deliverable ID for the RPC and exact success redirect", async () => {
+    const chain = {
+      select: vi.fn(),
+      eq: vi.fn(),
+      limit: vi.fn(),
+      maybeSingle: vi.fn().mockResolvedValue({
+        data: { unit_label: "ساعة" },
+        error: null,
+      }),
+    };
+    chain.select.mockReturnValue(chain);
+    chain.eq.mockReturnValue(chain);
+    chain.limit.mockReturnValue(chain);
+    createSupabaseServerClient.mockResolvedValue({ from: vi.fn(() => chain) });
+    resolveRuntimeContext.mockResolvedValue({
+      ok: true,
+      actor: { tenantId: "tenant-a" },
+      clients: [{ id: clientId, tenantId: "tenant-a", status: "active" }],
+    });
+    evaluatePermission.mockReturnValue({ allowed: true });
+    createDeliverableViaRpc.mockResolvedValue({
+      ok: true,
+      value: { id: "00000000-0000-4000-8000-000000000299" },
+    });
+    vi.spyOn(crypto, "randomUUID")
+      .mockReturnValueOnce("00000000-0000-4000-8000-000000000201")
+      .mockReturnValueOnce("00000000-0000-4000-8000-000000000202")
+      .mockReturnValueOnce("00000000-0000-4000-8000-000000000203")
+      .mockReturnValueOnce("00000000-0000-4000-8000-000000000204");
+    const form = validForm();
+    form.set("reservedQuantity", "1");
+
+    await createDeliverableAction(initialDeliverableFormState, form);
+
+    expect(createDeliverableViaRpc).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({
+          deliverableId: "00000000-0000-4000-8000-000000000201",
+        }),
+      }),
+    );
+    expect(redirect).toHaveBeenCalledWith(
+      `/clients/${clientId}/deliverables?saved=created&deliverableId=00000000-0000-4000-8000-000000000299`,
+    );
+  });
+
   it("rejects more than one count unit before invoking the reservation RPC", async () => {
     const chain = {
       select: vi.fn(),

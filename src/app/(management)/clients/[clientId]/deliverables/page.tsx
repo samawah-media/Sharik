@@ -18,10 +18,12 @@ import {
   DeliverableDeniedState,
   DeliverableEmptyState,
   DeliverableList,
-  findExactCreatedDeliverable,
-  findCreatedCountUnitLine,
   NextCountUnitGuidance,
 } from "@/ui/management/deliverable-form";
+import {
+  findCreatedCountUnitLine,
+  findExactCreatedDeliverable,
+} from "@/modules/deliverables/count-unit-guidance";
 import { Badge } from "@/ui/core/badge";
 import { ButtonLink } from "@/ui/core/button";
 import { PageHeader } from "@/ui/layout/page-header";

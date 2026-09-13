@@ -9,12 +9,14 @@ import {
   DeliverableEmptyState,
   DeliverableForm,
   DeliverableList,
-  findExactCreatedDeliverable,
-  findCreatedCountUnitLine,
   NextCountUnitGuidance,
   ReservationImpactPreview,
-  resolveCountUnitPreselection,
 } from "@/ui/management/deliverable-form";
+import {
+  findCreatedCountUnitLine,
+  findExactCreatedDeliverable,
+  resolveCountUnitPreselection,
+} from "@/modules/deliverables/count-unit-guidance";
 
 afterEach(() => cleanup());
 

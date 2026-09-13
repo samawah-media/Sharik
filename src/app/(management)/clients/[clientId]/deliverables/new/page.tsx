@@ -22,8 +22,8 @@ import {
 import {
   DeliverableDeniedState,
   DeliverableForm,
-  resolveCountUnitPreselection,
 } from "@/ui/management/deliverable-form";
+import { resolveCountUnitPreselection } from "@/modules/deliverables/count-unit-guidance";
 import {
   AccessDeniedState,
   ClientUnavailableState,

@@ -10,16 +10,20 @@ import {
   guardClientDetailRoute,
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
-import { Badge } from "@/ui/core/badge";
-import { ButtonLink } from "@/ui/core/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/ui/core/card";
-import { PageHeader } from "@/ui/layout/page-header";
+import { buttonStyles } from "@/ui/core/button";
+import {
+  CardDescription,
+  CardHeader,
+  CardLink,
+  CardTitle,
+} from "@/ui/core/card";
 import {
   buildEmptyMvpStats,
   buildManagementMvpStats,
-  formatMvpClientName,
+  buildMvpStatsFromDeliverables,
   HadnaMvpHero,
 } from "@/ui/mvp/hadna-mvp-summary";
+import { listScopedDeliverables } from "@/server/actions/deliverable-read";
 import {
   AccessDeniedState,
   ClientUnavailableState,
@@ -84,7 +88,7 @@ export default async function ClientDetailPage({
   }).allowed;
   const canViewDeliverables = evaluatePermission({
     actor: runtime.actor,
-    permission: PERMISSIONS.CONTRACT_VIEW,
+    permission: PERMISSIONS.DELIVERABLE_VIEW,
     resource: permissionResource,
   }).allowed;
   const canUpdateDeliverableStatus = evaluatePermission({
@@ -99,119 +103,118 @@ export default async function ClientDetailPage({
       permission: PERMISSIONS.LEDGER_VIEW_SUMMARY,
       resource: permissionResource,
     }).allowed;
-  const summary =
+  const supabase = canUseRouteActorFixtures()
+    ? undefined
+    : await createSupabaseServerClient();
+  const [summary, scopedDeliverables] = await Promise.all([
     canViewCommercial && canUseRouteActorFixtures()
-      ? { ok: true as const, value: fixtureManagementCommercialSummary }
-      : canViewCommercial
-        ? await readCommercialSummary({
-            supabase: await createSupabaseServerClient(),
+      ? Promise.resolve({
+          ok: true as const,
+          value: fixtureManagementCommercialSummary,
+        })
+      : canViewCommercial && supabase
+        ? readCommercialSummary({
+            supabase,
             tenantId: client.tenantId,
             clientId: client.id,
             audience: "management",
           })
-        : { ok: false as const };
+        : Promise.resolve({ ok: false as const }),
+    canViewDeliverables
+      ? listScopedDeliverables({
+          tenantId: client.tenantId,
+          clientId: client.id,
+          supabase,
+        })
+      : Promise.resolve({ ok: false as const }),
+  ]);
   const stats =
     summary.ok && summary.value.audience === "management"
       ? buildManagementMvpStats(summary.value)
-      : buildEmptyMvpStats();
-  const displayClientName = formatMvpClientName(client.name);
-
+      : scopedDeliverables.ok
+        ? buildMvpStatsFromDeliverables(scopedDeliverables.deliverables)
+        : buildEmptyMvpStats();
   return (
     <main className="grid gap-5">
-      <PageHeader
-        description="مسارات التشغيل الأساسية للعميل المسند لك."
-        status={<Badge tone="success">نشط</Badge>}
-        title={displayClientName}
+      <HadnaMvpHero
+        clientName={client.name}
+        roleLabel="مساحة سماوة"
+        showPackageLineCount={canViewCommercial}
+        stats={stats}
       />
-      <HadnaMvpHero clientName={client.name} roleLabel="مساحة سماوة" stats={stats}>
-        {canViewDeliverables ? (
-          <ButtonLink href={`/clients/${client.id}/deliverables`} variant="primary">
-            عرض المخرجات
-          </ButtonLink>
-        ) : null}
-        {canViewContracts ? (
-          <ButtonLink href={`/clients/${client.id}/contracts`} variant="secondary">
-            عرض الباقة
-          </ButtonLink>
-        ) : null}
-        {canUpdateDeliverableStatus ? (
-          <ButtonLink
-            href={`/clients/${client.id}/deliverables/board`}
-            variant="secondary"
-          >
-            فتح لوحة العمل
-          </ButtonLink>
-        ) : null}
-      </HadnaMvpHero>
       <section
         aria-label="مسارات تجربة العميل"
         className="grid gap-3 md:grid-cols-2 xl:grid-cols-4"
       >
         {canViewContracts ? (
-          <Card>
+          <CardLink href={`/clients/${client.id}/contracts`}>
             <CardHeader>
               <CardTitle>العقد والباقة</CardTitle>
               <CardDescription>
                 الاتفاق والمتبقي من الباقة بشكل مبسط.
               </CardDescription>
             </CardHeader>
-            <ButtonLink
-              className="mt-4"
-              href={`/clients/${client.id}/contracts`}
-              variant="secondary"
+            <span
+              className={buttonStyles({
+                className: "mt-4",
+                variant: "secondary",
+              })}
             >
               العقد والباقة
-            </ButtonLink>
-          </Card>
+            </span>
+          </CardLink>
         ) : null}
         {canViewDeliverables ? (
-          <Card>
+          <CardLink href={`/clients/${client.id}/deliverables`}>
             <CardHeader>
               <CardTitle>المخرجات</CardTitle>
               <CardDescription>
                 قائمة المخرجات المتفق عليها وحالة كل مخرج.
               </CardDescription>
             </CardHeader>
-            <ButtonLink
-              className="mt-4"
-              href={`/clients/${client.id}/deliverables`}
-              variant="secondary"
+            <span
+              className={buttonStyles({
+                className: "mt-4",
+                variant: "secondary",
+              })}
             >
               المخرجات
-            </ButtonLink>
-          </Card>
+            </span>
+          </CardLink>
         ) : null}
         {canUpdateDeliverableStatus ? (
-          <Card>
+          <CardLink href={`/clients/${client.id}/deliverables/board`}>
             <CardHeader>
               <CardTitle>لوحة العمل</CardTitle>
               <CardDescription>متابعة العمل الداخلي للعميل.</CardDescription>
             </CardHeader>
-            <ButtonLink
-              className="mt-4"
-              href={`/clients/${client.id}/deliverables/board`}
-              variant="primary"
+            <span
+              className={buttonStyles({
+                className: "mt-4",
+                variant: "primary",
+              })}
             >
               لوحة العمل
-            </ButtonLink>
-          </Card>
+            </span>
+          </CardLink>
         ) : null}
         {canViewCommercial ? (
-          <Card>
+          <CardLink href={`/clients/${client.id}/commercial`}>
             <CardHeader>
               <CardTitle>المتابعة / SLA</CardTitle>
               <CardDescription>
                 ملخص الرصيد والاستهلاك وحالة الباقة.
               </CardDescription>
             </CardHeader>
-            <ButtonLink
-              className="mt-4"
-              href={`/clients/${client.id}/commercial`}
-              variant="secondary"
+            <span
+              className={buttonStyles({
+                className: "mt-4",
+                variant: "secondary",
+              })}
             >
               المتابعة / SLA
-            </ButtonLink>
-          </Card>
+            </span>
+          </CardLink>
         ) : null}
       </section>
     </main>

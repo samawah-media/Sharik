@@ -1,6 +1,12 @@
 import { resolveRoleAwareNavigation } from "@/modules/navigation/navigation-resolver";
 import { resolveRuntimeContext } from "@/server/auth/runtime-context";
-import { canUseRouteActorFixtures } from "@/server/navigation/route-guards";
+import {
+  canUseRouteActorFixtures,
+  isClientPortalOnlyActor,
+} from "@/server/navigation/route-guards";
+import { readNotificationBellData } from "@/server/actions/notifications-read";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 import {
   ProductShell,
   type ProductShellNavigationItem,
@@ -19,7 +25,7 @@ const iconForNavigationItem = (
 const hasSupabasePublicRuntimeEnv = () =>
   Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   );
 
 const resolveShellNavigation = async () => {
@@ -52,11 +58,32 @@ export default async function ManagementLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let runtime = null;
+
+  if (
+    process.env.NODE_ENV !== "test" &&
+    !canUseRouteActorFixtures() &&
+    hasSupabasePublicRuntimeEnv()
+  ) {
+    runtime = await resolveRuntimeContext();
+
+    if (runtime.ok && isClientPortalOnlyActor(runtime.actor)) {
+      redirect("/client");
+    }
+  }
+
   const navigationItems = await resolveShellNavigation();
   const shellRoot = navigationItems[0] ?? {
     href: "/portfolio",
     label: "المساحة",
   };
+
+  const notifications =
+    runtime?.ok && !canUseRouteActorFixtures()
+      ? await readNotificationBellData({
+          supabase: await createSupabaseServerClient(),
+        }).catch(() => ({ unreadCount: 0, recent: [] }))
+      : { unreadCount: 0, recent: [] };
 
   return (
     <ProductShell
@@ -65,6 +92,7 @@ export default async function ManagementLayout({
       homeHref={shellRoot.href}
       navigationItems={navigationItems}
       navigationLabel="تنقل مساحة الفريق"
+      notifications={notifications}
     >
       <section
         dir="rtl"

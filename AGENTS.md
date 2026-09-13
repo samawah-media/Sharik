@@ -79,7 +79,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/008-r006-internal-online-trial-execution/plan.md
+at specs/015-persistent-mvp-pilot-completion/plan.md
 <!-- SPECKIT END -->
 
 أي اقتراح لا يخدم هذه العناصر يجب تأجيله أو توثيقه كخارج نطاق V1.

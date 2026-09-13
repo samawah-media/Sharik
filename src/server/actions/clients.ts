@@ -93,6 +93,7 @@ export async function createClientAction(
       slug,
       primaryContactName: optionalFormValue(parsed.data.primaryContactName),
       primaryContactEmail: optionalFormValue(parsed.data.primaryContactEmail),
+      primaryContactPhone: optionalFormValue(parsed.data.primaryContactPhone),
     },
   });
 
@@ -157,6 +158,7 @@ export async function updateClientAction(
       slug,
       primaryContactName: optionalFormValue(parsed.data.primaryContactName),
       primaryContactEmail: optionalFormValue(parsed.data.primaryContactEmail),
+      primaryContactPhone: optionalFormValue(parsed.data.primaryContactPhone),
       expectedRevision: parsed.data.expectedRevision,
     },
   });

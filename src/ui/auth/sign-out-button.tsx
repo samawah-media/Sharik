@@ -33,7 +33,7 @@ export function SignOutButton() {
   return (
     <div className="grid gap-2">
       <button
-        className="rounded-md border border-border px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60"
+        className="min-h-11 rounded-md border border-border px-3 py-2.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60"
         disabled={isSubmitting}
         onClick={handleClick}
         type="button"

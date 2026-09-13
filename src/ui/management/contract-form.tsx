@@ -1,8 +1,11 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { ContractSafeSummary } from "@/modules/contracts/contract-repository";
+import { paginateCommercialItems } from "@/modules/commercial/commercial-presentation";
+import { isHumanTrialContract } from "@/modules/deliverables/human-trial-visibility";
+import { formatArabicDateRange } from "@/modules/localization/arabic-display";
 import {
   initialContractFormState,
   type ContractFormState,
@@ -138,12 +141,72 @@ export function ContractForm({
 
 export function ContractList({
   contracts,
+  pageSize = 6,
 }: {
   contracts: ContractSafeSummary[];
+  pageSize?: number;
 }) {
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState("all");
+  const [page, setPage] = useState(1);
+  const visibleContracts = useMemo(
+    () => contracts.filter(isHumanTrialContract),
+    [contracts],
+  );
+  const result = useMemo(
+    () =>
+      paginateCommercialItems({
+        items: visibleContracts,
+        query,
+        status,
+        page,
+        pageSize,
+        getSearchText: (contract) =>
+          [contract.name, contract.reference, contract.summary]
+            .filter(Boolean)
+            .join(" "),
+        getStatus: (contract) => contract.status,
+      }),
+    [page, pageSize, query, status, visibleContracts],
+  );
+
   return (
     <section aria-label="قائمة العقود" className="grid gap-3" dir="rtl">
-      {contracts.map((contract) => (
+      <div className="grid gap-3 rounded-lg border border-border bg-card p-3 sm:grid-cols-[minmax(0,1fr)_12rem_auto] sm:items-end">
+        <label className="grid gap-1 text-sm font-medium">
+          بحث في العقود
+          <input
+            className="min-h-11 rounded-md border border-border bg-background px-3 py-2"
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setPage(1);
+            }}
+            placeholder="اسم العقد أو المرجع"
+            type="search"
+            value={query}
+          />
+        </label>
+        <label className="grid gap-1 text-sm font-medium">
+          حالة العقد
+          <select
+            className="min-h-11 rounded-md border border-border bg-background px-3 py-2"
+            onChange={(event) => {
+              setStatus(event.target.value);
+              setPage(1);
+            }}
+            value={status}
+          >
+            <option value="all">كل الحالات</option>
+            {Object.entries(statusLabels).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="pb-2 text-sm text-muted">عرض {result.totalItems} عقد</p>
+      </div>
+      {result.items.map((contract) => (
         <Card key={contract.id}>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <CardHeader>
@@ -161,8 +224,7 @@ export function ContractList({
           ) : null}
           {contract.periodStart || contract.periodEnd ? (
             <p className="mt-3 text-sm text-muted">
-              {contract.periodStart ?? "غير محدد"} -{" "}
-              {contract.periodEnd ?? "غير محدد"}
+              {formatArabicDateRange(contract.periodStart, contract.periodEnd)}
             </p>
           ) : null}
           <ButtonLink
@@ -174,6 +236,39 @@ export function ContractList({
           </ButtonLink>
         </Card>
       ))}
+      {result.totalItems === 0 ? (
+        <p className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-sm text-muted">
+          لا توجد عقود مطابقة
+        </p>
+      ) : null}
+      {result.totalPages > 1 ? (
+        <nav
+          aria-label="صفحات العقود"
+          className="flex items-center justify-between gap-3"
+        >
+          <Button
+            disabled={result.page === 1}
+            onClick={() => setPage((value) => Math.max(1, value - 1))}
+            type="button"
+            variant="secondary"
+          >
+            السابق
+          </Button>
+          <span className="text-sm text-muted">
+            صفحة {result.page} من {result.totalPages}
+          </span>
+          <Button
+            disabled={result.page === result.totalPages}
+            onClick={() =>
+              setPage((value) => Math.min(result.totalPages, value + 1))
+            }
+            type="button"
+            variant="secondary"
+          >
+            التالي
+          </Button>
+        </nav>
+      ) : null}
     </section>
   );
 }

@@ -8,12 +8,20 @@ import type { PackageFormState } from "@/modules/packages/package-form-state";
 import { packageFormError } from "@/modules/packages/package-form-state";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { resolveRuntimeContext } from "@/server/auth/runtime-context";
-import { createPackageSchema } from "@/server/commands/packages/package-schemas";
+import {
+  adjustPackageSchema,
+  createPackageSchema,
+} from "@/server/commands/packages/package-schemas";
 import {
   nullableFormValue,
   packageValuesFromFormData,
 } from "./package-write-mappers";
 import { createPackageViaRpc } from "./package-write-rpc";
+
+export type PackageAdjustmentState = {
+  status: "idle" | "error" | "success";
+  message?: string;
+};
 
 const saveFailureMessage = "تعذر حفظ الباقة بأمان.";
 const validationFailureMessage = "راجع بيانات الباقة ثم حاول مرة أخرى.";
@@ -148,4 +156,89 @@ export async function createPackageAction(
   redirect(
     `/clients/${client.id}/contracts/${parsed.data.contractId}/packages?saved=created`,
   );
+}
+
+export async function adjustPackageCommitmentAction(
+  _previousState: PackageAdjustmentState,
+  formData: FormData,
+): Promise<PackageAdjustmentState> {
+  const clientId = String(formData.get("clientId") ?? "");
+  const contractId = String(formData.get("contractId") ?? "");
+  const parsed = adjustPackageSchema.safeParse({
+    packageLineId: formData.get("packageLineId"),
+    adjustmentQuantity: formData.get("adjustmentQuantity"),
+    reason: formData.get("reason"),
+    idempotencyKey: formData.get("idempotencyKey"),
+  });
+
+  if (!parsed.success || !clientId || !contractId) {
+    return {
+      status: "error",
+      message: "أدخل فرق الكمية وسبب التصحيح بوضوح.",
+    };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const runtime = await resolveRuntimeContext(supabase);
+
+  if (!runtime.ok) {
+    return { status: "error", message: "لا يمكنك تعديل هذه الباقة." };
+  }
+
+  const client = runtime.clients.find(
+    (item) =>
+      item.id === clientId &&
+      item.tenantId === runtime.actor.tenantId &&
+      item.status === "active",
+  );
+  const allowed =
+    client &&
+    evaluatePermission({
+      actor: runtime.actor,
+      permission: PERMISSIONS.PACKAGE_ADJUST,
+      resource: { tenantId: client.tenantId, clientId: client.id },
+    }).allowed;
+
+  if (!client || !allowed) {
+    return { status: "error", message: "لا يمكنك تعديل هذه الباقة." };
+  }
+
+  const { data: scopedLine, error: scopeError } = await supabase
+    .from("package_lines")
+    .select("id, package_id, packages!inner(contract_id)")
+    .eq("tenant_id", client.tenantId)
+    .eq("client_id", client.id)
+    .eq("id", parsed.data.packageLineId)
+    .eq("packages.contract_id", contractId)
+    .limit(1)
+    .maybeSingle();
+
+  if (scopeError || !scopedLine) {
+    return { status: "error", message: "لا يمكنك تعديل هذه الباقة." };
+  }
+
+  const { error } = await supabase.rpc("f002_adjust_package_commitment", {
+    ledger_entry_id: crypto.randomUUID(),
+    audit_event_id: crypto.randomUUID(),
+    target_package_line_id: parsed.data.packageLineId,
+    adjustment_quantity: parsed.data.adjustmentQuantity,
+    adjustment_reason: parsed.data.reason,
+    idempotency_key: parsed.data.idempotencyKey,
+  });
+
+  if (error) {
+    return {
+      status: "error",
+      message:
+        error.code === "42501"
+          ? "التصحيح غير مسموح أو سيجعل الرصيد سالبًا."
+          : "تعذر تسجيل تصحيح الباقة بأمان.",
+    };
+  }
+
+  revalidatePath(`/clients/${client.id}/contracts/${contractId}/packages`);
+  return {
+    status: "success",
+    message: "تم تسجيل التصحيح في سجل الباقة والتدقيق.",
+  };
 }

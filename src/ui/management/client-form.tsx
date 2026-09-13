@@ -7,7 +7,7 @@ import {
   initialClientFormState,
   type ClientFormState,
 } from "@/modules/clients/client-form-state";
-import { Button } from "@/ui/core/button";
+import { Button, ButtonLink } from "@/ui/core/button";
 import { EmptyState, ErrorState } from "@/ui/core/states";
 
 type ClientFormAction = (
@@ -60,7 +60,7 @@ export function ClientForm({
           </>
         ) : null}
         <label className="grid gap-2 text-sm font-medium">
-          اسم العميل
+          اسم الشركة أو الجهة
           <input
             className="rounded-md border border-border bg-background px-3 py-2"
             name="name"
@@ -70,7 +70,7 @@ export function ClientForm({
           />
         </label>
         <label className="grid gap-2 text-sm font-medium">
-          اسم جهة التواصل
+          اسم مسؤول التواصل
           <input
             className="rounded-md border border-border bg-background px-3 py-2"
             name="primaryContactName"
@@ -80,9 +80,22 @@ export function ClientForm({
           />
         </label>
         <label className="grid gap-2 text-sm font-medium">
-          بريد جهة التواصل
+          رقم الهاتف / واتساب
           <input
             className="rounded-md border border-border bg-background px-3 py-2"
+            dir="ltr"
+            name="primaryContactPhone"
+            defaultValue={
+              state.values?.primaryContactPhone ?? client?.primaryContactPhone
+            }
+            inputMode="tel"
+          />
+        </label>
+        <label className="grid gap-2 text-sm font-medium">
+          البريد الإلكتروني
+          <input
+            className="rounded-md border border-border bg-background px-3 py-2"
+            dir="ltr"
             name="primaryContactEmail"
             type="email"
             defaultValue={
@@ -107,7 +120,12 @@ export function ClientForm({
 export function ClientEmptyState() {
   return (
     <EmptyState
-      description="ابدأ بإضافة أول عميل داخل نطاق سماوة الآمن."
+      action={
+        <ButtonLink href="/clients/onboard" variant="primary">
+          إضافة عميل جديد
+        </ButtonLink>
+      }
+      description="ابدأ بإضافة أول عميل: أنشئ العميل والعقد والباقة وأول مخرج في رحلة واحدة متصلة."
       title="لا يوجد عملاء بعد"
     />
   );

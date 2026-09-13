@@ -1,16 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fbfafc;
-  --foreground: #1c1a22;
-  --muted: #6f6877;
-  --border: #e7e1eb;
+  --background: #f7f8fc;
+  --foreground: #242136;
+  --muted: #635f72;
+  --border: #e6e3ee;
   --surface: #ffffff;
-  --accent: #6d4aff;
-  --accent-soft: #ece7ff;
+  --accent: #6340df;
+  --accent-soft: #eee9ff;
   --success: #1a7f64;
   --warning: #a86600;
   --danger: #b42318;
+  --focus: #6340df;
+  --shell: #ffffff;
+  --shell-foreground: #242136;
+  --shell-muted: #635f72;
+  --shell-border: #e6e3ee;
 }
 
 @theme inline {
@@ -27,8 +32,13 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
-  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+  --color-focus: var(--focus);
+  --color-shell: var(--shell);
+  --color-shell-foreground: var(--shell-foreground);
+  --color-shell-muted: var(--shell-muted);
+  --color-shell-border: var(--shell-border);
+  --font-sans: "Segoe UI", Tahoma, Arial, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, ui-monospace, monospace;
 }
 
 * {
@@ -53,7 +63,36 @@ a {
   text-decoration: none;
 }
 
+/* Keep sidebar colors above the unlayered anchor reset without changing content links. */
+[data-product-shell] > div > aside nav a {
+  color: var(--shell-muted);
+}
+
+[data-product-shell] > div > aside nav a:hover {
+  color: var(--shell-foreground);
+}
+
+[data-product-shell] > div > aside nav a[aria-current="page"] {
+  color: var(--accent);
+}
+
+[data-product-shell] > div > aside a:focus-visible {
+  outline-color: var(--focus);
+  /* The compact brand sits too close to the viewport edge for an outward ring. */
+  outline-offset: -3px;
+}
+
 :focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--accent) 70%, white);
+  outline: 3px solid color-mix(in srgb, var(--focus) 70%, white);
   outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

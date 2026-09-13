@@ -8,6 +8,7 @@ const aliases = {
 
 export default defineConfig({
   test: {
+    maxWorkers: 4,
     projects: [
       defineProject({
         test: {

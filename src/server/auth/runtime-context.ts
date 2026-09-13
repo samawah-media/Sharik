@@ -57,6 +57,7 @@ type ClientRow = {
   status: string;
   primary_contact_name: string | null;
   primary_contact_email: string | null;
+  primary_contact_phone: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -113,6 +114,7 @@ const toClientRecord = (row: ClientRow): ClientRecord => ({
   status: row.status === "archived" ? "archived" : "active",
   primaryContactName: row.primary_contact_name ?? undefined,
   primaryContactEmail: row.primary_contact_email ?? undefined,
+  primaryContactPhone: row.primary_contact_phone ?? undefined,
   createdBy: row.created_by ?? "system",
   createdAt: row.created_at,
   updatedAt: row.updated_at,
@@ -287,7 +289,7 @@ export async function resolveRuntimeContext(
       client
         .from("clients")
         .select(
-          "id, tenant_id, name, slug, status, primary_contact_name, primary_contact_email, created_by, created_at, updated_at, revision",
+          "id, tenant_id, name, slug, status, primary_contact_name, primary_contact_email, primary_contact_phone, created_by, created_at, updated_at, revision",
         )
         .eq("tenant_id", tenantSelection.membership.tenantId)
         .eq("status", "active")

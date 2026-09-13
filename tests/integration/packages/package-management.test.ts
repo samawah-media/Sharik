@@ -102,7 +102,7 @@ describe("F-002B package commitments command", () => {
         contractA.id,
       ),
     ).resolves.toHaveLength(1);
-    expect(
+    await expect(
       packages
         .listLedgerByPackageLine(
           clientA.tenantId,

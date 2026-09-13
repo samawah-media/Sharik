@@ -11,6 +11,11 @@ jobs:
       SUPABASE_INTERNAL_IMAGE_REGISTRY: docker.io
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+      - name: Verify reviewed source whitespace
+        run: git diff --check HEAD^ HEAD
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
@@ -20,11 +25,12 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:unit
       - run: npm run test:integration
-      - run: npx supabase@2.107.0 db start
-      - run: npx supabase@2.107.0 db reset --local
+      - run: npx supabase@2.107.0 start
+      - run: npx supabase@2.107.0 db reset --local --no-seed
       - run: npm run test:rls
       - run: npm run test:component
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - run: npm run test:e2e:persistent
       - run: npm run secret:scan
       - run: npm run build

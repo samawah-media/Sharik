@@ -1,5 +1,11 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PackageSafeSummary } from "@/modules/packages/package-repository";
 import {
   PackageBalanceSummary,
@@ -78,8 +84,12 @@ describe("package form and balance states", () => {
     expect(screen.getByLabelText("اسم الخدمة")).toBeRequired();
     expect(screen.getByLabelText("وحدة القياس")).toBeRequired();
     expect(screen.getByLabelText("الكمية المتفق عليها")).toHaveAttribute(
-      "min",
-      "0",
+      "inputmode",
+      "decimal",
+    );
+    expect(screen.getByLabelText("الكمية المتفق عليها")).toHaveAttribute(
+      "type",
+      "text",
     );
     expect(document.querySelector('input[name="clientId"]')).toHaveValue(
       "client_a",
@@ -101,12 +111,91 @@ describe("package form and balance states", () => {
     const list = screen.getByRole("region", { name: "قائمة الباقات" });
     expect(within(list).getByText("باقة المحتوى الشهرية")).toBeInTheDocument();
     expect(within(list).getByText("منشورات")).toBeInTheDocument();
-    expect(within(list).getByText("المتفق عليه: 4")).toBeInTheDocument();
-    expect(within(list).getByText("المحجوز: 1")).toBeInTheDocument();
-    expect(within(list).getByText("المتاح: 3")).toBeInTheDocument();
+    const deliveredFact = within(list).getByText("المسلّم").closest("div");
+    const remainingFact = within(list).getByText("المتبقي").closest("div");
+    expect(deliveredFact).not.toBeNull();
+    expect(remainingFact).not.toBeNull();
+    expect(within(deliveredFact!).getByText("٠")).toBeInTheDocument();
+    expect(within(remainingFact!).getByText("٣")).toBeInTheDocument();
+    expect(within(list).getByText(/يوليو/)).toBeInTheDocument();
     expect(within(list).queryByText("internal")).not.toBeInTheDocument();
     expect(within(list).queryByText("reason")).not.toBeInTheDocument();
     expect(within(list).queryByText("Client B")).not.toBeInTheDocument();
+  });
+
+  it("warns about invalid count balances instead of presenting a negative remainder", () => {
+    render(
+      <PackageList
+        packages={[
+          {
+            ...packageSummary,
+            lines: [
+              {
+                ...packageSummary.lines[0],
+                balance: {
+                  ...packageSummary.lines[0].balance,
+                  committed: 11.93,
+                  consumed: 13,
+                  available: -2.07,
+                },
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByRole("alert")).toHaveTextContent("الرصيد يحتاج تصحيحًا");
+    expect(screen.getAllByText("يحتاج تصحيحًا").length).toBeGreaterThan(0);
+    expect(screen.queryByText("المتاح: -2.07")).not.toBeInTheDocument();
+  });
+
+  it("searches, filters, and paginates packages without a long unbounded list", () => {
+    render(
+      <PackageList
+        packages={[
+          packageSummary,
+          {
+            ...packageSummary,
+            id: "package_completed",
+            name: "باقة حملة مكتملة",
+            status: "completed",
+          },
+        ]}
+        pageSize={1}
+      />,
+    );
+
+    expect(screen.getByText("صفحة 1 من 2")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "التالي" }));
+    expect(screen.getByText("باقة حملة مكتملة")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("حالة الباقة"), {
+      target: { value: "draft" },
+    });
+    expect(screen.getByText("باقة المحتوى الشهرية")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("بحث في الباقات والخدمات"), {
+      target: { value: "لا نتيجة" },
+    });
+    expect(screen.getByText("لا توجد باقات مطابقة")).toBeInTheDocument();
+  });
+
+  it("offers an audited decimal correction path without a number spinner", () => {
+    render(
+      <PackageList
+        adjustmentAction={vi.fn(async () => ({ status: "idle" as const }))}
+        clientId="client_a"
+        contractId="contract_a"
+        packages={[packageSummary]}
+      />,
+    );
+
+    expect(screen.getByText("تصحيح قيمة الباقة")).toBeInTheDocument();
+    expect(screen.getByLabelText("فرق الكمية")).toHaveAttribute("type", "text");
+    expect(screen.getByLabelText("فرق الكمية")).toHaveAttribute(
+      "inputmode",
+      "decimal",
+    );
+    expect(screen.getByLabelText("سبب التصحيح")).toBeRequired();
   });
 
   it("renders a compact balance summary for a package line", () => {
@@ -132,7 +221,9 @@ describe("package form and balance states", () => {
   it("renders the empty state without leaking other client names", () => {
     render(<PackageEmptyState />);
 
-    expect(screen.getByText("لا توجد باقات لهذا العقد بعد")).toBeInTheDocument();
+    expect(
+      screen.getByText("لا توجد باقات لهذا العقد بعد"),
+    ).toBeInTheDocument();
     expect(screen.queryByText("Client B")).not.toBeInTheDocument();
   });
 

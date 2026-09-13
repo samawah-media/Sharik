@@ -22,15 +22,15 @@ describe("Hadna MVP summary", () => {
       />,
     );
 
-    const region = screen.getByRole("region", { name: "ملخص تجربة هدنة" });
-    expect(within(region).getByText("عدد المخرجات")).toBeInTheDocument();
+    const region = screen.getByRole("region", { name: "ملخص مساحة العميل" });
+    expect(within(region).getByText("عدد الأعمال")).toBeInTheDocument();
     expect(within(region).getByText("52")).toBeInTheDocument();
     expect(within(region).getByText("الباقة")).toBeInTheDocument();
     expect(within(region).getByText("5 بنود")).toBeInTheDocument();
     expect(within(region).getByText("ما ينتظر العميل")).toBeInTheDocument();
   });
 
-  it("renders Hadna as the first-class MVP signal", () => {
+  it("renders the scoped client name without hardcoded client copy", () => {
     render(
       <HadnaMvpHero
         clientName="هدنة"
@@ -45,11 +45,45 @@ describe("Hadna MVP summary", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: "تجربة هدنة" })).toBeVisible();
-    expect(screen.getByText("العميل: هدنة")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "مساحة هدنة" })).toBeVisible();
+    expect(screen.getByRole("region", { name: "ملخص هدنة" })).toBeVisible();
     expect(screen.getByText("تجربة داخلية")).toBeInTheDocument();
     expect(screen.queryByText("UUID")).not.toBeInTheDocument();
     expect(screen.queryByText("Commercial")).not.toBeInTheDocument();
+  });
+
+  it("replaces inaccessible package data with a scoped completion count for team roles", () => {
+    render(
+      <HadnaMvpHero
+        clientName="جلاس"
+        roleLabel="كاتب المحتوى"
+        showPackageLineCount={false}
+        stats={{
+          deliverablesCount: 4,
+          packageLineCount: 0,
+          waitingWorkCount: 2,
+          waitingClientCount: 1,
+          completedCount: 1,
+        }}
+      />,
+    );
+
+    expect(screen.getByText("المكتمل")).toBeInTheDocument();
+    expect(screen.queryByText("الباقة")).not.toBeInTheDocument();
+    expect(screen.queryByText("0 بنود")).not.toBeInTheDocument();
+  });
+
+  it("never labels Glass as Hadna", () => {
+    render(
+      <HadnaMvpHero
+        clientName="جلاس"
+        roleLabel="مساحة العميل"
+        stats={buildMvpStatsFromDeliverables([])}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: "مساحة جلاس" })).toBeVisible();
+    expect(screen.queryByText(/هدنة/)).not.toBeInTheDocument();
   });
 
   it("summarizes work and client waiting states from deliverables", () => {

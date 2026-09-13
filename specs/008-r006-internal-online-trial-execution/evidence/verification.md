@@ -98,6 +98,38 @@ Post-merge authenticated smoke on `https://sharik-platform.vercel.app` used only
 
 UX-001 is resolved on the promoted alias for the tested account-manager path. No hosted application data was mutated by this merge/deploy/smoke pass.
 
+## Final R-006 Owner Acceptance Smoke - 2026-07-08
+
+Scope: final owner acceptance smoke on the current promoted main alias after PR #36 merge, using only Hadna R-006 UAT accounts and out-of-band credentials. The run used separate browser contexts per persona, plus a separate mobile client context. No hosted database mutation was performed, and no credentials, emails, screenshots, workbook row content, links, captions, deliverable titles, tokens, or secret values were recorded.
+
+Smoke result:
+
+| Check | Status | Classification | Non-sensitive evidence |
+|---|---:|---|---|
+| Management / project admin | PASS | Product / UX | Hadna context loaded, the management shell was present, and the admin shell labels were visible for the admin role. |
+| Account manager | PASS | UX | Role shell labels were visible for the account-manager role, admin-only shell labels were absent, and scoped Hadna content loaded. |
+| Client viewer A | PASS | Product / UX / Security | Client portal and package/deliverables scope loaded without management chrome or management-only links. |
+| Viewer B isolation | PASS | Security / Data | The unassigned viewer saw no Hadna context and no client data cards. |
+| Mobile client portal | PASS | UX / Security | The mobile client portal had no horizontal overflow and no management chrome. |
+
+Final owner acceptance smoke conclusion: no Product, UX, Security, or Data issue was found in the requested scope. R-006 is ready for owner acceptance review on the tested alias. This remains internal UAT evidence only and is not Production acceptance.
+
+## Owner Acceptance Decision - 2026-07-08
+
+Owner explicitly accepted R-006 after the final owner acceptance smoke passed. The accepted scope is the Hadna-only internal UAT/MVP evaluation flow on the promoted alias after PR #36 merge.
+
+Acceptance boundary:
+
+| Item | Status |
+|---|---:|
+| R-006 internal UAT owner acceptance | ACCEPTED |
+| Production acceptance | NOT GRANTED |
+| Non-Hadna customer data use | NOT GRANTED |
+| Hosted DB mutation in this decision step | NONE |
+| New code or dependency change in this decision step | NONE |
+
+Recommended next step: start the next larger workstream with a new Spec Kit package and explicit scope before code. The next workstream should build on the accepted R-006 baseline rather than reopen the completed acceptance smoke.
+
 ### Product/UX Audit
 
 Scoring: 1 = confusing or unsafe, 5 = clear enough for MVP evaluation.

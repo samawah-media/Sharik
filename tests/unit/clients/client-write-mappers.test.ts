@@ -11,12 +11,14 @@ describe("client write form mappers", () => {
     formData.set("name", " عميل جديد ");
     formData.set("primaryContactName", " مسؤولة التواصل ");
     formData.set("primaryContactEmail", "contact@example.test");
+    formData.set("primaryContactPhone", "+966501234567");
     formData.set("tenantId", "tenant_b");
 
     expect(clientValuesFromFormData(formData)).toEqual({
       name: " عميل جديد ",
       primaryContactName: " مسؤولة التواصل ",
       primaryContactEmail: "contact@example.test",
+      primaryContactPhone: "+966501234567",
     });
   });
 

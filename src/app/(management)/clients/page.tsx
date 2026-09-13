@@ -1,12 +1,6 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
-  fixtureManagementCommercialSummary,
-  readCommercialSummary,
-} from "@/server/actions/commercial-summary-read";
-import {
-  canUseRouteActorFixtures,
   guardClientsIndexRoute,
   guardManagementRoute,
   resolveRouteRuntime,
@@ -14,14 +8,15 @@ import {
 import { ClientEmptyState } from "@/ui/management/client-form";
 import { Badge } from "@/ui/core/badge";
 import { ButtonLink } from "@/ui/core/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/ui/core/card";
-import { PageHeader } from "@/ui/layout/page-header";
 import {
-  buildEmptyMvpStats,
-  buildManagementMvpStats,
-  formatMvpClientName,
-  HadnaMvpHero,
-} from "@/ui/mvp/hadna-mvp-summary";
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  cardPrimaryLinkOverlay,
+} from "@/ui/core/card";
+import { PageHeader } from "@/ui/layout/page-header";
+import { formatMvpClientName } from "@/ui/mvp/hadna-mvp-summary";
 import {
   AccessDeniedState,
   MembershipDisabledState,
@@ -68,85 +63,57 @@ export default async function ClientsPage({
     return <AccessDeniedState returnHref={access.safeReturnHref} />;
   }
 
-  const visibleClients = clients.filter((client) =>
-    evaluatePermission({
-      actor,
-      permission: PERMISSIONS.CLIENT_VIEW,
-      resource: { tenantId: client.tenantId, clientId: client.id },
-    }).allowed,
+  const visibleClients = clients.filter(
+    (client) =>
+      evaluatePermission({
+        actor,
+        permission: PERMISSIONS.CLIENT_VIEW,
+        resource: { tenantId: client.tenantId, clientId: client.id },
+      }).allowed,
   );
-  const primaryClient = visibleClients[0];
-  const summary =
-    primaryClient && canUseRouteActorFixtures()
-      ? { ok: true as const, value: fixtureManagementCommercialSummary }
-      : primaryClient
-        ? await readCommercialSummary({
-            supabase: await createSupabaseServerClient(),
-            tenantId: primaryClient.tenantId,
-            clientId: primaryClient.id,
-            audience: "management",
-          })
-        : { ok: false as const };
-  const stats =
-    summary.ok && summary.value.audience === "management"
-      ? buildManagementMvpStats(summary.value)
-      : buildEmptyMvpStats();
-
   return (
     <main className="grid gap-6">
       <PageHeader
         actions={
           writeAccess.allowed ? (
-            <ButtonLink href="/clients/new" variant="primary">
-              إضافة عميل
-            </ButtonLink>
+            <div className="flex flex-wrap gap-2">
+              <ButtonLink href="/clients/onboard" variant="primary">
+                إضافة عميل جديد
+              </ButtonLink>
+            </div>
           ) : null
         }
         description="العملاء المسندون لك مع روابط التشغيل الأساسية."
         title="العملاء"
       />
-      {primaryClient ? (
-        <HadnaMvpHero
-          clientName={primaryClient.name}
-          roleLabel="قائمة العملاء"
-          stats={stats}
-        >
-          <ButtonLink href={`/clients/${primaryClient.id}`} variant="primary">
-            عرض هدنة
-          </ButtonLink>
-          <ButtonLink
-            href={`/clients/${primaryClient.id}/deliverables`}
-            variant="secondary"
-          >
-            عرض المخرجات
-          </ButtonLink>
-          <ButtonLink
-            href={`/clients/${primaryClient.id}/commercial`}
-            variant="secondary"
-          >
-            عرض الباقة
-          </ButtonLink>
-        </HadnaMvpHero>
-      ) : null}
       {visibleClients.length > 0 ? (
         <section
           aria-label="قائمة العملاء"
           className="grid gap-3 md:grid-cols-2 xl:grid-cols-3"
         >
           {visibleClients.map((client) => (
-            <Card className="grid content-between gap-4" key={client.id}>
+            <Card
+              className="relative grid content-between gap-4"
+              data-testid={`management-client-card-${client.id}`}
+              key={client.id}
+            >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <CardHeader>
                   <CardTitle>{formatMvpClientName(client.name)}</CardTitle>
-                  <CardDescription>تجربة UAT داخلية</CardDescription>
+                  <CardDescription>مساحة تشغيل نشطة</CardDescription>
                 </CardHeader>
                 <Badge tone="success">نشط</Badge>
               </div>
               <div className="grid gap-3">
-                <ButtonLink href={`/clients/${client.id}`} variant="primary">
-                  عرض هدنة
+                <ButtonLink
+                  aria-label={`فتح مساحة ${formatMvpClientName(client.name)}`}
+                  className={cardPrimaryLinkOverlay}
+                  href={`/clients/${client.id}`}
+                  variant="primary"
+                >
+                  فتح المساحة
                 </ButtonLink>
-                <div className="flex flex-wrap gap-2">
+                <div className="relative z-10 flex flex-wrap gap-2">
                   <ButtonLink
                     href={`/clients/${client.id}/deliverables`}
                     size="sm"

@@ -16,6 +16,8 @@ node_modules.partial/
 
 # Build and framework outputs
 .next/
+.next-persistent/
+.next-stale-*/
 out/
 dist/
 build/

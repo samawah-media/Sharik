@@ -130,7 +130,7 @@ describe("F-004 deliverable status workflow command", () => {
       expect.objectContaining({
         action: "DeliverableStatusChangeDenied",
         decision: "denied",
-        reason: "internal_approval_required_before_client_waiting",
+        reason: "protected_status_requires_command",
       }),
     );
   });
@@ -167,12 +167,12 @@ describe("F-004 deliverable status workflow command", () => {
       expect.objectContaining({
         action: "DeliverableStatusChangeDenied",
         decision: "denied",
-        reason: "client_approval_required_before_delivery",
+        reason: "protected_status_requires_command",
       }),
     );
   });
 
-  it("allows delivery without client approval when the deliverable does not require it", async () => {
+  it("denies generic delivery even when client approval is not required", async () => {
     const audit = new InMemoryAuditSink();
     const deliverables = new InMemoryDeliverableRepository({
       deliverables: [
@@ -199,14 +199,15 @@ describe("F-004 deliverable status workflow command", () => {
 
     expect(result).toMatchObject({
       ok: true,
-      value: {
-        ok: true,
-        value: {
-          status: "delivered",
-          progressPercentage: 100,
-        },
-      },
+      value: { ok: false, error: { code: "ACCESS_DENIED" } },
     });
+    expect(audit.events).toContainEqual(
+      expect.objectContaining({
+        action: "DeliverableStatusChangeDenied",
+        decision: "denied",
+        reason: "protected_status_requires_command",
+      }),
+    );
   });
 
   it("denies stale revision updates with an audit denial", async () => {

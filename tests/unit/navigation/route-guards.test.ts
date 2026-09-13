@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   guardClientsIndexRoute,
   guardManagementRoute,
+  guardPortfolioRoute,
   routeClients,
   resolveRouteActor,
 } from "@/server/navigation/route-guards";
@@ -57,6 +58,20 @@ describe("route guard actor fixtures", () => {
 
     const actor = resolveRouteActor("client_viewer_a");
     const access = guardClientsIndexRoute({ actor, clients: routeClients });
+
+    expect(access).toMatchObject({
+      allowed: false,
+      reason: "permission_denied",
+      safeReturnHref: "/client",
+    });
+  });
+
+  it("keeps client portal users out of the management portfolio", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("APP_ENV", "test");
+
+    const actor = resolveRouteActor("client_approver_a");
+    const access = guardPortfolioRoute({ actor, clients: routeClients });
 
     expect(access).toMatchObject({
       allowed: false,

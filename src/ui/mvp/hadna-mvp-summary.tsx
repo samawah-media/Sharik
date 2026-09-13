@@ -15,7 +15,7 @@ export type MvpSnapshotStats = {
   completedCount: number;
 };
 
-export const formatMvpClientName = (name = "هدنة") =>
+export const formatMvpClientName = (name = "العميل") =>
   name.trim().toLowerCase() === "hadna" ? "هدنة" : name;
 
 const waitingClientStatuses = new Set<DeliverableLifecycleStatus>([
@@ -38,7 +38,9 @@ const workStatuses = new Set<DeliverableLifecycleStatus>([
 ]);
 
 const sumPackageLines = (
-  packages: ManagementCommercialSummary["packages"] | ClientCommercialSummary["packages"],
+  packages:
+    | ManagementCommercialSummary["packages"]
+    | ClientCommercialSummary["packages"],
 ) =>
   packages.reduce(
     (total, packageSummary) => total + (packageSummary.lines?.length ?? 0),
@@ -112,17 +114,23 @@ export function buildEmptyMvpStats(): MvpSnapshotStats {
   };
 }
 
-const statCards = (stats: MvpSnapshotStats) => [
+const statCards = (stats: MvpSnapshotStats, showPackageLineCount: boolean) => [
   {
-    label: "عدد المخرجات",
+    label: "عدد الأعمال",
     value: stats.deliverablesCount,
-    help: "المخرجات المتفق عليها في تجربة هدنة",
+    help: "كل الأعمال المتفق عليها ضمن النطاق",
   },
-  {
-    label: "الباقة",
-    value: `${stats.packageLineCount} بنود`,
-    help: "بنود الباقة المفعلة للتجربة",
-  },
+  showPackageLineCount
+    ? {
+        label: "الباقة",
+        value: `${stats.packageLineCount} بنود`,
+        help: "بنود العقد أو الباقة الفعالة",
+      }
+    : {
+        label: "المكتمل",
+        value: stats.completedCount,
+        help: "أعمال اكتملت ضمن نطاقك المصرح",
+      },
   {
     label: "ما ينتظر العمل",
     value: stats.waitingWorkCount,
@@ -131,18 +139,24 @@ const statCards = (stats: MvpSnapshotStats) => [
   {
     label: "ما ينتظر العميل",
     value: stats.waitingClientCount,
-    help: "مخرجات مرسلة للعميل وتنتظر قرارًا",
+    help: "أعمال مرسلة للعميل وتنتظر قرارًا",
   },
 ];
 
-export function MvpSnapshotCards({ stats }: { stats: MvpSnapshotStats }) {
+export function MvpSnapshotCards({
+  showPackageLineCount = true,
+  stats,
+}: {
+  showPackageLineCount?: boolean;
+  stats: MvpSnapshotStats;
+}) {
   return (
     <section
-      aria-label="ملخص تجربة هدنة"
+      aria-label="ملخص مساحة العميل"
       className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
       dir="rtl"
     >
-      {statCards(stats).map((item) => (
+      {statCards(stats, showPackageLineCount).map((item) => (
         <Card className="min-h-32" key={item.label}>
           <p className="text-sm text-muted">{item.label}</p>
           <p className="mt-2 text-3xl font-semibold">{item.value}</p>
@@ -157,18 +171,20 @@ export function HadnaMvpHero({
   clientName,
   roleLabel,
   children,
+  showPackageLineCount = true,
   stats,
 }: {
   clientName: string;
   roleLabel: string;
   children?: ReactNode;
+  showPackageLineCount?: boolean;
   stats: MvpSnapshotStats;
 }) {
   const displayClientName = formatMvpClientName(clientName);
 
   return (
     <section
-      aria-label="مدخل تجربة هدنة"
+      aria-label={`ملخص ${displayClientName}`}
       className="grid gap-5 rounded-lg border border-accent/20 bg-accent-soft/40 p-5"
       dir="rtl"
     >
@@ -179,19 +195,19 @@ export function HadnaMvpHero({
             <Badge tone="warning">تجربة داخلية</Badge>
           </div>
           <h1 className="mt-3 text-2xl font-semibold sm:text-3xl">
-            تجربة هدنة
+            مساحة {displayClientName}
           </h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
-            هذه هدنة، هذه الباقة، وهذه المخرجات التي نتابعها في UAT الداخلي.
-            كل دور يرى ما يخصه فقط بدون معرفات تقنية أو بيانات عملاء آخرين.
-          </p>
-          <p className="mt-2 text-sm font-semibold text-foreground">
-            العميل: {displayClientName}
+            تابع المخرجات والمهام والموافقات ضمن مساحة العميل المصرح بها. تظهر
+            لكل دور معلوماته وإجراءه التالي فقط.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">{children}</div>
       </div>
-      <MvpSnapshotCards stats={stats} />
+      <MvpSnapshotCards
+        showPackageLineCount={showPackageLineCount}
+        stats={stats}
+      />
     </section>
   );
 }

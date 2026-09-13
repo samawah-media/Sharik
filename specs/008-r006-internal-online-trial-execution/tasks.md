@@ -122,6 +122,21 @@
 - [x] T061 Run post-merge authenticated smoke for the three Hadna UAT account views
 - [x] T062 Record post-merge smoke evidence without credentials, screenshots, workbook content, or deliverable titles
 
+## Phase 11: Final R-006 Owner Acceptance Smoke
+
+- [x] T063 Run final owner acceptance smoke on the current main alias after PR #36 merge
+- [x] T064 Verify management/project admin Hadna context and admin shell
+- [x] T065 Verify account manager role shell labels and absence of admin-only labels
+- [x] T066 Verify Client viewer A simplified client portal, package, and deliverables scope
+- [x] T067 Verify Viewer B isolation from Hadna and Client A data
+- [x] T068 Verify mobile client portal has no horizontal overflow and no management chrome
+- [x] T069 Record final owner acceptance smoke evidence without hosted DB mutation, credentials, screenshots, workbook content, links, captions, or deliverable titles
+
+## Phase 12: Owner Acceptance Decision
+
+- [x] T070 Record explicit owner acceptance for R-006 internal UAT after the final smoke pass
+- [x] T071 Preserve the boundary that owner acceptance is internal UAT acceptance only, not Production acceptance or approval to use non-Hadna data
+
 ## Dependencies & Execution Order
 
 - Phase 1 must complete before target preflight.

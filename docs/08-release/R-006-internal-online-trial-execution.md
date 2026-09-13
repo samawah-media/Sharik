@@ -2,11 +2,13 @@
 
 ## Status
 
-EXECUTED FOR OWNER-AUTHORIZED INTERNAL UAT.
+ACCEPTED BY OWNER FOR INTERNAL UAT.
 
 This run used the owner-authorized Hadna workbook, `sharik-uat` Supabase UAT, and Vercel as temporary internal UAT hosting. This is not Production acceptance and not approval to use non-Hadna customer data.
 
 Owner merge-gate update: on 2026-07-08, the owner explicitly approved merging PR #35 (`R-006 MVP Productization Sprint`). PR #35 was merged into `main` with merge commit `4a7b2d1dd6aa2e5230bbf2863abfd62307e8f748`; this remains internal UAT/MVP productization, not Production acceptance.
+
+Owner acceptance update: on 2026-07-08, the owner explicitly accepted R-006 after the final owner acceptance smoke passed. The accepted scope is Hadna-only internal UAT/MVP evaluation on the promoted alias after PR #36 merge. This does not grant Production acceptance, does not authorize non-Hadna customer data use, and does not authorize a new hosted DB mutation.
 
 ## Targets
 

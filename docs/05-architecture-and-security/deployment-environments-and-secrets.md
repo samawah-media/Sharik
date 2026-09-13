@@ -27,3 +27,12 @@
 - rollback plan لكل release.
 - smoke tests للـauth والعزل والعمليات الحساسة.
 
+## 5. Spec 015 Hosted Team UAT Controls
+
+- Spec 015 hosted Team UAT may use only Vercel Preview/UAT and a verified Supabase UAT project.
+- Production deployment, Production aliases/domains, Vercel Production environment variables, and Production Supabase access are out of scope.
+- Preview/UAT environment variables must be configured separately and must point only to Supabase UAT.
+- Service-role keys must never be exposed through `NEXT_PUBLIC_*`, browser bundles, logs, screenshots, Git, PR text, or evidence.
+- Hosted URLs, project refs, credentials, emails, tokens, row identifiers, and file paths must not be committed.
+- Public signup must remain disabled during Team-Only UAT.
+- Any ambiguous hosted target stops execution before mutation.

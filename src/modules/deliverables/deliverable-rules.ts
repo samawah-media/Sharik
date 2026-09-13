@@ -49,6 +49,8 @@ export type StatusTransitionDecision =
       allowed: false;
       reason:
         | "target_status_not_on_board"
+        | "protected_status_requires_command"
+        | "unsafe_operational_transition"
         | "terminal_status_locked"
         | "internal_approval_required_before_client_waiting"
         | "client_approval_required_before_delivery";
@@ -68,6 +70,19 @@ const progressByStatus: Record<DeliverableLifecycleStatus, number> = {
   cancelled: 0,
   archived: 100,
 };
+
+export const genericOperationalStatuses = ["not_started", "in_progress"] as const;
+
+const protectedWorkflowStatuses = new Set<DeliverableLifecycleStatus>([
+  "ready_for_internal_review",
+  "internal_changes_requested",
+  "internally_approved",
+  "waiting_client_approval",
+  "client_changes_requested",
+  "client_approved",
+  "ready_for_delivery",
+  "delivered",
+]);
 
 export const getProgressForDeliverableStatus = (
   status: DeliverableLifecycleStatus,
@@ -91,8 +106,36 @@ export const canChangeDeliverableStatus = ({
     return { allowed: false, reason: "target_status_not_on_board" };
   }
 
-  if (currentStatus === "cancelled" || currentStatus === "archived") {
+  if (
+    currentStatus === "delivered" ||
+    currentStatus === "cancelled" ||
+    currentStatus === "archived"
+  ) {
     return { allowed: false, reason: "terminal_status_locked" };
+  }
+
+  if (protectedWorkflowStatuses.has(targetStatus)) {
+    return { allowed: false, reason: "protected_status_requires_command" };
+  }
+
+  if (
+    targetStatus === "not_started" &&
+    currentStatus !== "in_progress" &&
+    currentStatus !== "not_started"
+  ) {
+    return { allowed: false, reason: "unsafe_operational_transition" };
+  }
+
+  if (
+    targetStatus === "in_progress" &&
+    ![
+      "not_started",
+      "in_progress",
+      "internal_changes_requested",
+      "client_changes_requested",
+    ].includes(currentStatus)
+  ) {
+    return { allowed: false, reason: "unsafe_operational_transition" };
   }
 
   if (

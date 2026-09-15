@@ -1,12 +1,25 @@
-# Tasks: Persistent MVP Pilot Completion
+﻿# Tasks: Persistent MVP Pilot Completion
 
 ## X010-B-7C-23 — remaining findings execution
 
 - [x] R23-A Reconcile all historical and active findings into the canonical delegation queue with evidence and explicit acceptance levels. SIL01–73 accounted for; historical aliases retained without duplicate jobs.
 - [x] R23-B Implement and review SIL-59/SIL-63 accessible, role-correct Saudi copy; see evidence/remaining-findings-plan.md. LOCAL ONLY: focused RED5/2 then GREEN7/7, independent spec/quality PASS, lead TypeScript and scoped lint PASS. Hosted/owner acceptance remains open.
 - [ ] R23-C Assign next waves from the reconciled inventory with disjoint file ownership and acceptance criteria; do not silently close blocked product/data or owner checks.
+  - [x] R23-C1 SIL-10/SIL-16: delegated team identity and stale-tab clarity with tenant-scoped display data, no serialized account ID, and friendly Saudi recovery copy. LOCAL SOURCE PASS; hosted/owner acceptance remains open.
+  - [x] R23-C2 SIL-11: delegated Arabic search normalization across only the three existing in-memory search surfaces and their current authorized fields. LOCAL SOURCE PASS; hosted/owner acceptance remains open.
+  - [ ] R23-C3 SIL-65/SIL-67: source implementation and independent review PASS; focused component/static gates PASS and 6 browser cases collect, but the configured Next warm-up aborts before Playwright execution, so measured RTL/keyboard geometry and screenshots remain blocked.
+  - [x] R23-C4 Lead integration/review records actual GLM/native routes, focused new-batch checks, and explicitly deferred prior-batch gates; see evidence/remaining-findings-plan.md.
 - [x] R23-D SIL-06: authorized client identity in drawer/My Tasks implemented and lead-reviewed locally; focused26/26, TypeScript and scoped lint PASS. Bounded plan in evidence/remaining-findings-plan.md. Hosted/visual/owner acceptance remains open.
-- [x] R23-E SIL-66 follow-through implemented and independently approved locally: exact persisted-ID success binding, ledger-derived remaining units, authorized exact-package/line «إضافة المخرج التالي», and fail-closed query handling. RED/GREEN evidence and lead full unit/component/integration/typecheck/lint/build PASS recorded in defect-register.md. First exact-head CI run `34748220268` passed all gates through component tests, then exposed a Next server/client-boundary error during fixture E2E. The helper extraction correction now passes focused unit 4/4, focused component 21/21, TypeScript, ESLint, production build and diff check locally; replacement CI/Preview/hosted/owner acceptance remain open.
+- [x] R23-E SIL-66 follow-through implemented and independently approved: exact persisted-ID success binding, ledger-derived remaining units, authorized exact-package/line «إضافة المخرج التالي», and fail-closed query handling. First exact-head CI `34748220268` exposed a Next server/client-boundary error; corrective commit `cc0bc57` extracted the pure helpers. Exact-head PR run `34749804905` and manual confirmation run `34749807147` both PASS all gates, including disposable Supabase/RLS, fixture E2E, persistent E2E, secret scan and production build. Preview/hosted/owner acceptance remain open.
+- [x] R23-F Implement the next bounded internal-label/file-UX wave; local source/review gates pass and separate runtime/publication gates remain explicit.
+  - [x] R23-F1 SIL-60: exact display-only Arabic mapping for automatic internal workflow comments; final independent review APPROVE after own-key-safe correction. Hosted/owner acceptance pending.
+  - [x] R23-F2 SIL-62: installed Uppy 5.1.1 Arabic drop-zone and accessible-title keys corrected; independent review APPROVE. Browser/hosted/owner acceptance pending.
+  - [x] R23-F3 SIL-64: RPC-authorized Arabic filename preserved through sanitized Blob download; independent review APPROVE and focused unit/component pass. Persistent Chromium was blocked before tests by non-local Supabase guard, so CORS/filename runtime evidence remains pending.
+  - [x] R23-F4 Lead integration: unit28/28, component33/33, TypeScript, scoped ESLint and diff check PASS; one persistent journey collects. Full regression, database/RLS, build, CI, Preview, hosted and owner gates remain separate.
+- [ ] R23-G Correct assigned-team portfolio composition and resolve the next `/work` product decision; see evidence/remaining-findings-plan.md.
+  - [x] R23-G1 SIL-70: team `/portfolio` starts with assigned clients and team breadcrumb, while management dashboard/read behavior remains unchanged. LOCAL SOURCE PASS; browser/hosted/owner acceptance pending.
+  - [ ] R23-G2 SIL-58/SIL-69: owner approved the recommended default «يحتاج إجراء مني» on 2026-09-14, then paused work during Task 11 fix round 2. Original review findings are addressed, but one Important stale Kanban next-action issue remains open after optimistic drag/rollback. Status INCOMPLETE/HOLD; resume from the SDD ledger.
+  - [x] R23-G3 SIL-70 lead review/evidence: component29/29, TypeScript, scoped ESLint and diff PASS; two browser cases collect but runtime warm-up aborted before tests. SIL-58/SIL-69 decision remains open.
 
 ## SIL-52 / SIL-54 correction queue — 2026-09-10
 

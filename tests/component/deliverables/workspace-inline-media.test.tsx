@@ -18,7 +18,7 @@ const deferredPreview = () => {
   });
   return { promise, resolve, reject };
 };
-const fallback = "تعذرت معاينة الأصل المرئي بأمان.";
+const fallback = "تعذرت المعاينة المرئية. يمكنك تنزيل الملف مباشرة.";
 const media = (fileId: string, fileType = "image/png") => (
   <WorkspaceInlineMedia fileId={fileId} fileType={fileType} label="معاينة العمل" />
 );

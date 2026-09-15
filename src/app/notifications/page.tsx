@@ -4,6 +4,7 @@ import {
   isClientPortalOnlyActor,
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
+import { readShellIdentity } from "@/server/auth/shell-identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   readNotificationBellData,
@@ -178,8 +179,16 @@ export default async function NotificationsPage({
         supabase: await createSupabaseServerClient(),
       }).catch(() => ({ unreadCount: 0, recent: [] }));
 
+  const managementIdentity = usesFixtures
+    ? undefined
+    : await readShellIdentity({
+        supabase: await createSupabaseServerClient(),
+        actor,
+      }).catch(() => undefined);
+
   return (
     <ProductShell
+      accountIdentity={managementIdentity}
       breadcrumbRootHref={shellRoot.href}
       breadcrumbRootLabel={shellRoot.label}
       homeHref={shellRoot.href}

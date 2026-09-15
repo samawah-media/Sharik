@@ -24,6 +24,7 @@ import {
   updateWorkspaceFileUploadProgress,
 } from "@/server/actions/deliverable-workspace-actions";
 import { Button } from "@/ui/core/button";
+import { downloadBrowserFile } from "@/ui/files/browser-file-download";
 
 const allowedTypes = [
   "image/jpeg", "image/png", "image/webp", "image/gif",
@@ -58,12 +59,12 @@ const arabicUppyLocale = {
     confirmModalTitleV2: "تأكيد",
     copyLink: "نسخ الرابط",
     copyLinkToClipboard: "تم نسخ الرابط إلى الحافظة",
-    dashboardTitleV2: "رفع الملفات",
+    dashboardTitle: "رفع الملفات",
     dashboardWindowTitle: "نافذة رفع الملفات",
     dataUploadedOnDuration: "تم رفع %{size} خلال %{duration}",
     discard: "تجاهل",
     done: "تم",
-    dropHereOr: "أفلِت الملفات هنا أو %{browse}",
+    dropPasteFiles: "أفلِت الملفات هنا أو %{browseFiles}",
     dropHint: "أفلِت ملفاتك هنا للرفع",
     editing: "جارٍ التعديل",
     emptyFolderAdded: "لا توجد ملفات صالحة في المجلد المضاف",
@@ -904,12 +905,17 @@ export function WorkspaceFileClientReviewControl({
 export function WorkspaceFileDownload({ fileId }: { fileId: string }) {
   const [feedback, setFeedback] = useState<string>();
   const download = async () => {
-    const result = await createWorkspaceFileDownload(fileId);
-    if (!result.ok) {
+    setFeedback(undefined);
+    try {
+      const result = await createWorkspaceFileDownload(fileId);
+      if (!result.ok) {
+        setFeedback("تعذر تنزيل الملف أو انتهت صلاحية الوصول.");
+        return;
+      }
+      await downloadBrowserFile({ url: result.url, fileName: result.fileName });
+    } catch {
       setFeedback("تعذر تنزيل الملف أو انتهت صلاحية الوصول.");
-      return;
     }
-    window.open(result.url, "_blank", "noopener,noreferrer");
   };
   return <div><Button onClick={download} size="sm" type="button">تنزيل</Button>{feedback ? <p aria-live="polite" className="mt-1 text-xs text-danger">{feedback}</p> : null}</div>;
 }
@@ -939,7 +945,16 @@ export function WorkspaceFilePreview({
       {/* Signed object URLs are short-lived and cannot be safely delegated to the Next image optimizer. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {url && fileType.startsWith("image/") ? <img alt={label} className="max-h-80 w-full rounded-lg border border-border object-contain" src={url} /> : null}
-      {url && fileType.startsWith("video/") ? <video aria-label={label} className="max-h-80 w-full rounded-lg border border-border" controls preload="metadata" src={url} /> : null}
+      {url && fileType.startsWith("video/") ? (
+        <video
+          aria-label={label}
+          className="max-h-80 w-full rounded-lg border border-border"
+          controls
+          onError={() => setFeedback("تعذرت المعاينة المرئية. يمكنك تنزيل الملف مباشرة.")}
+          preload="metadata"
+          src={url}
+        />
+      ) : null}
       {url && fileType === "application/pdf" ? <iframe className="h-80 w-full rounded-lg border border-border" src={url} title={label} /> : null}
       {url && !fileType.startsWith("image/") && !fileType.startsWith("video/") && fileType !== "application/pdf" ? <p className="rounded-lg bg-surface p-3 text-sm text-muted">لا توجد معاينة مرئية لهذا النوع. استخدم التنزيل.</p> : null}
       {feedback ? <p aria-live="polite" className="text-xs text-danger">{feedback}</p> : null}
@@ -996,7 +1011,7 @@ export function WorkspaceInlineMedia({
   if (preview.fileId === fileId && preview.status === "unavailable") {
     return (
       <p className="grid min-h-36 place-items-center p-4 text-center text-xs text-muted">
-        تعذرت معاينة الأصل المرئي بأمان.
+        تعذرت المعاينة المرئية. يمكنك تنزيل الملف مباشرة.
       </p>
     );
   }

@@ -121,6 +121,69 @@ describe("notification bell", () => {
     const unreadLink = screen.getByRole("menuitem", { name: /غير مقروء/ });
     expect(unreadLink.querySelector(".bg-accent")).not.toBeNull();
   });
+
+  it("keeps the open quick menu viewport-fixed with dvh bounds on mobile and anchored at the desktop breakpoint", async () => {
+    const user = userEvent.setup();
+    render(
+      <NotificationBell data={{ unreadCount: 1, recent: [recentItem()] }} />,
+    );
+
+    await user.click(screen.getByRole("button", { name: /غير مقروء/ }));
+    const menu = screen.getByRole("menu", { name: "آخر الإشعارات" });
+    // JSDOM has no responsive layout; the browser spec verifies real geometry.
+    expect(menu.className).toContain("fixed");
+    expect(menu.className).toContain("inset-x-4");
+    expect(menu.className).toContain("100dvh");
+    expect(menu.className).toContain("overflow-y-auto");
+    expect(menu.className).toContain("lg:absolute");
+    expect(menu.className).toContain("lg:left-0");
+  });
+
+  it("keeps trigger state honest through open, Escape, and close", async () => {
+    const user = userEvent.setup();
+    render(
+      <NotificationBell data={{ unreadCount: 1, recent: [recentItem()] }} />,
+    );
+    const bell = screen.getByRole("button", { name: /غير مقروء/ });
+
+    await user.click(bell);
+    expect(bell).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("menu", { name: "آخر الإشعارات" })).toBeVisible();
+
+    await user.keyboard("{Escape}");
+    expect(bell).toHaveAttribute("aria-expanded", "false");
+    expect(
+      screen.queryByRole("menu", { name: "آخر الإشعارات" }),
+    ).not.toBeInTheDocument();
+    expect(bell).toHaveFocus();
+  });
+
+  it("keeps notification routes and unread count contracts unchanged", async () => {
+    const user = userEvent.setup();
+    render(
+      <NotificationBell
+        data={{
+          unreadCount: 2,
+          recent: [
+            recentItem({ id: "route-1", title: "إشعار مسار", actionHref: "/client/work" }),
+            recentItem({ id: "route-2", title: "إشعار بدون مسار", actionHref: undefined }),
+          ],
+        }}
+      />,
+    );
+
+    expect(screen.getByText("2")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /لديك 2 إشعار غير مقروء/ }));
+    expect(
+      screen.getByRole("menuitem", { name: /إشعار مسار/ }),
+    ).toHaveAttribute("href", "/client/work");
+    expect(
+      screen.getByRole("menuitem", { name: /إشعار بدون مسار/ }),
+    ).toHaveAttribute("href", "/notifications");
+    expect(
+      screen.getByRole("link", { name: "عرض كل الإشعارات" }),
+    ).toHaveAttribute("href", "/notifications");
+  });
 });
 
 // Keep the import-side-effect mock honest: the bell uses document listeners.

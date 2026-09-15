@@ -17,6 +17,7 @@ import {
 import { ClientWorkspaceCommentForm } from "@/ui/deliverables/workspace-forms";
 import { ContentPreviewCard } from "@/ui/deliverables/content-preview-card";
 import { WorkspaceInlineMedia } from "@/ui/deliverables/workspace-files";
+import { cn } from "@/ui/core/utils";
 
 export type ClientPortalFileSummary = {
   id: string;
@@ -116,8 +117,32 @@ export function ClientDeliverableDetail({
       id="approval"
     >
       <div className="grid gap-2">
-        <h2 className="text-lg font-semibold">{reviewHeading}</h2>
-        <dl className="grid gap-2 text-sm text-muted sm:grid-cols-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold">{reviewHeading}</h2>
+          {detail.clientName ? (
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-xs font-semibold text-foreground"
+              data-testid="client-workspace-badge"
+            >
+              <span className="text-muted">المساحة:</span>
+              <span>{detail.clientName}</span>
+            </span>
+          ) : null}
+        </div>
+        <dl
+          className={cn(
+            "grid gap-2 text-sm text-muted",
+            detail.clientName ? "sm:grid-cols-3" : "sm:grid-cols-2",
+          )}
+        >
+          {detail.clientName ? (
+            <div className="rounded-md bg-surface px-3 py-2">
+              <dt className="font-semibold text-foreground">المساحة</dt>
+              <dd className="mt-1 font-medium text-foreground">
+                {detail.clientName}
+              </dd>
+            </div>
+          ) : null}
           <div className="rounded-md bg-surface px-3 py-2">
             <dt className="font-semibold text-foreground">التقدم</dt>
             <dd className="mt-1">{detail.progressPercentage}%</dd>

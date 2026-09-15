@@ -73,8 +73,11 @@ describe("client pending inbox", () => {
   it("gives the approver an approve-oriented empty state", () => {
     render(<ClientPendingInbox canApprove details={[]} />);
     expect(
-      screen.getByRole("heading", { name: "لا توجد أعمال بانتظار قرارك" }),
+      screen.getByRole("heading", {
+        name: "لا توجد أعمال بانتظار اعتمادك حالياً.",
+      }),
     ).toBeInTheDocument();
+    expect(screen.getByText("تم استلام قراراتك بنجاح.")).toBeInTheDocument();
   });
 
   it("keeps a viewer read-only with role-aware copy and no approve instruction", () => {

@@ -67,6 +67,25 @@ export default async function PortfolioPage({
   const isManagementPortfolio = navigation.items.some(
     (navigationItem) => navigationItem.id === "management.clients",
   );
+
+  if (!isManagementPortfolio) {
+    return (
+      <main className="grid gap-6">
+        {canUseRouteActorFixtures() ? (
+          <RoleAwareNavigation
+            items={navigation.items}
+            label="تنقل مساحة الفريق"
+          />
+        ) : null}
+        <PageHeader
+          description="العملاء المسندون لك. افتح مساحة العميل لمتابعة المخرجات والمهام."
+          title="عملائي"
+        />
+        <AssignedClients clients={visibleClients} />
+      </main>
+    );
+  }
+
   const results = await Promise.allSettled(
     visibleClients.map((client) =>
       listScopedDeliverables({
@@ -93,12 +112,8 @@ export default async function PortfolioPage({
         />
       ) : null}
       <PageHeader
-        description={
-          isManagementPortfolio
-            ? "الأعمال التي تحتاج تدخلك الآن، ثم مساحات العملاء المصرح بها."
-            : "أعمال العملاء المسندة لك وما يحتاج متابعة الآن."
-        }
-        title={isManagementPortfolio ? "لوحة الإدارة" : "مساحة العمل"}
+        description="الأعمال التي تحتاج تدخلك الآن، ثم مساحات العملاء المصرح بها."
+        title="لوحة الإدارة"
       />
       {unavailable ? (
         <section role="alert" className="rounded-lg border border-border bg-surface p-5">

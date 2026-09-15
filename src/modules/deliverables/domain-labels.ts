@@ -105,6 +105,22 @@ export const slaEventLabels: Record<string, string> = {
   cancelled: "أُلغي وقت التنفيذ",
 };
 
+const internalWorkflowCommentBodyLabels = new Map<string, string>([
+  ["internal_approval", "تم الاعتماد الداخلي"],
+  [
+    "send_to_client_after_internal_approval",
+    "تم إرسال النسخة المعتمدة للعميل",
+  ],
+  [
+    "prepare_exact_approved_version_for_delivery",
+    "تم تجهيز النسخة المعتمدة للتسليم",
+  ],
+  [
+    "delivery_after_exact_version_confirmation",
+    "تم تأكيد التسليم النهائي",
+  ],
+]);
+
 export const fileVisibilityLabels: Record<FileAssetVisibility, string> = {
   internal_only: "ملف داخلي",
   client_visible: "ملف متاح",
@@ -155,6 +171,9 @@ export const qualityCheckStatusLabel = (status: string) =>
 
 export const approvalDecisionLabel = (decision: string) =>
   approvalDecisionLabels[decision] ?? "قرار غير معروف";
+
+export const localizeInternalWorkflowCommentBody = (body: string) =>
+  internalWorkflowCommentBodyLabels.get(body) ?? body;
 
 export const fileVisibilityLabel = (visibility: FileAssetVisibility | string) =>
   fileVisibilityLabels[visibility as FileAssetVisibility] ??

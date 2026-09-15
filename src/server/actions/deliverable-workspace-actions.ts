@@ -19,6 +19,7 @@ import { listScopedDeliverableWorkspaces } from "./deliverable-workspace-read";
 import { fixtureManagementDeliverables } from "./deliverable-read";
 import { canUseRouteActorFixtures } from "@/server/navigation/route-guards";
 import { updateDeliverableStatusViaRpc } from "./deliverable-write-rpc";
+import { sanitizeDownloadFilename } from "@/modules/files/download-filename";
 
 const boardMoveSchema = z.object({
   clientId: z.string().uuid(),
@@ -416,13 +417,15 @@ export async function createWorkspaceFileDownload(fileId: string) {
   if (error || !authorized) return { ok: false as const, reason: "denied" as const };
   const signed = await supabase.storage
     .from(authorized.bucket_id)
-    .createSignedUrl(authorized.storage_path, 60, {
-      download: authorized.file_name || true,
-    });
+    .createSignedUrl(authorized.storage_path, 60);
   if (signed.error || !signed.data?.signedUrl) {
     return { ok: false as const, reason: "denied" as const };
   }
-  return { ok: true as const, url: signed.data.signedUrl };
+  return {
+    ok: true as const,
+    url: signed.data.signedUrl,
+    fileName: sanitizeDownloadFilename(authorized.file_name),
+  };
 }
 
 export async function createWorkspaceFilePreview(fileId: string) {

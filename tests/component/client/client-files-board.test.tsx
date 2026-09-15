@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ClientFilesBoard } from "@/ui/client/client-files-board";
 import type { GroupedFile } from "@/modules/files/file-groups";
@@ -25,14 +25,36 @@ const file = (overrides: Partial<GroupedFile>): GroupedFile => ({
   deliverableName: overrides.deliverableName,
 });
 
+const fetchMock = vi.fn();
+const createObjectURL = vi.fn(() => "blob:download-object");
+const revokeObjectURL = vi.fn();
+const anchorClick = vi.spyOn(HTMLAnchorElement.prototype, "click");
+
 beforeEach(() => {
   download.mockReset();
   preview.mockReset();
   preview.mockResolvedValue({ ok: false });
-  download.mockResolvedValue({ ok: true, url: "https://example.test/file" });
+  download.mockResolvedValue({
+    ok: true,
+    url: "https://example.test/file",
+    fileName: "قالب الآراء.png",
+  });
+  fetchMock.mockReset();
+  fetchMock.mockResolvedValue({
+    ok: true,
+    blob: vi.fn().mockResolvedValue(new Blob(["file"])),
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  vi.stubGlobal("URL", { createObjectURL, revokeObjectURL });
+  createObjectURL.mockClear();
+  revokeObjectURL.mockClear();
+  anchorClick.mockClear();
 });
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe("ClientFilesBoard", () => {
   it("renders grouped folders with counts and hides empty groups", () => {
@@ -85,21 +107,39 @@ describe("ClientFilesBoard", () => {
     expect(screen.queryByText(/تنزيل آمن/)).not.toBeInTheDocument();
   });
 
-  it("triggers a short-lived signed download on click", async () => {
-    const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
+  it("downloads the signed object once with the exact authorized Arabic name", async () => {
+    let clickedDownload = "";
+    anchorClick.mockImplementation(function (this: HTMLAnchorElement) {
+      clickedDownload = this.download;
+    });
     render(
       <ClientFilesBoard files={[file({ id: "d1", visibility: "final_delivery" })]} />,
     );
     screen.getByRole("button", { name: "تنزيل" }).click();
     await waitFor(() => expect(download).toHaveBeenCalledWith("d1"));
-    await waitFor(() =>
-      expect(openSpy).toHaveBeenCalledWith(
-        "https://example.test/file",
-        "_blank",
-        "noopener,noreferrer",
-      ),
+    await waitFor(() => expect(anchorClick).toHaveBeenCalledTimes(1));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith("https://example.test/file");
+    expect(clickedDownload).toBe("قالب الآراء.png");
+    expect(createObjectURL).toHaveBeenCalledTimes(1);
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:download-object");
+    expect(document.querySelector("a[download]")).toBeNull();
+  });
+
+  it("shows Arabic failure feedback and creates no anchor for a non-OK fetch", async () => {
+    fetchMock.mockResolvedValue({ ok: false, status: 403 });
+    render(
+      <ClientFilesBoard files={[file({ id: "d1", visibility: "final_delivery" })]} />,
     );
-    openSpy.mockRestore();
+
+    screen.getByRole("button", { name: "تنزيل" }).click();
+
+    expect(
+      await screen.findByText("تعذر تنزيل الملف أو انتهت صلاحية الوصول."),
+    ).toBeInTheDocument();
+    expect(anchorClick).not.toHaveBeenCalled();
+    expect(createObjectURL).not.toHaveBeenCalled();
+    expect(revokeObjectURL).not.toHaveBeenCalled();
   });
 
   it("makes only previewable cards keyboard-openable", () => {
@@ -132,5 +172,26 @@ describe("ClientFilesBoard", () => {
     // No auto N+1 preview requests when the page opens (images are lazy-loaded
     // only when visible; non-visual files never request a preview).
     expect(preview).not.toHaveBeenCalled();
+  });
+
+  it("shows fallback message when video preview playback fails", async () => {
+    preview.mockResolvedValue({ ok: true, url: "https://example.test/video.mp4" });
+    render(
+      <ClientFilesBoard
+        files={[
+          file({ id: "vid", visibility: "client_visible", fileType: "video/mp4", name: "فيديو ترويجي" }),
+        ]}
+      />,
+    );
+
+    screen.getByRole("button", { name: /فتح معاينة فيديو ترويجي/ }).click();
+    const video = await screen.findByLabelText("فيديو ترويجي");
+    expect(video).toBeInTheDocument();
+
+    fireEvent.error(video);
+
+    expect(
+      await screen.findByText("تعذر تشغيل الفيديو في المعاينة. يمكنك تنزيل الملف مباشرة."),
+    ).toBeInTheDocument();
   });
 });

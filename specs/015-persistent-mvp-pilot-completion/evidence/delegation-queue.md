@@ -1,5 +1,108 @@
 # Astra-led correction queue — 2026-09-07
 
+## R23-C GLM planning review — 2026-09-14
+
+- The owner explicitly approved task-bounded use of Z.ai GLM, Spark and other
+  approved models and required friendly, simple Saudi Arabic for every changed
+  product string in this batch. This does not authorize secrets, unrelated
+  files, hosted mutation, commit, push, deploy, or silent paid fallbacks.
+- A sanitized read-only planning dispatch sent only `AGENTS.md`, `tasks.md`,
+  `remaining-findings-plan.md`, `delegation-queue.md`, and `defect-register.md`
+  to `zai-coding-plan/glm-5.3` through OpenCode 1.18.29. The relay completed
+  successfully in session `ses_f6190162affeXoIJQizdgAy3Fk`, reported cost `$0`,
+  and had no writable source checkout. The saved Coding Plan connection is
+  owner-confirmed; its credential identity is not independently exposed.
+- GLM confirmed the proposed SIL-10/16, SIL-11 and SIL-65/67 batch with three
+  conditions the lead resolved locally: SIL-16 is the old-tab account-switch
+  notice from the owner walkthrough; SIL-11 covers only the three existing
+  search surfaces and their current fields; SIL-67 retains a bounded mobile
+  popover rather than adding a new Sheet dependency. The detailed ownership,
+  TDD commands, Saudi copy rubric, and deferred previous-batch gates are in
+  `remaining-findings-plan.md`.
+- No project code or test changed in this planning step. No previous-batch test,
+  CI, Preview, hosted behavior, or owner acceptance was run or inferred.
+
+## R23-C local execution outcome — 2026-09-14
+
+- Current lead classification after this wave: **47 unimplemented, 15 pending
+  verification/acceptance, 9 decision/investigation, 2 narrowly verified; total
+  73**. SIL-10, SIL-11, SIL-16, SIL-65 and SIL-67 moved from unimplemented to
+  pending; no hosted or owner item closed.
+- Tasks 4/5 used `zai-coding-plan/glm-5.3` implementers and independent
+  `zai-coding-plan/glm-4.7` reviewers. Task 4 added tenant/user-scoped shell
+  identity and the old-tab refresh notice. Task 5 added one Arabic-script-aware
+  normalization helper to only the existing authorized search fields. Both are
+  locally accepted; all reported ZAI runs reported `$0`.
+- Task 6 kept GLM's genuine component RED (4 failed / 24 passed), then recovered
+  from relay and Next/Turbopack host failures with a native `gpt-5.6-sol`
+  implementer. Platform safety rejected the GLM-4.7 review export before any
+  payload was sent; native `gpt-6-astra` reviewed instead. Two correction rounds
+  removed filtered mobile containing blocks from both shared shells and
+  strengthened post-expansion/sticky geometry assertions. Final reviewer verdict
+  was `SPEC APPROVED` / `QUALITY APPROVED` with no Critical or Important finding.
+- Lead-fresh integrated evidence: unit 3 files / 21 tests and component 4 files /
+  50 tests PASS; TypeScript, scoped ESLint and diff check PASS. The new mobile
+  Playwright file collects 6 cases, but the configured Next server aborted while
+  warming `/` before execution. SIL-65/SIL-67 measurements and screenshots remain
+  blocked, not passed. Full regression, persistent/database, CI, Preview, build,
+  prior-batch hosted checks and owner UAT remain deferred.
+- Final whole-batch `gpt-6-astra` review initially HOLDed one long single-token
+  management identity overflow risk. The implementer added shrinking/wrapping
+  constraints with focused RED1/20 then GREEN20/20; the same reviewer returned
+  `ADDRESSED — APPROVE` with no Critical or Important finding. This correction
+  does not convert the pending browser gate into a pass.
+
+## R23-F local execution outcome — 2026-09-14
+
+- Current lead classification: **44 unimplemented, 18 pending
+  verification/acceptance, 9 decision/investigation, 2 narrowly verified; total
+  73**. SIL-60, SIL-62 and SIL-64 moved from unimplemented to pending. No CI,
+  Preview, hosted or owner item closed.
+- SIL-60 is an exact render-only Arabic mapping for four automatic
+  `internal_comment` bodies. Its independent reviewer HOLDed the first ordinary
+  object lookup because prototype keys could violate unknown-body preservation;
+  the `Map` correction added RED3/15 then GREEN18/18. Final verdict:
+  `SPEC APPROVE` / `QUALITY APPROVE`; durable text, audit and visibility remain
+  unchanged.
+- SIL-62 corrects only the project-local installed Uppy 5.1.1 keys
+  `dropPasteFiles`/`%{browseFiles}` and `dashboardTitle`; RED1/2 → GREEN3/3,
+  independently APPROVED with no upload/storage or dependency change.
+- SIL-64 keeps UUID/RPC file authorization, exact authorized bucket/path and a
+  60-second signed URL, then uses the RPC filename through a Unicode-preserving
+  sanitizer and temporary Blob anchor in both client/team controls. Focused
+  GREEN was unit10/10 and component10/10; reviewer APPROVED with no Critical or
+  Important finding. Its cleanup-exception Minor was covered, making the final
+  component result 11/11; re-review returned `ADDRESSED`.
+- Lead-fresh combined R23-F evidence: unit 3 files / 28 tests and component 4
+  files / 33 tests PASS; TypeScript, scoped ESLint and diff check PASS. One
+  persistent journey collects, but the one runtime attempt began no test because
+  the web-server guard rejected a non-local Supabase URL. Exact Arabic filename,
+  CORS/Blob runtime, full regression, database/RLS, build, CI, Preview, hosted and
+  owner UAT remain pending.
+- Fresh final combined `gpt-6-astra` review returned `APPROVE` with no Critical,
+  Important or Minor finding across Task 7–9 integration and canonical evidence.
+  It was read-only and did not change the pending runtime/publication gates.
+
+## R23-G local outcome and owner decision — 2026-09-14
+
+- Current lead classification: **41 unimplemented, 19 pending
+  verification/acceptance, 11 decision/investigation, 2 narrowly verified;
+  total 73**. SIL-70 moved to pending local verification; source audits moved
+  SIL-58/SIL-69 to explicit owner product decision. No hosted/owner item closed.
+- SIL-70 implementation produced RED2/27 → GREEN29/29. Independent
+  `gpt-6-astra` review returned `SPEC APPROVE` / `QUALITY APPROVE` with no
+  Critical or Important finding. Lead-fresh component29/29, TypeScript, scoped
+  ESLint and diff check PASS. Management composition/reads remain unchanged;
+  team clients render first without dashboard reads.
+- The SIL-70 browser spec collects two cases, but its single runtime attempt
+  aborted during Next warm-up before tests. Fixture navigation also cannot prove
+  hosted writer continuity after the card route drops `?as`; geometry, real
+  breadcrumb/session continuity, hosted and owner acceptance remain pending.
+- SIL-58/SIL-69 recommendation awaits owner approval: preserve all authorized
+  work, default to «يحتاج إجراء مني», retain «المسند لي» and «كل العمل المصرّح
+  لي», show the relationship reason, and share one assignment/capability-aware
+  next action between row and Drawer. SIL-68/SIL-72 remain separate decisions.
+
 ## Owner authorization and next wave — 2026-09-13
 
 - Owner acceptance is recorded for the published SIL-55 and SIL-57 corrections only. Their unexecuted hosted save/mutation checks remain honestly pending; no overall release acceptance is inferred.
@@ -11,7 +114,7 @@
 - SIL-06 and SIL-09 were reconciled against source, focused tests and the exact-head CI/Preview ancestry. Both already have technical corrections; their stale `Open` labels were replaced with honest technical-published states while desktop/mobile hosted rechecks remain pending.
 - Native agent `01a099ad-f01e-7991-961a-2f324e93992a` first performed a read-only SIL-66 product/architecture audit, then implemented the bounded next-unit guidance with TDD. No recursive delegation occurred.
 - Independent `gpt-5.6-sol` reviewer `01a099bb-f470-7330-adc4-523092f20c0a` returned HOLD twice: first for `deliverables[0]`/generic success misidentification and latest-package substitution risk, then for using the proposed UUID instead of the persisted idempotent RPC result. Both were corrected with new RED/GREEN regressions. Final reviewer verdict: APPROVE, no actionable findings.
-- Lead-fresh SIL-66 evidence before first push: focused component 21/21, focused unit 4/4, full unit 80/504, full component 45/371, integration 28/113, full TypeScript, full ESLint, production build and diff check PASS. Commit `2df8938` was pushed for exact-head CI run `34748220268`. That run passed whitespace, install, lint, typecheck, unit, integration, disposable Supabase reset/RLS and component gates, then failed before fixture E2E assertions because a server page imported pure helpers from the `use client` form module. The corrective work moves only those pure helpers into `src/modules/deliverables/count-unit-guidance.ts`; post-correction lead checks are focused unit 4/4, focused component 21/21, TypeScript, ESLint, production build and diff check PASS. Independent `gpt-5.6-sol` low reviewer `01a09a14-1e49-7ed3-aa6d-d0e0290af240` returned APPROVE with no findings on the bounded server/client extraction; its own slow lint was interrupted, so the lint evidence remains the lead's completed run. Replacement CI is pending; no Preview, hosted behavior or owner acceptance is claimed yet.
+- Lead-fresh SIL-66 evidence before first push: focused component 21/21, focused unit 4/4, full unit 80/504, full component 45/371, integration 28/113, full TypeScript, full ESLint, production build and diff check PASS. Commit `2df8938` was pushed for exact-head CI run `34748220268`. That run passed whitespace, install, lint, typecheck, unit, integration, disposable Supabase reset/RLS and component gates, then failed before fixture E2E assertions because a server page imported pure helpers from the `use client` form module. Corrective commit `cc0bc57e4c7ac8e72e487577b47c34e1c93ff4dd` moves only those pure helpers into `src/modules/deliverables/count-unit-guidance.ts`; post-correction lead checks are focused unit 4/4, focused component 21/21, TypeScript, ESLint, production build and diff check PASS. Independent `gpt-5.6-sol` low reviewer `01a09a14-1e49-7ed3-aa6d-d0e0290af240` returned APPROVE with no findings on the bounded extraction; its own slow lint was interrupted, so lint evidence remains the lead's completed run. Exact-head PR run `34749804905` and manual confirmation run `34749807147` both PASS every F-001 gate, including fixture/persistent E2E, secret scan and build. No Preview, hosted behavior or owner acceptance is claimed yet.
 
 ## Current reconciliation wave — X010-B-7C-23 — 2026-09-12
 

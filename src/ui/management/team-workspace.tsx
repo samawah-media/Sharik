@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 import { FileText } from "lucide-react";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableWorkspaceSummary } from "@/modules/deliverables/deliverable-workspace";
-import { deriveSlaStatus } from "@/modules/sla/sla-policy";
+import {
+  projectTeamWork,
+  type TeamWorkCapabilities,
+} from "@/modules/deliverables/team-work-presentation";
 import { UniversalDeliverableDrawer } from "@/ui/deliverables/universal-deliverable-drawer";
 import { Badge } from "@/ui/core/badge";
 import {
@@ -16,11 +19,14 @@ import {
 } from "./deliverable-board";
 import { contentChannelLabel } from "@/modules/deliverables/domain-labels";
 import { formatArabicDate } from "@/modules/localization/arabic-display";
+import { normalizeArabicSearchText } from "@/modules/localization/arabic-search";
 import { WorkspaceInlineMedia } from "@/ui/deliverables/workspace-files";
 
 type Action = (formData: FormData) => void | Promise<void>;
 
 export function TeamWorkspace({
+  actorUserId,
+  capabilitiesByDeliverable = {},
   deliverables,
   clientNames,
   workspaces,
@@ -28,6 +34,8 @@ export function TeamWorkspace({
   approvalAction,
   now,
 }: {
+  actorUserId?: string;
+  capabilitiesByDeliverable?: Record<string, TeamWorkCapabilities>;
   deliverables: DeliverableSafeSummary[];
   clientNames: Record<string, string>;
   workspaces: Record<string, DeliverableWorkspaceSummary>;
@@ -39,36 +47,62 @@ export function TeamWorkspace({
   const [search, setSearch] = useState("");
   const [priority, setPriority] = useState("all");
   const [sla, setSla] = useState("all");
-  const filtered = useMemo(
+  const [workScope, setWorkScope] = useState<
+    "needs_action" | "assigned" | "all_authorized"
+  >(actorUserId ? "needs_action" : "all_authorized");
+  const presented = useMemo(
     () =>
-      deliverables.filter((deliverable) => {
-        const slaStatus = deriveSlaStatus({
-          status: deliverable.status,
-          now,
-          startDate: deliverable.startDate,
-          internalDueDate: deliverable.internalDueDate,
-          clientDueDate: deliverable.clientDueDate,
-          finalDueDate: deliverable.finalDueDate,
-        }).status;
-        const haystack =
-          `${deliverable.name} ${deliverable.type} ${clientNames[deliverable.clientId] ?? ""}`.toLocaleLowerCase(
-            "ar",
-          );
-        return (
-          haystack.includes(search.trim().toLocaleLowerCase("ar")) &&
-          (priority === "all" || deliverable.priority === priority) &&
-          (sla === "all" || slaStatus === sla)
-        );
+      projectTeamWork({
+        actorUserId: actorUserId ?? "",
+        capabilitiesByDeliverable,
+        deliverables,
+        now,
+        workspaces,
       }),
-    [clientNames, deliverables, now, priority, search, sla],
+    [
+      actorUserId,
+      capabilitiesByDeliverable,
+      deliverables,
+      now,
+      workspaces,
+    ],
   );
+  const nextActionByDeliverable = useMemo(
+    () =>
+      Object.fromEntries(
+        presented.map(({ deliverable, nextAction }) => [
+          deliverable.id,
+          nextAction,
+        ]),
+      ),
+    [presented],
+  );
+  const filtered = useMemo(() => {
+    const normalizedSearch = normalizeArabicSearchText(search);
+    return presented.filter((item) => {
+      const deliverable = item.deliverable;
+      const haystack = normalizeArabicSearchText(
+        `${deliverable.name} ${getDeliverableTypeLabel(deliverable.type)} ${clientNames[deliverable.clientId] ?? ""}`,
+      );
+      const matchesWorkScope =
+        workScope === "all_authorized" ||
+        (workScope === "needs_action" && item.needsActorAction) ||
+        (workScope === "assigned" && item.relationship !== "role_context");
+      return (
+        matchesWorkScope &&
+        haystack.includes(normalizedSearch) &&
+        (priority === "all" || deliverable.priority === priority) &&
+        (sla === "all" || item.slaStatus === sla)
+      );
+    });
+  }, [clientNames, presented, priority, search, sla, workScope]);
 
   return (
     <section className="grid gap-4" dir="rtl">
       <div
         role="group"
         aria-label="فلاتر مهامي"
-        className="grid min-w-0 grid-cols-2 gap-3 rounded-xl border border-border bg-surface p-4 lg:grid-cols-[minmax(0,1fr)_auto_auto]"
+        className="grid min-w-0 grid-cols-2 gap-3 rounded-xl border border-border bg-surface p-4 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]"
       >
         <label className="col-span-2 grid min-w-0 gap-1 text-sm font-semibold lg:col-span-1">
           بحث
@@ -79,6 +113,25 @@ export function TeamWorkspace({
             type="search"
             value={search}
           />
+        </label>
+        <label className="grid min-w-0 gap-1 text-sm font-semibold">
+          عرض العمل
+          <select
+            className="min-h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3"
+            onChange={(event) =>
+              setWorkScope(
+                event.target.value as
+                  | "needs_action"
+                  | "assigned"
+                  | "all_authorized",
+              )
+            }
+            value={workScope}
+          >
+            <option value="needs_action">يحتاج إجراء مني</option>
+            <option value="assigned">المسند لي</option>
+            <option value="all_authorized">كل العمل المصرّح لي</option>
+          </select>
         </label>
         <label className="grid min-w-0 gap-1 text-sm font-semibold">
           الأولوية
@@ -143,11 +196,17 @@ export function TeamWorkspace({
         <DeliverableBoard
           action={statusAction}
           approvalAction={approvalAction}
+          actorUserId={actorUserId}
+          capabilitiesByDeliverable={capabilitiesByDeliverable}
           clientNames={clientNames}
-          deliverables={filtered}
+          deliverables={filtered.map((item) => item.deliverable)}
           key={filtered
-            .map((deliverable) => `${deliverable.id}:${deliverable.revision}`)
+            .map(
+              ({ deliverable }) =>
+                `${deliverable.id}:${deliverable.revision}`,
+            )
             .join("|")}
+          nextActionByDeliverable={nextActionByDeliverable}
           now={now}
           workspaces={workspaces}
         />
@@ -170,21 +229,15 @@ export function TeamWorkspace({
               ) : null}
             </div>
           ) : null}
-          {filtered.map((deliverable) => {
+          {filtered.map((item) => {
+            const deliverable = item.deliverable;
             const summary = workspaces[deliverable.id];
             const dueDate =
               deliverable.internalDueDate ??
               deliverable.clientDueDate ??
               deliverable.finalDueDate ??
               deliverable.plannedPublishDate;
-            const slaStatus = deriveSlaStatus({
-              status: deliverable.status,
-              now,
-              startDate: deliverable.startDate,
-              internalDueDate: deliverable.internalDueDate,
-              clientDueDate: deliverable.clientDueDate,
-              finalDueDate: deliverable.finalDueDate,
-            }).status;
+            const slaStatus = item.slaStatus;
             return (
               <article
                 className="relative grid min-w-0 gap-3 rounded-lg border border-border bg-surface p-3 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-center"
@@ -245,6 +298,9 @@ export function TeamWorkspace({
                         المرحلة: {deliverable.contentStage}
                       </p>
                     ) : null}
+                    <p className="text-xs font-semibold text-accent">
+                      {item.relationshipLabel}
+                    </p>
                     <div className="flex flex-wrap gap-2">
                       <Badge tone="muted">
                         {kanbanStatusLabels[deliverable.status]}
@@ -271,7 +327,7 @@ export function TeamWorkspace({
                     <span className="font-semibold text-foreground">
                       الخطوة التالية:{" "}
                     </span>
-                    {nextActionLabels[deliverable.status]}
+                    {item.nextAction}
                   </p>
                   <p className="text-xs text-muted">
                     {summary?.counts.versions ?? 0} نسخ ·{" "}
@@ -285,6 +341,7 @@ export function TeamWorkspace({
                     canPublishClientComment={Boolean(approvalAction)}
                     clientName={clientNames[deliverable.clientId]}
                     deliverable={deliverable}
+                    nextActionLabel={item.nextAction}
                     summary={summary}
                   />
                 </div>
@@ -296,19 +353,3 @@ export function TeamWorkspace({
     </section>
   );
 }
-
-const nextActionLabels = {
-  not_started: "ابدأ التنفيذ أو حدّث حالة المخرج.",
-  in_progress: "أكمل النسخة الحالية ثم أرسلها للمراجعة الداخلية.",
-  ready_for_internal_review: "بانتظار مراجعة الإدارة للنسخة الحالية.",
-  internal_changes_requested:
-    "نفّذ التعديلات الداخلية المطلوبة وارفع نسخة محدثة.",
-  internally_approved: "النسخة معتمدة داخليًا وجاهزة للإرسال للعميل.",
-  waiting_client_approval: "بانتظار قرار العميل، ووقت SLA متوقف.",
-  client_changes_requested: "نفّذ تعديلات العميل وارفع نسخة جديدة.",
-  client_approved: "جهّز الملفات النهائية للتسليم.",
-  ready_for_delivery: "أكمل التسليم النهائي.",
-  delivered: "المخرج مكتمل ولا توجد خطوة مطلوبة.",
-  cancelled: "المخرج ملغي.",
-  archived: "المخرج مؤرشف.",
-} as const;

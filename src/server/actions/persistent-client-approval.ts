@@ -251,7 +251,14 @@ async function readClientApprovalDetailForDeliverable(
       createdAt: comment.created_at,
       authorName:
         authorNames.get(comment.author_user_id) ??
-        (comment.comment_type === "client_comment" ? "العميل" : "فريق سماوة"),
+        (comment.comment_type === "client_comment"
+          ? "العميل"
+          : comment.comment_type === "approval_comment"
+            ? "قرار الاعتماد"
+            : "فريق سماوة"),
+    })).map((c) => ({
+      ...c,
+      body: c.body === "client_approval" ? "تم اعتماد النسخة" : c.body
     })),
   };
 }

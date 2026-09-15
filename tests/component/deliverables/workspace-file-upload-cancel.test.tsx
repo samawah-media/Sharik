@@ -12,11 +12,18 @@ type MockUppyFile = {
   meta: Record<string, string>;
 };
 
+type MockUppyOptions = {
+  locale: {
+    strings: Record<string, string>;
+  };
+};
+
 const { cancelUpload, uppyInstances, routerRefresh } = vi.hoisted(() => ({
   cancelUpload: vi.fn(),
   uppyInstances: [] as Array<{
     files: Record<string, MockUppyFile>;
     handlers: Record<string, (...args: unknown[]) => void>;
+    options: MockUppyOptions;
     preProcessors: Array<(fileIds: string[]) => Promise<void>>;
   }>,
   routerRefresh: vi.fn(),
@@ -40,8 +47,10 @@ vi.mock("@uppy/core", () => ({
   default: class MockUppy {
     files: Record<string, MockUppyFile> = {};
     handlers: Record<string, (...args: unknown[]) => void> = {};
+    options: MockUppyOptions;
     preProcessors: Array<(fileIds: string[]) => Promise<void>> = [];
-    constructor() {
+    constructor(options: MockUppyOptions) {
+      this.options = options;
       uppyInstances.push(this);
     }
     use() {
@@ -124,7 +133,31 @@ afterEach(() => {
   delete process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 });
 
-describe("WorkspaceFileUpload cancellation feedback", () => {
+describe("WorkspaceFileUpload", () => {
+  it("passes the installed Arabic Dashboard locale keys to Uppy", async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "public-key";
+
+    render(
+      <WorkspaceFileUpload
+        canPublishClientFile
+        currentVersionId={deliverable.currentVersionId!}
+        deliverable={deliverable}
+      />,
+    );
+
+    await waitFor(() => expect(uppyInstances.length).toBe(1));
+    const strings = uppyInstances[0].options.locale.strings;
+
+    expect(strings).toMatchObject({
+      browseFiles: "استعراض الملفات",
+      dashboardTitle: "رفع الملفات",
+      dropPasteFiles: "أفلِت الملفات هنا أو %{browseFiles}",
+    });
+    expect(strings).not.toHaveProperty("dashboardTitleV2");
+    expect(strings).not.toHaveProperty("dropHereOr");
+  });
+
   it("warns when explicit cancellation succeeds but Storage cleanup fails", async () => {
     cancelUpload.mockResolvedValue({ ok: true, cleanup: "failed" });
 

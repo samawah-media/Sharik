@@ -63,11 +63,13 @@ export function ClientApprovalPanel({
   const canSubmitDecision = canApprove && item.isActionable !== false;
   const hasServerActions = Boolean(approveAction && requestChangesAction);
   const unavailableMessage =
-    item.actionabilityReason === "missing_review_payload"
-      ? "هذه النسخة غير مكتملة ولا يمكن اتخاذ قرار عليها. يجري تجهيز محتوى صالح للمراجعة."
-      : canApprove
-        ? "لا يتوفر إجراء على هذه النسخة الآن."
-        : "هذا الحساب للمشاهدة فقط ولا يملك صلاحية الاعتماد أو طلب التعديل.";
+    item.status === "client_approved" || item.status === "delivered" || item.status === "ready_for_delivery"
+      ? "تم اعتماد هذا العمل بنجاح."
+      : item.actionabilityReason === "missing_review_payload"
+        ? "هذه النسخة غير مكتملة ولا يمكن اتخاذ قرار عليها. يجري تجهيز محتوى صالح للمراجعة."
+        : canApprove
+          ? "لا يتوفر إجراء على هذه النسخة الآن."
+          : "هذا الحساب للمشاهدة فقط ولا يملك صلاحية الاعتماد أو طلب التعديل.";
 
   return (
     <section

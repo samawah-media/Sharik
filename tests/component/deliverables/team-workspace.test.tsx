@@ -43,7 +43,144 @@ const waitingDeliverable: DeliverableSafeSummary = {
   updatedAt: "2026-07-16T00:00:00.000Z",
 };
 
+const noCapabilities = {
+  canApproveInternally: false,
+  canManageDelivery: false,
+  canSendToClient: false,
+  canSubmitVersion: false,
+  canUpdateStatus: false,
+};
+
 describe("team workspace", () => {
+  it("defaults to actor actions and preserves assigned and all-authorized reachability", () => {
+    const actorOwned = {
+      ...waitingDeliverable,
+      id: "actor-owned",
+      name: "نسخة الكاتب",
+      ownerUserId: "actor-a",
+      status: "in_progress" as const,
+    };
+    const actorTask = {
+      ...waitingDeliverable,
+      id: "actor-task",
+      name: "مهمة داخل مخرج",
+      ownerUserId: "someone-else",
+    };
+    const roleContext = {
+      ...waitingDeliverable,
+      id: "role-context",
+      name: "سياق العميل",
+      ownerUserId: "someone-else",
+    };
+    render(
+      <TeamWorkspace
+        actorUserId="actor-a"
+        capabilitiesByDeliverable={{
+          "actor-owned": { ...noCapabilities, canSubmitVersion: true },
+          "actor-task": noCapabilities,
+          "role-context": noCapabilities,
+        }}
+        clientNames={{ client_a: "جلاس" }}
+        deliverables={[roleContext, actorOwned, actorTask]}
+        now="2026-07-16T10:00:00Z"
+        workspaces={{
+          "actor-task": {
+            deliverableId: "actor-task",
+            hasOpenAssignedTask: true,
+            counts: { versions: 0, tasks: 1, files: 0, comments: 0 },
+          },
+        }}
+      />,
+    );
+
+    const scope = screen.getByRole("combobox", { name: "عرض العمل" });
+    expect(scope).toHaveValue("needs_action");
+    expect(screen.getByText("نسخة الكاتب")).toBeVisible();
+    expect(screen.getByText("مهمة داخل مخرج")).toBeVisible();
+    expect(screen.queryByText("سياق العميل")).not.toBeInTheDocument();
+
+    fireEvent.change(scope, { target: { value: "assigned" } });
+    expect(screen.getByText("نسخة الكاتب")).toBeVisible();
+    expect(screen.getByText("مهمة داخل مخرج")).toBeVisible();
+    expect(screen.queryByText("سياق العميل")).not.toBeInTheDocument();
+
+    fireEvent.change(scope, { target: { value: "all_authorized" } });
+    expect(screen.getByText("نسخة الكاتب")).toBeVisible();
+    expect(screen.getByText("مهمة داخل مخرج")).toBeVisible();
+    expect(screen.getByText("سياق العميل")).toBeVisible();
+    expect(screen.getByText("أنت المسؤول")).toBeVisible();
+    expect(screen.getByText("عندك مهمة داخل المخرج")).toBeVisible();
+    expect(screen.getByText("ظاهر لك بحكم دورك")).toBeVisible();
+  });
+
+  it("shares the actor-aware non-action message between the row and Drawer", () => {
+    render(
+      <TeamWorkspace
+        actorUserId="actor-a"
+        capabilitiesByDeliverable={{ deliverable_waiting: noCapabilities }}
+        clientNames={{ client_a: "جلاس" }}
+        deliverables={[
+          {
+            ...waitingDeliverable,
+            ownerUserId: "someone-else",
+            contributorUserIds: ["actor-a"],
+          },
+        ]}
+        now="2026-07-16T10:00:00Z"
+        workspaces={{}}
+      />,
+    );
+
+    fireEvent.change(screen.getByRole("combobox", { name: "عرض العمل" }), {
+      target: { value: "assigned" },
+    });
+    expect(screen.getByText("أنت مشارك في المخرج")).toBeVisible();
+    expect(
+      screen.getByText("بانتظار قرار العميل — ما عليك إجراء الآن"),
+    ).toBeVisible();
+    fireEvent.click(
+      screen.getByRole("button", { name: "فتح مساحة المخرج" }),
+    );
+    expect(
+      screen.getAllByText(/بانتظار قرار العميل — ما عليك إجراء الآن/),
+    ).toHaveLength(2);
+  });
+
+  it("preserves the actor-aware next action when switching from list to board Drawer", () => {
+    const actorWork = {
+      ...waitingDeliverable,
+      id: "actor-board-work",
+      ownerUserId: "actor-a",
+      status: "in_progress" as const,
+    };
+    const actorNextAction =
+      "أكمل العمل وارفع النسخة للمراجعة الداخلية.";
+    render(
+      <TeamWorkspace
+        actorUserId="actor-a"
+        capabilitiesByDeliverable={{
+          "actor-board-work": {
+            ...noCapabilities,
+            canSubmitVersion: true,
+          },
+        }}
+        clientNames={{ client_a: "جلاس" }}
+        deliverables={[actorWork]}
+        now="2026-07-16T10:00:00Z"
+        workspaces={{}}
+      />,
+    );
+
+    expect(screen.getByText(actorNextAction)).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "لوحة العمل" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "فتح مساحة المخرج" }),
+    );
+
+    expect(screen.getByText(new RegExp(actorNextAction))).toBeVisible();
+    expect(screen.queryByText("إكمال المحتوى ورفع نسخة")).not.toBeInTheDocument();
+  });
+
   it("retains three labeled filters and one native primary trigger per row", () => {
     render(
       <TeamWorkspace
@@ -133,7 +270,7 @@ describe("team workspace", () => {
         ).toHaveAttribute("src", "/authorized-preview");
       else
         expect(
-          await screen.findByText("تعذرت معاينة الأصل المرئي بأمان."),
+          await screen.findByText("تعذرت المعاينة المرئية. يمكنك تنزيل الملف مباشرة."),
         ).toBeVisible();
       expect(previewFile).toHaveBeenCalledWith("authorized_file");
     },
@@ -300,6 +437,125 @@ describe("team workspace", () => {
       target: { value: "paused_waiting_client" },
     });
     expect(screen.getByText("أدوات التسويق")).toBeVisible();
+  });
+
+  it("finds deliverables by Arabic type label instead of raw enum values", () => {
+    // Production break: a team member searching "حملة" or "تقرير" got an
+    // empty list because the workspace matched the raw English enum
+    // ("campaign") instead of the Arabic label shown on the row.
+    render(
+      <TeamWorkspace
+        clientNames={{ client_a: "شَركة القِمّة" }}
+        deliverables={[
+          { ...waitingDeliverable, id: "deliverable_report", type: "report" },
+          {
+            ...waitingDeliverable,
+            id: "deliverable_other",
+            name: "مهمة أخرى",
+            type: "campaign",
+          },
+        ]}
+        now="2026-07-16T10:00:00Z"
+        workspaces={{}}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText("بحث"), {
+      target: { value: "تقرير" },
+    });
+    expect(screen.getByText("أدوات التسويق")).toBeVisible();
+    expect(screen.queryByText("مهمة أخرى")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("بحث"), {
+      target: { value: "حملة" },
+    });
+    expect(screen.getByText("مهمة أخرى")).toBeVisible();
+    expect(screen.queryByText("أدوات التسويق")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("بحث"), {
+      target: { value: "campaign" },
+    });
+    expect(
+      screen.getByText("لا توجد مخرجات تطابق الفلاتر الحالية."),
+    ).toBeVisible();
+  });
+
+  it("matches diacritized deliverable and client names from plain typing", () => {
+    // Production break: deliverables and client names stored with harakat
+    // or hamza carriers ("تَقرير أداء رَمضان", "شَركة القِمّة") never match
+    // the plain typed query "تقرير اداء" or "شركة القمة".
+    const diacritizedDeliverable: DeliverableSafeSummary = {
+      ...waitingDeliverable,
+      id: "deliverable_diacritized",
+      name: "تَقرير أداء رَمضان",
+      type: "report",
+    };
+    render(
+      <TeamWorkspace
+        clientNames={{ client_a: "شَركة القِمّة" }}
+        deliverables={[diacritizedDeliverable]}
+        now="2026-07-16T10:00:00Z"
+        workspaces={{}}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText("بحث"), {
+      target: { value: "تقرير اداء" },
+    });
+    expect(screen.getByText("تَقرير أداء رَمضان")).toBeVisible();
+    fireEvent.change(screen.getByLabelText("بحث"), {
+      target: { value: "شركة القمة" },
+    });
+    expect(screen.getByText("تَقرير أداء رَمضان")).toBeVisible();
+    fireEvent.change(screen.getByLabelText("بحث"), {
+      target: { value: "شركة القمه" },
+    });
+    expect(
+      screen.getByText("لا توجد مخرجات تطابق الفلاتر الحالية."),
+    ).toBeVisible();
+  });
+
+  it("keeps description out of search and preserves priority and SLA filters with normalized Arabic", () => {
+    // Production break: searching internal descriptions would leak
+    // non-searchable content, while a diacritized name like "تَقرير أداء
+    // رَمضان" must still match the plain query "تقرير" without weakening
+    // the priority/SLA filters that run alongside the Arabic search.
+    const diacritizedDeliverable: DeliverableSafeSummary = {
+      ...waitingDeliverable,
+      id: "deliverable_norm_filters",
+      name: "تَقرير أداء رَمضان",
+      type: "report",
+    };
+    render(
+      <TeamWorkspace
+        clientNames={{ client_a: "شَركة القِمّة" }}
+        deliverables={[diacritizedDeliverable]}
+        now="2026-07-16T10:00:00Z"
+        workspaces={{}}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText("بحث"), {
+      target: { value: "كابشن" },
+    });
+    expect(
+      screen.getByText("لا توجد مخرجات تطابق الفلاتر الحالية."),
+    ).toBeVisible();
+    fireEvent.change(screen.getByLabelText("بحث"), {
+      target: { value: "تقرير" },
+    });
+    expect(screen.getByText("تَقرير أداء رَمضان")).toBeVisible();
+    fireEvent.change(screen.getByLabelText("الأولوية"), {
+      target: { value: "urgent" },
+    });
+    expect(screen.queryByText("تَقرير أداء رَمضان")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("الأولوية"), {
+      target: { value: "normal" },
+    });
+    expect(screen.getByText("تَقرير أداء رَمضان")).toBeVisible();
+    fireEvent.change(screen.getByLabelText("SLA"), {
+      target: { value: "overdue" },
+    });
+    expect(screen.queryByText("تَقرير أداء رَمضان")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("SLA"), {
+      target: { value: "paused_waiting_client" },
+    });
+    expect(screen.getByText("تَقرير أداء رَمضان")).toBeVisible();
   });
 
   it("uses safe unknown-channel text and keeps the list summary free of version bodies", () => {

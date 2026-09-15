@@ -1,5 +1,6 @@
 import type { PackageBalanceProjection } from "@/modules/packages/package-ledger";
 import { isCountUnitLabel } from "@/modules/packages/package-quantity";
+import { normalizeArabicSearchText } from "@/modules/localization/arabic-search";
 
 export type CommercialQuantityIssue = "fractional_count" | "invalid_quantity";
 export type PackageBalanceIssue =
@@ -24,7 +25,6 @@ export const formatCommercialQuantity = (
 
   return { text: quantityFormatter.format(value) };
 };
-
 export const getPackageBalanceIssues = (
   balance: PackageBalanceProjection,
   unitLabel: string,
@@ -72,11 +72,11 @@ export const paginateCommercialItems = <CommercialListEntry>({
   getSearchText: (entry: CommercialListEntry) => string;
   getStatus: (entry: CommercialListEntry) => string;
 }) => {
-  const normalizedQuery = query.trim().toLocaleLowerCase("ar");
+  const normalizedQuery = normalizeArabicSearchText(query);
   const filteredItems = items.filter((item) => {
     const matchesQuery =
       normalizedQuery.length === 0 ||
-      getSearchText(item).toLocaleLowerCase("ar").includes(normalizedQuery);
+      normalizeArabicSearchText(getSearchText(item)).includes(normalizedQuery);
     const matchesStatus = status === "all" || getStatus(item) === status;
     return matchesQuery && matchesStatus;
   });

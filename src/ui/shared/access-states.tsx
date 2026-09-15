@@ -50,7 +50,7 @@ export function ResourceNotFoundState({ returnHref = "/" }: AccessStateProps) {
   return (
     <SafeState
       heading={f001CopyArSA["f001.access.notFound"]}
-      body="لا يمكن فتح هذه الصفحة من حسابك الحالي. اختر المساحة المسندة لك أو تواصل مع مدير الحساب."
+      body="لا يمكن فتح هذه الصفحة من حسابك الحالي. قد يكون الرابط غير صحيح أو ليس لديك صلاحية للوصول."
       returnHref={returnHref}
     />
   );

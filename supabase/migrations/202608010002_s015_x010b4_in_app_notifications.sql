@@ -66,6 +66,7 @@ alter table public.notifications enable row level security;
 --      /work
 --      /client, /client/pending, /client/work, /client/files
 --      /clients/{uuid}/deliverables
+--      /client/work/{uuid}
 -- ============================================================================
 create or replace function public.s015_notification_href_is_allowed(
   target_href text
@@ -80,7 +81,8 @@ as $$
       '/portfolio', '/work',
       '/client', '/client/pending', '/client/work', '/client/files'
     )
-    or target_href ~ '^/clients/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/deliverables$';
+    or target_href ~ '^/clients/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/deliverables$'
+    or target_href ~ '^/client/work/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$';
 $$;
 
 do $$
@@ -384,7 +386,7 @@ begin
       if v_recipient is distinct from v_actor then
         perform public.s015_enqueue_notification(
           v_tenant, v_client, v_recipient, v_event, v_title, v_message, v_href,
-          new.id, null, v_event || ':' || new.id::text
+          new.id, null, v_event || ':' || v_deliverable_id::text || ':' || v_version::text
         );
       end if;
     end loop;
@@ -402,7 +404,7 @@ begin
       if v_recipient is distinct from v_actor then
         perform public.s015_enqueue_notification(
           v_tenant, v_client, v_recipient, v_event, v_title, v_message, v_href,
-          new.id, null, v_event || ':' || new.id::text
+          new.id, null, v_event || ':' || v_deliverable_id::text || ':' || v_version::text
         );
       end if;
     end loop;
@@ -412,7 +414,7 @@ begin
   if v_action = 'DeliverableVersionSentToClient' then
     -- Client-facing notification first (client-safe copy only).
     v_event := 'client_send';
-    v_href := '/client/pending';
+    v_href := '/client/work/' || v_deliverable_id::text;
     for v_client_recipient, v_client_can_approve in
       select recipient_user_id, can_approve
       from public.s015_notification_client_portal_recipients(v_tenant, v_client)
@@ -427,7 +429,7 @@ begin
       if v_client_recipient is distinct from v_actor then
         perform public.s015_enqueue_notification(
           v_tenant, v_client, v_client_recipient, v_event, v_title, v_message, v_href,
-          new.id, null, 'client_send:' || new.id::text
+          new.id, null, 'client_send:' || v_deliverable_id::text || ':' || v_version::text
         );
       end if;
     end loop;
@@ -447,7 +449,7 @@ begin
         if v_recipient is distinct from v_actor then
           perform public.s015_enqueue_notification(
             v_tenant, v_client, v_recipient, v_event, v_title, v_message, v_href,
-            new.id, null, v_event || ':' || new.id::text
+            new.id, null, v_event || ':' || v_deliverable_id::text || ':' || v_version::text
           );
         end if;
       end loop;
@@ -461,7 +463,7 @@ begin
         if v_recipient is distinct from v_actor then
           perform public.s015_enqueue_notification(
             v_tenant, v_client, v_recipient, v_event, v_title, v_message, v_href_management,
-            new.id, null, v_event || ':' || new.id::text
+            new.id, null, v_event || ':' || v_deliverable_id::text || ':' || v_version::text
           );
         end if;
       end loop;
@@ -471,7 +473,7 @@ begin
         if v_recipient is distinct from v_actor then
           perform public.s015_enqueue_notification(
             v_tenant, v_client, v_recipient, v_event, v_title, v_message, v_href_work,
-            new.id, null, v_event || ':' || new.id::text
+            new.id, null, v_event || ':' || v_deliverable_id::text || ':' || v_version::text
           );
         end if;
       end loop;
@@ -490,7 +492,7 @@ begin
       if v_recipient is distinct from v_actor then
         perform public.s015_enqueue_notification(
           v_tenant, v_client, v_recipient, v_event, v_title, v_message, v_href,
-          new.id, null, v_event || ':' || new.id::text
+          new.id, null, v_event || ':' || v_deliverable_id::text
         );
       end if;
     end loop;
@@ -507,7 +509,7 @@ begin
       if v_recipient is distinct from v_actor then
         perform public.s015_enqueue_notification(
           v_tenant, v_client, v_recipient, v_event, v_title, v_message, v_href_management,
-          new.id, null, 'delivered_internal:' || new.id::text
+          new.id, null, 'delivered_internal:' || v_deliverable_id::text
         );
       end if;
     end loop;
@@ -517,7 +519,7 @@ begin
       if v_recipient is distinct from v_actor then
         perform public.s015_enqueue_notification(
           v_tenant, v_client, v_recipient, v_event, v_title, v_message, v_href_work,
-          new.id, null, 'delivered_internal:' || new.id::text
+          new.id, null, 'delivered_internal:' || v_deliverable_id::text
         );
       end if;
     end loop;
@@ -533,7 +535,7 @@ begin
       if v_client_recipient is distinct from v_actor then
         perform public.s015_enqueue_notification(
           v_tenant, v_client, v_client_recipient, v_event, v_title, v_message, v_href,
-          new.id, null, 'client_delivered:' || new.id::text
+          new.id, null, 'client_delivered:' || v_deliverable_id::text
         );
       end if;
     end loop;

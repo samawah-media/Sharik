@@ -246,6 +246,91 @@ beforeEach(() => {
 });
 
 describe("universal deliverable drawer localization", () => {
+  it("localizes automatic internal workflow comments without changing human comments", () => {
+    const internalComments: DeliverableWorkspace = {
+      ...workspace,
+      comments: [
+        {
+          id: "comment_internal_approval",
+          type: "internal_comment",
+          visibility: "internal_only",
+          body: "internal_approval",
+          bodyFormat: "plain_text",
+          createdAt: "2026-07-03T02:00:00.000Z",
+        },
+        {
+          id: "comment_send_to_client",
+          type: "internal_comment",
+          visibility: "internal_only",
+          body: "send_to_client_after_internal_approval",
+          bodyFormat: "plain_text",
+          createdAt: "2026-07-03T03:00:00.000Z",
+        },
+        {
+          id: "comment_human",
+          type: "internal_comment",
+          visibility: "internal_only",
+          body: "راجعوا الصياغة قبل الإرسال\nخصوصًا العنوان",
+          bodyFormat: "plain_text",
+          createdAt: "2026-07-03T04:00:00.000Z",
+        },
+      ],
+      counts: { ...workspace.counts, comments: 3 },
+    };
+
+    render(
+      <UniversalDeliverableDrawer
+        deliverable={deliverable}
+        workspace={internalComments}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "فتح مساحة المخرج" }));
+    fireEvent.click(screen.getByRole("tab", { name: /التعليقات/ }));
+
+    expect(screen.getByText("تم الاعتماد الداخلي")).toBeVisible();
+    expect(
+      screen.getByText("تم إرسال النسخة المعتمدة للعميل"),
+    ).toBeVisible();
+    expect(
+      screen.getByText("راجعوا الصياغة قبل الإرسال خصوصًا العنوان"),
+    ).toBeVisible();
+    expect(screen.getAllByText("داخلي")).toHaveLength(3);
+    expect(screen.queryByText("internal_approval")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("send_to_client_after_internal_approval"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("does not localize a workflow-shaped body on a client comment", () => {
+    const clientComment: DeliverableWorkspace = {
+      ...workspace,
+      comments: [
+        {
+          id: "comment_client",
+          type: "client_comment",
+          visibility: "client_visible",
+          body: "internal_approval",
+          bodyFormat: "plain_text",
+          createdAt: "2026-07-03T05:00:00.000Z",
+        },
+      ],
+      counts: { ...workspace.counts, comments: 1 },
+    };
+
+    render(
+      <UniversalDeliverableDrawer
+        deliverable={deliverable}
+        workspace={clientComment}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "فتح مساحة المخرج" }));
+    fireEvent.click(screen.getByRole("tab", { name: /التعليقات/ }));
+
+    expect(screen.getByText("internal_approval")).toBeVisible();
+    expect(screen.getByText("ظاهر للعميل")).toBeVisible();
+    expect(screen.queryByText("تم الاعتماد الداخلي")).not.toBeInTheDocument();
+  });
+
   it("refreshes the open drawer with the newly persisted version ID", async () => {
     const updatedWorkspace: DeliverableWorkspace = {
       ...workspace,

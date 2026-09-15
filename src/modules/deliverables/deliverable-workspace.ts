@@ -141,6 +141,7 @@ export function canUpdateTaskStatus(
 
 export type DeliverableWorkspaceSummary = {
   deliverableId: string;
+  hasOpenAssignedTask?: boolean;
   currentVersionId?: string;
   currentVersion?: Pick<
     DeliverableVersionWorkspace,

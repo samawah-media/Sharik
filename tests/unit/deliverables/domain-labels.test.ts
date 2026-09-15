@@ -6,6 +6,7 @@ import {
   deliverableStatusLabel,
   deliverableTypeLabel,
   fileVisibilityLabel,
+  localizeInternalWorkflowCommentBody,
   priorityLabel,
   qualityCheckStatusLabel,
   slaEventLabel,
@@ -27,6 +28,36 @@ const rawEnums = [
 ];
 
 describe("domain labels", () => {
+  it.each([
+    ["internal_approval", "تم الاعتماد الداخلي"],
+    [
+      "send_to_client_after_internal_approval",
+      "تم إرسال النسخة المعتمدة للعميل",
+    ],
+    [
+      "prepare_exact_approved_version_for_delivery",
+      "تم تجهيز النسخة المعتمدة للتسليم",
+    ],
+    [
+      "delivery_after_exact_version_confirmation",
+      "تم تأكيد التسليم النهائي",
+    ],
+  ])("localizes the exact internal workflow token %s", (body, expected) => {
+    expect(localizeInternalWorkflowCommentBody(body)).toBe(expected);
+  });
+
+  it.each([
+    "future_internal_workflow_action",
+    "constructor",
+    "toString",
+    "__proto__",
+    " internal_approval ",
+    "ملاحظة بشرية تبقى كما هي",
+    "السطر الأول\nالسطر الثاني",
+  ])("preserves an unmatched or human-authored comment exactly: %s", (body) => {
+    expect(localizeInternalWorkflowCommentBody(body)).toBe(body);
+  });
+
   it("returns natural Arabic for every known deliverable status", () => {
     expect(deliverableStatusLabel("internally_approved")).toBe("معتمد داخليًا");
     expect(deliverableStatusLabel("waiting_client_approval")).toBe(

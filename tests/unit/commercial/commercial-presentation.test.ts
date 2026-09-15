@@ -52,4 +52,97 @@ describe("commercial presentation integrity", () => {
       { name: "عقد تشغيل شهري", status: "active" },
     ]);
   });
+
+  it("matches contract fields when the typed query omits harakat or tatweel", () => {
+    // Production break: contract names saved with harakat or stretched
+    // tatweel ("عقد الحُضور الرقمي") become unfindable when a manager
+    // types "الحضور" on a standard keyboard.
+    const result = paginateCommercialItems({
+      items: [
+        { name: "عقد الحُضور الرقمي", status: "active" },
+        { name: "عقد حمـــلة موسمية", status: "active" },
+      ],
+      query: "الحضور",
+      status: "all",
+      page: 1,
+      pageSize: 6,
+      getSearchText: (item) => item.name,
+      getStatus: (item) => item.status,
+    });
+
+    expect(result.totalItems).toBe(1);
+    expect(result.items).toEqual([
+      { name: "عقد الحُضور الرقمي", status: "active" },
+    ]);
+  });
+
+  it("matches contract fields across alef and hamza spelling differences", () => {
+    // Production break: "أعمال إضافية" never matches a query typed
+    // "اعمال" because the bare-alef keyboard spelling differs from the
+    // stored hamza carriers.
+    const result = paginateCommercialItems({
+      items: [
+        { name: "أعمال إضافية", status: "active" },
+        { name: "عقد تشغيل شهري", status: "active" },
+      ],
+      query: "اعمال اضافية",
+      status: "all",
+      page: 1,
+      pageSize: 6,
+      getSearchText: (item) => item.name,
+      getStatus: (item) => item.status,
+    });
+
+    expect(result.totalItems).toBe(1);
+    expect(result.items).toEqual([
+      { name: "أعمال إضافية", status: "active" },
+    ]);
+  });
+
+  it("matches package service labels with normalized Arabic search", () => {
+    // Production break: package lines carry service labels like
+    // "إدارة حسابات"; searching "ادارة حسابات" without hamza returns an
+    // empty package list for the client.
+    const result = paginateCommercialItems({
+      items: [
+        {
+          name: "باقة الذهب",
+          search: "باقة الذهب إدارة حسابات إعلانات",
+          status: "active",
+        },
+        { name: "باقة الفضة", search: "باقة الفضة منشورات", status: "active" },
+      ],
+      query: "ادارة حسابات",
+      status: "all",
+      page: 1,
+      pageSize: 6,
+      getSearchText: (item) => item.search,
+      getStatus: (item) => item.status,
+    });
+
+    expect(result.totalItems).toBe(1);
+    expect(result.items).toEqual([
+      {
+        name: "باقة الذهب",
+        search: "باقة الذهب إدارة حسابات إعلانات",
+        status: "active",
+      },
+    ]);
+  });
+
+  it("keeps a whitespace-only query equivalent to an empty query", () => {
+    // Production break: pasting stray spaces into the search box must not
+    // hide every contract from the account manager.
+    const result = paginateCommercialItems({
+      items: [{ name: "عقد تشغيل شهري", status: "active" }],
+      query: "   ",
+      status: "all",
+      page: 1,
+      pageSize: 6,
+      getSearchText: (item) => item.name,
+      getStatus: (item) => item.status,
+    });
+
+    expect(result.totalItems).toBe(1);
+  });
 });

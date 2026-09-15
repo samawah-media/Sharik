@@ -16,6 +16,7 @@ import {
   createWorkspaceFileDownload,
   createWorkspaceFilePreview,
 } from "@/server/actions/deliverable-workspace-actions";
+import { downloadBrowserFile } from "@/ui/files/browser-file-download";
 import { FileText, ImageIcon, PlayCircle } from "lucide-react";
 
 // Lazy, image-only thumbnail. Non-image files never request a signed URL on
@@ -106,6 +107,7 @@ const PreviewModal = ({
 }) => {
   const [url, setUrl] = useState<string>();
   const [unavailable, setUnavailable] = useState(false);
+  const [playbackError, setPlaybackError] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const closerRef = useRef<HTMLButtonElement>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
@@ -116,6 +118,7 @@ const PreviewModal = ({
     let active = true;
     void createWorkspaceFilePreview(file.id).then((result) => {
       if (!active) return;
+      setPlaybackError(false);
       if (result.ok) setUrl(result.url);
       else setUnavailable(true);
     });
@@ -188,6 +191,10 @@ const PreviewModal = ({
           <p className="grid place-items-center p-8 text-center text-sm text-muted">
             لا توجد معاينة مرئية لهذا الملف. استخدم التنزيل.
           </p>
+        ) : playbackError ? (
+          <p className="grid place-items-center p-8 text-center text-sm text-muted">
+            تعذر تشغيل الفيديو في المعاينة. يمكنك تنزيل الملف مباشرة.
+          </p>
         ) : url && isPreviewableImage(file.fileType) ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -200,6 +207,7 @@ const PreviewModal = ({
             aria-label={file.name}
             className="max-h-[70vh] w-full rounded-lg"
             controls
+            onError={() => setPlaybackError(true)}
             preload="metadata"
             src={url}
           />
@@ -232,13 +240,18 @@ const FileCard = ({ file }: { file: GroupedFile }) => {
   const download = useCallback(async () => {
     setDownloadError(false);
     setPendingDownload(true);
-    const result = await createWorkspaceFileDownload(file.id);
-    setPendingDownload(false);
-    if (!result.ok) {
+    try {
+      const result = await createWorkspaceFileDownload(file.id);
+      if (!result.ok) {
+        setDownloadError(true);
+        return;
+      }
+      await downloadBrowserFile({ url: result.url, fileName: result.fileName });
+    } catch {
       setDownloadError(true);
-      return;
+    } finally {
+      setPendingDownload(false);
     }
-    window.open(result.url, "_blank", "noopener,noreferrer");
   }, [file.id]);
 
   return (

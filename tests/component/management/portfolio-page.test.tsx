@@ -45,6 +45,35 @@ async function openPage() {
 }
 
 describe("PortfolioPage complete snapshot boundary", () => {
+  it("puts assigned clients first for team actors without reading the management dashboard", async () => {
+    vi.mocked(resolveRouteRuntime).mockResolvedValue({
+      ok: true,
+      actor: resolveRouteActor("assigned_writer_a"),
+      clients: routeClients.filter((client) => client.id === "client_a"),
+      clientMemberships: [],
+    });
+
+    await openPage();
+
+    const heading = screen.getByRole("heading", { name: "عملائي", level: 1 });
+    expect(heading).toBeVisible();
+    expect(
+      screen.getByText(
+        "العملاء المسندون لك. افتح مساحة العميل لمتابعة المخرجات والمهام.",
+      ),
+    ).toBeVisible();
+    const header = heading.closest("header");
+    expect(header).not.toBeNull();
+    expect(header?.nextElementSibling).toHaveAttribute(
+      "aria-label",
+      "عملائي المسندون",
+    );
+    expect(screen.getByTestId("assigned-client-card-client_a")).toBeVisible();
+    expect(screen.queryByText("يحتاج انتباهكم")).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(listScopedDeliverables).not.toHaveBeenCalled();
+  });
+
   it("renders a real successful snapshot using tenant/client scoped reads", async () => {
     vi.mocked(listScopedDeliverables).mockImplementation(async ({ tenantId, clientId }) => {
       if (tenantId !== "tenant_a") throw new Error("unexpected tenant");

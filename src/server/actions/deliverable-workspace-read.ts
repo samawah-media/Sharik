@@ -198,18 +198,20 @@ export async function listScopedDeliverableWorkspaceSummaries({
   clientId,
   deliverables,
   supabase,
+  actorUserId,
 }: {
   tenantId: string;
   clientId: string;
   deliverables: ScopedDeliverable[];
   supabase?: SupabaseClient;
+  actorUserId?: string;
 }): Promise<Record<string, DeliverableWorkspaceSummary>> {
   if (deliverables.length === 0) return {};
 
   if (canUseRouteActorFixtures()) {
     return Object.fromEntries(
       deliverables.flatMap((deliverable) => {
-        const workspace = fixtureWorkspace(deliverable.id);
+        const workspace = fixtureWorkspace(deliverable.id, actorUserId);
         if (!workspace) return [];
         const currentVersion = workspace.versions[0];
         return [
@@ -217,6 +219,11 @@ export async function listScopedDeliverableWorkspaceSummaries({
             deliverable.id,
             {
               deliverableId: deliverable.id,
+              hasOpenAssignedTask: workspace.tasks.some(
+                (task) =>
+                  task.assigneeUserId === actorUserId &&
+                  (task.status === "todo" || task.status === "in_progress"),
+              ),
               currentVersionId: workspace.currentVersionId,
               currentVersion,
               counts: workspace.counts,
@@ -252,7 +259,7 @@ export async function listScopedDeliverableWorkspaceSummaries({
       : Promise.resolve({ data: [], error: null }),
     client
       .from("deliverable_tasks")
-      .select("deliverable_id")
+      .select("deliverable_id, status, assignee_user_id")
       .eq("tenant_id", tenantId)
       .eq("client_id", clientId)
       .in("deliverable_id", deliverableIds),
@@ -282,6 +289,16 @@ export async function listScopedDeliverableWorkspaceSummaries({
   };
   const versionCounts = countByDeliverable(versions.data);
   const taskCounts = countByDeliverable(tasks.data);
+  const openAssignedTaskDeliverableIds = new Set(
+    (tasks.data ?? [])
+      .filter(
+        (task) =>
+          Boolean(actorUserId) &&
+          task.assignee_user_id === actorUserId &&
+          (task.status === "todo" || task.status === "in_progress"),
+      )
+      .map((task) => task.deliverable_id),
+  );
   const fileCounts = countByDeliverable(files.data);
   const commentCounts = countByDeliverable(comments.data);
   const currentVersionByDeliverable = new Map(
@@ -326,6 +343,7 @@ export async function listScopedDeliverableWorkspaceSummaries({
       deliverable.id,
       {
         deliverableId: deliverable.id,
+        hasOpenAssignedTask: openAssignedTaskDeliverableIds.has(deliverable.id),
         currentVersionId: deliverable.currentVersionId,
         currentVersion: currentVersionByDeliverable.get(deliverable.id),
         previewFile: previewFileByDeliverable.get(deliverable.id),

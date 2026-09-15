@@ -1,6 +1,10 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { listScopedDeliverables } from "@/server/actions/deliverable-read";
+import {
+  hasManagementWorkflowAuthority,
+  type TeamWorkCapabilities,
+} from "@/modules/deliverables/team-work-presentation";
 import { listScopedDeliverableWorkspaceSummaries } from "@/server/actions/deliverable-workspace-read";
 import { updateDeliverableStatusAction } from "@/server/actions/deliverable-status";
 import { resolveRouteRuntime } from "@/server/navigation/route-guards";
@@ -77,6 +81,7 @@ export default async function AssignedWorkPage({
       return listScopedDeliverableWorkspaceSummaries({
         tenantId: client.tenantId,
         clientId: client.id,
+        actorUserId: runtime.actor.userId,
         deliverables: scoped.map((item) => ({
           id: item.id,
           currentVersionId: item.currentVersionId,
@@ -100,6 +105,33 @@ export default async function AssignedWorkPage({
         resource: { tenantId: client.tenantId, clientId: client.id },
       }).allowed,
   );
+  const capabilitiesByDeliverable = Object.fromEntries(
+    deliverables.map((deliverable) => {
+      const resource = {
+        tenantId: deliverable.tenantId,
+        clientId: deliverable.clientId,
+      };
+      const allows = (permission: (typeof PERMISSIONS)[keyof typeof PERMISSIONS]) =>
+        evaluatePermission({
+          actor: runtime.actor,
+          permission,
+          resource,
+        }).allowed;
+      const capabilities: TeamWorkCapabilities = {
+        canApproveInternally: allows(
+          PERMISSIONS.DELIVERABLE_INTERNAL_APPROVE,
+        ),
+        canManageDelivery: hasManagementWorkflowAuthority({
+          actor: runtime.actor,
+          resource,
+        }),
+        canSendToClient: allows(PERMISSIONS.DELIVERABLE_SEND_TO_CLIENT),
+        canSubmitVersion: allows(PERMISSIONS.DELIVERABLE_VERSION_SUBMIT),
+        canUpdateStatus: allows(PERMISSIONS.DELIVERABLE_STATUS_UPDATE),
+      };
+      return [deliverable.id, capabilities];
+    }),
+  );
 
   return (
     <main className="grid gap-5" dir="rtl">
@@ -108,7 +140,9 @@ export default async function AssignedWorkPage({
         description="العمل المسند إليك من جميع العملاء المصرح بهم، من مصدر دائم واحد للقائمة واللوحة."
       />
       <TeamWorkspace
+        actorUserId={runtime.actor.userId}
         approvalAction={canApprove ? updateDeliverableStatusAction : undefined}
+        capabilitiesByDeliverable={capabilitiesByDeliverable}
         clientNames={Object.fromEntries(
           runtime.clients.map((client) => [client.id, client.name]),
         )}

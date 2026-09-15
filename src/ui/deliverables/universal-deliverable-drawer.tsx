@@ -16,6 +16,7 @@ import {
   contentFormatLabel,
   deliverableStatusLabel,
   fileVisibilityLabel,
+  localizeInternalWorkflowCommentBody,
   qualityCheckStatusLabel,
   taskStatusLabel,
   versionStatusLabel,
@@ -275,6 +276,7 @@ export function UniversalDeliverableDrawer({
   buttonLabel = "فتح مساحة المخرج",
   triggerClassName,
   clientName,
+  nextActionLabel: actorNextActionLabel,
 }: {
   deliverable: DeliverableSafeSummary;
   summary?: DeliverableWorkspaceSummary;
@@ -284,6 +286,7 @@ export function UniversalDeliverableDrawer({
   buttonLabel?: string;
   triggerClassName?: string;
   clientName?: string;
+  nextActionLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [workspace, setWorkspace] = useState<DeliverableWorkspace | undefined>(
@@ -498,7 +501,10 @@ export function UniversalDeliverableDrawer({
     deliverable.internalDueDate ??
     deliverable.clientDueDate ??
     deliverable.finalDueDate;
-  const nextActionLabel = nextAction[deliverable.status] ?? "راجع حالة المخرج";
+  const nextActionLabel =
+    actorNextActionLabel ??
+    nextAction[deliverable.status] ??
+    "راجع حالة المخرج";
   const tabCounts: Partial<Record<DrawerTabId, number>> = {
     content: workspace?.versions.length,
     files: workspace?.files.length,
@@ -969,7 +975,11 @@ export function UniversalDeliverableDrawer({
                               </Badge>
                             </div>
                             <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-7">
-                              {comment.body}
+                              {comment.type === "internal_comment"
+                                ? localizeInternalWorkflowCommentBody(
+                                    comment.body,
+                                  )
+                                : comment.body}
                             </p>
                             <time className="mt-1 block text-xs text-muted">
                               {formatArabicDateTime(comment.createdAt)}

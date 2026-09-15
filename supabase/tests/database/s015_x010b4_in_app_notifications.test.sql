@@ -1,4 +1,4 @@
--- X010-B4 in-app notifications pgTAP.
+﻿-- X010-B4 in-app notifications pgTAP.
 -- Proves the notification center behaves correctly at the database boundary:
 -- recipient routing per event, client-safe vs internal copy, dedupe, RLS
 -- (recipient-only, tenant + Client A/B isolation, disabled-membership denial),
@@ -112,8 +112,8 @@ select is(
 select is(
   (select action_href from public.notifications
     where source_audit_event_id = 'b4000000-0000-4000-8000-000000000a01' limit 1),
-  '/client/pending',
-  'client send notification points to the client pending route'
+  '/client/work/b4000000-0000-4000-8000-000000000501',
+  'client send notification points to the client work route'
 );
 
 select is(

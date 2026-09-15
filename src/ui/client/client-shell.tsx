@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
+import { SessionChangeNotice } from "@/ui/auth/session-change-notice";
 import { SignOutButton } from "@/ui/auth/sign-out-button";
 import { cn } from "@/ui/core/utils";
 import {
@@ -40,6 +42,14 @@ export function ClientShell({
 }) {
   const pathname = usePathname() ?? "/client";
   const pendingLabel = canApprove ? "بانتظار موافقتي" : "قيد المراجعة";
+  const activeLinkRef = useRef<HTMLAnchorElement | null>(null);
+
+  useEffect(() => {
+    activeLinkRef.current?.scrollIntoView?.({
+      block: "nearest",
+      inline: "nearest",
+    });
+  }, [pathname]);
 
   return (
     <section
@@ -47,6 +57,7 @@ export function ClientShell({
       dir="rtl"
       data-product-shell="client"
     >
+      <SessionChangeNotice />
       <div className="grid min-h-screen grid-cols-[minmax(0,1fr)] grid-rows-[auto_minmax(0,1fr)] lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:grid-rows-1">
         <aside className="min-w-0 border-b border-shell-border bg-shell px-3 py-1 text-shell-foreground lg:border-b-0 lg:border-l lg:py-4">
           <Link
@@ -62,40 +73,55 @@ export function ClientShell({
             </span>
           </Link>
           {workspaceSelector}
-          <nav
-            aria-label="تنقل بوابة العميل"
-            className="mt-1 flex min-w-0 max-w-full gap-2 overflow-x-auto lg:mt-5 lg:grid"
-          >
-            {items.map(({ href, label, icon: Icon }) => {
-              const active =
-                pathname === href ||
-                (href !== "/client" && pathname.startsWith(`${href}/`));
-              const resolvedLabel =
-                href === "/client/pending" ? pendingLabel : label;
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  onFocus={(event) =>
-                    event.currentTarget.scrollIntoView({
-                      block: "nearest",
-                      inline: "nearest",
-                    })
-                  }
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "flex min-h-11 min-w-fit items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-                    active
-                      ? "border-accent bg-accent-soft text-accent"
-                      : "border-transparent text-shell-muted hover:bg-accent-soft/50 hover:text-shell-foreground",
-                  )}
-                >
-                  <Icon size={17} aria-hidden="true" />
-                  {resolvedLabel}
-                </Link>
-              );
-            })}
-          </nav>
+          <div className="relative min-w-0 max-w-full lg:mt-5">
+            <nav
+              aria-describedby="client-nav-scroll-hint"
+              aria-label="تنقل بوابة العميل"
+              className="mt-1 flex min-w-0 max-w-full snap-x snap-mandatory gap-2 overflow-x-auto lg:mt-0 lg:grid lg:overflow-visible"
+            >
+              {items.map(({ href, label, icon: Icon }) => {
+                const active =
+                  pathname === href ||
+                  (href !== "/client" && pathname.startsWith(`${href}/`));
+                const resolvedLabel =
+                  href === "/client/pending" ? pendingLabel : label;
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    ref={active ? activeLinkRef : undefined}
+                    onFocus={(event) =>
+                      event.currentTarget.scrollIntoView({
+                        block: "nearest",
+                        inline: "nearest",
+                      })
+                    }
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "flex min-h-11 min-w-fit snap-start items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+                      active
+                        ? "border-accent bg-accent-soft text-accent"
+                        : "border-transparent text-shell-muted hover:bg-accent-soft/50 hover:text-shell-foreground",
+                    )}
+                  >
+                    <Icon size={17} aria-hidden="true" />
+                    {resolvedLabel}
+                  </Link>
+                );
+              })}
+            </nav>
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute bottom-5 left-0 top-0 w-10 bg-gradient-to-r from-shell to-transparent lg:hidden"
+              data-testid="client-nav-overflow-affordance"
+            />
+            <p
+              className="mt-1 text-[11px] text-shell-muted lg:hidden"
+              id="client-nav-scroll-hint"
+            >
+              مرّر عشان تشوف باقي الأقسام
+            </p>
+          </div>
           <div className="mt-5 hidden rounded-lg border border-shell-border bg-background p-3 lg:block [&_button]:border-shell-border [&_button]:hover:bg-accent-soft">
             <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
               <UserRound size={16} aria-hidden="true" />
@@ -105,7 +131,7 @@ export function ClientShell({
           </div>
         </aside>
         <div className="min-w-0">
-          <header className="sticky top-0 z-20 border-b border-border bg-background/92 px-4 py-1 backdrop-blur sm:px-5 lg:py-2.5">
+          <header className="sticky top-0 z-20 border-b border-border bg-background/92 px-4 py-1 sm:px-5 lg:py-2.5 lg:backdrop-blur">
             <div className="mx-auto flex max-w-[90rem] flex-wrap items-center justify-end gap-2">
               <div className="flex min-w-0 flex-1 items-center gap-2 lg:hidden">
                 <span className="flex shrink-0 items-center gap-2 text-sm font-semibold">

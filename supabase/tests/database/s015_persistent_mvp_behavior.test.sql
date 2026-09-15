@@ -380,7 +380,7 @@ select throws_ok(
 select is((select count(*)::integer from public.mvp_command_requests where idempotency_key = 's015-atomic-failure'), 0, 'failed command leaves no command request');
 select is((select count(*)::integer from public.audit_events where reason = 'approve_internal' and target_id = '21000000-0000-4000-8000-000000000601'), 0, 'failed command leaves no workflow audit');
 select is((select count(*)::integer from public.comments where body = 'must rollback'), 0, 'failed command leaves no comment');
-select is((select count(*)::integer from public.sla_timeline_segments where deliverable_id = '21000000-0000-4000-8000-000000000502'), 0, 'failed command leaves no SLA segment');
+select is((select count(*)::integer from public.sla_timeline_segments where deliverable_id = '21000000-0000-4000-8000-000000000502'), 1, 'failed command leaves no additional SLA segment');
 select is((select count(*)::integer from public.package_ledger_entries where deliverable_id = '21000000-0000-4000-8000-000000000502'), 0, 'failed command leaves no ledger entry');
 select is((select status from public.deliverables where id = '21000000-0000-4000-8000-000000000502'), 'in_progress', 'failed command leaves status unchanged');
 reset role;

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   DndContext,
@@ -15,7 +15,7 @@ import {
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState , useMemo} from "react";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableWorkspaceSummary } from "@/modules/deliverables/deliverable-workspace";
 import {
@@ -32,6 +32,10 @@ import { EmptyState } from "@/ui/core/states";
 import { DeliverableStatusDisclosure } from "./deliverable-status-disclosure";
 import { UniversalDeliverableDrawer } from "@/ui/deliverables/universal-deliverable-drawer";
 import { DeliverableContentCard } from "@/ui/deliverables/deliverable-content-card";
+import {
+  projectTeamWork,
+  type TeamWorkCapabilities,
+} from "@/modules/deliverables/team-work-presentation";
 import { moveDeliverableOnBoard } from "@/server/actions/deliverable-workspace-actions";
 
 type StatusUpdateAction = (formData: FormData) => void | Promise<void>;
@@ -257,6 +261,7 @@ function DeliverableCard({
   summary,
   clientName,
   canPublishClientComment,
+  nextActionLabel,
   now,
 }: {
   deliverable: DeliverableSafeSummary;
@@ -265,6 +270,7 @@ function DeliverableCard({
   summary?: DeliverableWorkspaceSummary;
   clientName?: string;
   canPublishClientComment: boolean;
+  nextActionLabel?: string;
   now: string;
 }) {
   const sla = deriveSlaStatus({
@@ -320,6 +326,7 @@ function DeliverableCard({
           canPublishClientComment={canPublishClientComment}
           clientName={clientName}
           deliverable={deliverable}
+          nextActionLabel={nextActionLabel}
           summary={summary}
         />
       </div>
@@ -417,16 +424,48 @@ export function DeliverableBoard({
   approvalAction,
   workspaces = {},
   clientNames = {},
+  nextActionByDeliverable: providedNextActionByDeliverable = {},
   now = new Date().toISOString(),
+  actorUserId,
+  capabilitiesByDeliverable,
 }: {
   deliverables: DeliverableSafeSummary[];
   action?: StatusUpdateAction;
   approvalAction?: StatusUpdateAction;
   workspaces?: Record<string, DeliverableWorkspaceSummary>;
   clientNames?: Record<string, string>;
+  nextActionByDeliverable?: Record<string, string>;
   now?: string;
+  actorUserId?: string;
+  capabilitiesByDeliverable?: Record<string, TeamWorkCapabilities>;
 }) {
   const [items, setItems] = useState(deliverables);
+
+  const nextActionByDeliverable = useMemo(() => {
+    if (!actorUserId || !capabilitiesByDeliverable) {
+      return providedNextActionByDeliverable;
+    }
+    const presented = projectTeamWork({
+      actorUserId,
+      capabilitiesByDeliverable,
+      deliverables: items,
+      now,
+      workspaces,
+    });
+    return Object.fromEntries(
+      presented.map(({ deliverable, nextAction }) => [
+        deliverable.id,
+        nextAction,
+      ]),
+    );
+  }, [
+    actorUserId,
+    capabilitiesByDeliverable,
+    items,
+    now,
+    workspaces,
+    providedNextActionByDeliverable,
+  ]);
   const [activeId, setActiveId] = useState<string>();
   const [dragFeedback, setDragFeedback] = useState<string>();
   const boardRef = useRef<HTMLElement>(null);
@@ -651,6 +690,9 @@ export function DeliverableBoard({
                           canPublishClientComment={Boolean(approvalAction)}
                           clientName={clientNames[deliverable.clientId]}
                           deliverable={deliverable}
+                          nextActionLabel={
+                            nextActionByDeliverable[deliverable.id]
+                          }
                           now={now}
                           summary={workspaces[deliverable.id]}
                         />

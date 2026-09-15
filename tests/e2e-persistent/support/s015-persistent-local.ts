@@ -422,6 +422,19 @@ export const seedPersistentVersionFiles = async ({
   seed: PersistentSeed;
   versionId: string;
 }) => {
+  const finalStoragePath = `final/s015/${versionId}.png`;
+  const finalPng = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+    "base64",
+  );
+  expectNoError(
+    await client.storage.from("deliverable-assets").upload(
+      finalStoragePath,
+      finalPng,
+      { contentType: "image/png", upsert: true },
+    ),
+    "final delivery filename storage seed",
+  );
   expectNoError(
     await client.from("file_assets").insert([
       {
@@ -446,9 +459,11 @@ export const seedPersistentVersionFiles = async ({
         version_id: versionId,
         owner_user_id: seed.actors.assignedWriter.id,
         visibility: "final_delivery",
-        storage_path: `final/s015/${versionId}.png`,
+        bucket_id: "deliverable-assets",
+        storage_path: finalStoragePath,
+        file_name: "قالب الاراء.png",
         file_type: "image/png",
-        file_size: 10,
+        file_size: finalPng.byteLength,
         version_number: 3,
         is_final: true,
       },

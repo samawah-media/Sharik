@@ -2,7 +2,9 @@ import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getClientWorkspaces } from "@/server/auth/client-workspace";
-import { readClientForDeliverable } from "@/server/navigation/client-workspace";
+import {
+  readClientForDeliverable,
+} from "@/server/navigation/client-workspace";
 import { revalidatePath } from "next/cache";
 import {
   canUseRouteActorFixtures,
@@ -51,6 +53,7 @@ function buildFixtureWorkDetail(
   if (!match) return undefined;
   const waiting = match.status === "waiting_client_approval";
   return {
+    clientName: "عميل أ",
     approvalItem: {
       clientId,
       deliverableId: match.id,

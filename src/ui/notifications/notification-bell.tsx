@@ -83,7 +83,7 @@ export function NotificationBell({ data }: { data: NotificationBellData }) {
       {open ? (
         <div
           aria-label="آخر الإشعارات"
-          className="absolute left-0 top-12 z-30 w-[20rem] max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-surface p-2 shadow-lg"
+          className="fixed inset-x-4 top-16 z-30 max-h-[calc(100dvh-5rem)] overflow-y-auto rounded-xl border border-border bg-surface p-2 shadow-lg lg:absolute lg:left-0 lg:right-auto lg:top-12 lg:w-[20rem] lg:max-w-[calc(100vw-2rem)]"
           dir="rtl"
           role="menu"
         >

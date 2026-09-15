@@ -1,5 +1,6 @@
 import { resolveRoleAwareNavigation } from "@/modules/navigation/navigation-resolver";
 import { resolveRuntimeContext } from "@/server/auth/runtime-context";
+import { readShellIdentity } from "@/server/auth/shell-identity";
 import {
   canUseRouteActorFixtures,
   isClientPortalOnlyActor,
@@ -78,15 +79,28 @@ export default async function ManagementLayout({
     label: "المساحة",
   };
 
-  const notifications =
-    runtime?.ok && !canUseRouteActorFixtures()
-      ? await readNotificationBellData({
-          supabase: await createSupabaseServerClient(),
-        }).catch(() => ({ unreadCount: 0, recent: [] }))
-      : { unreadCount: 0, recent: [] };
+  const canReadServerData = Boolean(runtime?.ok) && !canUseRouteActorFixtures();
+  const supabaseServer = canReadServerData
+    ? await createSupabaseServerClient()
+    : null;
+
+  const notifications = supabaseServer
+    ? await readNotificationBellData({
+        supabase: supabaseServer,
+      }).catch(() => ({ unreadCount: 0, recent: [] }))
+    : { unreadCount: 0, recent: [] };
+
+  const accountIdentity =
+    runtime?.ok && supabaseServer
+      ? await readShellIdentity({
+          supabase: supabaseServer,
+          actor: runtime.actor,
+        }).catch(() => undefined)
+      : undefined;
 
   return (
     <ProductShell
+      accountIdentity={accountIdentity}
       breadcrumbRootHref={shellRoot.href}
       breadcrumbRootLabel={shellRoot.label}
       homeHref={shellRoot.href}

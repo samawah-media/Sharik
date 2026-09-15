@@ -13,6 +13,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { cn } from "@/ui/core/utils";
 import { SignOutButton } from "@/ui/auth/sign-out-button";
+import { SessionChangeNotice } from "@/ui/auth/session-change-notice";
 import {
   NotificationBell,
   type NotificationBellData,
@@ -55,7 +56,7 @@ const segmentLabels: Record<string, string> = {
   internal: "دعوة داخلية",
   notifications: "الإشعارات",
   onboard: "إضافة عميل جديد",
-  portfolio: "لوحة الإدارة",
+  portfolio: "عملائي",
   work: "مهامي",
   readiness: "الجاهزية",
   r007: "R-007",
@@ -167,7 +168,13 @@ function Breadcrumbs({
   );
 }
 
+export type ProductShellAccountIdentity = {
+  displayName: string;
+  roleLabels: string[];
+};
+
 export function ProductShell({
+  accountIdentity,
   breadcrumbRootHref = "/clients",
   breadcrumbRootLabel = "الإدارة",
   children,
@@ -176,6 +183,7 @@ export function ProductShell({
   navigationLabel = "تنقل الإدارة",
   notifications = emptyNotifications,
 }: {
+  accountIdentity?: ProductShellAccountIdentity;
   breadcrumbRootHref?: string;
   breadcrumbRootLabel?: string;
   children: ReactNode;
@@ -193,6 +201,7 @@ export function ProductShell({
       data-testid="product-shell"
       dir="rtl"
     >
+      <SessionChangeNotice />
       <div className="grid min-h-screen grid-rows-[auto_minmax(0,1fr)] lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:grid-rows-1">
         <aside className="min-w-0 border-b border-shell-border bg-shell px-3 py-1 text-shell-foreground lg:border-b-0 lg:border-l lg:px-3 lg:py-4">
           <div className="mx-auto grid gap-0 lg:sticky lg:top-4 lg:gap-4">
@@ -248,16 +257,30 @@ export function ProductShell({
           </div>
         </aside>
         <div className="min-w-0">
-          <header className="sticky top-0 z-20 border-b border-border bg-background/92 px-4 py-0.5 backdrop-blur sm:px-5 lg:py-2.5">
+          <header className="sticky top-0 z-20 border-b border-border bg-background/92 px-4 py-0.5 sm:px-5 lg:py-2.5 lg:backdrop-blur">
             <div className="mx-auto flex max-w-[90rem] flex-col gap-0 sm:flex-row sm:items-center sm:justify-between lg:gap-1.5">
               <Breadcrumbs
                 pathname={pathname}
                 rootHref={breadcrumbRootHref}
                 rootLabel={breadcrumbRootLabel}
               />
-              <div className="flex min-h-11 items-center gap-2 text-xs text-muted">
+              <div className="flex min-h-11 min-w-0 max-w-full items-center gap-2 text-xs text-muted">
                 <NotificationBell data={notifications} />
-                <span>حساب الفريق</span>
+                {accountIdentity ? (
+                  <span
+                    className="grid min-w-0 max-w-full text-right"
+                    data-testid="product-shell-account-identity"
+                  >
+                    <span className="min-w-0 break-words font-semibold text-foreground [overflow-wrap:anywhere]">
+                      {accountIdentity.displayName}
+                    </span>
+                    <span className="text-muted">
+                      {accountIdentity.roleLabels.join(" · ")}
+                    </span>
+                  </span>
+                ) : (
+                  <span>حساب الفريق</span>
+                )}
                 <span className="lg:hidden">
                   <SignOutButton />
                 </span>

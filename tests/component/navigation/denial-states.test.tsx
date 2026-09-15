@@ -39,6 +39,14 @@ describe("shared access and denial states", () => {
     expect(
       screen.getByRole("heading", { name: "لا يوجد عملاء مسندون" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "لا يمكن فتح هذه الصفحة من حسابك الحالي. قد يكون الرابط غير صحيح أو ليس لديك صلاحية للوصول.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/اختر المساحة المسندة لك/),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("Client C")).not.toBeInTheDocument();
     expect(screen.queryByText("tenant_a")).not.toBeInTheDocument();
   });

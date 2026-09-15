@@ -37,3 +37,9 @@
 
 حوادث العزل أو internal content leakage تعامل كأولوية قصوى، مع freeze مؤقت للعمليات المتأثرة، audit review، وإبلاغ المالك.
 
+## 6. Spec 015 Hosted Team UAT Rollback
+
+- Deployment rollback removes or disables only the Preview deployment/alias created by the UAT run, or reverts to the previous reviewed Preview deployment if one exists.
+- Database rollback removes only run-ID-scoped synthetic rows created by the UAT run. Destructive down migrations must not run against shared UAT.
+- Access rollback disables only UAT test accounts and revokes only role assignments created by the UAT run.
+- Rollback evidence records owner, executor, execution window, stop authority, expected rollback time, verification steps, and category/count-only results.

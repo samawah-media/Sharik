@@ -54,14 +54,16 @@ export function StatCard({
   return (
     <section
       className={cn(
-        "rounded-lg border bg-surface p-4 shadow-sm",
+        "rounded-lg border bg-surface p-3 shadow-xs sm:p-4",
         tone === "accent" ? "border-accent/20" : "border-border",
       )}
     >
       <p className="text-sm text-muted">{label}</p>
-      <p className="mt-2 text-2xl font-semibold leading-none">{value}</p>
+      <p className="mt-1.5 text-xl font-semibold leading-none tabular-nums sm:text-2xl">
+        {value}
+      </p>
       {description ? (
-        <p className="mt-2 text-xs leading-5 text-muted">{description}</p>
+        <p className="mt-1.5 text-xs leading-5 text-muted">{description}</p>
       ) : null}
     </section>
   );

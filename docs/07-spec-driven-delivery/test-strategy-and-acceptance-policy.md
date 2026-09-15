@@ -34,3 +34,9 @@
 ## Acceptance Criterion Policy
 
 Every acceptance criterion must state verification method, test level, expected evidence, and owner. Example: "Client approver cannot approve a superseded version" -> E2E + integration, screenshot/log/test output, QA/backend owner.
+
+## Spec 015 Persistent Browser Acceptance
+
+For the persistent MVP lifecycle, fixture-backed Playwright tests and DB-level pgTAP tests are not enough by themselves. Local MVP acceptance requires a separate browser path that signs in through Supabase Auth, uses local Supabase API reads/writes, disables route actor fixtures, and asserts the resulting database state.
+
+The accepted command is `npm run test:e2e:persistent`. It must stay local-only and synthetic-data-only. It verifies role boundaries, same-tenant client isolation, Tenant A/B isolation, exact-version approval, stale-version rejection, internal comment/file secrecy, SLA pause/resume/completion, audit evidence, package ledger consumption, final delivery visibility, mobile approval, RTL layout, and keyboard focus.

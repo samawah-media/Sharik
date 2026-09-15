@@ -97,10 +97,10 @@ Platform Support لا يستخدم كقناة "مشاهدة كل شيء". إذا
 
 | Role ID | الدور | الغرض | نطاقه الافتراضي | لا يستطيع افتراضيا | التصنيف |
 | --- | --- | --- | --- | --- | --- |
-| `client_administrator` | Client Administrator | إدارة مستخدمي جهة العميل أو طلب دعوتهم حسب سياسة V1 | Client | رؤية الداخلي أو عملاء آخرين | Assumed |
+| `client_admin` | Client Administrator | إدارة مستخدمي جهة العميل أو طلب دعوتهم حسب سياسة V1 | Client | رؤية الداخلي أو عملاء آخرين | Confirmed in current implementation |
 | `client_approver` | Client Approver | اعتماد مخرجات مرسلة أو طلب تعديل رسمي | Client أو Deliverable assigned | رؤية الداخلي أو تعديل SLA أو العقد | Confirmed |
-| `client_reviewer` | Client Reviewer / Commenter | مراجعة وتعليق غير نهائي عند السماح | Client أو Deliverable assigned | اعتماد رسمي | Assumed |
-| `client_viewer` | Client Viewer | مشاهدة الحالة والملفات المسموحة | Client | تعليق رسمي أو اعتماد | Confirmed |
+| `client_reviewer` | Client Reviewer / Commenter مستقبلي | مراجعة وتعليق غير نهائي إذا نُفذ لاحقا | Client أو Deliverable assigned | اعتماد رسمي | Assumed; not implemented in Spec 015 |
+| `client_viewer` | Client Viewer | مشاهدة الحالة والملفات المسموحة | Client | تعليق، رفع، طلب تعديل، أو اعتماد | Confirmed |
 
 ## 7. المستخدم متعدد الأدوار
 
@@ -119,7 +119,7 @@ Platform Support لا يستخدم كقناة "مشاهدة كل شيء". إذا
 | عميل + عضو فريق على نفس Client | ممنوع افتراضيا؛ يحتاج فصل حسابات أو موافقة مالك موثقة. | Assumed |
 | Creator / Owner يعتمد عمله داخليا | ممنوع افتراضيا في V1 للمخرجات الموجهة للعميل؛ يحتاج مراجع آخر أو Emergency Override. | Assumed |
 | Account Manager يعتمد نهائيا | Deny إلا إذا وجد تفويض صريح محدد العميل/النوع/المدة. | Confirmed |
-| Client Viewer يطلب تعديل رسمي | Deny؛ يمكنه فقط المشاهدة، أو التعليق إذا منح `client_reviewer`. | Confirmed |
+| Client Viewer يطلب تعديل رسمي | Deny؛ يمكنه فقط المشاهدة والتنزيل المسموح. أي تعليق مستقبلي يتطلب دور Reviewer مستقلا غير منفذ حاليا. | Confirmed |
 | Platform Support يفتح ملفات حساسة | Deny إلا عبر support session موثق. | Assumed |
 | تعديل SLA وتقييم أداء الفريق بنفس الشخص | Conditional؛ يحتاج سبب واضح لأن القرار يؤثر على التقارير. | Assumed |
 
@@ -145,4 +145,3 @@ Platform Support لا يستخدم كقناة "مشاهدة كل شيء". إذا
 | BR-RC-06 | Platform Support مؤجل أو مقيد بشدة في V1. | Assumed |
 | BR-RC-07 | التفويض المؤقت يحتاج بداية ونهاية وسبب وAudit Event. | Confirmed |
 | BR-RC-08 | أي Permission exception يجب أن تكون أضيق أو مساوية للنطاق المطلوب، لا مفتوحة. | Confirmed |
-

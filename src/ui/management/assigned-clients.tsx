@@ -1,5 +1,6 @@
 import type { ClientRecord } from "@/modules/clients/client-repository";
 import { ButtonLink } from "@/ui/core/button";
+import { cardPrimaryLinkOverlay } from "@/ui/core/card";
 import { formatMvpClientName } from "@/ui/mvp/hadna-mvp-summary";
 
 export function AssignedClients({
@@ -27,37 +28,45 @@ export function AssignedClients({
         const displayName = formatMvpClientName(client.name);
 
         return (
-        <article
-          className="grid gap-4 rounded-lg border border-border p-4"
-          key={client.id}
-        >
-          <div>
-            <h2 className="text-base font-semibold">{displayName}</h2>
-            <p className="mt-1 text-sm text-muted">
-              عميل داخل نطاق صلاحياتك. ابدأ من هدنة أو افتح المخرجات والمتابعة
-              مباشرة.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <ButtonLink href={`/clients/${client.id}`} size="sm" variant="primary">
-              عرض هدنة
-            </ButtonLink>
-            <ButtonLink
-              href={`/clients/${client.id}/deliverables`}
-              size="sm"
-              variant="secondary"
-            >
-              مخرجات هدنة
-            </ButtonLink>
-            <ButtonLink
-              href={`/clients/${client.id}/commercial`}
-              size="sm"
-              variant="secondary"
-            >
-              المتابعة / SLA
-            </ButtonLink>
-          </div>
-        </article>
+          <article
+            className="relative grid gap-4 rounded-lg border border-border p-4"
+            data-testid={`assigned-client-card-${client.id}`}
+            key={client.id}
+          >
+            <div>
+              <h2 className="text-base font-semibold">{displayName}</h2>
+              <p className="mt-1 text-sm text-muted">
+                عميل داخل نطاق صلاحياتك. افتح المساحة لمتابعة المخرجات والمهام
+                والموافقات.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <ButtonLink
+                className={cardPrimaryLinkOverlay}
+                href={`/clients/${client.id}`}
+                size="sm"
+                variant="primary"
+              >
+                فتح {displayName}
+              </ButtonLink>
+              <ButtonLink
+                className="relative z-10"
+                href={`/clients/${client.id}/deliverables`}
+                size="sm"
+                variant="secondary"
+              >
+                المخرجات
+              </ButtonLink>
+              <ButtonLink
+                className="relative z-10"
+                href={`/clients/${client.id}/commercial`}
+                size="sm"
+                variant="secondary"
+              >
+                المتابعة / SLA
+              </ButtonLink>
+            </div>
+          </article>
         );
       })}
     </section>

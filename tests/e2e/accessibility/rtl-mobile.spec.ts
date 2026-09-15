@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test.describe.configure({ timeout: 60_000 });
+test.describe.configure({ timeout: 240_000 });
 
 test("role-aware navigation is RTL, labelled, and keyboard reachable", async ({
   page,

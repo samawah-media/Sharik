@@ -1,0 +1,928 @@
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { useRouter } from "next/navigation";
+import { useId, useRef, useState, type FormEvent } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
+import type {
+  DeliverableVersionWorkspace,
+  DeliverableWorkspace,
+} from "@/modules/deliverables/deliverable-workspace";
+import {
+  versionContentInputSchema,
+  workspaceCommentInputSchema,
+  deliverableTaskInputSchema,
+  qualityCheckInputSchema,
+} from "@/modules/deliverables/workspace-inputs";
+import { createDefaultQualityChecklist } from "@/modules/deliverables/quality-defaults";
+import {
+  addWorkspaceComment,
+  saveOrSubmitVersionContent,
+  saveQualityChecklist,
+  upsertDeliverableTask,
+  upsertQualityCheck,
+} from "@/server/actions/deliverable-workspace-actions";
+import { Button } from "@/ui/core/button";
+
+type VersionValues = z.input<typeof versionContentInputSchema>;
+type CommentValues = z.input<typeof workspaceCommentInputSchema>;
+type TaskValues = z.input<typeof deliverableTaskInputSchema>;
+type QualityValues = z.input<typeof qualityCheckInputSchema>;
+
+export function VersionContentForm({
+  deliverable,
+  currentVersion,
+  onMutationStarted,
+  onMutated,
+}: {
+  deliverable: DeliverableSafeSummary;
+  currentVersion?: DeliverableVersionWorkspace;
+  onMutationStarted?: () => void;
+  onMutated?: (versionId: string, feedback: string) => void;
+}) {
+  const router = useRouter();
+  const helpId = useId();
+  const [feedback, setFeedback] = useState<string>();
+  const editable = [
+    "not_started",
+    "in_progress",
+    "internal_changes_requested",
+    "client_changes_requested",
+  ].includes(deliverable.status);
+  const draft = currentVersion?.status === "draft" ? currentVersion : undefined;
+  const form = useForm<VersionValues>({
+    resolver: zodResolver(versionContentInputSchema),
+    defaultValues: {
+      clientId: deliverable.clientId,
+      deliverableId: deliverable.id,
+      versionId: draft?.id ?? crypto.randomUUID(),
+      versionNumber:
+        draft?.versionNumber ?? (currentVersion?.versionNumber ?? 0) + 1,
+      submit: false,
+      brief: draft?.brief ?? "",
+      contentBody: draft?.body ?? "",
+      caption: draft?.caption ?? "",
+      channel: draft?.channel ?? "",
+      format: draft?.format ?? "",
+      objective: draft?.objective ?? "",
+      kpi: draft?.kpi ?? "",
+      sourceReference: draft?.sourceReference ?? "",
+      idempotencyKey: crypto.randomUUID(),
+    },
+  });
+
+  if (!editable) return null;
+
+  const persist = async (values: VersionValues, submit: boolean) => {
+    onMutationStarted?.();
+    setFeedback(undefined);
+    const result = await saveOrSubmitVersionContent({
+      ...values,
+      submit,
+      idempotencyKey: crypto.randomUUID(),
+    });
+    const successFeedback = submit
+      ? "تم إرسال النسخة للمراجعة الداخلية."
+      : "تم حفظ المسودة.";
+    setFeedback(
+      result.ok
+        ? successFeedback
+        : "تعذر حفظ النسخة. راجع الصلاحية والحالة ثم حاول مجددًا.",
+    );
+    if (result.ok) {
+      router.refresh();
+      onMutated?.(values.versionId, successFeedback);
+    }
+  };
+
+  return (
+    <form
+      className="grid gap-3 rounded-xl border border-border bg-background p-4"
+      onSubmit={form.handleSubmit((values) => persist(values, false))}
+    >
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="grid gap-1 text-sm font-semibold">
+          رقم النسخة
+          <input
+            className="min-h-11 rounded-lg border border-border bg-surface px-3"
+            type="number"
+            min={1}
+            {...form.register("versionNumber", { valueAsNumber: true })}
+          />
+        </label>
+        <label className="grid gap-1 text-sm font-semibold">
+          القناة
+          <input
+            className="min-h-11 rounded-lg border border-border bg-surface px-3"
+            {...form.register("channel")}
+          />
+        </label>
+        <label className="grid gap-1 text-sm font-semibold">
+          الصيغة
+          <input
+            className="min-h-11 rounded-lg border border-border bg-surface px-3"
+            {...form.register("format")}
+          />
+        </label>
+        <label className="grid gap-1 text-sm font-semibold">
+          الهدف
+          <input
+            className="min-h-11 rounded-lg border border-border bg-surface px-3"
+            {...form.register("objective")}
+          />
+        </label>
+        <label className="grid gap-1 text-sm font-semibold sm:col-span-2">
+          مؤشر النجاح
+          <input
+            className="min-h-11 rounded-lg border border-border bg-surface px-3"
+            {...form.register("kpi")}
+          />
+        </label>
+      </div>
+      <div className="grid gap-1">
+        <label className="grid gap-1 text-sm font-semibold">
+          الموجز
+          <textarea
+            aria-describedby={`${helpId}-brief`}
+            className="min-h-24 rounded-lg border border-border bg-surface p-3"
+            {...form.register("brief")}
+          />
+        </label>
+        <p className="text-xs leading-5 text-muted" id={`${helpId}-brief`}>
+          وش المطلوب؟ وضّح الفكرة والجمهور وأهم التفاصيل للفريق.
+        </p>
+      </div>
+      <div className="grid gap-1">
+        <label className="grid gap-1 text-sm font-semibold">
+          المحتوى
+          <textarea
+            aria-describedby={`${helpId}-content`}
+            className="min-h-36 rounded-lg border border-border bg-surface p-3"
+            {...form.register("contentBody")}
+          />
+        </label>
+        <p className="text-xs leading-5 text-muted" id={`${helpId}-content`}>
+          اكتب النص اللي بيظهر داخل التصميم أو الفيديو.
+        </p>
+      </div>
+      <div className="grid gap-1">
+        <label className="grid gap-1 text-sm font-semibold">
+          الكابشن
+          <textarea
+            aria-describedby={`${helpId}-caption`}
+            className="min-h-28 rounded-lg border border-border bg-surface p-3"
+            {...form.register("caption")}
+          />
+        </label>
+        <p className="text-xs leading-5 text-muted" id={`${helpId}-caption`}>
+          اكتب النص اللي بينزل مع المنشور، مثل الدعوة للتفاعل والوسوم.
+        </p>
+      </div>
+      <label className="grid gap-1 text-sm font-semibold">
+        مرجع المصدر
+        <input
+          className="min-h-11 rounded-lg border border-border bg-surface px-3"
+          dir="auto"
+          {...form.register("sourceReference")}
+        />
+      </label>
+      {feedback ? (
+        <p aria-live="polite" className="text-sm text-muted">
+          {feedback}
+        </p>
+      ) : null}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          disabled={form.formState.isSubmitting}
+          type="submit"
+          variant="secondary"
+        >
+          حفظ مسودة
+        </Button>
+        <Button
+          disabled={form.formState.isSubmitting}
+          onClick={form.handleSubmit((values) => persist(values, true))}
+          type="button"
+          variant="primary"
+        >
+          حفظ وإرسال للمراجعة الداخلية
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+export function WorkspaceCommentForm({
+  target,
+  currentVersionId,
+  canPublishClientComment,
+  audience = "team",
+}: {
+  target: Pick<DeliverableSafeSummary, "clientId" | "id">;
+  currentVersionId?: string;
+  canPublishClientComment: boolean;
+  audience?: "team" | "client";
+}) {
+  const router = useRouter();
+  const [feedback, setFeedback] = useState<string>();
+  const form = useForm<CommentValues>({
+    resolver: zodResolver(workspaceCommentInputSchema),
+    defaultValues: {
+      clientId: target.clientId,
+      deliverableId: target.id,
+      versionId: currentVersionId ?? "",
+      visibility: audience === "client" ? "client_visible" : "internal_only",
+      body: "",
+      idempotencyKey: crypto.randomUUID(),
+    },
+  });
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: "",
+    immediatelyRender: false,
+    editorProps: {
+      attributes: {
+        class:
+          "min-h-28 rounded-lg border border-border bg-surface p-3 text-sm leading-7 focus:outline-none focus:ring-2 focus:ring-accent",
+        "aria-label": "نص التعليق",
+      },
+    },
+    onUpdate: ({ editor: currentEditor }) =>
+      form.setValue("body", currentEditor.getText(), { shouldValidate: true }),
+  });
+
+  if (!currentVersionId)
+    return (
+      <p className="text-sm text-muted">
+        احفظ نسخة أولًا لإضافة تعليق مرتبط بها.
+      </p>
+    );
+
+  const submit = form.handleSubmit(async (values) => {
+    if (!editor) return;
+    const result = await addWorkspaceComment({
+      ...values,
+      body: editor.getText(),
+      bodyJson: editor.getJSON(),
+      idempotencyKey: crypto.randomUUID(),
+    });
+    setFeedback(result.ok ? "تم حفظ التعليق." : "تعذر حفظ التعليق بأمان.");
+    if (result.ok) {
+      editor.commands.clearContent();
+      router.refresh();
+    }
+  });
+
+  return (
+    <form
+      className="grid gap-3 rounded-xl border border-border bg-background p-4"
+      onSubmit={submit}
+    >
+      <div
+        className="flex flex-wrap gap-2"
+        role="toolbar"
+        aria-label="تنسيق التعليق"
+      >
+        <Button
+          aria-pressed={editor?.isActive("bold")}
+          onClick={() => editor?.chain().focus().toggleBold().run()}
+          size="sm"
+          type="button"
+        >
+          عريض
+        </Button>
+        <Button
+          aria-pressed={editor?.isActive("bulletList")}
+          onClick={() => editor?.chain().focus().toggleBulletList().run()}
+          size="sm"
+          type="button"
+        >
+          قائمة
+        </Button>
+      </div>
+      <EditorContent editor={editor} />
+      {audience === "team" && canPublishClientComment ? (
+        <label className="grid gap-1 text-sm font-semibold">
+          الرؤية
+          <select
+            className="min-h-11 rounded-lg border border-border bg-surface px-3"
+            {...form.register("visibility")}
+          >
+            <option value="internal_only">داخلي — الافتراضي</option>
+            <option value="client_visible">ظاهر للعميل — اختيار صريح</option>
+          </select>
+        </label>
+      ) : (
+        <input
+          type="hidden"
+          value={audience === "client" ? "client_visible" : "internal_only"}
+          {...form.register("visibility")}
+        />
+      )}
+      {feedback ? (
+        <p aria-live="polite" className="text-sm text-muted">
+          {feedback}
+        </p>
+      ) : null}
+      <Button
+        disabled={form.formState.isSubmitting || !editor}
+        type="submit"
+        variant="primary"
+      >
+        إضافة التعليق
+      </Button>
+    </form>
+  );
+}
+
+export function ClientWorkspaceCommentForm({
+  clientId,
+  deliverableId,
+  versionId,
+}: {
+  clientId: string;
+  deliverableId: string;
+  versionId: string;
+}) {
+  return (
+    <WorkspaceCommentForm
+      audience="client"
+      canPublishClientComment={false}
+      currentVersionId={versionId}
+      target={{ clientId, id: deliverableId }}
+    />
+  );
+}
+
+export function TaskForm({
+  deliverable,
+  eligibleAssignees,
+  taskCapabilities,
+  editingTask,
+  onMutated,
+}: {
+  deliverable: DeliverableSafeSummary;
+  eligibleAssignees?: DeliverableWorkspace["eligibleAssignees"];
+  taskCapabilities?: DeliverableWorkspace["taskCapabilities"];
+  editingTask?: {
+    id: string;
+    title: string;
+    description?: string;
+    status: string;
+    priority: string;
+    assigneeUserId?: string;
+    dueDate?: string;
+    sortOrder: number;
+  };
+  onMutated?: () => void;
+}) {
+  const router = useRouter();
+  const [feedback, setFeedback] = useState<string>();
+  const canCreate = taskCapabilities?.canCreateTask ?? false;
+  const fieldId = useId();
+  const formRef = useRef<HTMLFormElement>(null);
+  const saveAttempt = useRef<{ fingerprint: string; key: string } | null>(null);
+  const canAssignOthers = taskCapabilities?.canAssignOthers ?? false;
+  const showAssignee =
+    canAssignOthers && eligibleAssignees && eligibleAssignees.length > 0;
+  const form = useForm<TaskValues>({
+    resolver: zodResolver(deliverableTaskInputSchema),
+    shouldFocusError: false,
+    defaultValues: editingTask
+      ? {
+          clientId: deliverable.clientId,
+          deliverableId: deliverable.id,
+          taskId: editingTask.id,
+          title: editingTask.title,
+          description: editingTask.description ?? "",
+          status: editingTask.status as
+            | "todo"
+            | "in_progress"
+            | "done"
+            | "cancelled",
+          priority: editingTask.priority as
+            | "low"
+            | "normal"
+            | "high"
+            | "urgent",
+          assigneeUserId: editingTask.assigneeUserId ?? null,
+          dueDate: editingTask.dueDate ?? null,
+          sortOrder: editingTask.sortOrder,
+          idempotencyKey: crypto.randomUUID(),
+        }
+      : {
+          clientId: deliverable.clientId,
+          deliverableId: deliverable.id,
+          taskId: null,
+          title: "",
+          description: "",
+          status: "todo",
+          priority: "normal",
+          assigneeUserId: null,
+          dueDate: null,
+          sortOrder: 0,
+          idempotencyKey: crypto.randomUUID(),
+        },
+  });
+
+  if (!canCreate) {
+    return (
+      <p className="text-sm text-muted">
+        ليست لديك صلاحية لإضافة مهام على هذا المخرج.
+      </p>
+    );
+  }
+
+  type VisibleTaskField =
+    | "title"
+    | "description"
+    | "priority"
+    | "dueDate"
+    | "assigneeUserId";
+  const fieldMessages: Record<VisibleTaskField, string> = {
+    title:
+      form.formState.errors.title?.type === "too_big"
+        ? "يجب ألا يتجاوز عنوان المهمة ٢٠٠ حرف."
+        : "أدخل عنوان المهمة من حرفين إلى ٢٠٠ حرف.",
+    description: "يجب ألا يتجاوز الوصف ٢٠٠٠ حرف.",
+    priority: "اختر أولوية صحيحة للمهمة.",
+    dueDate: "أدخل تاريخ استحقاق صحيحًا أو اتركه فارغًا.",
+    assigneeUserId: "اختر شخصًا من قائمة المسند إليهم أو اترك الإسناد فارغًا.",
+  };
+  const fieldAccessibility = (field: VisibleTaskField) => ({
+    id: `${fieldId}-${field}`,
+    "aria-invalid": Boolean(form.formState.errors[field]),
+    "aria-describedby": form.formState.errors[field]
+      ? `${fieldId}-${field}-error`
+      : undefined,
+  });
+  const fieldError = (field: VisibleTaskField) =>
+    form.formState.errors[field] ? (
+      <span className="text-sm text-danger" id={`${fieldId}-${field}-error`}>
+        {fieldMessages[field]}
+      </span>
+    ) : null;
+
+  const submit = (event: FormEvent<HTMLFormElement>) => form.handleSubmit(
+    async (values) => {
+      setFeedback(undefined);
+      // Replays must keep both the validated payload and its key unchanged.
+      const fingerprint = JSON.stringify({
+        ...values,
+        idempotencyKey: undefined,
+      });
+      if (saveAttempt.current?.fingerprint !== fingerprint) {
+        saveAttempt.current = { fingerprint, key: crypto.randomUUID() };
+      }
+      let result: Awaited<ReturnType<typeof upsertDeliverableTask>>;
+      try {
+        result = await upsertDeliverableTask({
+          ...values,
+          idempotencyKey: saveAttempt.current.key,
+        });
+      } catch {
+        setFeedback(
+          "تعذر حفظ المهمة. تحقق من الاتصال ثم حاول مرة أخرى دون تغيير البيانات لإعادة المحاولة نفسها.",
+        );
+        return;
+      }
+      if (!result.ok) {
+        setFeedback("تعذر حفظ المهمة. راجع الصلاحية والحالة ثم حاول مرة أخرى.");
+        return;
+      }
+      saveAttempt.current = null;
+      setFeedback(editingTask ? "تم تحديث المهمة." : "تمت إضافة المهمة.");
+      if (!editingTask) form.reset({ ...values, title: "", description: "" });
+      onMutated?.();
+      router.refresh();
+    },
+    (errors) => {
+      setFeedback("تعذر حفظ المهمة. راجع الحقول المحددة ثم حاول مرة أخرى.");
+      const controls = formRef.current?.querySelectorAll<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >("input, textarea, select");
+      const firstInvalid = Array.from(controls ?? []).find(
+        (control) =>
+          control.type !== "hidden" &&
+          !control.disabled &&
+          errors[control.name as keyof TaskValues],
+      );
+      firstInvalid?.focus();
+    },
+  )(event);
+
+  return (
+    <form
+      className="grid gap-3 rounded-xl border border-border bg-background p-4"
+      noValidate
+      onSubmit={submit}
+      ref={formRef}
+    >
+      <div className="grid gap-1 text-sm font-semibold">
+        <label htmlFor={`${fieldId}-title`}>عنوان المهمة</label>
+        <input
+          className="min-h-11 rounded-lg border border-border bg-surface px-3"
+          {...fieldAccessibility("title")}
+          {...form.register("title")}
+        />
+        {fieldError("title")}
+      </div>
+      {taskCapabilities?.canEditTaskFields !== false && (
+        <div className="grid gap-1 text-sm font-semibold">
+          <label htmlFor={`${fieldId}-description`}>الوصف</label>
+          <textarea
+            className="min-h-20 rounded-lg border border-border bg-surface p-3"
+            {...fieldAccessibility("description")}
+            {...form.register("description")}
+          />
+          {fieldError("description")}
+        </div>
+      )}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-1 text-sm font-semibold">
+          <label htmlFor={`${fieldId}-priority`}>الأولوية</label>
+          <select
+            className="min-h-11 rounded-lg border border-border bg-surface px-3"
+            {...fieldAccessibility("priority")}
+            {...form.register("priority")}
+          >
+            <option value="normal">عادية</option>
+            <option value="low">منخفضة</option>
+            <option value="high">عالية</option>
+            <option value="urgent">عاجلة</option>
+          </select>
+          {fieldError("priority")}
+        </div>
+        <div className="grid gap-1 text-sm font-semibold">
+          <label htmlFor={`${fieldId}-dueDate`}>تاريخ الاستحقاق</label>
+          <input
+            className="min-h-11 rounded-lg border border-border bg-surface px-3"
+            type="date"
+            {...fieldAccessibility("dueDate")}
+            {...form.register("dueDate", {
+              setValueAs: (date: string | null) => (date === "" ? null : date),
+            })}
+          />
+          {fieldError("dueDate")}
+        </div>
+      </div>
+      <input
+        type="hidden"
+        value={editingTask?.status ?? "todo"}
+        {...form.register("status")}
+      />
+      {showAssignee ? (
+        <div className="grid gap-1 text-sm font-semibold">
+          <label htmlFor={`${fieldId}-assigneeUserId`}>المسند إليه</label>
+          <select
+            className="min-h-11 rounded-lg border border-border bg-surface px-3"
+            {...fieldAccessibility("assigneeUserId")}
+            {...form.register("assigneeUserId", {
+              setValueAs: (assignee: string | null) =>
+                assignee === "" ? null : assignee,
+            })}
+          >
+            <option value="">بدون إسناد</option>
+            {eligibleAssignees!.map((m) => (
+              <option key={m.userId} value={m.userId}>
+                {m.displayName}
+              </option>
+            ))}
+          </select>
+          {fieldError("assigneeUserId")}
+        </div>
+      ) : null}
+      {feedback ? (
+        <p aria-live="polite" className="text-sm text-muted">
+          {feedback}
+        </p>
+      ) : null}
+      <Button
+        disabled={form.formState.isSubmitting}
+        type="submit"
+        variant="secondary"
+      >
+        {editingTask ? "حفظ التعديلات" : "إضافة مهمة"}
+      </Button>
+    </form>
+  );
+}
+
+export function TaskStatusControl({
+  deliverable,
+  task,
+  onMutated,
+}: {
+  deliverable: DeliverableSafeSummary;
+  task: {
+    id: string;
+    title: string;
+    description?: string;
+    status: string;
+    priority: "low" | "normal" | "high" | "urgent";
+    assigneeUserId?: string;
+    dueDate?: string;
+    sortOrder: number;
+  };
+  onMutated?: () => void;
+}) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const change = async (status: string) => {
+    setBusy(true);
+    const result = await upsertDeliverableTask({
+      clientId: deliverable.clientId,
+      deliverableId: deliverable.id,
+      taskId: task.id,
+      title: task.title,
+      description: task.description,
+      status: status as "todo" | "in_progress" | "done" | "cancelled",
+      priority: task.priority,
+      assigneeUserId: task.assigneeUserId ?? null,
+      dueDate: task.dueDate ?? null,
+      sortOrder: task.sortOrder,
+      idempotencyKey: crypto.randomUUID(),
+    });
+    setBusy(false);
+    if (result.ok) {
+      onMutated?.();
+      router.refresh();
+    }
+  };
+  return (
+    <select
+      aria-label={`حالة المهمة: ${task.title}`}
+      className="min-h-11 rounded-lg border border-border bg-surface px-2 text-xs"
+      defaultValue={task.status}
+      disabled={busy}
+      onChange={(event) => change(event.target.value)}
+    >
+      <option value="todo">مجدول</option>
+      <option value="in_progress">قيد التنفيذ</option>
+      <option value="done">مكتمل</option>
+      <option value="cancelled">ملغي</option>
+    </select>
+  );
+}
+
+export function QualityCheckForm({
+  deliverable,
+  versionId,
+  onMutated,
+  defaultChecklist = false,
+}: {
+  deliverable: DeliverableSafeSummary;
+  versionId?: string;
+  onMutated?: () => void;
+  defaultChecklist?: boolean;
+}) {
+  const router = useRouter();
+  const [feedback, setFeedback] = useState<string>();
+  const [savingChecklist, setSavingChecklist] = useState(false);
+  const [defaultChecklistSaved, setDefaultChecklistSaved] = useState(false);
+  const checklistIdempotencyKey = useRef(crypto.randomUUID());
+  const [defaultItems, setDefaultItems] = useState(() =>
+    createDefaultQualityChecklist(),
+  );
+  const form = useForm<QualityValues>({
+    resolver: zodResolver(qualityCheckInputSchema),
+    defaultValues: {
+      clientId: deliverable.clientId,
+      deliverableId: deliverable.id,
+      versionId: versionId ?? "",
+      checkId: null,
+      label: "",
+      status: "pending",
+      note: "",
+      sortOrder: 0,
+      idempotencyKey: crypto.randomUUID(),
+    },
+  });
+
+  if (!versionId)
+    return (
+      <p className="text-sm text-muted">احفظ نسخة أولًا لإضافة عناصر الجودة.</p>
+    );
+
+  const saveDefaultChecklist = async () => {
+    if (savingChecklist || defaultChecklistSaved) return;
+    setFeedback(undefined);
+    const items = defaultItems
+      .map((item, index) => ({
+        ...item,
+        label: item.label.trim(),
+        sortOrder: index,
+      }))
+      .filter((item) => item.label.length > 0);
+    if (items.length === 0) {
+      setFeedback("أضف عنصر جودة واحدًا على الأقل قبل الحفظ.");
+      return;
+    }
+
+    setSavingChecklist(true);
+    try {
+      const result = await saveQualityChecklist({
+        clientId: deliverable.clientId,
+        deliverableId: deliverable.id,
+        versionId,
+        items: items.map(({ label, note }) => ({ label, note })),
+        idempotencyKey: checklistIdempotencyKey.current,
+      });
+      setFeedback(
+        result.ok
+          ? "تم حفظ قائمة الجودة الداخلية."
+          : "تعذر حفظ قائمة الجودة كاملة. راجع الصلاحية ثم حاول مجددًا.",
+      );
+      if (result.ok) {
+        setDefaultChecklistSaved(true);
+        onMutated?.();
+        router.refresh();
+      }
+    } catch {
+      setFeedback(
+        "تعذر حفظ قائمة الجودة كاملة. تحقق من الاتصال ثم حاول مجددًا.",
+      );
+    } finally {
+      setSavingChecklist(false);
+    }
+  };
+
+  const submit = form.handleSubmit(async (values) => {
+    setFeedback(undefined);
+    const result = await upsertQualityCheck({
+      ...values,
+      idempotencyKey: crypto.randomUUID(),
+    });
+    setFeedback(
+      result.ok
+        ? "تم حفظ عنصر الجودة."
+        : "تعذر حفظ عنصر الجودة. راجع الصلاحية.",
+    );
+    if (result.ok) {
+      form.reset({ ...values, label: "", note: "" });
+      onMutated?.();
+      router.refresh();
+    }
+  });
+
+  if (defaultChecklist) {
+    return (
+      <div className="grid gap-3 rounded-xl border border-border bg-background p-4">
+        <div>
+          <p className="text-sm font-semibold">القائمة الافتراضية</p>
+          <p className="mt-1 text-xs leading-5 text-muted">
+            عدّل العناصر هنا، ثم احفظها دفعة واحدة. لا يتم حفظ أي عنصر تلقائيًا.
+          </p>
+        </div>
+        <div className="grid gap-2">
+          {defaultItems.map((item, index) => (
+            <label className="grid gap-1 text-sm font-semibold" key={index}>
+              عنصر {index + 1}
+              <input
+                className="min-h-11 rounded-lg border border-border bg-surface px-3"
+                onChange={(event) =>
+                  setDefaultItems((current) =>
+                    current.map((entry, entryIndex) =>
+                      entryIndex === index
+                        ? { ...entry, label: event.target.value }
+                        : entry,
+                    ),
+                  )
+                }
+                disabled={savingChecklist || defaultChecklistSaved}
+                value={item.label}
+              />
+            </label>
+          ))}
+        </div>
+        {feedback ? (
+          <p aria-live="polite" className="text-sm text-muted">
+            {feedback}
+          </p>
+        ) : null}
+        <Button
+          disabled={savingChecklist || defaultChecklistSaved}
+          onClick={saveDefaultChecklist}
+          type="button"
+          variant="primary"
+        >
+          {defaultChecklistSaved
+            ? "تم حفظ قائمة الجودة"
+            : savingChecklist
+              ? "جارٍ حفظ القائمة…"
+              : "حفظ قائمة الجودة"}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      className="grid gap-3 rounded-xl border border-border bg-background p-4"
+      onSubmit={submit}
+    >
+      <label className="grid gap-1 text-sm font-semibold">
+        عنصر الجودة
+        <input
+          className="min-h-11 rounded-lg border border-border bg-surface px-3"
+          {...form.register("label")}
+        />
+      </label>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="grid gap-1 text-sm font-semibold">
+          الحالة
+          <select
+            className="min-h-11 rounded-lg border border-border bg-surface px-3"
+            {...form.register("status")}
+          >
+            <option value="pending">بانتظار المراجعة</option>
+            <option value="passed">اجتاز المراجعة</option>
+            <option value="changes_required">يحتاج تعديلًا</option>
+            <option value="not_applicable">غير مطبق</option>
+          </select>
+        </label>
+        <label className="grid gap-1 text-sm font-semibold">
+          ملاحظة
+          <input
+            className="min-h-11 rounded-lg border border-border bg-surface px-3"
+            {...form.register("note")}
+          />
+        </label>
+      </div>
+      {feedback ? (
+        <p aria-live="polite" className="text-sm text-muted">
+          {feedback}
+        </p>
+      ) : null}
+      <Button
+        disabled={form.formState.isSubmitting}
+        type="submit"
+        variant="secondary"
+      >
+        إضافة عنصر جودة
+      </Button>
+    </form>
+  );
+}
+
+export function QualityCheckStatusControl({
+  deliverable,
+  versionId,
+  check,
+  onMutated,
+}: {
+  deliverable: DeliverableSafeSummary;
+  versionId: string;
+  check: {
+    id: string;
+    label: string;
+    status: string;
+    note?: string;
+    sortOrder: number;
+  };
+  onMutated?: () => void;
+}) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const change = async (status: string) => {
+    setBusy(true);
+    const result = await upsertQualityCheck({
+      clientId: deliverable.clientId,
+      deliverableId: deliverable.id,
+      versionId,
+      checkId: check.id,
+      label: check.label,
+      status: status as
+        | "pending"
+        | "passed"
+        | "changes_required"
+        | "not_applicable",
+      note: check.note,
+      sortOrder: check.sortOrder,
+      idempotencyKey: crypto.randomUUID(),
+    });
+    setBusy(false);
+    if (result.ok) {
+      onMutated?.();
+      router.refresh();
+    }
+  };
+  return (
+    <select
+      aria-label={`حالة الجودة: ${check.label}`}
+      className="min-h-11 rounded-lg border border-border bg-surface px-2 text-xs"
+      defaultValue={check.status}
+      disabled={busy}
+      onChange={(event) => change(event.target.value)}
+    >
+      <option value="pending">بانتظار</option>
+      <option value="passed">اجتاز</option>
+      <option value="changes_required">يحتاج تعديلًا</option>
+      <option value="not_applicable">غير مطبق</option>
+    </select>
+  );
+}

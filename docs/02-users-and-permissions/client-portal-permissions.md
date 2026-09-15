@@ -3,7 +3,7 @@
 **المرحلة:** Phase 03 - Roles, Permissions, Visibility & Delegation Model  
 **نوع الوثيقة:** Client Portal Permissions  
 **الحالة:** Draft for owner review  
-**آخر تحديث:** 2026-06-22  
+**آخر تحديث:** 2026-07-20
 
 ## 1. الغرض
 
@@ -14,7 +14,7 @@
 | Confirmed | مستخدم العميل لا يرى بيانات عميل آخر. |
 | Confirmed | مستخدم العميل لا يرى التعليقات الداخلية أو النسخ غير المرسلة. |
 | Confirmed | `client_viewer` لا يعتمد ولا يطلب تعديلا رسميا. |
-| Open Question | هل يستطيع `client_viewer` أو `client_reviewer` إضافة تعليق غير رسمي في V1؟ |
+| Confirmed | `client_viewer` للقراءة فقط في V1: لا قرار، ولا تعليق، ولا رفع ملف. يمكن إضافة دور Reviewer مستقل لاحقا بقرار وصلاحية صريحة. |
 
 ## 2. أدوار بوابة العميل
 
@@ -22,8 +22,8 @@
 | --- | --- | --- | --- | --- |
 | Client Administrator | مستخدمي جهة العميل، مخرجات العميل، ملفات العميل المسموحة | طلب/إدارة دعوات العميل حسب سياسة V1، رؤية حالة العقد، قد يحمل دور Approver أيضا | رؤية الداخلي أو عملاء آخرين أو صلاحيات Tenant | Assumed |
 | Client Approver | المخرجات المرسلة للاعتماد، الملفات المسموحة، تعليقات العميل | اعتماد، طلب تعديل، تعليق على القرار | رؤية نسخ داخلية أو اعتماد مخرج غير مرسل له | Confirmed |
-| Client Reviewer / Commenter | المخرجات المرسلة أو النهائية، تعليقات العميل | تعليق أو مراجعة غير ملزمة إذا اعتمد الدور | اعتماد رسمي أو تغيير حالة | Assumed |
-| Client Viewer | الحالة والملفات النهائية أو المسموحة | مشاهدة وتنزيل حسب الصلاحية | اعتماد، طلب تعديل رسمي، تعليق إن لم يمنح Reviewer | Confirmed |
+| Client Reviewer / Commenter (مستقبلي، غير منفذ في Spec 015) | المخرجات المرسلة أو النهائية، تعليقات العميل | تعليق أو مراجعة غير ملزمة إذا اعتمد الدور لاحقا | اعتماد رسمي أو تغيير حالة | Assumed |
+| Client Viewer | الحالة والملفات النهائية أو المسموحة | مشاهدة وتنزيل حسب الصلاحية | اعتماد، طلب تعديل رسمي، تعليق، أو رفع ملف | Confirmed |
 
 ## 3. شاشات العميل وصلاحياتها
 
@@ -45,8 +45,8 @@
 | اعتماد مخرج | Conditional إذا يحمل Approver | Allow | Deny | Deny | `client_approval_granted` | Confirmed |
 | طلب تعديل رسمي | Conditional إذا يحمل Approver | Allow | Deny | Deny | `client_change_requested` | Confirmed |
 | رفض/اعتراض | Conditional إذا يحمل Approver | Conditional | Deny | Deny | `client_rejection_recorded` | Assumed |
-| إضافة تعليق عميل | Conditional | Allow | Allow إذا اعتمد | Deny افتراضيا | `client_comment_added` | Assumed |
-| رفع ملف عميل | Conditional | Conditional | Conditional | Deny | `client_file_uploaded` | Open Question |
+| إضافة تعليق عميل | Conditional | Allow | Allow إذا أضيف دور مستقل لاحقا | Deny | `client_comment_added` | Confirmed for implemented roles |
+| رفع ملف عميل | Conditional | Conditional | Conditional إذا أضيف دور مستقل لاحقا | Deny | `client_file_uploaded` | Confirmed for implemented roles |
 | إدارة مستخدمي العميل | Conditional | Deny | Deny | Deny | `client_member_invited/updated` | Open Question |
 
 ## 5. ما لا يظهر للعميل
@@ -83,4 +83,8 @@
 | BR-CP-04 | تعليق العميل لا يمنح رؤية للتعليقات الداخلية. | Confirmed |
 | BR-CP-05 | سجل العميل الخارجي لا يساوي Audit Log الداخلي. | Confirmed |
 | BR-CP-06 | إدارة مستخدمي العميل بواسطة Client Admin تحتاج اعتماد مالك قبل V1 النهائي. | Open Question |
+| BR-CP-07 | الحساب الذي يحمل `client_viewer` فقط لا ينشئ `client_comment` أو `client_uploaded`؛ السماح الحالي محصور في `client_admin` أو `client_approver` داخل النطاق. | Confirmed |
 
+## 8. قرار تنفيذ Spec 015
+
+طبقة الواجهة تخفي نماذج القرار والتعليق والرفع عن `client_viewer`. طبقة PostgreSQL تمنع إدخال تعليق عميل أو metadata رفع عميل من حساب Viewer-only، كما أن فحص رفع Storage لا يمنحه صلاحية الرفع. هذا دفاع متعدد الطبقات؛ إخفاء الزر وحده ليس حد الصلاحية.

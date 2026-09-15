@@ -6,6 +6,11 @@ import type {
 } from "@/modules/commercial/commercial-summary";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableLifecycleStatus } from "@/modules/deliverables/deliverable-rules";
+import { deriveClientReadableVersion } from "@/modules/approvals/client-readable-version";
+import {
+  isHumanTrialContract,
+  isHumanTrialDeliverable,
+} from "@/modules/deliverables/human-trial-visibility";
 import {
   toClientDeliverableSummary,
   toManagementDeliverableSummary,
@@ -125,6 +130,15 @@ const fixtureDeliverables: DeliverableSafeSummary[] = fixtureStatusPlan.map(
       requiresInternalApproval: true,
       requiresClientApproval: true,
       progressPercentage: progressByStatus[status],
+      currentVersionId: [
+        "waiting_client_approval",
+        "client_changes_requested",
+        "client_approved",
+        "ready_for_delivery",
+        "delivered",
+      ].includes(status)
+        ? `hadna_version_${number}`
+        : undefined,
       approvedExtra: false,
       revision: 1,
       createdAt: `2026-07-${dateDay}T00:00:00.000Z`,
@@ -137,6 +151,18 @@ const fixtureDeliverables: DeliverableSafeSummary[] = fixtureStatusPlan.map(
   },
 );
 
+const clientVisibleStatuses = new Set<DeliverableLifecycleStatus>([
+  "waiting_client_approval",
+  "client_changes_requested",
+  "client_approved",
+  "ready_for_delivery",
+  "delivered",
+]);
+
+const isClientVisibleDeliverable = (deliverable: DeliverableSafeSummary) =>
+  clientVisibleStatuses.has(deliverable.status) &&
+  Boolean(deliverable.currentVersionId);
+
 export const fixtureManagementCommercialSummary: ManagementCommercialSummary = {
   audience: "management",
   clientId: "client_a",
@@ -147,6 +173,8 @@ export const fixtureManagementCommercialSummary: ManagementCommercialSummary = {
       clientId: "client_a",
       name: "عقد هدنة للتشغيل التسويقي",
       summary: "متابعة داخلية آمنة لتجربة هدنة.",
+      periodStart: "2026-07-01",
+      periodEnd: "2026-12-31",
       status: "active",
       createdAt: "2026-06-28T00:00:00.000Z",
       updatedAt: "2026-06-28T00:00:00.000Z",
@@ -159,6 +187,8 @@ export const fixtureManagementCommercialSummary: ManagementCommercialSummary = {
       clientId: "client_a",
       contractId: "contract_a",
       name: "باقة هدنة",
+      periodStart: "2026-07-01",
+      periodEnd: "2026-07-31",
       status: "active",
       createdAt: "2026-06-28T00:00:00.000Z",
       updatedAt: "2026-06-28T00:00:00.000Z",
@@ -202,20 +232,26 @@ export const fixtureClientCommercialSummary: ClientCommercialSummary = {
   contracts: fixtureManagementCommercialSummary.contracts.map((contract) => ({
     name: contract.name,
     summary: contract.summary,
+    periodStart: contract.periodStart,
+    periodEnd: contract.periodEnd,
     status: contract.status,
   })),
-  packages: fixtureManagementCommercialSummary.packages.map((packageSummary) => ({
-    name: packageSummary.name,
-    status: packageSummary.status,
-    lines: (packageSummary.lines ?? []).map((line) => ({
-      serviceLabel: line.serviceLabel,
-      unitLabel: line.unitLabel,
-      balance: line.balance,
-    })),
-  })),
-  deliverables: fixtureManagementCommercialSummary.deliverables.map(
-    toClientDeliverableSummary,
+  packages: fixtureManagementCommercialSummary.packages.map(
+    (packageSummary) => ({
+      name: packageSummary.name,
+      periodStart: packageSummary.periodStart,
+      periodEnd: packageSummary.periodEnd,
+      status: packageSummary.status,
+      lines: (packageSummary.lines ?? []).map((line) => ({
+        serviceLabel: line.serviceLabel,
+        unitLabel: line.unitLabel,
+        balance: line.balance,
+      })),
+    }),
   ),
+  deliverables: fixtureManagementCommercialSummary.deliverables
+    .filter(isClientVisibleDeliverable)
+    .map(toClientDeliverableSummary),
 };
 
 const selectContracts = async (
@@ -264,7 +300,7 @@ export const readCommercialSummary = async ({
       supabase
         .from("deliverables")
         .select(
-          "id, tenant_id, client_id, contract_id, package_id, package_line_id, name, description, type, status, priority, owner_user_id, contributor_user_ids, start_date, internal_due_date, client_due_date, final_due_date, requires_internal_approval, requires_client_approval, progress_percentage, approved_extra, extra_reason, idempotency_key, created_by, created_at, updated_at, cancelled_at, revision",
+          "id, tenant_id, client_id, contract_id, package_id, package_line_id, current_version_id, name, description, type, status, priority, owner_user_id, contributor_user_ids, start_date, internal_due_date, client_due_date, final_due_date, requires_internal_approval, requires_client_approval, progress_percentage, approved_extra, extra_reason, idempotency_key, source_metadata, import_run_id, created_by, created_at, updated_at, cancelled_at, revision",
         )
         .eq("tenant_id", tenantId)
         .eq("client_id", clientId)
@@ -279,8 +315,48 @@ export const readCommercialSummary = async ({
     return { ok: false };
   }
 
-  const packageRows = (packageResponse.data ?? []) as PackageWriteRow[];
-  const deliverableRows = (deliverableResponse.data ?? []) as DeliverableWriteRow[];
+  const contractRows = (contractResponse.data ?? []) as ContractWriteRow[];
+  const humanTrialContractIds = new Set(
+    contractRows.filter(isHumanTrialContract).map((row) => row.id),
+  );
+  const packageRows = (
+    (packageResponse.data ?? []) as PackageWriteRow[]
+  ).filter((row) => humanTrialContractIds.has(row.contract_id));
+  let deliverableRows = (
+    (deliverableResponse.data ?? []) as DeliverableWriteRow[]
+  ).filter(
+    (row) =>
+      isHumanTrialDeliverable(row) &&
+      (!row.contract_id || humanTrialContractIds.has(row.contract_id)),
+  );
+
+  if (audience === "client" && deliverableRows.length > 0) {
+    // Resolve publication explicitly: mixed team/client roles can read multiple table versions.
+    const versionResponse = await supabase.rpc("s015_client_readable_versions", {
+      target_tenant_id: tenantId,
+      target_client_id: clientId,
+      target_deliverable_ids: deliverableRows.map((row) => row.id),
+    });
+    if (versionResponse.error) return { ok: false };
+    const readableVersions = new Map<string, string>();
+    for (const version of versionResponse.data ?? []) {
+      if (readableVersions.has(version.deliverable_id)) return { ok: false };
+      readableVersions.set(version.deliverable_id, version.version_id);
+    }
+    deliverableRows = deliverableRows.flatMap((row) => {
+      const clientState = deriveClientReadableVersion({
+        status: row.status,
+        currentVersionId: row.current_version_id,
+        readableVersionId: readableVersions.get(row.id),
+        hasReviewPayload: false,
+      });
+      return clientState ? [{
+        ...row,
+        status: clientState.status,
+        progress_percentage: clientState.progressPercentage,
+      }] : [];
+    });
+  }
   const packageIds = packageRows.map((row) => row.id);
   const deliverableIds = deliverableRows.map((row) => row.id);
 
@@ -323,15 +399,18 @@ export const readCommercialSummary = async ({
 
   const lineRows = (lineResponse.data ?? []) as PackageLineRow[];
   const ledgerRows = (ledgerResponse.data ?? []) as PackageLedgerRow[];
-  const allocationRows = (allocationResponse.data ?? []) as DeliverableAllocationRow[];
-  const contracts = ((contractResponse.data ?? []) as ContractWriteRow[]).map(
-    toContractSafeSummaryFromWriteRow,
-  );
+  const allocationRows = (allocationResponse.data ??
+    []) as DeliverableAllocationRow[];
+  const contracts = contractRows
+    .filter(isHumanTrialContract)
+    .map(toContractSafeSummaryFromWriteRow);
   const packages = packageRows.map((packageRow) =>
     toPackageSafeSummaryFromRows({
       packageRow,
       lineRows: lineRows.filter((line) => line.package_id === packageRow.id),
-      ledgerRows: ledgerRows.filter((entry) => entry.package_id === packageRow.id),
+      ledgerRows: ledgerRows.filter(
+        (entry) => entry.package_id === packageRow.id,
+      ),
     }),
   );
   const deliverables = deliverableRows.map((deliverableRow) =>

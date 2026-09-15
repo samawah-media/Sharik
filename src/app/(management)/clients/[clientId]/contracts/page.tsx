@@ -7,6 +7,7 @@ import {
   resolveRouteRuntime,
 } from "@/server/navigation/route-guards";
 import { toContractSafeSummaryFromWriteRow } from "@/server/actions/contract-write-rpc";
+import { isHumanTrialContract } from "@/modules/deliverables/human-trial-visibility";
 import {
   ContractDeniedState,
   ContractEmptyState,
@@ -49,7 +50,9 @@ const listScopedContracts = async ({
 
   return {
     ok: true as const,
-    contracts: data.map(toContractSafeSummaryFromWriteRow),
+    contracts: data
+      .filter(isHumanTrialContract)
+      .map(toContractSafeSummaryFromWriteRow),
   };
 };
 

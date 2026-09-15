@@ -19,6 +19,7 @@ describe("F-002 permissions", () => {
     expect(PERMISSIONS.PACKAGE_CREATE).toBe("PERM.PACKAGE.CREATE");
     expect(PERMISSIONS.PACKAGE_ADJUST).toBe("PERM.PACKAGE.ADJUST");
     expect(PERMISSIONS.DELIVERABLE_CREATE).toBe("PERM.DELIVERABLE.CREATE");
+    expect(PERMISSIONS.DELIVERABLE_VIEW).toBe("PERM.DELIVERABLE.VIEW");
     expect(PERMISSIONS.DELIVERABLE_EXTRA_CREATE).toBe(
       "PERM.DELIVERABLE.EXTRA_CREATE",
     );
@@ -28,24 +29,61 @@ describe("F-002 permissions", () => {
     expect(PERMISSIONS.DELIVERABLE_STATUS_UPDATE).toBe(
       "PERM.DELIVERABLE.STATUS_UPDATE",
     );
-    expect(PERMISSIONS.LEDGER_VIEW_SUMMARY).toBe(
-      "PERM.LEDGER.VIEW_SUMMARY",
+    expect(PERMISSIONS.DELIVERABLE_VERSION_SUBMIT).toBe(
+      "PERM.DELIVERABLE.VERSION_SUBMIT",
     );
+    expect(PERMISSIONS.LEDGER_VIEW_SUMMARY).toBe("PERM.LEDGER.VIEW_SUMMARY");
+  });
+
+  it("grants scoped deliverable read and version submission without commercial or approval authority to supported team roles", () => {
+    for (const role of [
+      "account_manager",
+      "content_writer",
+      "designer",
+    ] as const) {
+      expect(roleGrantsPermission(role, PERMISSIONS.DELIVERABLE_VIEW)).toBe(
+        true,
+      );
+      expect(
+        roleGrantsPermission(role, PERMISSIONS.DELIVERABLE_VERSION_SUBMIT),
+      ).toBe(true);
+      expect(
+        roleGrantsPermission(role, PERMISSIONS.DELIVERABLE_INTERNAL_APPROVE),
+      ).toBe(false);
+      expect(
+        roleGrantsPermission(role, PERMISSIONS.DELIVERABLE_SEND_TO_CLIENT),
+      ).toBe(false);
+      expect(
+        roleGrantsPermission(role, PERMISSIONS.DELIVERABLE_CLIENT_APPROVE),
+      ).toBe(false);
+    }
+    for (const role of ["content_writer", "designer"] as const) {
+      expect(roleGrantsPermission(role, PERMISSIONS.CONTRACT_VIEW)).toBe(false);
+      expect(roleGrantsPermission(role, PERMISSIONS.LEDGER_VIEW_SUMMARY)).toBe(
+        false,
+      );
+    }
   });
 
   it("allows tenant administrators to manage contracts, packages, deliverables, and ledger summaries", () => {
-    expect(roleGrantsPermission("tenant_administrator", PERMISSIONS.CONTRACT_CREATE)).toBe(
-      true,
-    );
-    expect(roleGrantsPermission("tenant_administrator", PERMISSIONS.PACKAGE_ADJUST)).toBe(
-      true,
-    );
     expect(
-      roleGrantsPermission("tenant_administrator", PERMISSIONS.DELIVERABLE_EXTRA_CREATE),
+      roleGrantsPermission("tenant_administrator", PERMISSIONS.CONTRACT_CREATE),
     ).toBe(true);
-    expect(roleGrantsPermission("tenant_administrator", PERMISSIONS.LEDGER_VIEW_SUMMARY)).toBe(
-      true,
-    );
+    expect(
+      roleGrantsPermission("tenant_administrator", PERMISSIONS.PACKAGE_ADJUST),
+    ).toBe(true);
+    expect(
+      roleGrantsPermission(
+        "tenant_administrator",
+        PERMISSIONS.DELIVERABLE_EXTRA_CREATE,
+      ),
+    ).toBe(true);
+    expect(
+      roleGrantsPermission(
+        "tenant_administrator",
+        PERMISSIONS.LEDGER_VIEW_SUMMARY,
+      ),
+    ).toBe(true);
   });
 
   it("allows account managers to create and cancel normal client-scoped deliverables only inside assigned client scope", () => {
@@ -100,4 +138,3 @@ describe("F-002 permissions", () => {
     });
   });
 });
-

@@ -34,7 +34,7 @@
 ## Open Questions
 
 - Exact policy for SLA after reopening delivered/consumed work.
-- Whether client viewers may add non-decision comments.
+- Resolved by Spec 015: client viewers are read-only; any future commenter needs a separate reviewed role and permission.
 - Whether bulk client approval is V1 or pilot-only.
 - Owner approval needed for final Tiptap versus Markdown fallback decision.
 - Exact audit-log visibility for client external history.

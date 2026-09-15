@@ -2,6 +2,7 @@ export type ClientFormValues = {
   name?: string;
   primaryContactName?: string;
   primaryContactEmail?: string;
+  primaryContactPhone?: string;
 };
 
 export type ClientFormState = {

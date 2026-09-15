@@ -3,7 +3,7 @@
 **المرحلة:** Phase 03 - Roles, Permissions, Visibility & Delegation Model  
 **نوع الوثيقة:** Permission Risks and Open Questions  
 **الحالة:** Draft for owner review  
-**آخر تحديث:** 2026-06-22  
+**آخر تحديث:** 2026-07-20
 
 ## 1. الغرض
 
@@ -37,7 +37,7 @@
 | ظهور delay owner للعميل | يظهر كامل / مبسط / لا يظهر | مبسط أو لا يظهر حتى قرار المالك | Open Question |
 | من يعيد فتح المخرج؟ | PM / Executive / Tenant Owner | PM أو Executive بسبب موثق | Open Question |
 | هل Client Admin يدير مستخدمي العميل؟ | نعم / طلب دعوة فقط / مؤجل | طلب دعوة أو إدارة محدودة | Open Question |
-| هل Client Viewer يعلق؟ | لا / نعم كReviewer / تعليق عام | لا، إلا إذا منح Reviewer | Open Question |
+| هل Client Viewer يعلق؟ | حُسم في Spec 015 | لا؛ Viewer-only للقراءة فقط. أي تعليق مستقبلي يحتاج دور Reviewer مستقل وصلاحية صريحة. | Confirmed |
 | Audit export في V1 | نعم / restricted / later | Restricted أو later | Open Question |
 | رؤية الفريق لكل عملاء Tenant | كل العملاء / assigned clients / assigned deliverables | assigned clients/deliverables | Open Question |
 
@@ -89,4 +89,3 @@
 | لم يتم اختيار Auth أو Backend | Confirmed |
 | كل نقطة مصنفة Confirmed / Assumed / Open Question حيث يلزم | Confirmed |
 | كل إجراء حساس مرتبط بAudit Event | Confirmed |
-

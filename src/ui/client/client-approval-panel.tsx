@@ -63,7 +63,9 @@ export function ClientApprovalPanel({
   const canSubmitDecision = canApprove && item.isActionable !== false;
   const hasServerActions = Boolean(approveAction && requestChangesAction);
   const unavailableMessage =
-    item.status === "client_approved" || item.status === "delivered" || item.status === "ready_for_delivery"
+    item.status === "delivered"
+      ? "تم اعتماد هذا العمل وتسليمه."
+      : item.status === "client_approved" || item.status === "ready_for_delivery"
       ? "تم اعتماد هذا العمل بنجاح."
       : item.actionabilityReason === "missing_review_payload"
         ? "هذه النسخة غير مكتملة ولا يمكن اتخاذ قرار عليها. يجري تجهيز محتوى صالح للمراجعة."

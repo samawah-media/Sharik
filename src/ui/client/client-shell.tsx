@@ -42,6 +42,8 @@ export function ClientShell({
 }) {
   const pathname = usePathname() ?? "/client";
   const pendingLabel = canApprove ? "بانتظار موافقتي" : "قيد المراجعة";
+  const isWorkDetail =
+    pathname !== "/client/work" && pathname.startsWith("/client/work/");
   const activeLinkRef = useRef<HTMLAnchorElement | null>(null);
 
   useEffect(() => {
@@ -72,7 +74,7 @@ export function ClientShell({
               <span className="text-xs text-shell-muted">تشغيل سماوة</span>
             </span>
           </Link>
-          {workspaceSelector}
+          {isWorkDetail ? null : workspaceSelector}
           <div className="relative min-w-0 max-w-full lg:mt-5">
             <nav
               aria-describedby="client-nav-scroll-hint"

@@ -149,6 +149,116 @@ select is(
   'client viewer copy is read-only and never asks the viewer to approve'
 );
 
+-- A replay of the same business event is suppressed, while sending a later
+-- version of the same deliverable remains observable.
+insert into public.deliverable_versions (
+  id, tenant_id, client_id, deliverable_id, version_number, status, caption
+) values (
+  'b4000000-0000-4000-8000-000000000602',
+  'b4000000-0000-4000-8000-000000000001',
+  'b4000000-0000-4000-8000-000000000101',
+  'b4000000-0000-4000-8000-000000000501', 2, 'client_visible',
+  'مراجعة العميل للنسخة الثانية'
+);
+
+insert into public.audit_events (
+  id, tenant_id, client_id, actor_user_id, action, decision, target_type, target_id, reason
+) values
+  (
+    'b4000000-0000-4000-8000-000000000e01',
+    'b4000000-0000-4000-8000-000000000001',
+    'b4000000-0000-4000-8000-000000000101',
+    'b4000000-0000-4000-8000-000000000301',
+    'DeliverableVersionSentToClient', 'allowed', 'deliverable_version',
+    'b4000000-0000-4000-8000-000000000601', 'send_to_client_replay'
+  ),
+  (
+    'b4000000-0000-4000-8000-000000000e02',
+    'b4000000-0000-4000-8000-000000000001',
+    'b4000000-0000-4000-8000-000000000101',
+    'b4000000-0000-4000-8000-000000000301',
+    'DeliverableVersionSentToClient', 'allowed', 'deliverable_version',
+    'b4000000-0000-4000-8000-000000000602', 'send_to_client'
+  );
+
+select is(
+  (select count(*)::integer from public.notifications
+    where recipient_user_id = 'b4000000-0000-4000-8000-000000000302'
+      and event_type = 'client_send'),
+  2,
+  'same-version client-send replay is suppressed but a later version is notified'
+);
+
+select is(
+  (select count(*)::integer from public.notifications
+    where source_audit_event_id = 'b4000000-0000-4000-8000-000000000e01'),
+  0,
+  'replayed client-send audit event does not create a duplicate notification'
+);
+
+insert into public.audit_events (
+  id, tenant_id, client_id, actor_user_id, action, decision, target_type, target_id, reason
+) values (
+  'b4000000-0000-4000-8000-000000000e06',
+  'b4000000-0000-4000-8000-000000000001',
+  'b4000000-0000-4000-8000-000000000102',
+  'b4000000-0000-4000-8000-000000000301',
+  'DeliverableVersionSentToClient', 'allowed', 'deliverable_version',
+  'b4000000-0000-4000-8000-000000000601', 'cross_client_scope_probe'
+);
+
+select is(
+  (select count(*)::integer from public.notifications
+    where source_audit_event_id = 'b4000000-0000-4000-8000-000000000e06'),
+  0,
+  'a mismatched audit client cannot route Client A work to Client B recipients'
+);
+
+-- Delivery preparation is also version-scoped: duplicate preparation of the
+-- same version is idempotent, but a newly prepared version is a new event.
+insert into public.audit_events (
+  id, tenant_id, client_id, actor_user_id, action, decision, target_type, target_id, reason
+) values
+  (
+    'b4000000-0000-4000-8000-000000000e03',
+    'b4000000-0000-4000-8000-000000000001',
+    'b4000000-0000-4000-8000-000000000101',
+    'b4000000-0000-4000-8000-000000000301',
+    'DeliverablePreparedForDelivery', 'allowed', 'deliverable_version',
+    'b4000000-0000-4000-8000-000000000601', 'prepare_delivery'
+  ),
+  (
+    'b4000000-0000-4000-8000-000000000e04',
+    'b4000000-0000-4000-8000-000000000001',
+    'b4000000-0000-4000-8000-000000000101',
+    'b4000000-0000-4000-8000-000000000301',
+    'DeliverablePreparedForDelivery', 'allowed', 'deliverable_version',
+    'b4000000-0000-4000-8000-000000000601', 'prepare_delivery_replay'
+  ),
+  (
+    'b4000000-0000-4000-8000-000000000e05',
+    'b4000000-0000-4000-8000-000000000001',
+    'b4000000-0000-4000-8000-000000000101',
+    'b4000000-0000-4000-8000-000000000301',
+    'DeliverablePreparedForDelivery', 'allowed', 'deliverable_version',
+    'b4000000-0000-4000-8000-000000000602', 'prepare_delivery'
+  );
+
+select is(
+  (select count(*)::integer from public.notifications
+    where recipient_user_id = 'b4000000-0000-4000-8000-000000000306'
+      and event_type = 'delivery_prepared'),
+  2,
+  'delivery-prepared dedupe is version-scoped'
+);
+
+delete from public.notifications
+where source_audit_event_id in (
+  'b4000000-0000-4000-8000-000000000e02',
+  'b4000000-0000-4000-8000-000000000e03',
+  'b4000000-0000-4000-8000-000000000e05'
+);
+
 -- ============================================================================
 -- 2. Client approval: internal management is notified, clients are NOT.
 -- ============================================================================

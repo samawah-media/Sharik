@@ -446,6 +446,26 @@ describe("management product shell", () => {
       expect(current[0]).toHaveTextContent("الملفات");
     });
 
+    it("hides a cookie-selected workspace label on a bookmarked work detail", () => {
+      pathnameState.value =
+        "/client/work/b0060000-0000-4000-8000-000000000399";
+      const { rerender } = render(
+        <ClientShell workspaceSelector={<p>مساحة عميل مختلف</p>}>
+          <main>المخرج المصرح</main>
+        </ClientShell>,
+      );
+
+      expect(screen.queryByText("مساحة عميل مختلف")).not.toBeInTheDocument();
+
+      pathnameState.value = "/client/work";
+      rerender(
+        <ClientShell workspaceSelector={<p>مساحة عميل مختلف</p>}>
+          <main>قائمة الأعمال</main>
+        </ClientShell>,
+      );
+      expect(screen.getByText("مساحة عميل مختلف")).toBeVisible();
+    });
+
     it("keeps the mobile header from containing the viewport-fixed notification menu", () => {
       pathnameState.value = "/client";
       render(

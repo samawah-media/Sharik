@@ -18,7 +18,7 @@
   - [x] R23-F4 Lead integration: unit28/28, component33/33, TypeScript, scoped ESLint and diff check PASS; one persistent journey collects. Full regression, database/RLS, build, CI, Preview, hosted and owner gates remain separate.
 - [ ] R23-G Correct assigned-team portfolio composition and resolve the next `/work` product decision; see evidence/remaining-findings-plan.md.
   - [x] R23-G1 SIL-70: team `/portfolio` starts with assigned clients and team breadcrumb, while management dashboard/read behavior remains unchanged. LOCAL SOURCE PASS; browser/hosted/owner acceptance pending.
-  - [ ] R23-G2 SIL-58/SIL-69: owner approved the recommended default «يحتاج إجراء مني» on 2026-09-14, then paused work during Task 11 fix round 2. Original review findings are addressed, but one Important stale Kanban next-action issue remains open after optimistic drag/rollback. Status INCOMPLETE/HOLD; resume from the SDD ledger.
+  - [ ] R23-G2 SIL-58/SIL-69: owner approved the recommended default «يحتاج إجراء مني» on 2026-09-14. The 2026-09-20 correction now scopes controls per deliverable, fails closed for missing capability entries, rolls back only the affected card, and blocks a second move while that card is pending. Focused component 4/4 and full component 417/417 pass locally; exact-head CI, Preview, real browser and owner acceptance remain pending, so the release status stays HOLD.
   - [x] R23-G3 SIL-70 lead review/evidence: component29/29, TypeScript, scoped ESLint and diff PASS; two browser cases collect but runtime warm-up aborted before tests. SIL-58/SIL-69 decision remains open.
 
 ## SIL-52 / SIL-54 correction queue — 2026-09-10

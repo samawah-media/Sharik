@@ -932,12 +932,19 @@ export function WorkspaceFilePreview({
   const [url, setUrl] = useState<string>();
   const [feedback, setFeedback] = useState<string>();
   const preview = async () => {
-    const result = await createWorkspaceFileDownload(fileId);
-    if (!result.ok) {
+    setFeedback(undefined);
+    try {
+      const result = await createWorkspaceFileDownload(fileId);
+      if (!result.ok) {
+        setUrl(undefined);
+        setFeedback("المعاينة غير متاحة لهذا الدور أو انتهت صلاحيتها.");
+        return;
+      }
+      setUrl(result.url);
+    } catch {
+      setUrl(undefined);
       setFeedback("المعاينة غير متاحة لهذا الدور أو انتهت صلاحيتها.");
-      return;
     }
-    setUrl(result.url);
   };
   return (
     <div className="grid gap-2">

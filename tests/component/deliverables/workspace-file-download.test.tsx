@@ -119,4 +119,60 @@ describe("WorkspaceFilePreview", () => {
       await screen.findByText("تعذرت المعاينة المرئية. يمكنك تنزيل الملف مباشرة."),
     ).toBeInTheDocument();
   });
+
+  it("clears a previous playback error after a successful retry", async () => {
+    createDownload
+      .mockResolvedValueOnce({
+        ok: true,
+        url: "https://example.test/video-expired.mp4",
+        fileName: "video.mp4",
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        url: "https://example.test/video-refreshed.mp4",
+        fileName: "video.mp4",
+      });
+    render(
+      <WorkspaceFilePreview
+        fileId="video-1"
+        fileType="video/mp4"
+        label="معاينة الفيديو"
+      />,
+    );
+
+    const preview = screen.getByRole("button", { name: "معاينة" });
+    fireEvent.click(preview);
+    fireEvent.error(await screen.findByLabelText("معاينة الفيديو"));
+    expect(
+      await screen.findByText("تعذرت المعاينة المرئية. يمكنك تنزيل الملف مباشرة."),
+    ).toBeInTheDocument();
+
+    fireEvent.click(preview);
+    await waitFor(() =>
+      expect(screen.queryByText(/تعذرت المعاينة المرئية/)).not.toBeInTheDocument(),
+    );
+    expect(screen.getByLabelText("معاينة الفيديو")).toHaveAttribute(
+      "src",
+      "https://example.test/video-refreshed.mp4",
+    );
+  });
+
+  it("shows the safe fallback when the preview action rejects", async () => {
+    createDownload.mockRejectedValueOnce(new Error("network unavailable"));
+    render(
+      <WorkspaceFilePreview
+        fileId="video-1"
+        fileType="video/mp4"
+        label="معاينة الفيديو"
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "معاينة" }));
+
+    expect(
+      await screen.findByText(
+        "المعاينة غير متاحة لهذا الدور أو انتهت صلاحيتها.",
+      ),
+    ).toBeInTheDocument();
+  });
 });

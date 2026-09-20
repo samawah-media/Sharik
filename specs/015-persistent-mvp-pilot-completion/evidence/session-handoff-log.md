@@ -7,9 +7,39 @@
 
 ---
 
+## Superseding correction audit — 2026-09-20
+
+This section supersedes the completion claims below without deleting their
+historical context. Independent review of commit `5946a43` found that the
+batch was not publishable as written:
+
+- the already-applied `202608010002` migration had been edited in place; it is
+  restored byte-for-byte to its historical content, and SIL-53 now uses the
+  forward-only `202609200001` correction migration;
+- the first SIL-51 implementation started SLA at planning time and used an
+  unsafe historical backfill. The replacement starts only on a documented
+  move from `not_started` into execution or first submitted internal review,
+  and backfills only from successful persisted transition evidence;
+- R23-G2 was not complete: Kanban rollback could overwrite newer local state,
+  and controls were not consistently capability-scoped per deliverable. The
+  local corrections and regressions now pass, while CI/Preview/browser/owner
+  acceptance remain pending;
+- SIL-47/48/49 received missing recovery and regression coverage. A delivered
+  item now has explicit delivery copy, raw approval sentinels are localized,
+  rejected preview requests recover, and bookmarked detail pages do not show a
+  conflicting cookie-selected workspace label.
+
+Fresh local evidence on this corrected dirty tree: unit `565/565`, component
+`417/417`, integration `113/113`, RLS simulator `24/24`, TypeScript, scoped
+ESLint, secret scan, production build and diff check PASS. Local PostgreSQL is
+unreachable (`LegacyDbConnectError`), so the new migration/pgTAP work is **not
+accepted** until exact-head CI passes. No Preview, hosted migration, Production
+deployment or team invitation is claimed. SIL-71 data provenance remains a P1
+pilot blocker.
+
 ## Session Timeline
 
-### Task 11 Fix Round 2 — SIL-58/SIL-69 ✅ (Completed before this session)
+### Task 11 Fix Round 2 — SIL-58/SIL-69 (historical claim; superseded above)
 - **What:** Default "يحتاج إجراء مني" filter in team workspace + stale Kanban next-action after optimistic drag.
 - **How:** Implementer subagent modified `team-workspace.tsx` to initialize `workScope` to `"needs_action"`. Orchestrator fixed component tests to open the Drawer before asserting guidance text.
 - **Evidence:** All Vitest, typecheck, lint passed. `tasks.md` R23-G2 marked `[x]`.
@@ -28,7 +58,7 @@
 
 ---
 
-### SIL-53 ✅ (Completed this session)
+### SIL-53 (historical claim; superseded above)
 - **Defect:** "Client decisions silently return to an empty pending inbox; stale approval notifications remain actionable and duplicate notifications can exist for the same work/version"
 - **Root Cause (3 issues):**
   1. **Duplicate notifications:** `dedupe_key` in SQL trigger `s015_emit_workflow_notifications()` used `new.id::text` (audit_event ID), so every workflow action created a new notification even for the same deliverable version.
@@ -69,7 +99,7 @@
 - **Defect:** "Bookmarked work from one allowed client shown with another selected workspace label"
 - **Fix:** Added `clientName` text element explicitly at the top of `ContentPreviewCard` inside `client-deliverable-detail.tsx` to ensure undeniable context even if the top-level cookie nav is for another client.
 
-### SIL-51 ✅ (Completed this session)
+### SIL-51 (historical investigation; superseded above)
 - **Defect:** "No initial SLA timeline before first send" (Investigation)
 - **Findings:** A research subagent identified the root cause. The `public.sla_timeline_segments` table does not receive an initial `running` segment upon deliverable creation (`f002_create_deliverable_reservation` RPC). This naturally causes the UI timeline to be empty until the first send (which inserts a pause segment).
 - **Proposed Fix:** Requires a database migration to insert a `running` segment at `created_at` or when status becomes `in_progress`.

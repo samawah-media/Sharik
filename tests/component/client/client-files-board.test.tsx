@@ -194,4 +194,66 @@ describe("ClientFilesBoard", () => {
       await screen.findByText("تعذر تشغيل الفيديو في المعاينة. يمكنك تنزيل الملف مباشرة."),
     ).toBeInTheDocument();
   });
+
+  it("recovers when a later modal open receives a fresh preview URL", async () => {
+    preview
+      .mockResolvedValueOnce({ ok: false })
+      .mockResolvedValueOnce({
+        ok: true,
+        url: "https://example.test/video-refreshed.mp4",
+      });
+    render(
+      <ClientFilesBoard
+        files={[
+          file({
+            id: "vid",
+            visibility: "client_visible",
+            fileType: "video/mp4",
+            name: "فيديو ترويجي",
+          }),
+        ]}
+      />,
+    );
+
+    const open = screen.getByRole("button", {
+      name: /فتح معاينة فيديو ترويجي/,
+    });
+    fireEvent.click(open);
+    expect(
+      await screen.findByText("لا توجد معاينة مرئية لهذا الملف. استخدم التنزيل."),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "إغلاق" }));
+
+    fireEvent.click(open);
+    const video = await screen.findByLabelText("فيديو ترويجي");
+    expect(video).toHaveAttribute(
+      "src",
+      "https://example.test/video-refreshed.mp4",
+    );
+    expect(screen.queryByText(/لا توجد معاينة مرئية/)).not.toBeInTheDocument();
+  });
+
+  it("shows the unavailable state when the preview action rejects", async () => {
+    preview.mockRejectedValueOnce(new Error("network unavailable"));
+    render(
+      <ClientFilesBoard
+        files={[
+          file({
+            id: "vid",
+            visibility: "client_visible",
+            fileType: "video/mp4",
+            name: "فيديو ترويجي",
+          }),
+        ]}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /فتح معاينة فيديو ترويجي/ }),
+    );
+
+    expect(
+      await screen.findByText("لا توجد معاينة مرئية لهذا الملف. استخدم التنزيل."),
+    ).toBeInTheDocument();
+  });
 });

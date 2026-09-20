@@ -247,7 +247,10 @@ async function readClientApprovalDetailForDeliverable(
     })),
     comments: (commentsResult.data ?? []).map((comment) => ({
       id: comment.id,
-      body: comment.body,
+      body:
+        comment.body === "client_approval"
+          ? "تم اعتماد النسخة"
+          : comment.body,
       createdAt: comment.created_at,
       authorName:
         authorNames.get(comment.author_user_id) ??
@@ -256,9 +259,6 @@ async function readClientApprovalDetailForDeliverable(
           : comment.comment_type === "approval_comment"
             ? "قرار الاعتماد"
             : "فريق سماوة"),
-    })).map((c) => ({
-      ...c,
-      body: c.body === "client_approval" ? "تم اعتماد النسخة" : c.body
     })),
   };
 }

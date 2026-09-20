@@ -380,7 +380,7 @@ select throws_ok(
 select is((select count(*)::integer from public.mvp_command_requests where idempotency_key = 's015-atomic-failure'), 0, 'failed command leaves no command request');
 select is((select count(*)::integer from public.audit_events where reason = 'approve_internal' and target_id = '21000000-0000-4000-8000-000000000601'), 0, 'failed command leaves no workflow audit');
 select is((select count(*)::integer from public.comments where body = 'must rollback'), 0, 'failed command leaves no comment');
-select is((select count(*)::integer from public.sla_timeline_segments where deliverable_id = '21000000-0000-4000-8000-000000000502'), 1, 'failed command leaves no additional SLA segment');
+select is((select count(*)::integer from public.sla_timeline_segments where deliverable_id = '21000000-0000-4000-8000-000000000502'), 0, 'failed command leaves no SLA segment');
 select is((select count(*)::integer from public.package_ledger_entries where deliverable_id = '21000000-0000-4000-8000-000000000502'), 0, 'failed command leaves no ledger entry');
 select is((select status from public.deliverables where id = '21000000-0000-4000-8000-000000000502'), 'in_progress', 'failed command leaves status unchanged');
 reset role;
@@ -1002,7 +1002,7 @@ insert into public.deliverables (
   '21000000-0000-4000-8000-000000000531',
   '21000000-0000-4000-8000-000000000001',
   '21000000-0000-4000-8000-000000000301',
-  'Workspace content item', 'post', 'in_progress', 30,
+  'Workspace content item', 'post', 'not_started', 0,
   's015-workspace-content', true, true,
   '21000000-0000-4000-8000-000000000203'
 );
@@ -1016,7 +1016,7 @@ select results_eq(
     'brief', 'body', 'caption', 'instagram', 'post', 'awareness', 'reach', null,
     '21000000-0000-4000-8000-000000000731', '21000000-0000-4000-8000-000000000831',
     's015-workspace-draft')$$,
-  $$values ('in_progress'::text, 'draft'::text)$$,
+  $$values ('not_started'::text, 'draft'::text)$$,
   'assigned writer saves a persistent content draft'
 );
 select results_eq(
@@ -1025,13 +1025,19 @@ select results_eq(
     '21000000-0000-4000-8000-000000000631', 1, false,
     'ignored replay', 'ignored replay', null, null, null, null, null, null,
     gen_random_uuid(), gen_random_uuid(), 's015-workspace-draft')$$,
-  $$values ('in_progress'::text, 'draft'::text)$$,
+  $$values ('not_started'::text, 'draft'::text)$$,
   'draft replay returns the first committed result'
 );
 reset role;
 select is(
   (select count(*)::integer from public.audit_events where action = 'DeliverableVersionDraftSaved' and target_id = '21000000-0000-4000-8000-000000000631'),
   1, 'draft audit is append-once'
+);
+select is(
+  (select count(*)::integer from public.sla_timeline_segments
+   where deliverable_id = '21000000-0000-4000-8000-000000000531'),
+  0,
+  'saving a draft does not start the SLA before execution is submitted'
 );
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000203', true);
@@ -1044,6 +1050,14 @@ select results_eq(
     's015-workspace-submit')$$,
   $$values ('ready_for_internal_review'::text, 'internal_only'::text)$$,
   'assigned writer submits the exact draft for internal review'
+);
+select is(
+  (select count(*)::integer from public.sla_timeline_segments
+   where deliverable_id = '21000000-0000-4000-8000-000000000531'
+     and kind = 'running' and ended_at is null
+     and reason = 'first_version_submitted'),
+  1,
+  'first submitted version starts one open SLA segment from the audited transition'
 );
 select lives_ok(
   $$select public.s015_add_workspace_comment(

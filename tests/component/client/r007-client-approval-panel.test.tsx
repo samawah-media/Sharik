@@ -208,6 +208,22 @@ describe("R-007 client approval panel", () => {
   );
 
   it.each([
+    ["client_approved", "تم اعتماد هذا العمل بنجاح."],
+    ["ready_for_delivery", "تم اعتماد هذا العمل بنجاح."],
+    ["delivered", "تم اعتماد هذا العمل وتسليمه."],
+  ])("shows an explicit closed-state message for %s", (status, message) => {
+    render(
+      <ClientApprovalPanel
+        canApprove
+        item={{ ...approvalItem, status, isActionable: false }}
+      />,
+    );
+
+    expect(screen.getByText(message, { exact: true })).toBeVisible();
+    expect(screen.queryByText("لا يتوفر إجراء على هذه النسخة الآن.")).not.toBeInTheDocument();
+  });
+
+  it.each([
     [true, true, true],
     [true, false, false],
     [false, true, false],

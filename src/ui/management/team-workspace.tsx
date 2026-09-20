@@ -238,6 +238,10 @@ export function TeamWorkspace({
               deliverable.finalDueDate ??
               deliverable.plannedPublishDate;
             const slaStatus = item.slaStatus;
+            const capabilities = capabilitiesByDeliverable[deliverable.id];
+            const canApproveInternally =
+              Boolean(approvalAction) &&
+              capabilities?.canApproveInternally === true;
             return (
               <article
                 className="relative grid min-w-0 gap-3 rounded-lg border border-border bg-surface p-3 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-center"
@@ -337,8 +341,10 @@ export function TeamWorkspace({
                   </p>
                   <UniversalDeliverableDrawer
                     triggerClassName="after:absolute after:inset-0 after:rounded-lg after:content-[''] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-accent"
-                    approvalAction={approvalAction}
-                    canPublishClientComment={Boolean(approvalAction)}
+                    approvalAction={
+                      canApproveInternally ? approvalAction : undefined
+                    }
+                    canPublishClientComment={canApproveInternally}
                     clientName={clientNames[deliverable.clientId]}
                     deliverable={deliverable}
                     nextActionLabel={item.nextAction}

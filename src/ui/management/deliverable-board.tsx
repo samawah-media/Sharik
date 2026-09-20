@@ -15,7 +15,7 @@ import {
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
-import { useEffect, useRef, useState , useMemo} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableWorkspaceSummary } from "@/modules/deliverables/deliverable-workspace";
 import {
@@ -468,6 +468,10 @@ export function DeliverableBoard({
   ]);
   const [activeId, setActiveId] = useState<string>();
   const [dragFeedback, setDragFeedback] = useState<string>();
+  const [pendingDeliverableIds, setPendingDeliverableIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const pendingDeliverableIdsRef = useRef(new Set<string>());
   const boardRef = useRef<HTMLElement>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -572,6 +576,15 @@ export function DeliverableBoard({
       );
       return;
     }
+    const canUpdateDeliverable = capabilitiesByDeliverable
+      ? capabilitiesByDeliverable[deliverable.id]?.canUpdateStatus === true
+      : true;
+    if (
+      !canUpdateDeliverable ||
+      pendingDeliverableIdsRef.current.has(deliverable.id)
+    ) {
+      return;
+    }
     const targetStatus = lane.targetStatus;
     const decision = canChangeDeliverableStatus({
       currentStatus: deliverable.status,
@@ -586,7 +599,8 @@ export function DeliverableBoard({
       setDragFeedback(kanbanDeniedReasonLabel(decision.reason));
       return;
     }
-    const previous = items;
+    pendingDeliverableIdsRef.current.add(deliverable.id);
+    setPendingDeliverableIds(new Set(pendingDeliverableIdsRef.current));
     setItems((current) =>
       current.map((item) =>
         item.id === deliverable.id
@@ -600,20 +614,38 @@ export function DeliverableBoard({
       ),
     );
     setDragFeedback("جارٍ حفظ الحركة…");
-    const result = await moveDeliverableOnBoard({
-      clientId: deliverable.clientId,
-      deliverableId: deliverable.id,
-      toStatus: targetStatus,
-      expectedRevision: deliverable.revision,
-      idempotencyKey: `s015-drag-${deliverable.id}-${deliverable.revision}-${crypto.randomUUID()}`,
-    });
-    if (!result.ok) {
-      setItems(previous);
+    try {
+      const result = await moveDeliverableOnBoard({
+        clientId: deliverable.clientId,
+        deliverableId: deliverable.id,
+        toStatus: targetStatus,
+        expectedRevision: deliverable.revision,
+        idempotencyKey: `s015-drag-${deliverable.id}-${deliverable.revision}-${crypto.randomUUID()}`,
+      });
+      if (!result.ok) {
+        setItems((current) =>
+          current.map((item) =>
+            item.id === deliverable.id ? deliverable : item,
+          ),
+        );
+        setDragFeedback(
+          "تعذر حفظ الحركة، لذلك أُعيدت البطاقة إلى حالتها السابقة بصدق. راجع الصلاحية أو حدّث الصفحة.",
+        );
+      } else {
+        setDragFeedback("تم حفظ الحركة وتسجيلها في سجل النشاط.");
+      }
+    } catch {
+      setItems((current) =>
+        current.map((item) =>
+          item.id === deliverable.id ? deliverable : item,
+        ),
+      );
       setDragFeedback(
         "تعذر حفظ الحركة، لذلك أُعيدت البطاقة إلى حالتها السابقة بصدق. راجع الصلاحية أو حدّث الصفحة.",
       );
-    } else {
-      setDragFeedback("تم حفظ الحركة وتسجيلها في سجل النشاط.");
+    } finally {
+      pendingDeliverableIdsRef.current.delete(deliverable.id);
+      setPendingDeliverableIds(new Set(pendingDeliverableIdsRef.current));
     }
   };
 
@@ -673,10 +705,24 @@ export function DeliverableBoard({
                 </div>
                 <div className="grid content-start gap-3 p-3">
                   {laneItems.length > 0 ? (
-                    laneItems.map((deliverable) => (
+                    laneItems.map((deliverable) => {
+                      const capabilities =
+                        capabilitiesByDeliverable?.[deliverable.id];
+                      const canUpdateStatus =
+                        Boolean(action) &&
+                        (capabilitiesByDeliverable
+                          ? capabilities?.canUpdateStatus === true
+                          : true);
+                      const canApproveInternally =
+                        Boolean(approvalAction) &&
+                        (capabilitiesByDeliverable
+                          ? capabilities?.canApproveInternally === true
+                          : true);
+                      return (
                       <DraggableDeliverableCard
                         canDrag={
-                          Boolean(action) &&
+                          canUpdateStatus &&
+                          !pendingDeliverableIds.has(deliverable.id) &&
                           ["not_started", "in_progress"].includes(
                             deliverable.status,
                           )
@@ -685,9 +731,11 @@ export function DeliverableBoard({
                         key={deliverable.id}
                       >
                         <DeliverableCard
-                          action={action}
-                          approvalAction={approvalAction}
-                          canPublishClientComment={Boolean(approvalAction)}
+                          action={canUpdateStatus ? action : undefined}
+                          approvalAction={
+                            canApproveInternally ? approvalAction : undefined
+                          }
+                          canPublishClientComment={canApproveInternally}
                           clientName={clientNames[deliverable.clientId]}
                           deliverable={deliverable}
                           nextActionLabel={
@@ -697,7 +745,8 @@ export function DeliverableBoard({
                           summary={workspaces[deliverable.id]}
                         />
                       </DraggableDeliverableCard>
-                    ))
+                      );
+                    })
                   ) : (
                     <p className="rounded-lg border border-dashed border-border bg-surface p-4 text-sm leading-6 text-muted">
                       ما فيه مخرجات في هذه المرحلة.

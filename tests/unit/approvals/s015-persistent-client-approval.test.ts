@@ -169,6 +169,43 @@ describe("SIL-52 retained published client reads", () => {
     expect(JSON.stringify(detail)).not.toContain("SENT_V2");
   });
 
+  it("localizes only the client approval sentinel and preserves human change reasons", async () => {
+    const store = retainedReadStore("client_approved");
+    store.tables.comments = [
+      {
+        ...store.tables.comments[0],
+        id: "approval-system",
+        body: "client_approval",
+        comment_type: "approval_comment",
+      },
+      {
+        ...store.tables.comments[0],
+        id: "client-reason",
+        body: "يرجى تعديل العنوان",
+        comment_type: "client_comment",
+      },
+    ];
+
+    const detail = await readPersistentClientWorkDetail({
+      supabase: store.supabase,
+      ...workScope,
+    });
+
+    expect(detail?.comments).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          body: "تم اعتماد النسخة",
+          authorName: "قرار الاعتماد",
+        }),
+        expect.objectContaining({
+          body: "يرجى تعديل العنوان",
+          authorName: "العميل",
+        }),
+      ]),
+    );
+    expect(JSON.stringify(detail)).not.toContain("client_approval");
+  });
+
   it.each(["in_progress", "waiting_client_approval", "cancelled", "archived"])(
     "does not expose %s without an RLS-readable published version", async (status) => {
       const store = retainedReadStore(status);

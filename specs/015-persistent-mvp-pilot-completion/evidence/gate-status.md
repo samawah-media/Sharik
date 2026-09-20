@@ -1,5 +1,19 @@
 # Spec 015 gate status
 
+## Current: corrected local source PASS; exact-head DB/CI and pilot data gate HOLD — 2026-09-20
+
+The delegated batch at `5946a43` failed CI during the SIL-51 migration and was
+not safe to publish. The corrective tree restores the applied notifications
+migration, adds forward-only SIL-53 SQL, replaces the unsafe SLA trigger and
+backfill, fixes per-deliverable capability/optimistic rollback behavior, and
+adds missing SIL-47/48/49 regressions. Fresh local evidence: unit `565/565`,
+component `417/417`, integration `113/113`, RLS simulator `24/24`, TypeScript,
+scoped ESLint, secrets, production build and diff check PASS. PostgreSQL is
+unreachable locally, so clean reset/pgTAP, persistent browser, exact-head CI
+and source-git Preview are still required. SIL-71 hosted-data provenance is a
+P1 team-pilot blocker. Status: **HOLD — no Preview/UAT migration, Production,
+merge or team invitation claimed.**
+
 ## Current: exact-source CI PASS; hosted correction acceptance still HOLD — 2026-09-10
 
 [Run34464403517](https://github.com/samawah-media/Sharik/actions/runs/34464403517) completed SUCCESS on `2236507f08209c1a9ecdfc8e5f49a322e2be559d`: local-equivalent966 tests, real DB993 assertions/18 files, fixture browser263PASS/37SKIP, persistent browser24PASS; lint/types/build/secrets/reset PASS. Earlier candidate and identity-pending entries are historical. No hosted migration or deployment; SIL-52/SIL-54 still require new Preview/UAT acceptance. Owner20, conditional notification proof and unexecuted manual checks remain open. [Checkpoint](sil52-sil54-checkpoint.md).

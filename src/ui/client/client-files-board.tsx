@@ -98,11 +98,9 @@ const FileThumbnail = ({
 // requested when the modal actually opens.
 const PreviewModal = ({
   file,
-  open,
   onClose,
 }: {
   file: GroupedFile;
-  open: boolean;
   onClose: () => void;
 }) => {
   const [url, setUrl] = useState<string>();
@@ -113,15 +111,19 @@ const PreviewModal = ({
   const restoreRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (!open) return;
     restoreRef.current = (document.activeElement as HTMLElement) ?? null;
     let active = true;
-    void createWorkspaceFilePreview(file.id).then((result) => {
-      if (!active) return;
-      setPlaybackError(false);
-      if (result.ok) setUrl(result.url);
-      else setUnavailable(true);
-    });
+    void createWorkspaceFilePreview(file.id).then(
+      (result) => {
+        if (!active) return;
+        if (result.ok) setUrl(result.url);
+        else setUnavailable(true);
+      },
+      () => {
+        if (!active) return;
+        setUnavailable(true);
+      },
+    );
     // Move focus into the modal once it is painted.
     const focusTimer = window.setTimeout(() => {
       closerRef.current?.focus();
@@ -158,9 +160,8 @@ const PreviewModal = ({
       window.removeEventListener("keydown", onKey, true);
       restoreRef.current?.focus?.();
     };
-  }, [open, file.id, onClose]);
+  }, [file.id, onClose]);
 
-  if (!open) return null;
   return (
     <div
       aria-modal="true"
@@ -237,6 +238,7 @@ const FileCard = ({ file }: { file: GroupedFile }) => {
   const openPreview = useCallback(() => {
     if (previewable) setPreviewOpen(true);
   }, [previewable]);
+  const closePreview = useCallback(() => setPreviewOpen(false), []);
   const download = useCallback(async () => {
     setDownloadError(false);
     setPendingDownload(true);
@@ -298,12 +300,8 @@ const FileCard = ({ file }: { file: GroupedFile }) => {
           </p>
         ) : null}
       </article>
-      {previewable ? (
-        <PreviewModal
-          file={file}
-          onClose={() => setPreviewOpen(false)}
-          open={previewOpen}
-        />
+      {previewOpen ? (
+        <PreviewModal file={file} onClose={closePreview} />
       ) : null}
     </>
   );

@@ -51,11 +51,14 @@ for (const width of [375, 1440]) {
     await expect(content).toBeVisible();
     // The prioritized first item may not have a saved version yet. This check
     // is about the compact empty state, independent of fixture sort order.
-    const emptyPreview = content
-      .getByText(/(?:لا توجد صورة أو فيديو في النسخة الحالية|لم تُحفظ نسخة بعد\.)/)
-      .locator("..");
-    await expect(emptyPreview).toBeVisible();
-    expect.soft(await emptyPreview.evaluate((element) => element.getBoundingClientRect().height)).toBeLessThanOrEqual(100);
+    const emptyMessage = content
+      .getByText(/(?:لا توجد صورة أو فيديو في النسخة الحالية|لم تُحفظ نسخة بعد\.)/);
+    await expect(emptyMessage).toBeVisible();
+    const emptyPreviewHeight = await emptyMessage.evaluate((element) => {
+      const surface = element.classList.contains("border") ? element : element.parentElement;
+      return surface?.getBoundingClientRect().height ?? Number.POSITIVE_INFINITY;
+    });
+    expect.soft(emptyPreviewHeight).toBeLessThanOrEqual(88);
     await page.screenshot({ path: testInfo.outputPath("drawer-content.png") });
     await tabs.nth(1).focus();
     await page.keyboard.press("End");

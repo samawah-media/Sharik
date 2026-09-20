@@ -610,8 +610,14 @@ test("real local Supabase browser journey covers persistent S015 approval lifecy
     page.locator('[data-testid="client-file-card"]'),
   ).toHaveCount(1);
   await expect(page.getByText("final replacement")).toHaveCount(0);
-  const browserDownload = page.waitForEvent("download");
-  await page.getByRole("button", { name: "تنزيل" }).click();
-  expect((await browserDownload).suggestedFilename()).toBe("قالب الاراء.png");
+  const downloadButton = page.getByRole("button", { name: "تنزيل" });
+  await expectReactHydrated(downloadButton);
+  await expect(downloadButton).toBeEnabled();
+  const [browserDownload] = await Promise.all([
+    page.waitForEvent("download", { timeout: 60_000 }),
+    downloadButton.click(),
+  ]);
+  expect(browserDownload.suggestedFilename()).toBe("قالب الاراء.png");
+  expect(await browserDownload.failure()).toBeNull();
   await expectNoHorizontalOverflow(page);
 });

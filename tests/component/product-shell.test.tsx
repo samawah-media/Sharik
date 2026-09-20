@@ -56,7 +56,7 @@ afterEach(() => {
 });
 
 describe("management product shell", () => {
-  it("reveals the focused client navigation link with nearest scrolling", async () => {
+  it("reveals the focused client navigation link with snap-aligned scrolling", async () => {
     const user = userEvent.setup();
     render(
       <ClientShell>
@@ -80,7 +80,7 @@ describe("management product shell", () => {
       expect(link).toHaveFocus();
       expect(scrolls[index]).toHaveBeenCalledExactlyOnceWith({
         block: "nearest",
-        inline: "nearest",
+        inline: "start",
       });
       expect(scrolls[index].mock.contexts[0]).toBe(link);
     }
@@ -483,12 +483,21 @@ describe("management product shell", () => {
 
     it("reveals the active client destination on first render without moving keyboard focus", () => {
       pathnameState.value = "/client/commercial";
-      // JSDOM has no scrolling implementation; mock the DOM boundary so the
-      // initial-reveal effect can be observed without real layout.
       const originalScrollIntoView =
         window.HTMLElement.prototype.scrollIntoView;
       const scrollIntoView = vi.fn();
       window.HTMLElement.prototype.scrollIntoView = scrollIntoView;
+      const bounds = vi
+        .spyOn(window.HTMLElement.prototype, "getBoundingClientRect")
+        .mockImplementation(function (this: HTMLElement) {
+          if (this.tagName === "NAV") {
+            return { left: 0, right: 240 } as DOMRect;
+          }
+          if (this.getAttribute("aria-current") === "page") {
+            return { left: -80, right: 70 } as DOMRect;
+          }
+          return { left: 0, right: 0 } as DOMRect;
+        });
       try {
         render(
           <ClientShell>
@@ -498,16 +507,12 @@ describe("management product shell", () => {
         const nav = screen.getByRole("navigation", {
           name: "تنقل بوابة العميل",
         });
-        const active = within(nav).getByRole("link", { current: "page" });
-        expect(
-          scrollIntoView,
-        ).toHaveBeenCalledExactlyOnceWith({
-          block: "nearest",
-          inline: "nearest",
-        });
-        expect(scrollIntoView.mock.contexts[0]).toBe(active);
+        within(nav).getByRole("link", { current: "page" });
+        expect(nav.scrollLeft).toBe(-80);
+        expect(scrollIntoView).not.toHaveBeenCalled();
         expect(document.activeElement).toBe(document.body);
       } finally {
+        bounds.mockRestore();
         window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
       }
     });

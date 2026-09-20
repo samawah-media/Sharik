@@ -14,7 +14,9 @@ test("assigned writer sees clients first in the 400px portfolio viewport", async
   await expect(firstClient).toBeVisible();
   await expect(page.getByText("يحتاج انتباهكم")).toHaveCount(0);
   await expect(page.getByText("لوحة الإدارة", { exact: true })).toHaveCount(0);
-  await expect(page.getByRole("alert")).toHaveCount(0);
+  // Next.js owns a global route announcer with role=alert. Scope the product
+  // assertion so framework accessibility infrastructure is not a false leak.
+  await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0);
 
   const geometry = await page.evaluate(() => {
     const heading = document.querySelector("h1");

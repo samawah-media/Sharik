@@ -8,9 +8,8 @@ test("account manager lands on a clear Hadna workspace", async ({ page }) => {
   });
 
   await expect(
-    page.getByRole("heading", { name: "مساحة العمل" }),
+    page.getByRole("heading", { name: "عملائي", level: 1 }),
   ).toBeVisible();
-  await expect(page.getByRole("heading", { name: "عملائي" })).toBeVisible();
   await expect(page.getByRole("link", { name: "فتح هدنة" })).toBeVisible();
   await expect(
     page

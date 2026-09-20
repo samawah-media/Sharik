@@ -47,10 +47,25 @@ export function ClientShell({
   const activeLinkRef = useRef<HTMLAnchorElement | null>(null);
 
   useEffect(() => {
-    activeLinkRef.current?.scrollIntoView?.({
-      block: "nearest",
-      inline: "nearest",
-    });
+    const activeLink = activeLinkRef.current;
+    const navigation = activeLink?.closest("nav");
+    if (!activeLink || !navigation) return;
+
+    // Reveal the active destination without calling scrollIntoView on the
+    // anchor. Chromium treats that call as the sequential-focus starting
+    // point, which makes the first Tab skip the brand link.
+    const linkBounds = activeLink.getBoundingClientRect();
+    const navigationBounds = navigation.getBoundingClientRect();
+    const horizontalDelta =
+      linkBounds.left < navigationBounds.left
+        ? linkBounds.left - navigationBounds.left
+        : linkBounds.right > navigationBounds.right
+          ? linkBounds.right - navigationBounds.right
+          : 0;
+
+    if (Math.abs(horizontalDelta) > 0.5) {
+      navigation.scrollLeft += horizontalDelta;
+    }
   }, [pathname]);
 
   return (
@@ -95,7 +110,9 @@ export function ClientShell({
                     onFocus={(event) =>
                       event.currentTarget.scrollIntoView({
                         block: "nearest",
-                        inline: "nearest",
+                        // `nearest` can leave a focused item partially clipped
+                        // when mandatory scroll snapping is active in RTL.
+                        inline: "start",
                       })
                     }
                     aria-current={active ? "page" : undefined}

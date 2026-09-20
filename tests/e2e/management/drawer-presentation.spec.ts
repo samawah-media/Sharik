@@ -6,7 +6,15 @@ for (const width of [375, 1440]) {
     page.on("pageerror", (error) => errors.push(error.message));
     await page.setViewportSize({ width, height: 1000 });
     await page.goto("/work?as=assigned_internal_a", { waitUntil: "domcontentloaded" });
-    const trigger = page.getByTestId("team-work-list").getByRole("button", { name: "فتح مساحة المخرج", exact: true }).first();
+    // The default view intentionally prioritizes work that needs action. Open
+    // the stable delivered fixture explicitly instead of depending on sort
+    // order when validating its version-one empty preview.
+    await page.getByRole("combobox", { name: "عرض العمل" }).selectOption("all_authorized");
+    const deliveredRow = page
+      .getByTestId("team-work-list")
+      .locator("article")
+      .filter({ hasText: "منشورات هدنة 1" });
+    const trigger = deliveredRow.getByRole("button", { name: "فتح مساحة المخرج", exact: true });
     // This suite tests the hydrated drawer, not prehydration event replay.
     await expect.poll(() => trigger.evaluate((element) =>
       Object.keys(element).some((key) => key.startsWith("__reactProps$")),

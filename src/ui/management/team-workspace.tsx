@@ -102,9 +102,9 @@ export function TeamWorkspace({
       <div
         role="group"
         aria-label="فلاتر مهامي"
-        className="grid min-w-0 grid-cols-2 gap-3 rounded-xl border border-border bg-surface p-4 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]"
+        className="grid min-w-0 grid-cols-3 gap-3 rounded-xl border border-border bg-surface p-4 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]"
       >
-        <label className="col-span-2 grid min-w-0 gap-1 text-sm font-semibold lg:col-span-1">
+        <label className="col-span-3 grid min-w-0 gap-1 text-sm font-semibold lg:col-span-1">
           بحث
           <input
             className="min-h-11 w-full min-w-0 rounded-lg border border-border bg-background px-3"

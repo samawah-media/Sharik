@@ -62,11 +62,13 @@ const ALLOWED_HREF_PATTERNS: RegExp[] = [
   /^\/client$/,
   /^\/client\/pending$/,
   /^\/client\/work$/,
+  new RegExp(`^/client/work/${UUID_PATTERN}$`),
   /^\/client\/files$/,
   new RegExp(`^/clients/${UUID_PATTERN}/deliverables$`),
 ];
 
-// Mirrors public.s015_notification_href_is_allowed in migration 202608010002.
+// Mirrors public.s015_notification_href_is_allowed after the forward-only
+// SIL-53 correction in migration 202609200001.
 // action_href is generated server-side only; this is a defensive check and a
 // unit-test contract. A null href is allowed (some notifications are advisory).
 export function isAllowedNotificationHref(href: string | null | undefined) {

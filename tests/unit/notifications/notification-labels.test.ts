@@ -16,6 +16,7 @@ describe("notification href allowlist (mirrors PostgreSQL s015_notification_href
     "/client",
     "/client/pending",
     "/client/work",
+    "/client/work/b0060000-0000-4000-8000-000000000301",
     "/client/files",
     "/clients/b0060000-0000-4000-8000-000000000301/deliverables",
   ];
@@ -34,6 +35,9 @@ describe("notification href allowlist (mirrors PostgreSQL s015_notification_href
     "/clients/b0060000-0000-4000-8000-000000000301/deliverables/abc", // too deep
     "/clients/not-a-uuid/deliverables",
     "/client/pending/extra",
+    "/client/work/not-a-uuid",
+    "/client/work/b0060000-0000-4000-8000-000000000301/extra",
+    "https://example.com/client/work/b0060000-0000-4000-8000-000000000301",
     "/work/tasks",
     "javascript:alert(1)",
     "/clients/b0060000-0000-4000-8000-000000000301", // missing /deliverables suffix

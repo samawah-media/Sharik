@@ -65,6 +65,20 @@ describe("notification list read", () => {
     }
   });
 
+  it("preserves the SIL-53 client work deep link", async () => {
+    const actionHref =
+      "/client/work/00000000-0000-4000-8000-000000000010";
+    const result = await readNotificationList({
+      supabase: supabaseWith([row({ action_href: actionHref })], null),
+      filter: "all",
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value[0].actionHref).toBe(actionHref);
+    }
+  });
+
   it("accepts PostgreSQL timezone-offset read timestamps after a notification is marked read", async () => {
     const result = await readNotificationList({
       supabase: supabaseWith(

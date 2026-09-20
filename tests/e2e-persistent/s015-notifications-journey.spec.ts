@@ -7,7 +7,7 @@ import {
 } from "./support/s015-persistent-local";
 
 // X010-B4 persistent proof: a real send-to-client creates an in-app notification
-// for the client approver with client-safe copy and the /client/pending href,
+// for the client approver with client-safe copy and a scoped work-detail href,
 // routed atomically by the audit_events trigger against the persistent database.
 //
 // This spec requires a running local Supabase stack (APP_ENV=test-persistent). If
@@ -143,7 +143,8 @@ test("send-to-client notifies the client approver in-app (persistent)", async ({
   if (!notification) {
     throw new Error("Expected a client-send notification for the approver.");
   }
-  expect(notification.action_href).toBe("/client/pending");
+  const actionHref = `/client/work/${seed.mainDeliverableId}`;
+  expect(notification.action_href).toBe(actionHref);
   expect(notification.title).toContain("بانتظار المراجعة");
 
   // 3. Client approver signs in and sees the notification in the center.
@@ -163,6 +164,19 @@ test("send-to-client notifies the client approver in-app (persistent)", async ({
   await expect(body).not.toContainText("client_send");
   await expect(body).not.toContainText("deliverable_version");
   await expect(body).not.toContainText(seed.mainDeliverableId);
+
+  const openNotification = approverInbox
+    .first()
+    .getByRole("link", { name: "فتح الإشعار" });
+  await expect(openNotification).toHaveAttribute("href", actionHref);
+  await openNotification.click();
+  await expect(page).toHaveURL(actionHref);
+  await expect(page.getByTestId("client-approval-detail")).toBeVisible();
+  await expect(
+    page.getByText(persistentDeliverableNames.main).first(),
+  ).toBeVisible();
+  await page.goto("/notifications", { waitUntil: "domcontentloaded" });
+  await expect(page.getByTestId("notifications-page")).toBeVisible();
 
   // 5. Mark the real PostgreSQL row as read. `read_at` is a timestamptz and
   // Supabase returns it with an explicit timezone offset; the center must keep

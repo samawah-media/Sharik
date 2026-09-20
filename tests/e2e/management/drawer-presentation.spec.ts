@@ -9,7 +9,13 @@ for (const width of [375, 1440]) {
     // The default view intentionally prioritizes work that needs action. Open
     // the stable delivered fixture explicitly instead of depending on sort
     // order when validating its version-one empty preview.
-    await page.getByRole("combobox", { name: "عرض العمل" }).selectOption("all_authorized");
+    const workScope = page.getByRole("combobox", { name: "عرض العمل" });
+    // Do not dispatch the filter change into the server-rendered control
+    // before React owns it; that event can be lost during hydration.
+    await expect.poll(() => workScope.evaluate((element) =>
+      Object.keys(element).some((key) => key.startsWith("__reactProps$")),
+    ).catch(() => false), { timeout: 30_000 }).toBe(true);
+    await workScope.selectOption("all_authorized");
     const deliveredRow = page
       .getByTestId("team-work-list")
       .locator("article")

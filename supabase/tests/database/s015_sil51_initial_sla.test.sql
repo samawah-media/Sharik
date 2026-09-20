@@ -65,21 +65,21 @@ insert into public.deliverables (
     '51000000-0000-4000-8000-000000000502',
     '51000000-0000-4000-8000-000000000001',
     '51000000-0000-4000-8000-000000000101',
-    'Historical waiting work', 'post', 'waiting_client_approval', 80,
+    'Historical paused work', 'post', 'in_progress', 30,
     'sil-51-historical-waiting', true, true
   ),
   (
     '51000000-0000-4000-8000-000000000503',
     '51000000-0000-4000-8000-000000000001',
     '51000000-0000-4000-8000-000000000101',
-    'Historical active work', 'post', 'ready_for_internal_review', 50,
+    'Historical active work', 'post', 'in_progress', 30,
     'sil-51-historical-active', true, true
   ),
   (
     '51000000-0000-4000-8000-000000000504',
     '51000000-0000-4000-8000-000000000001',
     '51000000-0000-4000-8000-000000000101',
-    'Historical delivered work', 'post', 'delivered', 100,
+    'Historical cancelled work', 'post', 'cancelled', 0,
     'sil-51-historical-delivered', true, true
   );
 

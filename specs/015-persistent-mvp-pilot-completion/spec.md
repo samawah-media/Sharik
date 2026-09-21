@@ -1,3 +1,7 @@
+## Owner amendment — empty team start (2026-09-21)
+
+The owner supersedes the seeded team handoff: the current trial begins with zero clients and business data. Preserve participant accounts and security audit; Bashayer creates the first client and reassigns the team. See [reset scope and verified result](evidence/team-pilot-empty-start-20260921.md). Do not reseed this tenant without a new owner request.
+
 # Spec 015: Persistent MVP Pilot Completion
 
 ## X010-B-7C-23 — remaining findings reconciliation and copy correction — 2026-09-12

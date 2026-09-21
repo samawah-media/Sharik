@@ -245,6 +245,7 @@ select is(
       'client-updated-by-rpc',
       'Updated Contact',
       'updated-rpc@example.test',
+      null,
       1
     )
   ),
@@ -268,9 +269,10 @@ select throws_ok(
     select *
     from public.f001_update_client_write(
       '00000000-0000-4000-8000-000000000406',
-      '00000000-0000-4000-8000-000000000606',
+      '00000000-0000-4000-8000-000000000604',
       'Client Stale Revision Denied',
       'client-stale-revision-denied',
+      null,
       null,
       null,
       1
@@ -541,6 +543,7 @@ select throws_ok(
       '00000000-0000-4000-8000-000000000607',
       'Client Update Denied By RPC',
       'client-update-denied-by-rpc',
+      null,
       null,
       null,
       2

@@ -16,6 +16,7 @@ const tenantScopedRoles: readonly RoleKey[] = [
 ];
 
 const internalClientRoles: readonly RoleKey[] = [
+  "project_manager",
   "account_manager",
   "content_writer",
   "designer",

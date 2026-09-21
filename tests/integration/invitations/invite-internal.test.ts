@@ -132,7 +132,7 @@ describe("invite internal member command", () => {
 });
 
 describe("accept internal invitation command", () => {
-  it("activates tenant membership and assigned client role without broad scope", async () => {
+  it.each(["account_manager", "project_manager"] as const)("activates %s only for invited clients", async (roleKey) => {
     const audit = new InMemoryAuditSink();
     const invitations = new InMemoryInvitationRepository();
     const dispatcher = new LocalInvitationEmailDispatcher();
@@ -146,7 +146,7 @@ describe("accept internal invitation command", () => {
       dispatcher,
       input: {
         email: assignedInternalA.session.email,
-        roleKey: "account_manager",
+        roleKey,
         clientIds: [clientA.id],
       },
       idFactory: () => "inv_to_accept",
@@ -175,7 +175,7 @@ describe("accept internal invitation command", () => {
         },
         roleAssignments: [
           {
-            roleKey: "account_manager",
+            roleKey,
             scopeType: "client",
             scopeId: clientA.id,
           },

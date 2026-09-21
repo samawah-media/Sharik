@@ -9,14 +9,18 @@ import type {
   TenantMembership,
 } from "@/modules/memberships/membership";
 import { resolveRuntimeContext } from "@/server/auth/runtime-context";
+import { canUseRouteActorFixtures } from "./route-fixture-env";
+export { canUseRouteActorFixtures } from "./route-fixture-env";
 
 export type RouteActorKey =
   | "tenant_admin_a"
   | "assigned_internal_a"
+  | "assigned_writer_a"
   | "tenant_viewer_a"
   | "client_viewer_a"
   | "client_approver_a"
   | "client_viewer_b"
+  | "client_approver_b"
   | "disabled_member_a";
 
 export type RouteAccessDecision =
@@ -24,26 +28,13 @@ export type RouteAccessDecision =
   | {
       allowed: false;
       actor?: AuthorizationActor;
-      reason: "permission_denied" | "not_found" | "no_assigned_clients" | "membership_disabled";
+      reason:
+        | "permission_denied"
+        | "not_found"
+        | "no_assigned_clients"
+        | "membership_disabled";
       safeReturnHref: string;
     };
-
-export const canUseRouteActorFixtures = ({
-  appEnv = process.env.APP_ENV,
-  nodeEnv = process.env.NODE_ENV,
-}: {
-  appEnv?: string;
-  nodeEnv?: string;
-} = {}) => {
-  if (!appEnv) {
-    return false;
-  }
-
-  return (
-    nodeEnv !== "production" &&
-    (appEnv === "local" || appEnv === "development" || appEnv === "test")
-  );
-};
 
 export const routeClients: ClientRecord[] = [
   {
@@ -51,6 +42,17 @@ export const routeClients: ClientRecord[] = [
     tenantId: "tenant_a",
     name: "هدنة",
     slug: "hadna",
+    status: "active",
+    createdBy: "tenant_admin_a",
+    createdAt: "2026-06-24T00:00:00.000Z",
+    updatedAt: "2026-06-24T00:00:00.000Z",
+    revision: 1,
+  },
+  {
+    id: "client_b",
+    tenantId: "tenant_a",
+    name: "عميل تجريبي ب",
+    slug: "client-b",
     status: "active",
     createdBy: "tenant_admin_a",
     createdAt: "2026-06-24T00:00:00.000Z",
@@ -127,6 +129,19 @@ export const resolveRouteActor = (
     ]);
   }
 
+  if (key === "assigned_writer_a") {
+    const membership = tenantMembership("tm_writer_a", key);
+    return actor(key, membership, [
+      role({
+        id: "ra_writer_client_a",
+        membershipId: membership.id,
+        roleKey: "content_writer",
+        scopeType: "client",
+        scopeId: "client_a",
+      }),
+    ]);
+  }
+
   if (key === "tenant_viewer_a") {
     const membership = tenantMembership("tm_viewer_a", key);
     return actor(key, membership, []);
@@ -137,13 +152,27 @@ export const resolveRouteActor = (
     return actor(key, membership, []);
   }
 
+  if (key === "client_approver_b") {
+    const membership = tenantMembership("tm_client_approver_b", key);
+    return actor(key, membership, [
+      role({
+        id: "ra_client_approver_b",
+        membershipId: membership.id,
+        roleKey: "client_approver",
+        scopeType: "client",
+        scopeId: "client_b",
+      }),
+    ]);
+  }
+
   if (key === "client_viewer_a" || key === "client_approver_a") {
     const membership = tenantMembership(`tm_${key}`, key);
     return actor(key, membership, [
       role({
         id: `ra_${key}`,
         membershipId: membership.id,
-        roleKey: key === "client_approver_a" ? "client_approver" : "client_viewer",
+        roleKey:
+          key === "client_approver_a" ? "client_approver" : "client_viewer",
         scopeType: "client",
         scopeId: "client_a",
       }),
@@ -151,7 +180,12 @@ export const resolveRouteActor = (
   }
 
   if (key === "disabled_member_a") {
-    const membership = tenantMembership("tm_disabled_a", key, "tenant_a", "disabled");
+    const membership = tenantMembership(
+      "tm_disabled_a",
+      key,
+      "tenant_a",
+      "disabled",
+    );
     return actor(key, membership, [
       role({
         id: "ra_disabled_a",
@@ -181,11 +215,18 @@ export const resolveRouteActor = (
 
 export const resolveRouteRuntime = async (key?: string) => {
   if (canUseRouteActorFixtures()) {
+    const fixtureActor = resolveRouteActor(key);
     return {
       ok: true as const,
-      actor: resolveRouteActor(key),
+      actor: fixtureActor,
       clients: routeClients,
-      clientMemberships: [],
+      clientMemberships: fixtureActor.roleAssignments.filter((assignment) => assignment.scopeType === "client" && assignment.roleKey.startsWith("client_")).map((assignment) => ({
+        id: `fixture_membership_${assignment.scopeId}`,
+        tenantId: fixtureActor.tenantId,
+        userId: fixtureActor.userId,
+        clientId: assignment.scopeId,
+        status: assignment.status,
+      })),
     };
   }
 
@@ -219,7 +260,10 @@ const decision = (
   return {
     allowed: false,
     actor: actorInput,
-    reason: resource.tenantId === actorInput.tenantId ? "permission_denied" : "not_found",
+    reason:
+      resource.tenantId === actorInput.tenantId
+        ? "permission_denied"
+        : "not_found",
     safeReturnHref: "/",
   };
 };
@@ -236,21 +280,22 @@ export const guardManagementRoute = ({
       ? PERMISSIONS.CLIENT_VIEW_ALL_IN_TENANT
       : route === "clientWrite"
         ? PERMISSIONS.CLIENT_CREATE
-      : route === "members"
-        ? PERMISSIONS.USER_VIEW
-        : route === "invitations"
-          ? PERMISSIONS.USER_INVITE
-          : PERMISSIONS.AUDIT_USER_VIEW;
+        : route === "members"
+          ? PERMISSIONS.USER_VIEW
+          : route === "invitations"
+            ? PERMISSIONS.USER_INVITE
+            : PERMISSIONS.AUDIT_USER_VIEW;
 
   return decision(actor, permission, { tenantId: actor.tenantId });
 };
 
-const isClientPortalOnlyActor = (actor: AuthorizationActor) =>
+export const isClientPortalOnlyActor = (actor: AuthorizationActor) =>
   actor.roleAssignments.length > 0 &&
-  actor.roleAssignments.every((assignment) =>
-    assignment.roleKey === "client_viewer" ||
-    assignment.roleKey === "client_approver" ||
-    assignment.roleKey === "client_admin",
+  actor.roleAssignments.every(
+    (assignment) =>
+      assignment.roleKey === "client_viewer" ||
+      assignment.roleKey === "client_approver" ||
+      assignment.roleKey === "client_admin",
   );
 
 export const guardClientsIndexRoute = ({
@@ -290,12 +335,13 @@ export const guardClientsIndexRoute = ({
 
   const hasAssignedClient = clients
     .filter((client) => client.tenantId === actor.tenantId)
-    .some((client) =>
-      evaluatePermission({
-        actor,
-        permission: PERMISSIONS.CLIENT_VIEW,
-        resource: { tenantId: client.tenantId, clientId: client.id },
-      }).allowed,
+    .some(
+      (client) =>
+        evaluatePermission({
+          actor,
+          permission: PERMISSIONS.CLIENT_VIEW,
+          resource: { tenantId: client.tenantId, clientId: client.id },
+        }).allowed,
     );
 
   return hasAssignedClient
@@ -347,6 +393,15 @@ export const guardPortfolioRoute = ({
       actor,
       reason: "membership_disabled",
       safeReturnHref: "/sign-in",
+    };
+  }
+
+  if (isClientPortalOnlyActor(actor)) {
+    return {
+      allowed: false,
+      actor,
+      reason: "permission_denied",
+      safeReturnHref: "/client",
     };
   }
 

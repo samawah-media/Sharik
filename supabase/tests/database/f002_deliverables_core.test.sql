@@ -4,7 +4,7 @@ create extension if not exists pgtap with schema extensions;
 
 set search_path = public, extensions;
 
-select plan(73);
+select plan(74);
 
 grant usage on schema public to authenticated;
 grant select on public.tenants to authenticated;
@@ -683,7 +683,7 @@ select is(
       '2026-07-05'::date,
       true,
       true,
-      2,
+      1,
       'f002c-deliverable-create-client-a'
     )
   ),
@@ -697,10 +697,43 @@ select is(
     from public.package_ledger_entries
     where deliverable_id = '05000000-0000-4000-8000-000000000010'
       and entry_type = 'quantity_reserved'
-      and quantity = 2
+      and quantity = 1
   ),
   1,
   'deliverable reservation RPC appends a quantity_reserved package ledger entry'
+);
+
+select throws_ok(
+  $$
+    select *
+    from public.f002_create_deliverable_reservation(
+      '05000000-0000-4000-8000-000000000011',
+      '07000000-0000-4000-8000-000000000011',
+      '06000000-0000-4000-8000-000000000021',
+      '09000000-0000-4000-8000-000000000021',
+      '01000000-0000-4000-8000-000000000301',
+      '02000000-0000-4000-8000-000000000001',
+      '03000000-0000-4000-8000-000000000001',
+      '04000000-0000-4000-8000-000000000001',
+      'Invalid Multi-unit Count Deliverable',
+      'Must remain one independently managed output',
+      'post',
+      'normal',
+      null,
+      '{}'::uuid[],
+      '2026-07-02'::date,
+      '2026-07-03'::date,
+      '2026-07-04'::date,
+      '2026-07-05'::date,
+      true,
+      true,
+      2,
+      'f002c-count-unit-rejected'
+    )
+  $$,
+  '22023',
+  'count unit requires one deliverable per reserved unit',
+  'the production reservation RPC rejects multiple count units for one deliverable'
 );
 
 select is(
@@ -709,7 +742,7 @@ select is(
     from public.deliverable_allocations
     where deliverable_id = '05000000-0000-4000-8000-000000000010'
       and package_line_id = '04000000-0000-4000-8000-000000000001'
-      and reserved_quantity = 2
+      and reserved_quantity = 1
       and status = 'reserved'
   ),
   1,

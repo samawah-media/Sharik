@@ -1,5 +1,6 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
+import { adjustPackageCommitmentAction } from "@/server/actions/packages";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   canUseRouteActorFixtures,
@@ -165,6 +166,11 @@ export default async function ContractPackagesPage({
     permission: PERMISSIONS.PACKAGE_CREATE,
     resource: { tenantId: client.tenantId, clientId: client.id },
   }).allowed;
+  const canAdjustPackages = evaluatePermission({
+    actor: runtime.actor,
+    permission: PERMISSIONS.PACKAGE_ADJUST,
+    resource: { tenantId: client.tenantId, clientId: client.id },
+  }).allowed;
 
   if (!canViewPackages) {
     return <PackageDeniedState />;
@@ -202,7 +208,14 @@ export default async function ContractPackagesPage({
         title={`باقات ${client.name}`}
       />
       {packageList.packages.length > 0 ? (
-        <PackageList packages={packageList.packages} />
+        <PackageList
+          adjustmentAction={
+            canAdjustPackages ? adjustPackageCommitmentAction : undefined
+          }
+          clientId={client.id}
+          contractId={contractId}
+          packages={packageList.packages}
+        />
       ) : (
         <PackageEmptyState />
       )}

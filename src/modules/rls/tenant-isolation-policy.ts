@@ -103,7 +103,7 @@ export const canSelectTenantScopedRow = ({
         hasActiveClientRole({
           actor,
           row,
-          roleKeys: ["account_manager", "content_writer", "designer"],
+          roleKeys: ["project_manager", "account_manager", "content_writer", "designer"],
         }),
     );
   }
@@ -114,7 +114,7 @@ export const canSelectTenantScopedRow = ({
         hasActiveClientRole({
           actor,
           row,
-          roleKeys: ["account_manager"],
+          roleKeys: ["project_manager", "account_manager"],
         }),
     );
   }
@@ -135,6 +135,7 @@ export const canSelectTenantScopedRow = ({
           actor,
           row,
           roleKeys: [
+            "project_manager",
             "account_manager",
             "content_writer",
             "designer",

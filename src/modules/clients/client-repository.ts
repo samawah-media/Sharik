@@ -8,6 +8,7 @@ export type ClientRecord = {
   status: ClientStatus;
   primaryContactName?: string;
   primaryContactEmail?: string;
+  primaryContactPhone?: string;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -21,6 +22,7 @@ export type ClientCreateInput = {
   slug: string;
   primaryContactName?: string;
   primaryContactEmail?: string;
+  primaryContactPhone?: string;
   createdBy: string;
 };
 
@@ -31,6 +33,7 @@ export type ClientUpdateInput = {
   slug: string;
   primaryContactName?: string;
   primaryContactEmail?: string;
+  primaryContactPhone?: string;
   expectedRevision: number;
 };
 
@@ -78,6 +81,7 @@ export class InMemoryClientRepository implements ClientRepository {
       slug: input.slug,
       primaryContactName: input.primaryContactName,
       primaryContactEmail: input.primaryContactEmail,
+      primaryContactPhone: input.primaryContactPhone,
       updatedAt: new Date().toISOString(),
       revision: existing.revision + 1,
     };

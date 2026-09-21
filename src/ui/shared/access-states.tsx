@@ -26,7 +26,7 @@ function SafeState({
         <h1 className="text-2xl font-semibold">{heading}</h1>
         <p className="text-sm leading-6 text-muted">{body}</p>
         <a
-          className="w-fit rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          className="inline-flex min-h-11 items-center rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           href={returnHref}
         >
           {actionLabel}
@@ -50,7 +50,7 @@ export function ResourceNotFoundState({ returnHref = "/" }: AccessStateProps) {
   return (
     <SafeState
       heading={f001CopyArSA["f001.access.notFound"]}
-      body="لا يمكن فتح هذه الصفحة من حسابك الحالي. اختر المساحة المسندة لك أو تواصل مع مدير الحساب."
+      body="لا يمكن فتح هذه الصفحة من حسابك الحالي. قد يكون الرابط غير صحيح أو ليس لديك صلاحية للوصول."
       returnHref={returnHref}
     />
   );

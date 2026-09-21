@@ -15,6 +15,7 @@ type DeliverableWriteRow = {
   contract_id: string | null;
   package_id: string | null;
   package_line_id: string | null;
+  current_version_id?: string | null;
   name: string;
   description: string | null;
   type: string;
@@ -32,6 +33,8 @@ type DeliverableWriteRow = {
   approved_extra: boolean;
   extra_reason?: string | null;
   idempotency_key?: string | null;
+  source_metadata?: Record<string, unknown> | null;
+  import_run_id?: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -73,6 +76,7 @@ export const toDeliverableRecordFromWriteRow = (
   contractId: row.contract_id ?? undefined,
   packageId: row.package_id ?? undefined,
   packageLineId: row.package_line_id ?? undefined,
+  currentVersionId: row.current_version_id ?? undefined,
   name: row.name,
   description: row.description ?? undefined,
   type: row.type,
@@ -124,6 +128,15 @@ export const toDeliverableSafeSummaryFromRows = ({
   const reservation = allocationRows
     .map(toDeliverableAllocationRecordFromRow)
     .find((allocation) => allocation.status === "reserved");
+  const sourceMetadata = deliverableRow.source_metadata;
+  const plannedPublishDate =
+    typeof sourceMetadata?.publishDay === "string" && sourceMetadata.publishDay
+      ? sourceMetadata.publishDay
+      : undefined;
+  const contentStage =
+    typeof sourceMetadata?.stage === "string" && sourceMetadata.stage.trim()
+      ? sourceMetadata.stage.trim()
+      : undefined;
 
   return {
     id: deliverable.id,
@@ -132,6 +145,7 @@ export const toDeliverableSafeSummaryFromRows = ({
     contractId: deliverable.contractId,
     packageId: deliverable.packageId,
     packageLineId: deliverable.packageLineId,
+    currentVersionId: deliverable.currentVersionId,
     name: deliverable.name,
     description: deliverable.description,
     type: deliverable.type,
@@ -150,6 +164,8 @@ export const toDeliverableSafeSummaryFromRows = ({
     revision: deliverable.revision,
     createdAt: deliverable.createdAt,
     updatedAt: deliverable.updatedAt,
+    plannedPublishDate,
+    contentStage,
     reservation: reservation
       ? {
           packageLineId: reservation.packageLineId,
@@ -189,30 +205,33 @@ export const createDeliverableViaRpc = async ({
     idempotencyKey: string;
   };
 }) => {
-  const { data, error } = await supabase.rpc("f002_create_deliverable_reservation", {
-    deliverable_id: input.deliverableId,
-    allocation_id: input.allocationId,
-    ledger_entry_id: input.ledgerEntryId,
-    audit_event_id: input.auditEventId,
-    target_client_id: input.clientId,
-    target_contract_id: input.contractId,
-    target_package_id: input.packageId,
-    target_package_line_id: input.packageLineId,
-    deliverable_name: input.name,
-    deliverable_description: input.description,
-    deliverable_type: input.type,
-    deliverable_priority: input.priority,
-    owner_user_id_input: input.ownerUserId,
-    contributor_user_ids_input: input.contributorUserIds,
-    start_on: input.startDate,
-    internal_due_on: input.internalDueDate,
-    client_due_on: input.clientDueDate,
-    final_due_on: input.finalDueDate,
-    requires_internal_approval_input: input.requiresInternalApproval,
-    requires_client_approval_input: input.requiresClientApproval,
-    reserved_quantity: input.reservedQuantity,
-    idempotency_key: input.idempotencyKey,
-  });
+  const { data, error } = await supabase.rpc(
+    "f002_create_deliverable_reservation",
+    {
+      deliverable_id: input.deliverableId,
+      allocation_id: input.allocationId,
+      ledger_entry_id: input.ledgerEntryId,
+      audit_event_id: input.auditEventId,
+      target_client_id: input.clientId,
+      target_contract_id: input.contractId,
+      target_package_id: input.packageId,
+      target_package_line_id: input.packageLineId,
+      deliverable_name: input.name,
+      deliverable_description: input.description,
+      deliverable_type: input.type,
+      deliverable_priority: input.priority,
+      owner_user_id_input: input.ownerUserId,
+      contributor_user_ids_input: input.contributorUserIds,
+      start_on: input.startDate,
+      internal_due_on: input.internalDueDate,
+      client_due_on: input.clientDueDate,
+      final_due_on: input.finalDueDate,
+      requires_internal_approval_input: input.requiresInternalApproval,
+      requires_client_approval_input: input.requiresClientApproval,
+      reserved_quantity: input.reservedQuantity,
+      idempotency_key: input.idempotencyKey,
+    },
+  );
 
   if (error) {
     return { ok: false as const, error };
@@ -346,18 +365,15 @@ export const updateDeliverableStatusViaRpc = async ({
     idempotencyKey: string;
   };
 }) => {
-  const { data, error } = await supabase.rpc(
-    "f004_update_deliverable_status",
-    {
-      target_deliverable_id: input.deliverableId,
-      audit_event_id: input.auditEventId,
-      target_client_id: input.clientId,
-      target_status: input.toStatus,
-      expected_revision: input.expectedRevision,
-      transition_reason: input.reason,
-      idempotency_key: input.idempotencyKey,
-    },
-  );
+  const { data, error } = await supabase.rpc("f004_update_deliverable_status", {
+    target_deliverable_id: input.deliverableId,
+    audit_event_id: input.auditEventId,
+    target_client_id: input.clientId,
+    target_status: input.toStatus,
+    expected_revision: input.expectedRevision,
+    transition_reason: input.reason,
+    idempotency_key: input.idempotencyKey,
+  });
 
   if (error) {
     return { ok: false as const, error };

@@ -4,7 +4,12 @@ import {
   type DeliverableLifecycleStatus,
 } from "./deliverable-rules";
 
-export const deliverablePriorities = ["low", "normal", "high", "urgent"] as const;
+export const deliverablePriorities = [
+  "low",
+  "normal",
+  "high",
+  "urgent",
+] as const;
 
 export const deliverableAllocationStatuses = [
   "reserved",
@@ -24,6 +29,7 @@ export type DeliverableRecord = {
   contractId?: string;
   packageId?: string;
   packageLineId?: string;
+  currentVersionId?: string;
   name: string;
   description?: string;
   type: string;
@@ -71,6 +77,10 @@ export type DeliverableSafeSummary = Omit<
   DeliverableRecord,
   "idempotencyKey" | "createdBy" | "extraReason" | "cancelledAt"
 > & {
+  plannedPublishDate?: string;
+  contentStage?: string;
+  ownerDisplay?: import("@/modules/members/member-directory").MemberDisplay;
+  contributorDisplays?: import("@/modules/members/member-directory").MemberDisplay[];
   reservation?: DeliverableReservationSummary;
 };
 
@@ -158,7 +168,9 @@ export type DeliverableRepository = TransactionalResource & {
     clientId: string,
     deliverableId: string,
   ): Promise<DeliverableAllocationRecord[]>;
-  toSafeSummary(deliverable: DeliverableRecord): Promise<DeliverableSafeSummary>;
+  toSafeSummary(
+    deliverable: DeliverableRecord,
+  ): Promise<DeliverableSafeSummary>;
 };
 
 export class InMemoryDeliverableRepository implements DeliverableRepository {
@@ -285,7 +297,8 @@ export class InMemoryDeliverableRepository implements DeliverableRepository {
   ) {
     const deliverable = this.deliverables.get(deliverableId);
 
-    return deliverable?.tenantId === tenantId && deliverable.clientId === clientId
+    return deliverable?.tenantId === tenantId &&
+      deliverable.clientId === clientId
       ? deliverable
       : undefined;
   }
@@ -305,7 +318,8 @@ export class InMemoryDeliverableRepository implements DeliverableRepository {
     const scopedDeliverables = Array.from(this.deliverables.values())
       .filter(
         (deliverable) =>
-          deliverable.tenantId === tenantId && deliverable.clientId === clientId,
+          deliverable.tenantId === tenantId &&
+          deliverable.clientId === clientId,
       )
       .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
 
@@ -343,6 +357,7 @@ export class InMemoryDeliverableRepository implements DeliverableRepository {
       contractId: deliverable.contractId,
       packageId: deliverable.packageId,
       packageLineId: deliverable.packageLineId,
+      currentVersionId: deliverable.currentVersionId,
       name: deliverable.name,
       description: deliverable.description,
       type: deliverable.type,
@@ -375,10 +390,9 @@ export class InMemoryDeliverableRepository implements DeliverableRepository {
       deliverables: Array.from(this.deliverables.entries()).map(
         ([key, value]) => [key, { ...value }],
       ),
-      allocations: Array.from(this.allocations.entries()).map(([key, value]) => [
-        key,
-        { ...value },
-      ]),
+      allocations: Array.from(this.allocations.entries()).map(
+        ([key, value]) => [key, { ...value }],
+      ),
     };
   }
 

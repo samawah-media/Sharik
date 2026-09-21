@@ -24,7 +24,7 @@ V1 يستخدم Supabase Storage مع metadata في PostgreSQL. لا يكون st
 | --- | --- |
 | internal_only | ممنوع |
 | client_visible | مسموح بعد التعميد/الإرسال |
-| client_uploaded | مسموح داخل client scope |
+| client_uploaded | القراءة مسموحة داخل client scope؛ الإنشاء لـ`client_admin` أو `client_approver` فقط، وليس `client_viewer` |
 | final_delivery | مسموح بعد التسليم |
 | contract_file | حسب نسخة العميل |
 | report_file | يظهر في الملفات، لا Tab مستقل |
@@ -40,9 +40,8 @@ V1 يستخدم Supabase Storage مع metadata في PostgreSQL. لا يكون st
 
 ## 5. Upload Flow
 
-Uppy يرفع عبر مسار محكوم. بعد الرفع يجب تثبيت metadata وربط الملف بسياقه. Upload غير مثبت ينظف عبر job.
+Uppy يرفع عبر مسار محكوم. بعد الرفع يجب تثبيت metadata وربط الملف بسياقه. Upload غير مثبت ينظف عبر job. حساب `client_viewer` للقراءة فقط ولا يحصل على مسار رفع؛ التحقق يطبق في واجهة المنتج، ودالة تفويض Storage، وPostgreSQL metadata trigger.
 
 ## 6. مخاطر الفيديو
 
 Video-heavy scenario قد يرفع egress والتخزين. لا يعتمد R2 في V1 دون ADR لاحق، لكن يوثق كخيار خروج إذا زادت التكلفة.
-

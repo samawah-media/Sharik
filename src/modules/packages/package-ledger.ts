@@ -34,24 +34,26 @@ export type ReservationDecision =
 export const projectPackageBalance = (
   entries: readonly PackageLedgerEntry[],
 ): PackageBalanceProjection => {
+  // Persisted numeric(12, 2) quantities use integer hundredths during arithmetic.
   const totals = entries.reduce(
     (balance, entry) => {
+      const quantityHundredths = Math.round(entry.quantity * 100);
       switch (entry.entryType) {
         case "commitment_added":
         case "contract_amendment":
-          balance.committed += entry.quantity;
+          balance.committed += quantityHundredths;
           break;
         case "quantity_reserved":
-          balance.reserved += entry.quantity;
+          balance.reserved += quantityHundredths;
           break;
         case "reservation_released":
-          balance.released += entry.quantity;
+          balance.released += quantityHundredths;
           break;
         case "administrative_adjustment":
-          balance.adjustments += entry.quantity;
+          balance.adjustments += quantityHundredths;
           break;
         case "quantity_consumed":
-          balance.consumed += entry.quantity;
+          balance.consumed += quantityHundredths;
           break;
       }
 
@@ -66,13 +68,20 @@ export const projectPackageBalance = (
     },
   );
 
-  const activeReserved = Math.max(0, totals.reserved - totals.released);
+  const activeReserved = Math.max(
+    0,
+    totals.reserved - totals.released - totals.consumed,
+  );
 
   return {
-    ...totals,
-    reserved: activeReserved,
+    committed: totals.committed / 100,
+    reserved: activeReserved / 100,
+    consumed: totals.consumed / 100,
+    released: totals.released / 100,
+    adjustments: totals.adjustments / 100,
     available:
-      totals.committed + totals.adjustments - activeReserved - totals.consumed,
+      (totals.committed + totals.adjustments - activeReserved - totals.consumed) /
+      100,
   };
 };
 
@@ -90,4 +99,3 @@ export const assertCanReserveQuantity = (
 
   return { allowed: true };
 };
-

@@ -1,6 +1,13 @@
 import { resolveRoleAwareNavigation } from "@/modules/navigation/navigation-resolver";
 import { resolveRuntimeContext } from "@/server/auth/runtime-context";
-import { canUseRouteActorFixtures } from "@/server/navigation/route-guards";
+import { readShellIdentity } from "@/server/auth/shell-identity";
+import {
+  canUseRouteActorFixtures,
+  isClientPortalOnlyActor,
+} from "@/server/navigation/route-guards";
+import { readNotificationBellData } from "@/server/actions/notifications-read";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 import {
   ProductShell,
   type ProductShellNavigationItem,
@@ -19,7 +26,7 @@ const iconForNavigationItem = (
 const hasSupabasePublicRuntimeEnv = () =>
   Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   );
 
 const resolveShellNavigation = async () => {
@@ -52,19 +59,54 @@ export default async function ManagementLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let runtime = null;
+
+  if (
+    process.env.NODE_ENV !== "test" &&
+    !canUseRouteActorFixtures() &&
+    hasSupabasePublicRuntimeEnv()
+  ) {
+    runtime = await resolveRuntimeContext();
+
+    if (runtime.ok && isClientPortalOnlyActor(runtime.actor)) {
+      redirect("/client");
+    }
+  }
+
   const navigationItems = await resolveShellNavigation();
   const shellRoot = navigationItems[0] ?? {
     href: "/portfolio",
     label: "المساحة",
   };
 
+  const canReadServerData = Boolean(runtime?.ok) && !canUseRouteActorFixtures();
+  const supabaseServer = canReadServerData
+    ? await createSupabaseServerClient()
+    : null;
+
+  const notifications = supabaseServer
+    ? await readNotificationBellData({
+        supabase: supabaseServer,
+      }).catch(() => ({ unreadCount: 0, recent: [] }))
+    : { unreadCount: 0, recent: [] };
+
+  const accountIdentity =
+    runtime?.ok && supabaseServer
+      ? await readShellIdentity({
+          supabase: supabaseServer,
+          actor: runtime.actor,
+        }).catch(() => undefined)
+      : undefined;
+
   return (
     <ProductShell
+      accountIdentity={accountIdentity}
       breadcrumbRootHref={shellRoot.href}
       breadcrumbRootLabel={shellRoot.label}
       homeHref={shellRoot.href}
       navigationItems={navigationItems}
       navigationLabel="تنقل مساحة الفريق"
+      notifications={notifications}
     >
       <section
         dir="rtl"

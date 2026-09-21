@@ -9,6 +9,7 @@ type ClientWriteRow = {
   status: string;
   primary_contact_name: string | null;
   primary_contact_email: string | null;
+  primary_contact_phone: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -31,6 +32,7 @@ export const toClientRecordFromWriteRow = (row: ClientWriteRow): ClientRecord =>
   status: row.status === "archived" ? "archived" : "active",
   primaryContactName: row.primary_contact_name ?? undefined,
   primaryContactEmail: row.primary_contact_email ?? undefined,
+  primaryContactPhone: row.primary_contact_phone ?? undefined,
   createdBy: row.created_by ?? "system",
   createdAt: row.created_at,
   updatedAt: row.updated_at,
@@ -49,6 +51,7 @@ export const createClientViaRpc = async ({
     slug: string;
     primaryContactName: string | null;
     primaryContactEmail: string | null;
+    primaryContactPhone: string | null;
   };
 }) => {
   const { data, error } = await supabase.rpc("f001_create_client_write", {
@@ -58,6 +61,7 @@ export const createClientViaRpc = async ({
     client_slug: input.slug,
     new_primary_contact_name: input.primaryContactName,
     new_primary_contact_email: input.primaryContactEmail,
+    new_primary_contact_phone: input.primaryContactPhone,
   });
 
   if (error) {
@@ -85,6 +89,7 @@ export const updateClientViaRpc = async ({
     slug: string;
     primaryContactName: string | null;
     primaryContactEmail: string | null;
+    primaryContactPhone: string | null;
     expectedRevision: number;
   };
 }) => {
@@ -95,6 +100,7 @@ export const updateClientViaRpc = async ({
     client_slug: input.slug,
     new_primary_contact_name: input.primaryContactName,
     new_primary_contact_email: input.primaryContactEmail,
+    new_primary_contact_phone: input.primaryContactPhone,
     expected_revision: input.expectedRevision,
   });
 

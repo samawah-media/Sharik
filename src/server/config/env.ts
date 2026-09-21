@@ -10,7 +10,15 @@ const publicEnvSchema = z.object({
 const serverEnvSchema = publicEnvSchema.extend({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   APP_ENV: z
-    .enum(["local", "development", "test", "preview", "staging", "production"])
+    .enum([
+      "local",
+      "development",
+      "test",
+      "test-persistent",
+      "preview",
+      "staging",
+      "production",
+    ])
     .default("local"),
 });
 

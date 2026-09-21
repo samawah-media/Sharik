@@ -1,0 +1,1260 @@
+# Spec 015 execution log
+
+## 2026-09-10 — Madar text lifecycle completed through actual UI
+
+Closeout: browser-runner syntax and targeted ESLint, repository secret scan and diff whitespace check passed. Git reported line-ending conversion warnings only. The coordinator stopped its temporary local server after verification; the hosted Preview was not stopped or changed. Updated the SIL-44 checkpoint to distinguish historical pending items from this completed text lifecycle. Production source/spec/ADR unchanged in this QA continuation; existing dirty implementation preserved. Delegation separated runner preparation and read-only requirements audit; the coordinator executed and reconciled evidence.
+
+Management became accessible via direct Madar board route. Per owner full-trial authorization, sent v2, requested client change, saved/submitted/reviewed v3 from management UI, resent, approved as client, replayed approval from stale same-version tab, prepared and finally delivered. No raw DB writes: the companion SQL is read-only. DB at completion: delivered100%, v3 final; exactly one client approval for v3 at09:06:51.952236Z; exactly one consumed quantity1 at09:09:46.346381Z; audit matches. SLA has two waiting-client segments, resumed segment, completed segment. No initial running segment before first send; retain SIL-51 investigation.
+
+Observed P1 SIL-52 disappearance of previously visible work during v3 draft, and P1 SIL-54 reserved/consumed double counting in client commercial summary. Fresh client_approval label confirms SIL-48. Full local suites915 passed. Native worker supplied readonly browser runner; lead inspected, corrected missing bundled browser by installed Chrome channel and narrowed auth host. Extended navigation failed by timeout (latest stage desktop1440:switch:Jidei); do not convert it to PASS. Separate explicit geometry-only run passed1440/375 with44px controls/no page overflow/zero captured browser errors; mobile screenshot inspected. No new provider use; inherited native model/cost unreported. Full acceptance HOLD, not Production ready.
+
+## 2026-09-10 — Broader regression and actual client boundary checks
+
+Ran full unit/component/RLS-simulator suite: 127 files803 tests PASS, 41.73s; full integration:28 files112 tests PASS,7.63s. Earlier targeted6 integration tests are included, not added to915. CUA verified keyboard workspace round trip, same authorized bookmarked work across cookie changes, internal board redirect and unsent Madar detail denial. Read-only linked UAT SQL confirmed internal decisions/audit timestamps and absence of client decisions/SLA timeline segments. No business writes, grants or publication. Native reviewer audits old20 requirement coverage; separate UI worker prepares bounded desktop/mobile browser verification. No external model provider dispatch; usage/cost unknown. Owner says management is open, but currently visible published tab remains client after refresh; lifecycle not executed.
+
+## 2026-09-10 — SIL-44 implementation and local browser verification
+
+Lead implemented authorized workspace resolution and validated session preference. Native workers completed selector UI and seven portal routes; independent review found no blocking source-level issue after five additional failure-path tests. Coordinator combined run: 33 files / 216 tests green; scoped lint, TypeScript, production build and secret scan passed. Browser used the local production build with hosted UAT authentication: Jidei → Madar, reload persistence, correct Madar contract and empty unshared work/pending/files verified. No decisions, membership changes, commit, push or deployment. Hosted acceptance and client lifecycle remain pending. [Evidence and boundaries](client-workspace-checkpoint.md).
+
+## 2026-09-10 — Client portal live read-only round
+
+Reloaded owner-opened approver browser session. Inspected primary navigation, home screenshot, empty pending inbox, commercial page, files, synthetic MP4 preview failure/close, and synthetic delivered detail. Recorded SIL-44–48. No switcher from Jidei to newly authorized Madar; local client routes select first active scoped client. No business writes, download, grant changes, deployment, or decisions. Current deployment dpl_9x7AafDPSsTFbgtE1t8h1EtnnDVx; source SHA unverified. Remaining client lifecycle and isolation acceptance not passed. Docs guard separates fixture defects, observed UI, source evidence, and pending tests.
+
+## 2026-09-10 — Owner-approved additive Madar client access
+
+Owner explicitly approved grant. Verified linked project ref, executed evidence/madar-client-access-20260910.sql via CLI db query --linked: atomic membership/role/audit insertion, exact target and actor guards, no existing-scope writes. Audit count1. Authenticated client read confirmed both active scopes, Jidei count11 unchanged and Madar pre-send count0. No UI client sign-in/send/approval or viewer recovery claimed. No secret in SQL artifact, no schema/RLS changes, no Production. Full UAT HOLD; continue at client portal sign-in.
+
+## 2026-09-10 — Recovered authorized Supabase CLI access
+
+Vercel Preview env list/pull verified project/branch and host; separate ignored local file created, no current env overwrite. CLI env-run rejected child options; no child executed. Supabase CLI2.107.0 cached session listed exact healthy UAT project. Used service-role result only in subprocess memory for scoped read of Madar and known test approver memberships; no secrets printed. No grants or membership suspension executed. Additive Madar access awaits owner confirmation, with existing Jidei scope preserved.
+
+## 2026-09-10 — Dashboard project access denied
+
+Confirmed dashboard sign-in, then opened exact known UAT project. Supabase explicitly denied project access and redirected to organizations. Stopped at authorization boundary; no alternate-project access, writes, grants or migration. Await correctly authorized dashboard identity.
+
+## 2026-09-10 — Public-key client check and dashboard handoff
+
+Validated documented UAT host after detecting absent hostname env guard; sandbox network check hit EACCES, approved network retry succeeded. Approver Auth valid with Jidei client scope; viewer invalid_credentials. Scoped deliverable count query returned11 for assigned client and0 for Madar. Credentials never printed; signed out only transient local sessions. No business writes/grants. Supabase dashboard redirected to sign-in and remains open for owner; client preparation and full acceptance pending.
+
+## 2026-09-10 — Client-persona setup preflight blocked
+
+Read existing attachment tool and attempted dry-run for Madar only. Secure config alone lacked public URL; adding .env.local exposed next missing prerequisite, SUPABASE_SERVICE_ROLE_KEY. Both attempts stopped before network access. No apply, account creation, scope suspension, credentials output or client send. Record prerequisite rather than claiming existing client accounts or successful setup.
+
+## 2026-09-10 — Management confirms revision2 and tests internal approval
+
+Verified refreshed management role UI, review notification and writer's revised text on Madar version2. Inspected unsaved quality defaults, approved internally once through UI, confirmed board success/70% and accepted decision actor/time in Activity. Read pre-send summary showing version2 and zero files; no review-confirmation click/client send. Documented REV2-01–06/SIL-42–43 and preserved remaining HOLD gates. No new account/grant, code, deployment, task completion or file mutation. Client-session prerequisite remains; no client isolation/SLA/approval acceptance claim.
+
+## 2026-09-09 — Writer receives reason and resubmits synthetic revision2
+
+Refreshed writer session; followed change notification, read management internal comment, manually copied unchanged metadata into blank revision form and saved revised two-line caption as version2 draft. Full reload retained draft/content; prior PNG remained in Files but no image attached to current version. Submitted draft2 once for internal review; second reload confirmed review status/50% and content retained, with unknown version-status labels. Recorded WR-REV-01–06/SIL-39–41. Attempt to set contenteditable comment failed at tool level before any comment save; do not count comment creation as tested. No approval, client send, task completion, upload/delete, code or deployment. Management receipt and remaining lifecycle gates pending/HOLD.
+
+## 2026-09-09 — Management reviews Madar and requests internal revision
+
+Verified management notification and cross-role version1 text/image, then tested required reason and submitted exactly one internal change request. Reload confirmed internal_changes_requested/45% and persisted reason as management internal comment. Activity records decision actor/time but labels decision unknown; version status was also unknown during review. Recorded REV-LIVE-01–05/SIL-35–38 in canonical owner walkthrough. No client send, approval, new version, task completion, database audit inspection, production/code/deployment change. Writer receipt/revision and remaining full lifecycle tests remain pending; owner acceptance HOLD.
+
+## 2026-09-09 — Designer technical upload and internal review handoff
+
+Owner replaced queued screenshot; inspected replacement thumbnail (desktop), uploaded PNG once to synthetic Madar and verified internal label/image on version1. Submitted version for internal review; reload retained status and one file. No task completion, client send, internal approval, code or deployment action. Recorded DES-06–10/SIL-32–34 and mid-trial Vercel indicator change to dpl_9x7AafDPSsTFbgtE1t8h1EtnnDVx (SHA unverified). Await management for cross-role file/review visibility. Uploaded asset is a technical placeholder, not completed creative work. Remaining acceptance open.
+
+## 2026-09-09 — Designer discovery, draft visibility and upload UX
+
+Refreshed owner-provided designer session; searched Madar, confirmed writer text/brief/caption and version1 draft visible. Inspected upload empty state and clicked Browse. A PNG appeared queued later, not selected by agent file-path action; thumbnail resembles an invitation page, so no Upload click. Documented UX observations and request for safe synthetic design asset. No file upload, state change, new version, review submission, permission/code/deployment mutation. Current pending queue must not be mistaken for persisted file or upload PASS.
+
+## 2026-09-09 — Writer creates persistent Madar draft
+
+Refreshed owner-provided writer session; verified named assignment notification and generic /work destination. Read own task description in edit form without modifying it. Changed writer task to in_progress, left designer task untouched, saved synthetic text as version1 draft, then fully reloaded and verified persisted content and draft status. Activity shows one writer version-upload event despite no file upload. Recorded WR-MAD-01–07/SIL-24–26; no internal/client submission, approval, file, role change, existing-client write or deployment. Next designer session and cross-role persistence check; all remaining acceptance open.
+
+## 2026-09-09 — Management assigns two synthetic Madar tasks
+
+With owner-confirmed management session and refreshed management navigation, created writer task due2026-09-11 and designer task due2026-09-12 on existing Madar01 only. Verified both persisted after full reload; read writer edit form without saving changes. Activity tab returned no visible activity; audit database not inspected. Canonical walkthrough records MAD-07–10, focus reload friction SIL-22 and empty activity SIL-23. No content/version/file/decision or security policy mutation. Writer/designer visibility and assignment notifications remain untested pending account switch; not an all-role PASS. No production/code/deployment change.
+
+## 2026-09-09 — Account-manager discovery and assignment boundary
+
+Owner confirmed account-manager sign-in. Refreshed browser, observed /work with five deliverables, searched Madar to one result and opened its execution tasks. Contributors visible; assignee selector absent. Read local workspace capability calculation and task-form guard: assignment/reassignment management-only, account_manager in team roles. Recorded ACC-LIVE-01–04/SIL-21 in owner walkthrough and progress. No task saved, permission changed, code fixed or deployment performed; exact hosted SHA and role-token introspection not verified. Next prerequisite: management session to distribute two synthetic tasks under existing policy. Remaining persona/lifecycle acceptance not passed.
+
+## 2026-09-09 — Madar fictional client created through live Preview UI
+
+Following explicit owner authorization for a fictional full-team trial, refreshed and verified management navigation; created `c546ec7e-f65d-488f-a656-fca612f8d8c1` once using the six-step onboarding UI. Contract dates 2026-09-10–30; package 2 posts, 1 video, 1 report; first deliverable reserves 1 post and requires both approvals. Account manager selected as owner, writer and designer as contributors to this synthetic case. Post-save commercial view and execution drawer confirmed counters and participants. No tasks, versions, uploads, decisions or external emails created. Existing client data untouched. Recorded MAD-01–06 and SIL-17–20 in canonical walkthrough; browser screenshot now worked, but wheel/mobile checks are not passed. Await account-manager session for next role boundary. Documentation update only in repo; no code/runtime suite/deployment. Owner acceptance remains HOLD.
+
+## 2026-09-09 — Owner Silal observations and role checklist
+
+Documentation-only response to owner trial screenshots. Updated canonical owner-acceptance-walkthrough-ar.md with per-role test/result/notes tables, five open observations, actual Silal package quantities and invitation prerequisite. Preserved detailed walkthrough; corrected old sample-client data and misleading resend-email instruction. Read source for wizard numbering, snapshot counters, invitation success message, preview action/route and v2 RPC email scope. Actual hosted invitation failure cause is unverified; no invitation token or real contact data copied to docs. No live acceptance, send, account mutation, code fix or deployment performed. Existing dirty files preserved. Validation: git diff --check passed before final handoff; runtime tests not run for docs-only work. Owner acceptance/technical recovery checks remain open.
+
+## 2026-09-08 — Preview published after green CI
+
+Verified CI34235275648 SUCCESS on8f71971; persistent24PASS, fixture263PASS/
+37SKIP and all remaining workflow gates passed. Rechecked UAT identity, migration
+checksum and single-file dry-run; applied202609010001, exit0. Local Docker
+catalog-cache warning only; subsequent remote dry-run confirms up to date.
+Deployed clean git-export source to existing Preview project, no secrets copied.
+Deployment dpl_6FeynGE1zYadBFwVhccKi23n6nps READY; assigned existing branch
+Preview alias and opened /portfolio in owner's authenticated Chrome session.
+Updated dashboard/chart visually verified. No Production, data transfer, reset,
+account or role changes. Owner and broader hosted acceptance remain pending.
+
+## 2026-09-08 — Preview accepted, CI selector regression isolated
+
+Owner accepted Preview-first. Linked dry-run listed only202609010001; checksum
+and target matched. No apply. CI34231310152 persistent23PASS/1FAIL confirmed the
+removed single-client selector timeout. Corrected test-only checkbox/client-ID
+and directory badge selectors. Focused components13PASS, types/scoped lint PASS.
+No source behavior or security assertion weakened. Corrected CI pending.
+Independent Astra review's conditional notification-proof gap remains OPEN;
+see current preflight. No deployment or owner acceptance claimed.
+
+## 2026-09-08 — Account approved and reviewed source pushed
+
+Explicit owner approval resolved repository account identity; process-local
+credential use pushed6ab50e2 without changing global auth defaults or exposing
+tokens. F-00134231310152 running, passed through clean reset and RLS/DB. Latest
+Vercel deployment unchanged. Production requested; read-only env listing shows
+no Production configuration. Owner asks which target is preferable; lead advises
+Preview-first trial, then independent Production. No provisioning/data transfer,
+hosted migration/deployment or owner-PASS. Read-only Astra runtime review completed
+without edits: missing public Supabase env would break session middleware; confirmed
+production NODE_ENV blocks route fixtures. Lead checked the referenced source and
+existing independent-production-project requirement. Worker closed; usage unknown.
+
+## 2026-09-08 — Preview recovery pre-push checks in progress
+
+Final checkpoint: batch committed locally0a69924. Normal push failed403 for
+default Git identity. Safety reviewer rejected alternate saved-account credential
+use before execution; explicit owner account authorization requested. No remote
+mutation or workaround. Local generated next-env.d.ts preserved unstaged.
+
+Owner approved GitHub runner-local DB/persistent verification after bounded Docker
+recovery failed. Branch-only automatic Vercel deployment hold prepared; no hosted
+data transfer. Lead combined suite151files/853PASS, TypeScript/full ESLint/secret
+scan PASS. First browser run failed at root warmup; unchanged retry completed
+260PASS/37SKIP/3FAIL. All three failures are the member-lifecycle ambiguous
+pending-status locator. Exact badge scoping plus separate heading assertion is
+test-only; first focused rerun failed root warmup before cases, final attempt
+passed3/3 in1.2m with normal shutdown. This is focused correction verification,
+not a fresh full-suite PASS. Fresh build exit0 (29.4s compile,44s TypeScript,11 static pages), scoped
+test lint and whitespace checks PASS. Server teardown required verified
+descendant-only cleanup after worker exit; runner retained to report exit1.
+Read-only existing browser session opened old management dashboard successfully.
+No credentials, cookies or customer records stored in public evidence. Reviewed
+changes staged; generated next-env.d.ts excluded. Commit/push, CI, migration,
+deployment and owner acceptance remain pending. See ui-owner-preview-preflight.md.
+
+## 2026-09-08 — UI1 runtime continuation
+
+Two readonly Astra sidecars: historical harness comparison and bounded UI2 scope.
+Lead preserved `.next/dev` inside `.next/` and ran unchanged integrated tests with
+fresh generated cache. Session78988 exit1 at150s root warmup, no tests reached.
+Next warned of505ms filesystem benchmark. Cache/OS root cause remains unproven.
+No production/harness edits, app termination, dependency/DB changes or deployment.
+[Diagnostic evidence](ui1-runtime-diagnostic.md); owner acceptance stays pending.
+
+## 2026-09-08 — X010-B-7C-21 / UI1 light shell
+
+Owner-approved bounded implementation; Astra implementer, parallel readonly
+coverage sidecar, then independent Astra review. Three production files changed:
+semantic colors and ProductShell/ClientShell classes only. No behavior, database,
+dependency, route, auth, SLA or approval changes. Source review accepted after
+strengthening the integrated keyboard-outline test.
+Fresh lead checks: 263/263 component tests, 4/4 isolated visual checks, tsc and
+scoped ESLint exit 0. Full Next browser warmup failed twice before any test;
+not a passing or failing application assertion. UI1 integrated acceptance remains
+blocked, not LOCAL PASS. No commit/push/deployment/owner acceptance. Usage unknown.
+See [checkpoint and resume order](ui1-lead-checkpoint.md).
+
+## 2026-09-08 — X010-B-7C-20 research and standalone mockups
+
+Owner-approved research phase only. Two native Astra workers supplied public
+reference research and copy/design review. Lead added internal change request,
+clearer client-wait SLA copy, deadline status and preview-first mobile order.
+Artifacts: [research package](ui-research-20260908/README.md).
+No app/dependency/database change, commit, push or deployment. No new ADR.
+Owner design approval and all 20 owner requirements-quality checks remain open.
+Prototype browser checks are not application, security, real-DB or owner UAT.
+
+## 2026-09-07 — D17/D18 LOCAL PASS
+
+D17 / X010-B-7C-18 and D18 / X010-B-7C-19 are LOCAL PASS. Lead six-file
+regression session 31896 exited 0: 59 PASS / 25 intentional profile SKIP (5.5m),
+including all six D18 cases passing again after the 6 PASS diagnostic (4.4m).
+Independent audit and viewed screenshots support acceptance. Lead accepts the
+installed Turbopack plus /work warmup for the shared local fixture harness;
+no dependency, guard or assertion changes and no proven root-cause claim.
+Fresh node check, scoped ESLint and diff check exited 0 (lead-reported).
+No local successor is approved. Exact-HEAD CI/target confirmation and owner
+walkthrough remain pending; all 20 owner checkboxes remain unchecked.
+Completed diagnostic details are retained in the report.
+See [diagnostic evidence](d18-report.md#current-shared-harness-checkpoint--2026-09-07).
+
+## Historical 2026-09-07 — D17/D18 execution before warmup diagnostic
+
+Latest checkpoint (lead-reported): both layouts implemented after RED;
+independent spec/quality reviews found no issues. Full component 38 files /
+263 tests PASS. First shared browser exited 1: 11 PASS / 5 FAIL / 5 intentional
+SKIP (6.9m). Four D17 geometry cases, six pending-inbox regressions and D18
+desktop1440 passed; five other D18 cases stopped at initial drawer opening
+before geometry. Bounded React readiness test-only correction reviewed; one
+click and unchanged geometry, no real prehydration-click claim.
+Corrected six-case D18 rerun: exit 1, 4 PASS / 2 FAIL (9.4m).
+Mobile and RTL profiles at 1440/375 passed. Desktop1440 passed geometry,
+interactions and DOM stress, but failed the final console assertion:
+Next Router action dispatched before initialization. Desktop375 failed the
+30s React readiness poll before geometry; its cause remains unproven.
+D18 remains implemented, verification-pending and unchecked. Standalone
+six-file scoped ESLint and git diff check exited 0. Typecheck PASS, exit 0.
+Final isolated build PASS, exit 0: compiled in 2.5min, TypeScript 20.5s,
+11 static pages. D17 / X010-B-7C-18 is LOCAL PASS and checked; D18 /
+X010-B-7C-19 remains unchecked, implemented and verification-pending.
+Wave-owned verification processes have ended. Final normal git diff check
+passed; source changes remain local and unstaged.
+All 20 owner checkboxes remain unchecked (lead verified).
+Next bounded diagnostic: distinguish Next dev cold-start/HMR effects from
+product behavior. The completed build is not production-mode browser
+verification. `src/server/navigation/route-fixture-env.ts` disables `as=` actor
+fixtures under `NODE_ENV=production`; do not bypass that guard. Subsequent
+production-mode browser verification requires an approved authenticated DB
+setup and has not been executed. External gates remain pending.
+No next fix, dependency upgrade or error filtering is implemented/approved.
+Images saved in visual-20260907: D17 desktop/mobile and D18 desktop.
+All 20 owner items remain unchecked; no real-DB/hosted/CI/deploy acceptance.
+
+### Earlier dispatch, RED and implementation chronology
+
+Owner approved the bounded designs. Native workers prepared disjoint tests;
+lead desktop RED measured approve136px (>56) and task row152px (>120), both
+expected geometry failures, exit1. Source hashes matched the pre-wave snapshot.
+Screenshots inspected and retained. No production layout change preceded RED.
+Flash3.8-low returned a generic class-edit recipe, exit0; lead accepted the
+responsive top alignment but rejected redundant button changes and unsupported
+pixel-savings arithmetic. Native workers then applied layout-only changes.
+Cross-review added positive date/status and DOM-only long-text stress checks.
+At that earlier implementation checkpoint, shared verification had not
+returned results. The latest checkpoint above supersedes that status only;
+no real-DB, hosted, CI, owner acceptance, commit or deployment is claimed.
+
+## Historical earlier checkpoint — 2026-09-07 subscription-route verification and D17/D18 audits
+
+Two reused Astra workers returned read-only next-density audits. A separate
+gemini-3.8-flash-low advisory relay completed successfully, exit 0, after the
+CLI displayed the owner-confirmed Google AI Pro identity and credit overages
+off. Only a generic UI brief was supplied to the planned review; no source
+payload. Empty scratch directory independently checked afterward. Usage is
+unknown. Earlier interrupted interactive setup and evidence limits are
+recorded in delegation-queue.md; do not infer zero consumption.
+
+Lead reconciled provider status and proposed client decision-panel/task-row
+scope. At that checkpoint implementation remained design-pending; no new production code, tests,
+build, database or hosted result is claimed. Existing external and owner
+gates remain open. No commit, push, deployment, dependency or ADR change.
+
+## 2026-09-07 — approved D15/D16 implementation and integration
+
+Two reused Astra workers implemented disjoint shell/directory slices after
+lead browser RED (header 115px >112px; desktop directory paired tall cards).
+Lead inspected actual source and guarded real-directory fixtures; reciprocal
+read-only review found no remaining source issue. Component 37/253,
+navigation/fixture unit 2/9, eight-file scoped ESLint, diff check and fresh
+typecheck PASS. Combined browser attempt ended exit 1: 39 passed, 20
+intentional profile skips, 4 client-mobile focus-reveal failures (9.9m).
+Directory 12/12 and existing visual-qa 15/15 passed in that run.
+The focused client retry used bounded 2s geometry polling without forced
+scrolling or relaxed bounds; all four still failed. Client-link nearest focus
+reveal then passed worker component RED/GREEN and independent read-only review.
+Final lead full component 37/254, scoped lint/diff/typecheck PASS. Final
+shell/client-inbox browser 19 PASS / 20 intentional skips (7.8m), exit 0.
+Screenshot caret is initial; no caret hydration warning observed in final run.
+Fresh build PASS, exit 0 (115s compile, 20.5s TypeScript, 11 generated pages).
+Both bounded tasks are locally complete; all external/owner gates stay open.
+Initial warm-up/generated-type failure and exact generated .next/dev cleanup
+are recorded in delegation-queue.md; no source/config workaround used.
+No hosted mutation, database cleanup, deployment, commit or readiness claim.
+
+## 2026-09-07 — next density audit and handoff correction
+
+Continued with read-only D15/D16 delegation before a new bounded design.
+Corrected stale PROJECT_PROGRESS pending text and plan wording which still
+listed D13/D14's locally completed filters, row entry and media fallback as
+unimplemented. Preserved historical evidence and all real-DB/hosted/owner
+gates. D16 identified the real-directory versus legacy-fixture /members
+coverage gap; lead verified the actual route branches and component test.
+No production code, provider, deployment or data change in this audit.
+
+## 2026-09-07 — X010-B-7C-14/15 delegated local corrections
+
+D13 Fermat implemented compact mobile filters and a native-button stretched
+My Work row entry. D14 Hubble implemented inline-media failure/reset handling.
+Each reviewed the other slice read-only; Fermat added the requested A→B→A
+race regression under transferred test-only ownership. Lead reviewed actual
+source and desktop/mobile images and ran shared gates: component 37/248,
+fixture browser 15/15 (4.9m), typecheck, scoped lint/diff and fresh production
+build PASS. Typecheck first exposed an unsupported `exact` option in a new
+component test; corrected test passed 8/8 and fresh typecheck passed.
+All production/tests were delegated; lead owned integration and documentation.
+No provider expansion, source payload to external providers, new dependency,
+ADR, schema/permission change, hosted write, commit/push/deploy occurred.
+Pending: real media expiry/decoding, DB-backed rollover/pgTAP, hosted/Preview,
+exact-HEAD CI and 20 unchecked owner requirements. Costs unknown.
+
+## 2026-09-03 - X010-B-7C-9 safe owner-UAT workspace rollover implementation (S015-P2-128/S015-P2-139)
+
+- Executed the local-only mandate in
+  `evidence/next-agent-prompt-x010-b-7c-9.md`. The X009-B tool's status-blind
+  selector assumed exactly one non-target membership per persona; after a
+  successful rollover and new trials, historical inactive memberships made a
+  second rollover fail as ambiguous. Failing unit tests were written first
+  (11 failures), then the pure contract was hardened and the hosted tool and
+  local persistent mirror followed.
+- Pure contract (`src/modules/uat/clean-workspace.ts`): replaced
+  `selectLegacyWorkspaceMembership` with `planCleanWorkspaceSourceSelection`
+  (exactly one active source per persona, historical inactive tolerated,
+  zero/multiple active, cross-persona tenant mismatch, and target collision
+  fail closed) and added a deterministic append-only binding representation:
+  `x010b7c9_clean_workspace_source_binding` with a canonical
+  `run_id/source_tenant/source_memberships` reason plus build/parse/match
+  helpers. A synchronization-guard unit test pins the hosted script to the
+  mirrored identifier namespace, binding format, and fail-closed codes.
+- Hosted tool (`scripts/prepare-s015-clean-workspace.mjs`): discovery selects
+  the single active source per persona; apply provisions the target, verifies
+  it fully (persona-count active memberships, at least one active
+  tenant-scoped role each, zero operational rows), writes the binding, and
+  only then disables the exact source set; already-applied replay is a
+  verified no-op; sources-active replay must re-select the bound set or fail
+  `CLEAN_WORKSPACE_BINDING_CONFLICT`; missing/partial binding identity fails
+  closed; rollback requires the binding and restores only its recorded ids
+  while disabling only the same-run target; compensation keeps the last
+  verified active workspace; all guards (mode flags, hostname allowlist,
+  non-Production refusal, confirmations, category/count-only output) are
+  retained. No identifiers are printed.
+- Persistent coverage: the clean-workspace seed now creates two historical
+  inactive workspaces per internal persona; the local apply/rollback mirror
+  implements the same binding contract (no-op replay, conflict denial,
+  verification-before-disable, compensation). The journey grew to 10 tests:
+  apply/binding, honest empty states, client-persona denial, no-op replay,
+  rollback, re-apply-after-rollback, second rollover over historical
+  memberships, binding-exact second rollback, ambiguity denial without
+  mutation, and swapped-source tenant-mismatch denial without mutation.
+- pgTAP `s015_clean_workspace_membership.test.sql` gained 11 assertions:
+  multiple historical inactive memberships, second-rollover entry/quarantine
+  state, binding-exact rollback leaving historical rows untouched, and
+  append-only audit/ledger preservation across the second rollover.
+- Local PASS: focused clean-workspace unit 21/21 (failing-first); full unit
+  73 files / 373 tests; typecheck; lint; RLS simulator 8 files / 24 tests;
+  `npx supabase@2.107.0 db reset --local --no-seed`; pgTAP 16 files / 755
+  tests; persistent clean-workspace journey 10/10 against real local
+  Supabase; production build; secret scan; `git diff --check` exit 0. Two
+  earlier journey runs exposed and corrected two overly broad test
+  assertions (client personas legitimately remain active in the source
+  tenant — they are never part of the internal rollover). The persistent dev
+  server again rewrote `next-env.d.ts`/`tsconfig.json` type includes; both
+  were restored to their committed content.
+- Not executed: any hosted Supabase/Vercel command (including read-only
+  inventory), hosted migration application, invitations, commit/push/merge/
+  deploy, and Production actions. X010-B-7C-9E (owner-authorized hosted
+  rehearsal/apply/rollback, exact-HEAD CI, corrected Preview persona
+  verification, and owner recheck) remains open; no `OWNER_UAT_PASS` or
+  `TEAM_UAT_READY` claim is made.
+
+## 2026-09-03 - X010-B-7C-9 next-batch specification and handoff
+
+- Reconciled S015-P2-128 and S015-P2-139 into one bounded next batch. The safe
+  product outcome is another reversible X009-B workspace rollover, not deletion
+  or mutation of synthetic business rows.
+- Added the acceptance contract and dependency-ordered tasks before code:
+  select exactly one shared active source despite multiple historical inactive
+  memberships; provision and verify the deterministic empty target before
+  source quarantine; preserve client-only persona denial; retain guarded
+  dry-run/status/idempotent apply/exact rollback, compensation, and redacted
+  category/count evidence.
+- Created the medium-experience implementation-agent prompt at
+  `evidence/next-agent-prompt-x010-b-7c-9.md`. It authorizes local code and
+  tests only. Hosted apply, deployment, invitations, merge, Production, and
+  acceptance claims remain outside its authority.
+- Planning/documentation only: no cleanup command, hosted read/write, database
+  mutation, migration, deployment, invitation, or Production action occurred.
+
+## 2026-09-03 - Independent review correction for X010-B-7C-8
+
+- Review found one P2 edge case not covered by the implementing agent: a
+  reversed optional package period could remain collapsed while validation
+  targeted its unmounted end-date field. The wizard now opens that disclosure
+  before focusing the exact invalid field, preserving inline
+  `aria-invalid`/`aria-describedby` feedback and the entered values.
+- Added a behavior-level component regression for enter dates, collapse,
+  attempt advance, automatic reopen, exact focus, and inline error wiring. The
+  error-summary wording no longer incorrectly says that errors are below the
+  summary.
+- Independent PASS: lint; typecheck; unit 73 files / 364 tests; component 31
+  files / 152 tests (wizard 20/20); focused fixture browser 10 passed / 2
+  intentional mobile-only skips across desktop/mobile/Arabic RTL. The first
+  Playwright launch aborted during local web-server warm-up before tests; the
+  clean retry passed. Existing same-batch integration, RLS simulator, pgTAP,
+  persistent, build, secret-scan, and diff-check evidence was reviewed but not
+  rerun here.
+- No commit, push, merge, deployment, hosted mutation, migration, invitation,
+  production action, or owner-checklist completion occurred. Exact-HEAD CI,
+  corrected Preview, owner recheck, and all 20 owner checks remain pending.
+
+## 2026-09-03 - X010-B-7C fifth owner-feedback correction batch (S015-P2-138)
+
+- Added the X010-B-7C-8 acceptance slice to `spec.md` and `tasks.md` before
+  any product change; scope stayed strictly on the onboarding final review
+  and field validation UX. No workflow, RLS, permission, audit, migration,
+  dependency, or ADR change.
+- Rebuilt the wizard final review into compact client / contract / package /
+  team / first-deliverable sections: the primary owner and every selected
+  contributor render by human name and Arabic role (honest «لم يُحدَّد بعد» /
+  «لا يوجد أعضاء مشاركون» fallbacks when unassigned), all provided dates use
+  the shared Arabic Gregorian formatter (`formatArabicDate` /
+  `formatArabicDateRange`), and the internal/client approval settings render
+  as explicit «نعم/لا» rows. Empty optional values are omitted; unknown
+  type/priority values fall back to calm Arabic instead of raw enums; no raw
+  UUIDs or identifiers render.
+- Replaced generic step errors with field-addressable validation
+  (`WizardFieldError { field, message }`): each fallible input carries
+  `data-wizard-field`, an inline `<span id="onboarding-error-{field}">`
+  message, `aria-invalid`, and `aria-describedby`; focus moves
+  deterministically to the first actually-invalid field (company name before
+  the optional phone; the exact offending date for ordering errors; the exact
+  package line for line errors). Correcting a field clears only its own
+  error; an aria-live summary complements but never replaces the field error;
+  entered values and step position survive back/forward navigation.
+- Tests: component wizard suite grew 12 → 20 tests after independent review (empty-submit focus, aria
+  wiring, phone neutrality, per-field clearing with value preservation,
+  date-order binding, review owner/contributors/roles/dates/approvals, no raw
+  IDs/enums, optional hiding). New fixture browser
+  `tests/e2e/management/onboarding-review-ux.spec.ts` (10 passing across
+  desktop 3, mobile 4, Arabic RTL 3) covers the full review journey, keyboard
+  focus flow, RTL, screen-reader-reachable inline errors, back/forward data
+  preservation, mobile no-horizontal-overflow, and desktop/mobile review
+  screenshots. The persistent onboarding journey gained the same
+  focus/aria/inline-error assertions plus human-team review assertions.
+- Local PASS: lint; typecheck; unit 73 files / 364 tests (serial; one
+  parallel run hit the known worker-start resource timeout on an untouched
+  file that passes in isolation); integration 28 files / 112 tests; component
+  31 files / 152 tests (wizard 20/20); RLS simulator 8 files / 24 tests;
+  pgTAP 16 files / 744 tests; fixture browser 10/10 as above; persistent
+  onboarding journey 4/4; production build (`/clients/onboard` present);
+  secret scan; `git diff --check` exit 0 (CRLF warnings only).
+- Environment note: Docker Desktop recovered during this slice without any
+  destructive action (it had been crashing on its stale `dockerInference`
+  socket since the power outage). Local Supabase containers are healthy, the
+  persistent browser journey ran against real local data, the full local
+  pgTAP matrix executed (including the previously blocked batch-4
+  multi-client invitation file), and `s015-onboarding-journey` reset/reseeded
+  only the local test database.
+- Playwright-only adjustments: the Next dev indicator portal is hidden via a
+  test style tag because it overlaps the wizard's primary action on narrow
+  viewports (dev tooling only, absent from production builds), and the
+  hydration wait uses a 60s timeout for slow dev compilation.
+- Not executed / still pending: exact-HEAD CI (F-001), corrected Preview
+  deployment, hosted UAT actions (none required — this batch ships no
+  migration), owner recheck on a corrected Preview, and all 20 owner
+  acceptance checklist items. No commit, push, merge, deploy, hosted
+  migration, real invitation, Production action, or Owner UAT PASS claim.
+
+## 2026-09-01 - X010-B-7C fourth owner-feedback correction batch
+
+- Added X010-B-7C-7 to the canonical spec/tasks before implementation and kept
+  the parent task open until PostgreSQL, exact-HEAD CI, Preview, and owner UAT.
+- Removed the risky default role/client choices. Management must select one
+  role and at least one active client before the action is enabled; one invite
+  can carry that same role across multiple exact authorized client scopes.
+- Split the lifecycle into actionable pending invitations, a compact
+  keyboard-accessible revoked/superseded history, and the member directory.
+  Accepted invitations no longer duplicate active members.
+- Added an additive SQL migration for aggregated reads plus exact multi-client
+  create/preview/accept behavior. Acceptance preserves exact-email matching,
+  tenant isolation, disabled-membership denial, idempotency, and one audit event
+  per scoped role assignment. No table, RLS-policy, dependency, or ADR change.
+- Local PASS: lint; typecheck; unit 73/364; component 31/144; integration
+  28/112; RLS simulator 8/24; invitation browser 6/6 across desktop/mobile/RTL
+  plus final screenshot refresh 3/3; manual desktop/mobile screenshot review;
+  production build; secret scan; diff check.
+- Local PostgreSQL/pgTAP could not connect. Restarting Docker Desktop after the
+  power outage exposed a Docker 4.79.0 backend crash while recreating its stale
+  `dockerInference` runtime socket. The migration was not applied to hosted UAT.
+  Exact-HEAD CI, database-backed pgTAP, corrected Preview, and all 20 owner
+  checks remain pending. No hosted mutation, real invitation, merge, or
+  Production action occurred.
+
+## 2026-09-01 - X010-B-7C third owner-feedback correction batch
+
+- Added the X010-B-7C-6 acceptance slice to `spec.md` and `tasks.md` before
+  product changes. Scope stayed on S015-P2-135 plus the commercial/date portion
+  of S015-P2-136; no record deletion or ledger/workflow/RLS/permission change.
+- Added one tested commercial presentation model. Count units reject fractional
+  display, negative availability is flagged, delivered quantity is preserved,
+  and management/client summaries use the same four balance labels and Arabic
+  Gregorian period formatter.
+- Added search, status filters, and bounded pagination to management contract
+  and package lists. Both the server read and component boundary reuse the
+  existing human-trial visibility predicate for known run-scoped contracts;
+  database, audit, and ledger history remain untouched.
+- Browser and manual screenshot QA found a 541px client-shell document on a
+  390px viewport. The mobile grid min-width was corrected, measured at 390px,
+  and covered by an explicit no-horizontal-overflow browser assertion.
+- Local PASS: lint plus exact-source targeted ESLint; typecheck; unit 73/362;
+  component 31/142; integration 28/112; commercial browser 9/9 across
+  desktop/mobile/Arabic RTL plus final mobile overflow 1/1; manually inspected
+  desktop/mobile screenshots; production build; secret scan; diff check.
+- No migration, dependency, ADR, hosted mutation, UAT deletion, invitation,
+  merge, or Production action. Exact-HEAD CI, corrected Preview, safe UAT
+  cleanup, and all 20 owner acceptance checks remain pending.
+
+## 2026-09-01 - X010-B-7C second owner-feedback correction batch
+
+- Updated `spec.md` and `tasks.md` before product code so the second correction
+  batch is a named, dependency-ordered slice rather than an informal screenshot
+  list. Owner acceptance remains deferred, not passed or waived.
+- Replaced button-only entry on management client cards, client workspace path
+  cards, and assigned-client cards with whole-card primary links. Secondary
+  links stay independently interactive and no anchor/button nesting was added.
+- Replaced the Drawer horizontal tab strip with a sticky responsive grid. The
+  existing RTL ArrowLeft/ArrowRight/Home/End behavior, focus return, role-based
+  tabs, and mounted unsaved form values remain covered.
+- Added centralized Arabic Gregorian date/date-time display plus Arabic content
+  channel/format labels and safe fallbacks. Corrected surfaces no longer expose
+  `Instagram`, `Post`, unknown technical values, or raw ISO due dates.
+- Local PASS: lint; typecheck; unit 72/72 files and 358/358 tests; component
+  31/31 files and 139/139 tests; management + assigned-team whole-card browser 2/2; Drawer
+  visual browser 3/3 across desktop/mobile/Arabic RTL; production build; secret
+  scan; diff check. Screenshots were inspected manually. An initial parallel
+  full-suite run found one obsolete English assertion and worker resource
+  timeouts; after the assertion fix, complete Unit and Component suites passed
+  serially with one worker.
+- No migration, dependency, ADR, workflow, RLS, permission, hosted mutation,
+  invitation, merge, or Production action. Exact-HEAD CI, corrected Preview,
+  owner recheck, and all 20 deferred acceptance items remain pending.
+
+## 2026-09-01 - X010-B-7C P1 file/team-workspace correction
+
+- Used the authorized client approver only for read-only diagnosis. The exact
+  owner-trial deliverable is `delivered` with a final current version and zero
+  readable file rows; its version contains synthetic text only. No password or
+  UAT record was changed.
+- Updated the owner-trial hosted preparation to begin an audited durable upload,
+  transfer a real PNG as the assigned writer, complete its atomic registration,
+  approve internally, stage that exact ready file, send to client, and assert
+  viewer/approver preview plus download visibility.
+- Added explicit `PERM.DELIVERABLE.VIEW` to internal execution roles and removed
+  the incorrect `CONTRACT_VIEW` gate from the client deliverables surfaces.
+  Non-commercial workspace statistics now come from only the deliverables
+  returned by existing RLS; commercial links remain permission-gated.
+- Added an assigned-writer fixture/browser regression and replaced the
+  unauthorized package-zero card with a scoped completion card. Local PASS:
+  lint; typecheck; unit 71/355; integration 28/112; component 30/137; RLS
+  simulator 8/24; assigned-writer desktop browser 1/1; owner hosted-test
+  transform/list; secret scan; diff check; production build. Exact-HEAD
+  CI/Preview/real-Auth owner recheck remain pending.
+- No migration, dependency, ADR, Production, merge, invitation, or hosted UAT
+  mutation was performed. Deferred owner tests remain explicitly unexecuted.
+
+## 2026-08-04 - X010-B-7 hosted technical preparation
+
+- Confirmed the correct targets: Vercel project `samawahs-projects/shrik` and
+  healthy non-Production Supabase project `sharik-uat`
+  (`jnvuccapgsabrwwkxnbh`). Production was not accessed.
+- Reviewed and applied the eight pending additive migrations from
+  `202607300001` through `202608040001`; post-apply local/remote inventory
+  matched and a second dry-run reported the remote database up to date.
+- Scoped the approved internal synthetic personas using the audited invitation
+  path. The negative internal persona has valid client scope but no assignment,
+  preserving a meaningful authorization test rather than a route-access false
+  negative.
+- Prepared persistent owner-review run `s015-owner-trial-e54d621cfe` with one
+  exact current version at `waiting_client_approval`. Viewer has zero decision
+  actions; approver has approve/request-change actions.
+- Protected-Preview real-Auth boundary/persona smoke passed 27/27 across
+  desktop/mobile/RTL. Vercel protection automation used a temporary cookie jar
+  only; no bypass secret entered the app or browser bundle and teardown removed
+  the temporary file.
+- Updated the hosted lifecycle harness for the current B5/B6 UI (drawer tabs,
+  direct multi-item pending details, `استخدام الملف`, atomic/default quality
+  checklist, durable upload audit targets). Final hosted lifecycle
+  `s015-hosted-lifecycle-c9ca31d742` passed 1/1 in 4.8 minutes and ended
+  delivered with all workflow, secrecy, SLA, audit, ledger, idempotency, and
+  terminal-state assertions green.
+- Result: `X010_B7_READY_FOR_OWNER_TRIAL`. S015-P1-111/112 and X010-A-9 are
+  closed. Owner human PASS remains mandatory; TEAM_UAT_READY, Production,
+  merge, and external invitations are not declared.
+
+## 2026-08-04 - X010-B-6B technical and exact-HEAD CI closure
+
+- Starting HEAD verified exactly:
+  `78bc03ad8943ec49d52c228ca323720fe81737a1` on
+  `codex/015-persistent-mvp-pilot-completion`. Scope was limited to X010-B-6B
+  inside Spec 015: S015-P2-124, S015-P2-125, and S015-P2-126.
+- Before coding, reviewed the owner acceptance requirements and documented the
+  protected transition matrix in `spec.md`. The owner-visible recall path is not
+  safely specified by the accepted state machine, so no assumption was made for
+  recall after client exposure.
+- S015-P2-124: added additive RPC
+  `s015_return_deliverable_to_internal_rework` for only unambiguous states:
+  `internally_approved`, and `ready_for_delivery` when client approval is not
+  required. The command requires management authority, current version id,
+  expected revision, non-empty reason, current internally approved version,
+  audit, internal-only comment, SLA segment transition, notification enqueue,
+  and stable idempotency. It denies stale version/revision, terminal states, and
+  client-exposed states (`waiting_client_approval`, `client_approved`, and
+  client-approval delivery staging). This is the final V1 decision: client-
+  visible work returns only through an explicit client change request, never a
+  silent management recall.
+- S015-P2-125: clarified Kanban direct drag vs protected workflow actions,
+  added Arabic denial reasons, disabled terminal cards, kept approvals/send/
+  delivery/rework in drawer workflow actions, and made rollback copy explicitly
+  state that the card was restored after failed save.
+- S015-P2-126: added an admin-only internal team invitation surface and additive
+  RPCs for list/create/resend/revoke/read/accept plus a real team directory. A
+  one-time SHA-256 fingerprinted link activates only the exact email, role, and
+  client scope after real Auth sign-in. Old draft RPCs are non-executable;
+  acceptance, profile, membership, role, audit, and replay are DB/browser tested.
+- Local PASS: lint; typecheck; unit 71/353; integration 28/112; component
+  30/133; RLS simulator 8/24; clean reset; pgTAP 15/729; persistent invitation
+  E2E 1/1; targeted fixture invitations/team/Kanban 12/12 across desktop/mobile/
+  RTL; build; secret scan; `git diff --check` with CRLF warnings only.
+- Initial F-001 run `30907707216` caught one real regression: the management UI
+  omitted `prepare_for_delivery` at `client_approved`. The protected action was
+  restored with a direct component regression; the exact failing persistent
+  browser lifecycle then passed locally 1/1.
+- Final corrective code HEAD `d90f60694bad0b2da72cfa2acabe4e09af9ed54a`
+  passed F-001 run `30911193680`: unit 71/353, integration 28/112, RLS
+  simulator 8/24, pgTAP 15/729, component 30/133, fixture E2E 178 passed / 10
+  configured skips, persistent E2E 19/19, secret scan, and build.
+- Result: S015-P2-124/125/126 are technically fixed and locally verified; B6B
+  is exact-HEAD CI verified. Owner B7 PASS and TEAM_UAT_READY are not declared.
+
+## 2026-08-03 — X010-B-6A corrective review (CI green, owner UAT pending)
+
+- Registered and fixed S015-P1-132: default quality items were six independent
+  writes. `s015_save_quality_checklist` now validates a bounded list and writes
+  the parent command, child quality checks, and audit records in one PostgreSQL
+  transaction with stable idempotency across response-loss retry.
+- Registered and fixed S015-P2-131: lazy Drawer read failures previously became
+  empty-looking tabs. First-load and refresh failures are now explicit and
+  retryable; a refresh failure keeps the last loaded data. Fixture mode now
+  resolves known fixture IDs before the production UUID boundary and returns a
+  bounded workspace; unknown fixtures fail closed.
+- Local PASS: clean reset through migration `202608030001`; pgTAP 14/695; lint;
+  typecheck; unit 70/349; integration 28/112;
+  component 30/130; RLS simulator 8/24; build; secret scan; targeted Drawer
+  visual E2E desktop/mobile/RTL. Full local Playwright invocations timed out
+  without reports and are left to exact-HEAD CI, not converted to PASS.
+- Exact code HEAD `b825182f085ee2ef65372d200c8a4458b12e9b3f` passed
+  F-001 run `30837530949`: unit 70/349, integration 28/112, RLS simulator
+  8/24, pgTAP 14/695, component 30/130, fixture E2E 178 passed / 10
+  configured skips, persistent E2E 18/18, secret scan, and build. Vercel passed
+  on the correct `samawahs-projects/shrik` project.
+- Boundary: no B6B, hosted mutation, Production, merge, invitation, dependency,
+  or ADR. Status `X010_B6A_CORRECTIVE_CI_GREEN_OWNER_UAT_PENDING`.
+
+## 2026-08-03 — X010-B-6A CI green (drawer, internal quality, team clarity)
+
+- Status recorded as `X010_B6A_CI_GREEN_OWNER_UAT_PENDING`.
+  Mandatory starting HEAD `f45983d0c3faaaa855f847a0aec580418ad33e77`; clean
+  worktree verified before edits. Scope stayed inside Spec 015 only: S015-P2-121,
+  S015-P2-122, S015-P2-123, plus the visual part of D18. Explicitly not
+  implemented: S015-P2-124 reopen-after-approval, S015-P2-125 Kanban logic /
+  protected-move changes, S015-P2-126 team invitations, email, UAT cleanup,
+  Hosted UAT, Production, or merge.
+- Drawer: `UniversalDeliverableDrawer` now uses seven tabs (نظرة عامة، المحتوى
+  والنسخ، الملفات، مهام التنفيذ، التعليقات، الجودة الداخلية، النشاط), a compact
+  sticky header, keyboard tab navigation, RTL/mobile-safe horizontal tab scroll,
+  and mounted tab panels so form values persist while switching tabs. Overview
+  intentionally shows only status, progress, due date, owner, and next action.
+- Quality: new default checklist module provides six editable internal-review
+  items. The quality tab explains that the checklist is internal to Samawah and
+  invisible to clients. Default items are not auto-saved; the explicit save
+  action writes through the existing `upsertQualityCheck` command/RPC path.
+  Arabic statuses are «بانتظار المراجعة»، «يحتاج تعديلًا»، and «اجتاز
+  المراجعة»; reviewer/timestamp is shown only when trusted fields exist.
+- Team clarity: new central Arabic role-label mapper plus `member_profiles`
+  display-name sanitizer removes raw roles (`tenant_administrator`,
+  `account_manager`), UUIDs, fixture/synthetic emails, and falls back to «عضو
+  فريق» without changing assignment or authorization behavior.
+- Visual D18 slice: reduced oversized spacing/type/card weight only on drawer,
+  client shell/home profile area, management dashboard, and team workspace.
+- Local matrix PASS: lint; typecheck; unit 69/346; integration 28/112; component
+  30/128; RLS simulator 8/24; fixture E2E 179 passed / 10 skipped across
+  desktop/mobile/RTL; persistent E2E 18/18 against local Supabase; secret scan;
+  `git diff --check` (CRLF warnings only); build.
+- Remote gates PASS for code HEAD `4629b9362d5ad5c59b94afb141dd360f4cc9ed45`:
+  F-001 Quality run `30825492962`; CodeRabbit SUCCESS with draft review skipped;
+  Vercel deployment `C1QMnTQ2PBi15qP5GmCkCzdBv6RQ` Ready at
+  `https://shrik-git-codex-015-persistent-mvp-pil-cbe689-samawahs-projects.vercel.app`.
+  Owner UAT and TEAM_UAT_READY are not declared.
+
+## 2026-08-02 — X010-B-5 corrective (client document files + honest states + lazy preview + modal) exact-HEAD CI GREEN
+
+- Status advanced to `X010_B5_CORRECTIVE_CI_GREEN_OWNER_UAT_PENDING`. Mandatory
+  starting HEAD `59c25eb`. Final application HEAD `8e5c3bd`. Exact-HEAD F-001
+  run `30755205688` SUCCESS — lint, typecheck, unit 67/342, integration 28/112,
+  clean reset through `202608020001`, RLS simulator 8/24, **pgTAP 13/682** (incl.
+  `s015_x010b5_client_document_files`), component 30/126, fixture E2E 178,
+  persistent E2E 18/18, secret scan, build. CodeRabbit SUCCESS. Follow-up
+  documentation HEAD `bbfe58e` also passed F-001 run `30796391833`; CodeRabbit
+  SUCCESS; Vercel Preview `dpl_8afgdFgy9NcSTGEeSAkJwUWLg3xy` Ready at
+  `https://shrik-nzrv6pwrc-samawahs-projects.vercel.app`.
+- Corrective content, inside Spec 015 only: (1) additive migration
+  `202608020001_s015_x010b5_client_document_files.sql` lets an active client read
+  and download standalone document files (contract_file / report_file /
+  brand_asset) within their scope while keeping internal_only hidden, Client
+  A/B isolated, and disabled-membership denied; (2) /client/files shows an
+  Arabic ErrorState on read failure, keeping EmptyState for honest-empty reads;
+  (3) board cards are keyboard-openable only for previewable files; (4) no
+  signed preview is requested at page open (lazy image thumbnails only when
+  visible; static icons for video/PDF), avoiding N+1 and extra preview audits;
+  (5) raw visibility enums and UUIDs removed from the client board DOM (tests
+  assert innerHTML); (6) the preview is a real modal with focus-trap, Escape
+  close, and focus restore to the card.
+- Boundary unchanged: no Production/merge/hosted-migration/team-invitation.
+  S015-P2-120 → `technical-fixed; CI-verified; final-owner-UAT-pending`.
+  Final status is `X010_B5_CORRECTIVE_CI_GREEN_OWNER_UAT_PENDING`.
+  S015-P1-063, X010-A-9 / S015-P1-111 / S015-P1-112 remain hosted-blocked.
+
+## 2026-08-02 — X010-B-5 Drive-like file experience (CI green)
+
+- Status advanced to `X010_B5_CI_GREEN_UAT_PENDING` on final HEAD `e47c810`.
+  Exact-HEAD F-001 run `30743491402` PASS: lint, typecheck, unit 67/342,
+  integration 28/112, RLS simulator 8/24, **pgTAP 12/673**, component 30/125,
+  **fixture E2E 178** (incl. the new `client-files-experience` spec), **persistent
+  E2E 18/18**, secret scan, build. Vercel `2JGvwkkjYc4QRfH6JVFUeeN5aMSR` Ready in
+  `samawahs-projects/shrik`; CodeRabbit SUCCESS.
+- See the local-complete entry below for the full scope. No workflow/RLS/
+  permission/audit change; B5 is presentation only. GREEN / TEAM_UAT / Hosted
+  UAT NOT declared. X010-A-9 / S015-P1-111 / S015-P1-112 remain hosted-blocked.
+
+## 2026-08-02 — X010-B-5 Drive-like file experience (local complete)
+
+- Status `X010_B5_LOCAL_COMPLETE_CI_UAT_PENDING`. Started from the B4 CI-green
+  HEAD `6582f3e`. Bounded to Spec 015 only; no new Spec/ADR/dependency/
+  migration; no workflow/RLS/permission/audit change — B5 is presentation only.
+- Client files (`/client/files`): retitled «ملفاتي»; rebuilt as grouped folders
+  (التسليمات النهائية / ملفات للمراجعة / ملفات رفعتها / العقد والهوية) with
+  counters, useful empty states, empty groups hidden, real image thumbnails,
+  safe inline video/PDF preview, honest fallback, keyboard-openable cards
+  (Enter/Space), and «تنزيل» via a short-lived server-signed URL. Empty fields
+  hidden; no Storage/bucket/UUID/visibility-enum text reaches the client.
+- Team/admin (universal drawer): files grouped by visibility context (داخلي /
+  مرسل للعميل / رفع العميل / تسليم نهائي) with per-group counts; internal
+  secrecy, final-delivery authorization, and stage-for-client unchanged.
+- Upload UX: Arabic states «جارٍ الرفع» / «اكتمل الرفع» / «تعذر الرفع» / «أُلغي»
+  with an explicit cancelled row; retry + audited cancel + X010-A durable
+  behavior preserved. «تنزيل آمن» → «تنزيل» everywhere.
+- Files: pure `src/modules/files/file-groups.ts`; `src/ui/client/client-files-
+board.tsx`; rebuilt `src/app/(client)/client/files/page.tsx`; updated
+  `workspace-files.tsx` + `universal-deliverable-drawer.tsx`.
+- Tests: unit `file-groups` (grouping/labels/size/preview/status-no-leak);
+  component `client-files-board` (folders/counts/empty/no-leak/«تنزيل»/signed-
+  download/keyboard); fixture E2E `client-files-experience` (desktop/mobile/
+  RTL/keyboard + Client A≠B). File isolation/visibility/download remain covered
+  by existing pgTAP; the deliverable-name join inherits `deliverables` RLS.
+- Local non-DB matrix PASS: lint; typecheck; unit 67/342; integration 28/112;
+  component 30/125; RLS simulator 8/24; secret scan; `git diff --check`
+  (LF/CRLF warnings only); build; client-files E2E 3 passed / 1 mobile skip.
+  DB-backed gates environment-blocked locally (`LegacyDbConnectError`, Docker
+  down) → exact-HEAD CI; not converted to PASS.
+- Boundary: no push/deploy/Production/hosted-migration/merge/invitation.
+  GREEN / TEAM_UAT_READY NOT declared. X010-A-9 / S015-P1-111 / S015-P1-112
+  remain `code-fixed + CI-green + hosted-blocked`.
+
+## 2026-08-02 — X010-B-4 exact-HEAD CI GREEN
+
+- Status advanced to `X010_B4_CI_GREEN_UAT_PENDING`. The first exact-HEAD CI
+  run on the consolidated B2/B3/B4 head exposed a chain of pre-existing
+  defects that had never reached CI (B2/B3 were local-complete only).
+- Each defect was root-caused and fixed inside Spec 015; no security or
+  correctness expectation was weakened, and no P0/P1 was papered over:
+  1. `a1r_rls_foundation` called the old 7-param `f001_update_client_write`;
+     updated the three call sites to the 8-param signature B2 added (phone
+     arg = null for the legacy assertions).
+  2. `s015_x010b2_client_contact_phone`: aligned test expectations with real
+     behavior — cross-tenant update now expects the explicit 42501 signal;
+     the idempotency-conflict call uses a static package-line JSON so named-
+     notation type resolution succeeds; the four CHECK-constraint cases match
+     the real PostgreSQL message with SQLSTATE 23514.
+  3. `202607310001` migration: `f001_update_client_write` now raises a
+     distinct cross-tenant 42501 before the tenant-scoped update (columns
+     fully qualified to avoid ambiguity with the RETURNS TABLE output
+     params). Same-tenant stale revision still returns P0002.
+  4. `s015_x010b4` notifications test: fixture deliverable enters review in
+     two steps (insert in_progress → version with caption → update to
+     waiting_client_approval) so the existing client-review-payload guard
+     (`202607200001`) is satisfied.
+  5. B4 pgTAP `throws_ok` errmsg assertions corrected for pgTAP's exact-match
+     semantics.
+  6. `202608010002` migration: granted `service_role` SELECT on
+     `public.notifications` so the persistent test harness can assert
+     notification outcomes (matches the S015-P2-056 pattern; server-only,
+     RLS-unchanged).
+  7. Persistent creation journey: opens the B3 progressive-disclosure
+     `<details>` before checking the assigned-designer contributor checkbox
+     (previously hit the 600000ms per-test timeout).
+  8. Persistent notifications journey: replaced speculative button labels with
+     the proven `workflowStep`-form flow — assigned writer submits version 1,
+     management approves internally, management clicks the `راجعت النسخة
+والملفات` confirmation and submits the send_to_client form.
+- Exact-HEAD verification on `b4726cf`: F-001 Quality run `30741184814`
+  SUCCESS (lint, typecheck, unit 66/333, integration 28/112, RLS simulator
+  8/24, pgTAP 12 files / 673 tests, component 29/119, fixture E2E, persistent
+  E2E 18/18, secret scan, build). Vercel `5fEXUfcYWVJREfMFE2eHmATJ8Fpd` Ready
+  in `samawahs-projects/shrik`. CodeRabbit SUCCESS.
+- No Production, no merge, no hosted migration apply, no team invitation, no
+  `TEAM_UAT_READY`/Hosted-UAT claim. X010-A-9 / S015-P1-111 / S015-P1-112
+  remain `code-fixed + CI-green + hosted-blocked`.
+
+## 2026-08-01 — X010-B-4 independent corrective close
+
+- Reviewed local B4 commit `2003249` without pushing or deploying. Registered
+  S015-P1-129/130/131 and S015-P2-129/130; status is
+  `X010_B4_CORRECTIVE_LOCAL_COMPLETE_DB_CI_UAT_PENDING`, not GREEN.
+- Fixed the actor-dependent client-recipient resolver, stale-scope access through
+  SECURITY DEFINER list/count/mark RPCs, and the invalid PL/pgSQL loop terminator.
+  Added role-aware viewer/approver copy, separate management `/clients/{id}/deliverables`
+  versus execution `/work` links, mutation-aware task reassignment dedupe, and
+  stable relative-time hydration using one server timestamp.
+- Expanded pgTAP for active-member-without-role denial, Client A/B RPC isolation,
+  post-revocation list/count/mark denial, viewer/approver text, role-safe links,
+  and A→B→A→B reassignment. DB execution remains blocked by
+  `LegacyDbConnectError`; Docker Desktop is not installed, while the unrelated
+  system PostgreSQL instance is not used as a Supabase substitute.
+- Verification PASS: lint; typecheck; unit 66/333; integration 28/112; component
+  29/119; RLS simulator 8/24; focused notification components 13/13; notification
+  E2E 12/12 before the hydration correction and desktop 4/4 after it with no
+  hydration warning and an explicit page-error assertion. Secret scan, production
+  build (including `/notifications`), and final `git diff --check` also PASS.
+- No push, deploy, hosted migration, Production access, merge, invitation, new
+  dependency, ADR, or Spec was performed.
+
+## 2026-08-01 — X010-B-4 in-app notification center
+
+- Started from the mandatory HEAD `fc5b414397e730bc32f4a59c392195457ee819df`
+  with a clean worktree. Bounded to Spec 015 only; no new Spec/ADR/dependency;
+  no email/WhatsApp/push/cron in this slice; no push/deploy/Production/hosted
+  migration/merge/invitation. Status `X010_B4_LOCAL_COMPLETE_DB_CI_UAT_PENDING`.
+  GREEN / TEAM_UAT_READY are **not** declared.
+- Pre-flight inspection: read AGENTS.md, Spec 015 spec/plan/tasks, the owner
+  manual UAT notes, and the current data model. Audited the existing audited
+  workflow RPCs (`s015_execute_internal_workflow`, `s015_client_decide_version`,
+  `s015_prepare_delivery`, `s015_deliver_ready_version`, `s015_upsert_deliverable_task`)
+  and confirmed the exact audit action strings (`DeliverableVersionSubmitted`,
+  `DeliverableInternalChangesRequested`, `DeliverableVersionSentToClient`,
+  `ClientVersionDecision` with `reason = approved|changes_requested`,
+  `DeliverablePreparedForDelivery`, `DeliverableFinalDelivered`,
+  `DeliverableTaskCreated/Updated`). Reused the existing atomic audit-insert
+  path; no parallel notification system was created.
+- Data model: additive migration `202608010002_s015_x010b4_in_app_notifications.sql`
+  (after `202608010001`) creates `public.notifications` (id, tenant_id, client_id
+  nullable, recipient_user_id, event_type, title, message, action_href,
+  source_audit_event_id, source_task_id, dedupe_key, read_at, created_at),
+  unique `(recipient_user_id, dedupe_key)`, CHECK-enforced `action_href`
+  allowlist, read-only-except-read_at guard, and RLS policies (recipient +
+  active tenant member + client-scope defense-in-depth). No authenticated
+  INSERT/DELETE grant.
+- Emission (atomic with the audited operation): SECURITY DEFINER `AFTER INSERT`
+  trigger on `audit_events` resolves recipients per event and enqueues via
+  `s015_enqueue_notification(...)` with `ON CONFLICT DO NOTHING`. A second
+  SECURITY DEFINER trigger on `deliverable_tasks` (`AFTER INSERT OR UPDATE OF
+assignee_user_id`) covers assignment/reassignment. The actor is excluded from
+  recipients. Recipient resolvers: `s015_notification_client_management_recipients`,
+  `s015_notification_deliverable_execution_recipients`,
+  `s015_notification_client_portal_recipients` (all SECURITY DEFINER).
+- Scoped RPCs (the only read/mark paths): `s015_notification_unread_count`,
+  `s015_list_notifications(p_filter, p_limit, p_offset)`,
+  `s015_mark_notification_read(p_notification_id)`,
+  `s015_mark_all_notifications_read()`. No service role in browser/runtime.
+- TypeScript/UI: `src/modules/notifications/notification-labels.ts` (category
+  map + TS mirror of the href allowlist + Arabic relative/absolute time),
+  `src/server/actions/notifications-read.ts` (unread count, list, bell payload),
+  `src/server/actions/notifications-write.ts` (mark-read server actions with
+  `revalidatePath`), `src/ui/notifications/{notification-item,notification-bell,notification-list}.tsx`,
+  and `src/app/notifications/page.tsx` (unified route wrapping in the correct
+  shell per actor). Bell wired into `ProductShell` and `ClientShell`.
+- Tests added: unit `tests/unit/notifications/{notification-labels,notifications-read}.test.ts`;
+  component `tests/component/notifications/{notification-bell,notification-list}.test.tsx`;
+  pgTAP `supabase/tests/database/s015_x010b4_in_app_notifications.test.sql`
+  (recipient routing per event, client-safe vs internal copy, dedupe, RLS
+  recipient-only, tenant + Client A/B isolation, disabled-membership denial,
+  mark-own-read + cross-recipient denial, href CHECK, read_at immutability,
+  authenticated INSERT denial, scoped unread count); fixture E2E
+  `tests/e2e/notifications/notifications-center.spec.ts`; persistent E2E
+  `tests/e2e-persistent/s015-notifications-journey.spec.ts`.
+- Local non-DB matrix PASS: lint; typecheck; unit 66/333; integration 28/112;
+  component 29/119; RLS simulator 8/24; fixture E2E 12/12 new + 17/17
+  regression (app-shell/client-work/pending-inbox/visual-qa); secret scan;
+  `git diff --check` (LF/CRLF warnings only); production build (`/notifications`
+  in the route manifest).
+- DB-backed gates BLOCKED locally (`LegacyDbConnectError`, Docker daemon down —
+  same class as S015-P2-036/prior slices): pgTAP `s015_x010b4...` and persistent
+  `s015-notifications-journey` did not execute. They run in exact-HEAD CI and
+  are **not** converted to PASS.
+- Decision: email notifications are deferred to a separate owner decision
+  (S015-P2-127). X010-B-4 ships in-app only. No email dependency or ADR added.
+- Parent disposition unchanged: X010-A-9 / S015-P1-111 / S015-P1-112 remain
+  `code-fixed + CI-green + hosted-blocked`.
+
+## 2026-07-31 — X010-B-3 corrective pass (real work detail, role copy, form split, error state, decision-date deferral)
+
+- Started from the B3 HEAD `351f370`. Bounded corrective pass inside Spec 015
+  only; no new Spec/ADR/dependency/migration; no push/deploy. Status set to
+  `X010_B3_CORRECTIVE_LOCAL_COMPLETE_CI_UAT_PENDING`. GREEN / TEAM_UAT_READY
+  are **not** declared.
+- **Decision-date deferral (honesty correction).** The B3 `lastDecisionAt`
+  derived from `deliverable.updated_at` was **removed** because `updated_at`
+  reflects any deliverable update, not specifically a client decision — it was
+  an approximate date. A reliable client-decision timestamp requires a new
+  batched query against `approval_decisions` (same tenant/client/deliverable/
+  version, decision `client_approved`/`client_changes_requested`) plus client
+  RLS read verification, which is a meaningful expansion with security
+  implications. Per the owner instruction, the approximate date was deleted and
+  no date is shown; the decision-date feature is **deferred** to a later slice.
+- **Real work opening.** Cards on «أعمالي» now open the actual work, not a
+  general page. New route `/client/work/[deliverableId]` + new
+  `readPersistentClientWorkDetail` reader: tenant/client guard + RLS; only
+  client-visible statuses (`waiting_client_approval`, `client_changes_requested`,
+  `client_approved`, `ready_for_delivery`, `delivered`); only the current
+  client-allowed version; only `client_visible`/`client_uploaded`/`final_delivery`
+  files and `client_visible` comments; no internal comments/files/quality/version
+  history; decision buttons for the client approver **only** at
+  `waiting_client_approval`; viewer read-only; deliverable ID used as a stable
+  key and inside the href only, never rendered as text. Added `id` to
+  `DeliverableClientSafeSummary` (route key only). Duplicate deliverable names
+  are kept distinct via `id`-based React keys and per-card hrefs.
+- **Role copy correction.** `clientNextAction` is now role-aware (approver:
+  «راجع النسخة ثم اعتمدها أو اطلب تعديلًا»; viewer: «يمكنك الاطلاع على النسخة،
+  والقرار لدى المسؤول عن الاعتماد»). Home/work never show the viewer
+  «بانتظار قرارك»; viewer sees «قيد المراجعة». «تم اعتمادك» →
+  «تم اعتماد العمل». The pending-inbox viewer label stays «قيد المراجعة»
+  (consistent single viewer term).
+- **Form split into three clear sections.** The deliverable create/edit form no
+  longer hides workflow-changing fields as "optional and don't affect". It now
+  has: (1) البيانات الأساسية (name/type/owner/date/description/package line+
+  quantity), (2) تفاصيل إضافية اختيارية (priority/contributors/extra dates),
+  (3) إعدادات سير العمل — a visible fieldset with `requiresInternalApproval`
+  and `requiresClientApproval`, each with an impact explanation. No
+  field/data/validation/workflow removed; values preserved on open/close.
+- **Error vs empty state.** `/client/work` now distinguishes a true empty list
+  from a `readCommercialSummary` failure: on failure it shows «تعذر تحميل أعمالك
+  الآن. حاول مرة أخرى.» (ErrorState); an empty successful read shows the
+  EmptyState. Read errors are no longer converted to an empty list.
+- **New/updated regressions:** extended `client-labels.test.ts` (role-aware
+  action, viewer term, section headings); rewrote `client-work-board.test.tsx`
+  (per-card detail href, duplicate-name distinct keys/links, viewer/approver
+  next-action copy, no UUID-as-text); updated `deliverable-form.test.tsx`
+  (workflow-settings fieldset) and `commercial-summary.test.tsx` (client
+  summary `id`); rewrote `client-work-experience.spec.ts` (each card opens its
+  own detail, change-requested detail stays openable, viewer detail read-only,
+  Client A cannot open Client B work, no UUID/enum/internal leak, home
+  sections, mobile viewport).
+- Local non-DB matrix PASS: lint; typecheck; unit 64/303; integration 28/112;
+  component 27/106; RLS simulator 8/24; fixture E2E 154 passed / 8 skipped;
+  secret scan; `git diff --check`; production build (`/client/work` and
+  `/client/work/[deliverableId]` present). DB-backed gates (pgTAP, persistent
+  E2E) are environment-blocked locally (`LegacyDbConnectError`) and run in
+  exact-HEAD CI; the environmental block is **not** converted to a PASS.
+- Boundary unchanged: no push, no deploy, no Production, no hosted migration
+  apply, no merge, no team invitation. X010-A-9 / S015-P1-111 / S015-P1-112
+  remain `code-fixed + CI-green + hosted-blocked`.
+
+## 2026-07-31 — X010-B-3 Client terminology, أعمالي page, change-request visibility, progressive disclosure
+
+- Started from mandatory HEAD `7a7787236af2ad81ebbf44747c3ecac1ea0e00cd`; worktree
+  verified clean; X010-B-2 commit preserved (no reset/rewrite); no push/deploy.
+  Bounded to Spec 015 only; no new Spec/ADR/dependency/migration. Goal: an
+  understandable client experience, keep work visible after a change request, and
+  reduce form clutter — without changing workflow or permissions.
+- **Central client mapper** (`src/modules/deliverables/client-labels.ts`):
+  `clientStatusLabel` (`waiting_client_approval` → «بانتظار قرارك»,
+  `client_changes_requested` → «قيد التعديل لدى فريق سماوة», `client_approved`
+  → «تم اعتمادك», `ready_for_delivery` → «جارٍ تجهيز التسليم», `delivered` →
+  «تم التسليم», `in_progress` → «قيد العمل»), `clientVisibleStatusLabel`
+  (viewer-neutral «قيد المراجعة» for decision-pending work), `clientNextAction`,
+  and the ordered `clientWorkSections`. Replaces the scattered/duplicated inline
+  maps in `commercial-summary.tsx`, `persistent-client-approval.ts`,
+  `client-deliverable-detail.tsx`, and the hardcoded fixture strings. Raw status
+  enum is now carried on `ClientApprovalPanelItem.status` /
+  `ClientSafeDeliverableDetail.status` so viewer transformations use the enum,
+  not Arabic string comparison.
+- **أعمالي page** (`/client/work`): new client route + `ClientWorkBoard` that
+  groups the client's work into five role-aware sections (بانتظار قرارك / قيد
+  التعديل / تم اعتمادك / جارٍ تجهيز التسليم / تم التسليم). Each card is a
+  keyboard-focusable `<Link>` showing name, type, Arabic status, date, progress,
+  and next action; waiting cards link to `/client/pending`, delivered to
+  `/client/files`. Added «أعمالي» to the client shell and navigation resolver.
+- **Change-request visibility (D9 root cause):** `clientVisibleStatuses` in
+  `commercial-summary-read.ts` now includes `client_changes_requested`, so work
+  the client asked to edit **stays visible** in أعمالي with the message
+  «استلم فريق سماوة ملاحظاتك، والعمل الآن قيد التعديل» while it is **removed**
+  from بانتظار موافقتي (the inbox still reads only `waiting_client_approval`).
+  The client's **last decision date** (`lastDecisionAt`, derived from the
+  deliverable `updated_at` for client-decision statuses) is shown on the
+  change-request/approved cards as «تاريخ آخر قرار لك» when present. No internal
+  comments, files, versions, or quality data are exposed; only the client-safe
+  summary fields.
+- **Client home:** the three sections (بانتظار موافقتي / أعمالي / الباقة
+  والمتبقي) are now clickable `ButtonLink` cards with CTAs and useful empty
+  states instead of static text.
+- **Progressive disclosure:** the deliverable create/edit form now shows the
+  essential fields first (اسم العمل، النوع، المسؤول، الموعد، الوصف الأساسي،
+  سطر الباقة/الكمية) and moves optional fields (الأولوية، المساهمون، تواريخ
+  إضافية، أعلام الاعتماد) behind a native `<details>` «تفاصيل إضافية —
+  اختيارية». No field/data/validation/workflow removed; values preserved on
+  open/close; count inputs remain integer-only text (no spinners).
+- **Terminology sweep:** «المخرجات»/«مخرجاتي» → «الأعمال»/«أعمالي» on client
+  surfaces and the shared snapshot cards; no raw enum/UUID/internal term
+  («التعميد الداخلي»/internal_only) reaches the client.
+- **New/updated regressions:** `tests/unit/deliverables/client-labels.test.ts`
+  (mapper, viewer neutrality, no enum leak, section order);
+  `tests/component/client/client-work-board.test.tsx` (grouping, clickable
+  cards, change-request message + note isolation, empty state, viewer copy, no
+  enum/UUID/internal leak); updated `client-pending-inbox`,
+  `client-onboarding`, `r007-client-approval-panel`, `deliverable-form`,
+  `navigation-resolver`, and `hadna-mvp-summary` tests for the new labels;
+  new `tests/e2e/client/client-work-experience.spec.ts` (أعمالي grouping +
+  keyboard cards, change-request stays visible, not in pending inbox, viewer
+  neutrality, no enum/UUID/internal leak, clickable home sections, mobile
+  viewport).
+- **Permissions preserved (unchanged):** client viewer is read-only with no
+  decision buttons; client approver decides only when the exact current version
+  is awaiting their decision; no internal comments/quality/internal files leak;
+  Client A cannot see Client B work (RLS + tenant/client scope untouched).
+- Local non-DB matrix PASS: lint; typecheck; unit 64 files / 303 tests;
+  integration 28 files / 112 tests; component 27 files / 105 tests; RLS
+  simulator 8 files / 24 tests; fixture E2E 144 passed / 8 skipped (1 mobile
+  visual-QA was flaky and passed on isolated re-run); secret scan; `git diff
+--check` (LF/CRLF warnings only); production build (new `/client/work` route
+  present). DB-backed gates (pgTAP, persistent E2E) are environment-blocked
+  locally (`LegacyDbConnectError`) and run in exact-HEAD CI; the environmental
+  block is **not** converted to a PASS.
+- Status: `X010_B3_LOCAL_COMPLETE_CI_UAT_PENDING`. GREEN / TEAM_UAT_READY are
+  **not** declared. No push, no deploy, no Production, no hosted migration
+  apply, no merge, no team invitation. X010-A-9 / S015-P1-111 / S015-P1-112
+  remain `code-fixed + CI-green + hosted-blocked`.
+
+## 2026-07-31 — X010-B-2 corrective pass (migration signature + phone normalization)
+
+- Status corrected to `X010_B2_CORRECTIVE_IN_PROGRESS`. The initial draft's
+  `X010_B2_TECHNICAL_GREEN` was inaccurate: the corrective changes are
+  **committed locally at `0e6b64d`**, exact-HEAD CI had not run, DB-backed gates
+  were blocked, and the Preview migration was not applied to UAT.
+  **X010_B2_GREEN is NOT declared.**
+- Migration fix (edited the `202607310001` migration in place; no new file):
+  moved `client_contact_phone_input text default null` to the **end** of
+  `s015_onboard_first_client` (it was before mandatory parameters). Updated
+  DROP/CREATE/REVOKE/GRANT to the 40-param signature with the trailing `text`.
+  Added a DB `CHECK` constraint `clients_primary_contact_phone_format`
+  (`primary_contact_phone IS NULL OR ~ '^\+?[0-9]{7,15}$'`).
+- Phone normalization fix: `normalizeContactPhone` now converts **only** a
+  leading `00` prefix to `+` (previously it corrupted numbers like
+  `01000012345` by replacing `00` after a digit). `isValidContactPhone` uses
+  `^\+?[0-9]{7,15}$`; a `+` in the middle or more than one `+` is rejected.
+- pgTAP updated: `regprocedure` assertion matches the trailing-phone signature;
+  added `col_has_check` plus direct-insert and audited-RPC rejection of invalid
+  phones (`23514`).
+- Value-preservation wording corrected: the wizard preserves entered values
+  within the **current in-memory session** after a validation error; it is **not**
+  a durable draft that survives refresh, and no PII is stored in localStorage.
+- Boundary unchanged: `202607310001` has **not** been applied to UAT, so the
+  Preview is not green against the new schema. Commit stays local; no push/deploy.
+
+## 2026-07-31 — X010-B-2 Onboarding journey simplification (initial draft)
+
+- Started from HEAD `2c03bca0138614860090c8905d46813ad56874cf` on `codex/015-persistent-mvp-pilot-completion`. Bounded onboarding simplification inside Spec 015 only; does not touch X010-A-9, the corrective hosted UAT, or any Production boundary.
+- One primary CTA «إضافة عميل جديد» on `/clients` → the unified wizard; the competing secondary «إضافة عميل» header button removed (the standalone `/clients/new` route remains for direct edit/access).
+- Explicit Arabic labels throughout the wizard and standalone forms: «اسم الشركة أو الجهة», «اسم مسؤول التواصل», «البريد الإلكتروني», «رقم الهاتف / واتساب», «اسم العقد», «مرجع العقد — اختياري» (with helper copy), «تاريخ بداية/نهاية العقد».
+- Phone/WhatsApp: additive migration `202607310001_s015_x010b2_client_contact_phone.sql` adds `primary_contact_phone text` to `public.clients` and recreates `f001_create_client_write` (7-param), `f001_update_client_write` (8-param), and `s015_onboard_first_client` (with `client_contact_phone_input`, defaulted for backward-compatible callers) to thread phone through the atomic, tenant-scoped, audited, idempotent onboarding path. The new column inherits the existing `clients` RLS. Shared `contact-phone.ts` normalizes and validates via Zod; phone is never stored in localStorage/logs.
+- Package: multiple services per package with add/remove; integer-only for count units, fractional for divisible units; helper copy distinguishes committed/reserved/consumed/remaining. Team: «المسؤول الرئيسي عن العمل» + «أعضاء الفريق المشاركون» with Arabic role labels and helper text; exact eligibility preserved. Progressive disclosure for optional contract/package details; review hides empty optionals; values preserved on validation error with focus on the invalid field.
+- B1 documented closure: `technical-green + owner-final-UAT-pending`. Exact-HEAD F-001 CI `30552777038` passed and Preview `7LXuPgu2MUb8RJNbhXigi4ZipQhK` is Ready. CodeRabbit `skipped` = Draft PR, not a review pass. Recent-decision row is now a single honest link to the scoped deliverables page (no drawer deep-link exists yet).
+- New/updated regressions: `tests/unit/clients/contact-phone.test.ts` (normalization/validation); extended `onboarding-schema.test.ts` (phone valid/invalid/empty); rewritten `first-client-wizard.test.tsx` (clear labels, phone, multi-service add/remove, value preservation after error, progressive disclosure, review hides empty); new `supabase/tests/database/s015_x010b2_client_contact_phone.test.sql` (column + recreated RPC signatures/privileges, phone persistence, cross-tenant RLS isolation, unauthorized denial, atomic onboarding with phone, idempotent replay, conflict on different phone); updated persistent `s015-onboarding-journey.spec.ts` (multi-line package + phone + edit/reload) and `create-client.spec.ts` (single CTA, new labels).
+- Local non-DB matrix PASS: lint; typecheck; unit 63 files / 293 tests; integration 28 files / 112 tests; component 26 files / 97 tests; RLS simulator 8 files / 24 tests; secret scan; `git diff --check` (LF/CRLF warnings only); production build. DB-backed gates (pgTAP, persistent E2E) are environment-blocked locally (`LegacyDbConnectError`) and run in exact-HEAD CI.
+- Registered five open owner notes as defects S015-P2-124 through S015-P2-128 (post-approval return to internal edit; protected drag vs status-action clarity; add/invite team members; email notifications decision; trial data cleanup without deleting Audit/Ledger) and added X010-B-7 as the final structured owner acceptance trial after B2–B6.
+- Boundary: no hosted migration apply, no Production access, no merge, no team invitation, no `TEAM_UAT_READY`. The Preview cannot be claimed green for the new migration until `202607310001` is applied to the approved non-Production UAT. X010-A-9 / S015-P1-111 / S015-P1-112 remain `code-fixed + CI-green + hosted-blocked`.
+
+## 2026-07-30 — X010-B-1 Global density + navigation + clickability
+
+- Started from HEAD `47b11e9` on `codex/015-persistent-mvp-pilot-completion`. This is the first implementation slice of X010-B (Owner Experience Notes Consolidation and UX Rescue), inside Spec 015 only.
+- Phase 1 (source-of-truth): consolidated all owner experience observations into `owner-manual-uat-notes-2026-07-26.md` with fixed / needs-recheck / open triage; corrected the documentation conflict (current HEAD `47b11e9`; exact-HEAD CI green but corrective hosted UAT blocked; X010-A parent not complete while X010-A-9 open); created X010-B + sub-tasks in `tasks.md`; registered defects S015-P2-111 through S015-P2-123.
+- Phase 2 (X010-B-1 implementation): tightened shared core tokens (`card.tsx` padding/shadow, `badge.tsx` StatCard, `page-header.tsx` headings) for a unified readable density at 100% zoom without breaking 44px touch targets or WCAG focus; made exception-dashboard recent-decision titles clickable links to the deliverables page with visible focus and keyboard reach; fixed the raw technical `{item.status}` leak by applying `deliverableStatusLabel`; contained the Kanban scroll region (`max-w-full overflow-x-auto`, removed `-mx-4`) to prevent page-level overflow; tightened client-home density and replaced the confusing "مخرجاتي" with "المخرجات".
+- New regression: `tests/component/management/exception-dashboard.test.tsx` asserts Arabic status labels (no raw enum) and clickable recent-decision links.
+- Local non-DB matrix PASS: lint; typecheck; unit 62 files / 284 tests; integration 28 files / 112 tests; component 26 files / 92 tests; RLS simulator 8 files / 24 tests; secret scan; `git diff --check` (LF/CRLF warnings only); production build.
+- Boundary: no business-workflow redesign in this slice. X010-A-9 / S015-P1-111 / S015-P1-112 remain `code-fixed + CI-green + hosted-blocked`. No hosted mutation, no Production access, no merge, no team invitation, no `TEAM_UAT_READY`. Exact-head CI, Preview, and owner visual QA remain pending.
+
+## 2026-07-30 — X010-A final hosted UAT closure attempt
+
+- Starting HEAD `6c0386dac8e474ffe6d56cacf754bc0e6d1bc939` on `codex/015-persistent-mvp-pilot-completion`; code review, exact-HEAD CI (`30552777038`), Preview (`https://vercel.com/samawahs-projects/shrik/7LXuPgu2MUb8RJNbhXigi4ZipQhK`), and CodeRabbit were already approved before this attempt.
+- Goal: apply pending additive migrations `202607300001` and `202607300002` to the approved non-Production UAT and run the real hosted Auth cancel regression, then close S015-P1-111/S015-P1-112.
+- Outcome: BLOCKED, not failed open. Verified HEAD/branch/clean tree and probed the secure env file `.env.s015-team-uat.local` through the project's own read-only clean-workspace dry-run tooling, which enforces the owner-approved UAT hostname allowlist and target-category guard before any mutation.
+- Exact missing credentials/permissions (names only; no values printed or requested): `SUPABASE_ACCESS_TOKEN` (required to run `npx supabase link` + `npx supabase db push --linked` to apply pending migrations to the approved UAT project); `S015_UAT_SETUP_DATABASE_URL` (alternative direct service-role psql path for migration apply); `S015_UAT_SERVICE_ROLE_KEY` (required by the hosted regression/retire/clean-workspace scripts to operate against the UAT database); `S015_UAT_SUPABASE_URL` (required by `prepare-s015-clean-workspace.mjs`; the secure file defines only `S015_UAT_BASE_URL`, a different key); `S015_UAT_SUPABASE_HOSTNAME` (the allowlist key the clean-workspace script reads; the secure file defines `S015_UAT_ALLOWED_HOSTNAME` instead); `VERCEL_TOKEN` (required for protected Preview access / programmatic hosted Auth regression). No hosted migration was applied, no hosted regression was executed, and no Production action occurred.
+- The secure env file currently contains only the seven UAT persona accounts plus `S015_UAT_BASE_URL`, `S015_UAT_ALLOWED_HOSTNAME`, and `S015_UAT_TARGET_CATEGORY`; the database/service-role/access credentials above are absent.
+- State remains `X010_A_CORRECTIVE_HOSTED_BLOCKED`. S015-P1-111 and S015-P1-112 stay open until the corrective hosted UAT regression passes. Production, real data, merge, external invitations, public signup, and Production alias/environment remain outside the boundary.
+
+## 2026-07-30 — X010-A cancel authorization follow-up
+
+- Status: `X010_A_CORRECTIVE_HOSTED_BLOCKED`. Follow-up review of S015-P1-111/S015-P1-112 found the prior cancel RPC still used broad deliverable actor authorization, and the action/UI could report cleanup success for missing coordinates or before inspecting Uppy removal cleanup.
+- Added additive migration `202607300002_s015_x010a_cancel_authorization_followup.sql`; no historical migration was edited. Cancel now requires current-version pending/failed scope, lets management cancel in-scope attempts, and restricts non-management cancellation to the original attempt actor with a fresh visibility/is_final authorization assertion.
+- Hardened `cancelWorkspaceFileUpload`: no fallback bucket, requires `deliverable-assets` and non-empty RPC-returned path, treats invalid coordinates as `cleanup: "failed"`, treats Storage 404 as already cleaned, and reports other Storage failures as cleanup failed. Updated both explicit cancel and Uppy `file-removed` feedback paths.
+- Added/extended regressions: pgTAP cancel authorization matrix in `s015_upload_authorization_hardening.test.sql`; unit action tests for exact path deletion, missing path, invalid bucket, Storage failure, and 404; component tests for cleanup-failure feedback on explicit and Uppy removal paths.
+- Local non-DB verification PASS: targeted unit action 5/5; targeted component 2/2; `npm run lint`; `npm run typecheck`; `npm run test:unit` 62 files / 284 tests; `npm run test:integration` 28 files / 112 tests; `npm run test:component` 25 files / 90 tests; `npm run test:rls:simulator` 8 files / 24 tests; `npm run secret:scan`; `git diff --check` (LF/CRLF warnings only); `npm run build`. Local pgTAP/DB verification attempted with `npm run test:rls:db` and remained environment-blocked by `LegacyDbConnectError` / failed local PostgreSQL connection. Exact-head CI, Preview, and hosted UAT are still pending; Production, merge, and hosted mutation remain untouched.
+- Pushed commit `c95cc0cab22ade90d879000c64827365ffbb1a92` (`fix: harden Spec 015 upload cancellation integrity`) to `codex/015-persistent-mvp-pilot-completion`. Exact-head F-001 Quality run `30550689619` passed: lint, typecheck, unit, integration, Supabase start/reset, RLS simulator + pgTAP, component, fixture E2E, persistent E2E, secret scan, and build. CI logs confirm migration `202607300002_s015_x010a_cancel_authorization_followup.sql` applied during reset and persistent E2E resets; pgTAP passed 9 files / 589 tests including `s015_upload_authorization_hardening.test.sql`. PR #37 status also shows CodeRabbit success and Vercel success for `https://vercel.com/samawahs-projects/shrik/9h5w8wib3e4Cf4cDSjc5XMyNb78m`.
+- Hosted UAT outcome: blocked, not failed open. This workstation has no approved non-Production UAT setup credentials or allowlist token (`SUPABASE_ACCESS_TOKEN`, setup DB URL, service-role key, and Vercel token absent), so no hosted migration apply or hosted cancel regression was executed. Production, real data, merge, Production alias/environment, external invitations, and public signup remain untouched. GREEN is not declared.
+
+## 2026-07-30 — X010-A corrective security closure (S015-P1-111, S015-P1-112)
+
+- Status: `X010_A_CORRECTIVE_HOSTED_BLOCKED`. Mandatory starting HEAD `ead81c6a4c3490281c709d5672b3333f9a824540`; final HEAD `b6462a3449093cfd8d53622add162712ed29e679` on branch `codex/015-persistent-mvp-pilot-completion`, Draft PR #37 unmerged.
+- S015-P1-111: durable begin/retry/complete relied only on `private.s015_upload_attempt_actor_allowed` and lost the role->visibility, `is_final`<->`final_delivery`, version-state, and client_viewer/execution-member boundaries that `202607130006` enforced at registration. Additive migration `202607300001_s015_x010a_upload_authorization_cleanup_hardening.sql` adds `private.s015_upload_actor_kind`, `private.s015_upload_visibility_allowed`, and `private.s015_assert_upload_authorized`, applied in begin, retry, and complete (re-checked at completion).
+- S015-P1-112: `cancelWorkspaceFileUpload` deleted a browser-supplied `storagePath` and ignored the `remove` result. Removed `storagePath` from `cancelUploadAttemptSchema`, the action input, and both UI call sites. `s015_cancel_file_upload_attempt` now returns the attempt's true `bucket_id`+`storage_path` after authorization; the action deletes only that path, inspects `remove`, and returns `cleanup: "completed"|"failed"` without reverting the audited cancel.
+- Tests: new `supabase/tests/database/s015_upload_authorization_hardening.test.sql` (viewer/approver/writer/designer/unassigned/management negatives, cross-tenant/client, stale version, complete re-validation after role and version-state changes with no partial file_asset/audit, cancel true-path/single-audit/cross-tenant-deny). Corrected the existing durable scenario to `internal_only` on the internally_approved version; the prior `client_visible`-on-`internally_approved` begin encoded the bug being fixed. Two CI iterations fixed test-data issues only: the `s015_client_review_payload_guard` setup ordering for the sent/approved deliverables, and the `role_assignments` status value (`disabled`, not `inactive`).
+- Exact-HEAD F-001 Quality run `30531382182` PASS on `b6462a3`: pgTAP 9 files/578 tests, persistent E2E, fixture E2E, RLS simulator 24, unit 279, integration 112, component 88, lint, typecheck, secret scan, build. Vercel Preview deployment Ready in `samawahs-projects/shrik`. Local non-DB matrix also passed; DB-backed gates ran in CI (Docker unavailable locally).
+- Hosted close condition BLOCKED: the corrective hosted UAT could not execute because the Supabase UAT setup credential and protected Preview access are unavailable in this workstation environment (same class as S015-P1-078/S015-P2-078). GREEN is NOT declared; S015-P1-111/112 remain open until the corrective hosted UAT passes. Files: `supabase/migrations/202607300001_s015_x010a_upload_authorization_cleanup_hardening.sql`; `src/server/actions/deliverable-workspace-actions.ts`; `src/ui/deliverables/workspace-files.tsx`; `supabase/tests/database/s015_persistent_mvp_behavior.test.sql`; `supabase/tests/database/s015_upload_authorization_hardening.test.sql`.
+
+## 2026-07-29 — X010-A hosted exact-version closure
+
+- Status: `X010_A_GREEN`. Application HEAD `f8b363d0ac6ff86290fc025fdb7b1a220cc2ddc0` passed exact-HEAD F-001 run `30479343344`; correct project `samawahs-projects/shrik` Preview deployment `dpl_8FsJYiCoiULPi9HJ7swZurXqZEW8` was Ready. Healthy non-Production UAT `jnvuccapgsabrwwkxnbh` received additive migration `202607290002`; local/remote migration inventory matched.
+- Protected shared fixture run `s015-hosted-lifecycle-6998e30147` covered admin, account manager, assigned writer, tenant-scoped designer boundary, client viewer, and client approver. A replacement attempt failed, survived reload, disabled send, and required explicit audited cancellation. Management sent exact version 1; viewer saw it read-only without internal comment/file; approver requested changes; writer submitted exact version 2; management approved/sent it; approver approved; management prepared and finally delivered version 2.
+- PostgreSQL ended with deliverable `a863308e-fc4d-4f1e-b76a-0b5581d70cfd` delivered at revision 12/progress 100, final current version `622667e0-dc41-4a92-9f05-428c5a5a162c`, four approval decisions, two paused-client SLA segments plus resume/completion, one reservation, and one consumption. Exact final-delivery replay returned the original result and left one `deliver_ready_version` command and one consumption.
+- Persona-scope run `x010a-scope-20260729-f8b363d` used dry-run, allowlist/category, apply, audit journal, rollback, and immediate replay. Both rollback outputs showed 0 active target client memberships and 0 active target roles; pre-existing target-tenant memberships were reused and retained. The delivered lifecycle fixture was restored to its run marker and retained hidden as append-only audit evidence. Production, real data, external invitations, public signup, alias promotion, and merge were untouched.
+
+## 2026-07-29 — X010-A durable upload local checkpoint
+
+- Added additive migration `202607290002_s015_durable_upload_attempts.sql`. It records the exact tenant/client/deliverable/current-version/actor/storage/file/run/idempotency attempt before transport and uses durable `pending`, `ready`, `failed`, and `cancelled` states.
+- Protected PostgreSQL commands now recover unsettled attempts after reload, audit retry/cancel, verify the Storage object before exact-version registration, atomically mark success ready, and block send, prepare delivery, and final delivery while an exact-current-version attempt is pending or failed. Stale and cross-scope attempts are denied; failed replacements cannot silently fall back to an older file.
+- The Uppy surface persists before TUS transport, restores pending/failed attempts after reload, keeps the drawer fail-closed, and exposes explicit Retry and audited cancellation. No service-role credential was added to browser or Next.js runtime.
+- Complete local matrix PASS from mandatory starting HEAD `2f72f175b41f23b753deef5f701dab481a9a7c11`: lint; typecheck; unit 61 files / 275 tests; integration 28 / 112; component 24 / 88; RLS simulator 8 / 24; clean Supabase reset; pgTAP 8 files / 535 tests; fixture E2E 126 passed / 6 configured skips; persistent E2E 16/16; secret scan; `git diff --check`; and production build.
+- The persistent browser proves failed replacement upload → durable failed row → reload restoration → client-send blocked → explicit audited cancel → only the exact correct file in confirmation/client view → approval → prepare delivery → final delivery.
+- This is a local checkpoint only. X010-A-1/2/8 and S015-P1-100/101 remain open until the resulting commit passes exact-HEAD CI, the correct `samawahs-projects/shrik` Preview, one shared non-Production synthetic persona lifecycle, and rollback/no-op proof. Production and real data remain untouched.
+
+## 2026-07-29 — X010-A reviewer correction
+
+- Reopened S015-P1-100 after tracing the real upload sequence: failed or not-yet-registered upload intent is browser-local and disappears on reload, while PostgreSQL can only block attempts already represented by a `file_assets` row. X010-A-1/2 remain open pending durable upload-attempt persistence and reload recovery coverage.
+- Corrected the quantity overreach: count units remain spinner-free and integer-only, while hours and other divisible service units retain decimal support as required by the existing numeric data model.
+- Fixed repeated package-adjustment idempotency and removed management-only approval/client-publication controls from the account-manager deliverables list.
+- Targeted verification: typecheck PASS; 4 test files / 37 tests PASS. Exact-head CI and hosted client-fixture proof remain pending.
+
+## 2026-07-29 — X010-A critical workflow safety closure
+
+- Registered Owner UAT defects S015-P1-100 through S015-P1-106 and kept the work inside Spec 015. No Spec 016, dependency, technology change, or ADR was introduced.
+- Added explicit Uppy file metadata/progress/terminal state and fail-closed drawer/send behavior; exact current-version payload summaries for client send and final delivery; a dedicated client-approved Kanban lane; direct `فتح العمل` access from the deliverables list; and fixed-width mouse/touch/keyboard horizontal board navigation.
+- Added additive migration `202607290001_s015_x010a_workflow_safety.sql`. It makes `ready_for_delivery` mandatory, adds audited/idempotent prepare and final-delivery commands, validates the exact approved current version and ready scoped files, preserves SLA completion, and keeps ledger/audit/package consumption append-once on replay.
+- Count-based create/reservation inputs are spinner-free and integer-validated. Existing UAT value `11.93` was not changed; the package surface exposes the existing reason-required, idempotent, append-only audited administrative adjustment path.
+- Complete local matrix PASS: lint; typecheck; unit 59 files / 265 tests; integration 28 / 112; component 24 / 87; RLS simulator 8 / 24; local Supabase reset; pgTAP 8 files / 499 tests; fixture E2E 126 passed / 6 configured skips; persistent E2E 16/16; secret scan; `git diff --check`; and production build.
+- Exact application head `096a90e98a1664053d499e08d7a15fbbdf85a449` passed F-001 run `30455939860`. Vercel Preview `dpl_DhXioTQggg9ggAt9vJXKi5usqkvm` is Ready in the correct `samawahs-projects/shrik` project, and local/UAT migration inventories match through additive migration `202607290001`.
+- Hosted verification remains blocked, not failed open. The full synthetic lifecycle preflight refused to seed because the current UAT internal and client personas do not share one client scope. After obtaining a temporary Vercel protection share session, the bounded desktop smoke passed 7/9 checks; client viewer and approver authenticated but had no pending approval detail in their respective current scopes. Existing UAT data and role mappings were deliberately not changed to manufacture a passing fixture. Result: `X010_A_BLOCKED_HOSTED_CLIENT_FIXTURE`; X010-A-8 remains open.
+- Production, merge, Production promotion, UAT data deletion, and automatic correction of owner data remain prohibited and were not performed.
+
+## 2026-07-26 — X009-D image-only owner lifecycle closure
+
+- Corrected the image-only deadlock with a real signed current-version preview and an exact-file management staging RPC that is audited, idempotent, tenant/client/version scoped, and client-secret until explicit send.
+- Added a guarded UAT-only client-persona scoping tool with dry-run/apply/status/rollback, deterministic run IDs, category/count-only output, audit, compensation, hostname allowlist, and Production refusal. Apply/replay/status produced exactly two active tenant memberships, two client memberships, and two client-scoped roles.
+- Completed the hosted owner lifecycle on the correct protected Preview: 1600x1600 media rendered; pre-send client access was zero; approver had approve/change controls; viewer had none; neither client persona saw internal notes; exact-version approval succeeded; management delivered; the approval inbox became empty; and `/client/files` exposed one final-delivery file with preview/download.
+- Added migration `202607260002_s015_finalize_delivered_review_files.sql` so staged current-version review files become `final_delivery` and `is_final=true` atomically on delivery, with append-only audit evidence and a bounded existing-delivery backfill.
+- Local verification passed: clean Supabase reset, pgTAP 8 files / 494 tests, lint, typecheck, unit 59 files / 263 tests, secret scan, and diff check. Exact-head F-001 run `30214571221` passed the full CI matrix on `fbee205bf9dddb0ebd9594127729f63c94de2efd`.
+- UAT migration inventory matches through `202607260002`; exact Vercel deployment `dpl_7sqY7k4FM79JDUSrbA57kUvFjR9p` is Ready under `samawahs-projects/shrik`. S015-P1-099 and X009-D are closed. S015-P2-098 remains open with owner disposition; Production and merge remain untouched.
+
+## 2026-07-22 — X009-C owner-submit corrective slice
+
+- Reproduced S015-P1-097 from the owner's protected-Preview attempt and verified read-only that client, contract, and package persisted while no deliverable was created.
+- Root cause: onboarding listed internal members before the new client scope existed, then invoked four independent RPC transactions; exact-client assignment integrity correctly rejected the deliverable after the earlier writes had committed.
+- Implemented additive migration `202607220001_s015_atomic_first_client_onboarding.sql`: one atomic audited command, selected-member client-scope provisioning, management-only eligible-member directory, business-payload idempotency, and rollback on any failure.
+- Local gates passed: typecheck, scoped ESLint, schema unit 17/17, wizard component 7/7, and `git diff --check`.
+- Exact code-head F-001 run `29907779138` passed: unit 259, integration 112, RLS simulator 24, pgTAP 476, component 79, fixture E2E 126, persistent E2E 16, secret scan, and build.
+- Confirmed linked Supabase is `sharik-uat` / `ACTIVE_HEALTHY`; dry-run listed only `202607220001`, then apply succeeded and local/remote migration inventories matched.
+- Completed the owner's exact partial graph forward without deleting history: one first deliverable, one active reservation, one quantity-reserved ledger entry, and one `DeliverableCreated` audit event now exist.
+- Protected official Preview is Ready/Preview. Real administrator sign-in, client visibility, repaired deliverable visibility, wizard hydration, and five eligible team options passed. A hosted invalid-member rehearsal was denied with `42501` and left zero partial client rows.
+- No Production, merge, public signup, external-client invitation, or unrelated data mutation occurred.
+
+| Date       | Milestone                                                                                                   | Result                                    | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ---------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-22 | X009-C guided first-client onboarding — local green, CI pending                                             | `X009_C_LOCAL_GREEN_CI_PENDING`           | Within Spec 015 only: built a combined Zod schema (`src/server/commands/onboarding/onboarding-schema.ts`) with Arabic validation, date-order checks, package capacity enforcement, and duplicate prevention; built an orchestrating server action (`src/server/actions/onboarding.ts`) that creates client + contract + package + first deliverable through the existing audited RPCs with run-ID-derived idempotency keys, tenant-scoped permission checks, and partial-failure recovery via slug lookup; built a 5-step + review wizard component (`src/ui/management/first-client-wizard.tsx`) with Arabic RTL, mobile/desktop responsive layout, keyboard accessibility, team selector with human names only, dynamic package-line add/remove, and per-step validation; wired the wizard page at `/clients/onboard` with route guards and a tenant-scoped member directory; added prominent wizard CTA on `/clients` empty state and header. Added unit schema tests (17), component wizard tests (7), pgTAP onboarding sequence + idempotency + unauthorized-role denial (15), and persistent browser E2E for full success journey + unauthorized denial + empty-field prevention + idempotent replay (4). Local matrix PASS: typecheck; unit + component 80 files/338 tests; pgTAP 8 files/468 tests; persistent E2E 4 passed; secret scan; `git diff --check`; production build. No new dependency, migration, or ADR. All mutations are tenant-scoped, RLS-protected, idempotent, and audited through the existing RPC path. Exact-head CI pending.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| 2026-07-21 | X009-B final exact-head closure                                                                             | `X009_B_GREEN_READY_FOR_OWNER_ENTRY`      | F-001 run `29860433963` passed the complete matrix, including all 12 persistent scenarios, the corrected native-FormData tamper regression, secret scan, and production build. S015-P2-095 is fixed. Combined with the completed hosted clean-workspace cycle and direct Preview persona evidence, X009-B is closed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 2026-07-21 | X009-B final-head persistent harness correction                                                             | `HOSTED_GREEN_EXACT_HEAD_CI_PENDING`      | Documentation-head run `29856562297` exposed S015-P2-095. The first correction proved the select DOM value but run `29858760373` confirmed React rebuilt the action payload from trusted state, so no invalid value reached the server. The test now removes the original field name and appends an asserted hidden `ownerUserId`, guaranteeing that native FormData carries the tampered value while preserving all Arabic error/secrecy/zero-row assertions. Hosted X009-B state remains green and unchanged; corrective exact-head CI is pending.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 2026-07-21 | X009-B hosted closure after independent correction                                                          | `X009_B_GREEN_READY_FOR_OWNER_ENTRY`      | Corrective F-001 run `29852802208` passed the full exact-head matrix. Repository link, Preview Supabase URL, and CLI project inventory matched healthy non-Production `sharik-uat`. Process-only guarded dry-run planned 5 internal memberships/roles and zero client personas. Apply, separate-process replay, status, rollback/status, final apply/status all passed. Final clean counts: 5 active internal memberships, 5 active tenant-scoped roles, 5 profiles, and zero clients/contracts/packages/package lines/deliverables/versions/tasks/approvals/files/ledger/reservations; legacy internal memberships active=0 while legacy audit=135 and ledger=26 remain preserved. Direct protected-Preview inspection passed for management, account manager, writer, designer, unassigned, and client viewer boundaries. A private diagnostic exposed the temporary UAT admin field value; it was rotated immediately and updated only in the ignored local credential file. No Production, merge, invitation, public signup, real data, or history deletion occurred.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| 2026-07-21 | X009-B independent replay review correction                                                                 | `X009_B_CORRECTIVE_CI_HOSTED_PENDING`     | Independent review found S015-P1-094: the hosted script discovered legacy by active membership, but after apply the clean membership is intentionally the only active one, so separate-process replay/status/rollback would fail with a clean/legacy collision. Corrected discovery excludes the deterministic clean tenant and can inspect disabled legacy membership through the setup-only admin client; the allowlist now uses the dedicated Supabase hostname rather than the Vercel hostname, and failed apply performs bounded membership compensation. Focused unit 12/12, typecheck, lint, and script syntax pass. The linked target was verified read-only as healthy `sharik-uat`, with the local URL hostname matching the linked project ref. No hosted mutation or Production action occurred before corrective exact-head CI.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| 2026-07-21 | X009-B clean owner-entry workspace — local mechanics green, hosted apply blocked on owner target/credential | `X009_B_LOCAL_GREEN_HOSTED_APPLY_BLOCKED` | Within Spec 015 only: added the clean-workspace contract (`src/modules/uat/clean-workspace.ts`) with deterministic run-ID-scoped tenant/membership/role/audit identifiers and tenant-scope role mirroring that never migrates client-only personas; added the hosted tool `scripts/prepare-s015-clean-workspace.mjs` with `--dry-run`/`--apply`/`--rollback`/`--status`, mandatory target category, owner-approved hostname allowlist, automatic Production refusal, idempotent deterministic upserts, rollback that only flips membership status, and category/count-only output; added unit, pgTAP (`s015_clean_workspace_membership.test.sql`), and persistent browser (`s015-clean-workspace-journey.spec.ts`) coverage proving admin/account-manager/writer/designer entry into the clean tenant, honest `لا يوجد عملاء مسندون` empty states, legacy Glass/Hadna invisibility across the tenant boundary, client-persona denial, idempotent replay (no duplicate tenant/membership/role), and rollback that restores the legacy entry with audit and ledger rows unchanged. Local matrix PASS on the exact reviewed head: lint; typecheck; unit 57 files/239 tests; integration 28 files/112 tests; component 21 files/72 tests; RLS simulator 8 files/24 tests; clean local Supabase reset; pgTAP 7 files/453 tests; fixture E2E 126 passed/6 skipped; persistent E2E 12 passed (5 new clean-workspace scenarios plus the prior 7); secret scan; `git diff --check`; and production build. S015-P2-090 is dispositioned as fixed-by-quarantine: the legacy tenant and its append-only ledger/audit are preserved and simply stop being the natural entry for approved internal identities; no ledger history is rewritten and any new package commitment starts at the owner-entered balance. Hosted apply (X009-B-6) remains blocked: the reviewed UAT hostname allowlist does not match the Supabase URL currently reachable from this workstation and no UAT service role is present locally; the tool fails closed on that mismatch. The owner must point `S015_UAT_PROJECT_ENV_FILE` at the verified UAT target and run dry-run/apply/replay/status/rollback. No Production target was reachable, no credential was printed or requested, no merge occurred, and no audit/ledger/approval history was deleted or rewritten. |
+
+| 2026-07-21 | X009-A S015-P1-092 exact-head closure | `X009_A_GREEN_READY_FOR_NEXT_CHECKPOINT` | Corrective F-001 run `29837663256` passed install, lint, typecheck, unit, integration, local Supabase start/reset, RLS/pgTAP, component, fixture E2E, all seven persistent E2E scenarios, secret scan, and the final production build. This directly verifies that the guarded pre-build cleanup prevents malformed `.next-persistent` dev types from contaminating production compilation. X009-A is closed; Production remains untouched. |
+| 2026-07-21 | X009-A transient persistent-build isolation correction | `CI_CORRECTION_PENDING` | Documentation-only exact-head run `29835323916` passed the complete matrix through all seven persistent E2E scenarios, then the final build found a partially generated `.next-persistent/dev/types/validator.ts` left by the terminated persistent dev server. Registered S015-P1-092. `npm run build` now first executes a guarded Node cleanup that can remove only the workspace-root `.next-persistent` directory; the local production build passed after the reproduced CI state. No product behavior, dependency, database, hosted data, or Production boundary changed. Exact-head CI remains required before final closure. |
+| 2026-07-21 | X009-A exact-head final closure | `X009_A_GREEN_READY_FOR_NEXT_CHECKPOINT` | Corrected commit `e3cc6f3` passed F-001 Quality run `29833746263`: install, lint, typecheck, unit, integration, local Supabase start/reset, RLS/pgTAP, component, fixture E2E, all 7 persistent E2E scenarios, secret scan, and build. S015-P1-091 is fixed and exact-head verified. Combined with the official Preview real-Auth create/assignment/persistence/audited-cancellation evidence, X009-A has no open subtask. |
+| 2026-07-21 | X009-A exact-head CI isolation correction | `CI_CORRECTION_PENDING` | Exact-head quality run `29831207142` passed all gates through fixture E2E, then persistent E2E reported one setup failure: the new deliverable-creation suite had seeded the canonical reservation ledger ID and the following lifecycle suite attempted the same ID. Six other persistent scenarios passed, including all three new creation cases. Added an explicit guarded local reset in the creation suite `afterAll`, matching the existing pre-suite isolation policy. No product authorization, database migration, hosted data, or Production behavior changed. Corrected exact-head CI is required before closure. |
+| 2026-07-21 | X009-A hosted corrective closure | `X009_A_GREEN_READY_FOR_NEXT_CHECKPOINT` | Guarded target verification confirmed official Vercel Preview and linked Supabase UAT, never Production. Applied only additive migration `202607210001`; remote migration inventory then matched local. Official Preview for application correction `9c8af15` was Ready. A real management Auth/browser session loaded the human-readable eligible-member selector and created exactly one run-scoped normal deliverable through the form with writer owner and designer contributor. Service-side assertions proved one deliverable, one allocation, one reservation entry, and audit evidence. Direct physical cleanup correctly met append-only protection, so rollback used the reviewed cancellation RPC: the reservation was released, allocation marked released, cancellation audited, scope archived, and zero active run-scoped records remained. A temporary UAT administrator value surfaced only inside a private browser diagnostic and was immediately rotated; no credential entered Git or evidence. Legacy Glass package balance debt was registered as S015-P2-090 for the next clean-workspace checkpoint. No Production action, merge, stable Production alias, external invitation, public signup, or real data occurred. |
+| 2026-07-21 | X009-A independent corrective review | `X009_A_CORRECTIVE_LOCAL_GREEN_HOSTED_VERIFY_PENDING` | Review found S015-P1-089 after the initial S015-P1-088 fix: raw UUID entry remained in the owner/contributor UX and valid UUIDs were not proven eligible for the exact tenant/client. Replaced raw fields with a scoped human-readable member selector, added authenticated management/account-manager directory access, and added fail-closed PostgreSQL owner/contributor validation in additive migration `202607210001`. Local verification PASS: lint, typecheck, unit 56 files/230 tests, integration 28 files/112 tests, component 21 files/72 tests, RLS simulator 8 files/24 tests, clean Supabase reset, pgTAP 6 files/436 tests, persistent creation 3/3, secret scan, diff check, and build. Exact-head non-Production Preview verification remains pending; prior `2373700` Preview is historical only. No Production action, stable UAT alias change, merge, external invitation, public signup, real data, or destructive deletion occurred. |
+| 2026-07-21 | X009-A online "تعذر حفظ المخرج بأمان" defect fix — local closure | `X009_A_LOCAL_READY_FOR_REVIEW_HOSTED_PREVIEW_VERIFY_PENDING_BYPASS` | The owner trial reported the generic safe-save failure on the new-deliverable form. Reproduced on local Supabase using the exact form → Zod → server action → `createDeliverableViaRpc` → `f002_create_deliverable_reservation` path with a real management UAT persona and run-ID-scoped synthetic data. Root cause: the free-text `ownerUserId` and `contributorUserIds` form inputs were never UUID-validated; a non-UUID value (for example a person's name) was forwarded unchanged to the RPC and PostgREST rejected the uuid cast with `22P02`. The action's `mapWriteError` only handled 23505/42501/P0001 and fell through to the generic fallback, hiding the cause from the human trial and offering no recovery path. No data corruption, partial row, authorization bypass, or RLS weakening was involved because the RPC is fail-closed and atomic. Implemented the smallest correct root-cause fix without touching the shared command schema, historical migrations, fixtures, or visual design: added `src/server/actions/deliverable-write-errors.ts` with a `validateDeliverableIdentifierFields` pre-check and an actionable Arabic `mapDeliverableWriteError` that surfaces 22P02 (and 23502/23503/23514) without ever echoing the raw Postgres message; wired it into both `createDeliverableAction` and `createApprovedExtraDeliverableAction`. No new dependency, no architecture change, no migration. Local matrix PASS: lint, typecheck, unit 55 files/228 tests including the new `deliverable-write-errors` 20/20, integration 28 files/112 tests, component 21 files/72 tests, RLS simulator 8 files/24 tests, clean local Supabase `db reset --local --no-seed`, RLS DB pgTAP 6 files/427 tests, persistent E2E deliverable creation 3/3 (real-Auth happy path + reload + exact-once deliverable/allocation/ledger/audit side effects, invalid owner rejection with actionable Arabic copy and zero raw Postgres leakage, idempotent replay returning the original deliverable with no duplicate side effects), secret scan, `git diff --check`, and production build. The owner-approved Spec 015 clarifications remain preserved unstaged. Defect S015-P1-088 is registered and locally fixed. Isolated Preview deployed under `samawahs-projects/shrik` for commit `2373700` at `https://shrik-ou7tduzns-samawahs-projects.vercel.app` (target=preview, non-Production; git-tracking alias `shrik-git-codex-015-persistent-mvp-pil-cbe689-samawahs-projects.vercel.app`; Preview env contains `APP_ENV`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and the encrypted `SUPABASE_SERVICE_ROLE_KEY`). X009-A-5 browser reproduction remains pending because Vercel Deployment Protection currently redirects both the deployment URL and its git-tracking alias to `https://vercel.com/login`, and no `S015_UAT_VERCEL_SHARE_URL` / `S015_UAT_VERCEL_COOKIE_JAR` bypass is present in the secure local env; the stable UAT alias was not modified per the prompt boundary. No Production access, stable UAT alias promotion, merge, external invitation, public signup, real customer data, or workbook commit occurred. |
+| 2026-07-20 | Semantic review payload, viewer read-only, and corrected owner-trial evidence | `HOSTED_TEAM_UAT_READY_FOR_OWNER_TRIAL` | A source-workbook artifact audit proved that the earlier nine-value count consisted of dash placeholders: the 16 imported versions have zero meaningful caption/body values, zero approvals/files, and one meaningful long-form suggestion in another source field. The exact suggestion was promoted unchanged through an audited real-Auth version command; two placeholder-only pending items with no client activity were safely retired; eight assignments remain across four deliverables; and exactly one semantic item now waits for owner review. Application head `220ec0ce90888de6c14c67f67e2bb4ca2758eb08` rejects placeholder-only reviews, hides viewer comment controls, and enforces viewer comment/upload denial in PostgreSQL. Local verification passed unit 54/208, integration 28/112, component 21/72, RLS simulator 8/24, pgTAP 6/427, fixture E2E 126, persistent E2E 4, lint, typecheck, secret scan, diff check, and build. Exact-head CI run `29781410549`, job `88483268401`, succeeded. Migration `202607200002` was applied only to non-Production UAT; the reviewed Preview passed hosted boundary/persona smoke 27/27 and visual owner-review checks 9/9 across desktop/mobile/RTL. No client decision, final delivery, external invitation, merge, Production action, fabricated content/file/approval, or workbook tracking occurred. |
+| 2026-07-20 | Independent X008-H preliminary owner-trial readiness | `SUPERSEDED_DATA_EVIDENCE` | The role, Arabic-label, hosted-runner, and persistent-reset corrections remain valid and exact-head CI run `29750961098` passed. Its claim that nine versions had real caption/body and two genuine versions were pending was invalid because placeholder dashes were counted as content. The semantic correction row above is authoritative. |
+| 2026-07-20 | X008-H corrective code slice and exact-HEAD CI closure | `CODE_READY_HOSTED_DATA_BLOCKED` | Continued from local HEAD `e958603` (3 rescue commits ahead of origin). Preflight confirmed branch `codex/015-persistent-mvp-pilot-completion`, the unrelated Spec 013 worktree edit was preserved unstaged, and no workbook/secret was tracked. Code inspection of the rescue HEAD found four evidence-backed product gaps that the handoff had claimed fixed: raw technical enums in the universal drawer (S015-P1-073), the client pending inbox instructing the viewer to approve (S015-P1-074), the hosted-UAT synthetic seed record escaping the human-trial predicate (S015-P1-075), and the Uppy upload surface remaining English (S015-P2-076). Added a canonical Arabic `domain-labels` module plus drawer/component regressions, role-aware viewer/approver copy across the inbox/shell/home with E2E regressions, an extended synthetic-visibility predicate with a unit regression, and a reviewed local Arabic Uppy locale with no new dependency. The first exact-HEAD CI run then exposed three further rescue defects: a tsconfig that type-checked the transient `.next-persistent` dev route types during build (S015-P1-076), `/client/commercial` missing `force-dynamic` and throwing a ZodError when prerendered (S015-P1-077), and persistent E2E flakiness on post-reset Supabase reachability and PostgREST schema-cache reload (S015-P2-077). Each was fixed with the smallest in-scope correction plus a local verification, and the persistent reachability/seed checks were hardened with bounded retry without weakening any assertion. Final exact-HEAD PR #37 quality run `29725841355` (head `0d7e8886f9ea975def04cf2405ef8555d04feda5`, job `88298622704`, 16m19s, SUCCESS) passed npm ci, lint, typecheck, unit 53 files / 191 tests, integration 28 files / 112 tests, clean local Supabase start/reset, RLS simulator 8 files / 24 tests, pgTAP 6 files / 404 tests, component 21 files / 69 tests, fixture E2E 126 passed, persistent E2E 4 passed, secret scan, and build. The Vercel deployment for the exact head completed (`8LLCzASyKbKZBatUGHRyHFw2mBZh`, target Preview, Ready). PR #37 remains open and unmerged. The hosted UAT data correction (defects C/F → S015-P1-078 / S015-P2-078) and the hosted role walkthrough (S015-P1-079) remain blocked because the setup-only service credential is unavailable on this workstation and the agent cannot drive real Auth sessions or capture hosted screenshots; per the authorized boundary the agent stopped before any hosted data mutation and did not print or request any secret value. No Production action, merge, external invitation, public signup, or workbook commit occurred. |
+| 2026-07-19 | X008 product-experience rescue implementation and corrected Preview | `HISTORICAL / DATA EVIDENCE SUPERSEDED` | The unified card/list/board/drawer/client-pending/navigation correction and the 21/21 role smoke remain historical technical evidence. The data claim in this original handoff was later disproved by artifact inspection because placeholder dashes were counted as caption/body. The current semantic correction row governs owner-trial readiness. No Production, merge, external invite, public signup, or workbook commit occurred. |
+| 2026-07-19 | Owner human product trial and X008 reopening | `HOLD / HOSTED_TEAM_UAT_BLOCKED` | The owner rejected the current Preview before team handoff. Direct role review confirmed repeated navigation/actions, client-name copy drift (Hadna wording in Glass scope), synthetic lifecycle records in normal team/client views, no representative assigned Glass work, no genuine actionable client-pending item, and no professional content-card treatment for imported content. Historical automated hosted checks remain valid technical evidence but no longer satisfy human product acceptance. H008-H010, X007, and T032 are reopened; defects S015-P1-063 through S015-P1-068 and S015-P2-069 through S015-P2-072 are registered. Team trial, merge, Production, external invitation, and public signup remain blocked. |
+| 2026-07-16 | X007 exact-head CI and Preview/UAT route correction | passed | Removed the one Linux-only unused-type lint warning and pushed head `3266d6fae0f4792da3ba7ceff4ce3d84b8362924`. PR #37 quality run `29490121433` passed in 10m23s: npm ci, lint, typecheck, unit, integration, local Supabase start/reset, RLS/pgTAP, component, fixture E2E, persistent E2E, secret scan, and build. A new non-Production Preview was built from that exact head; its manifest contains `/work`, `/client/pending`, and `/client/files`. The protected UAT-only alias was reassigned to the exact deployment and retained its protection configuration. No Production alias, Production environment, merge, or public access change occurred. |
+| 2026-07-16 | H008 hosted persona and persistent lifecycle acceptance | passed | Protected Preview/UAT boundary and persona smoke passed 27/27 across desktop, mobile Chromium, and Arabic RTL for management, account manager, assigned writer, assigned designer, unassigned internal negative, client viewer, and client approver. The one-worker real-Auth hosted lifecycle passed 1/1 in 2.8m: management task assignment, assigned execution, three versions, internal changes/approval, exact-version client send, client changes/final approval, stale-version denial, final delivery, files/comments secrecy, SLA pause/resume/completion, audit, ledger, idempotency, and terminal-state denial. Synthetic run `s015-hosted-lifecycle-0450b84082` ended delivered with 3 versions, 1 task, 9 comments, 2 files, 3 quality checks, 5 decisions, 5 SLA segments, 2 ledger entries, and 19 command requests; no active failed lifecycle run remained. |
+| 2026-07-16 | H009/H010, X007, and T032 closure | `HOSTED_TEAM_UAT_READY` | Seven scoped hosted profiles were synchronized and verified. Four earlier failed run-ID-scoped synthetic lifecycle records were retired through audited real-Auth workflow commands; all ended cancelled with released allocations, and immediate replay was a no-op (0 additional retirements / 4 already retired). The protected share-link value seen in a temporary timeout was revoked/regenerated and subsequent setup failures are sanitized. Defects S015-P1-057 through S015-P2-062 are fixed; open P0/P1 is 0 and every P2 is dispositioned. Final redacted handoff is `hosted-team-uat-final-handoff.md`; H008-H010, X007, and R-011A T032 are closed. This state authorizes only the controlled internal human trial; Production acceptance remains not granted. |
+| 2026-07-15 | Checkpoint 1A exact-HEAD closure | exact-HEAD CI green / locally accepted | Preflight confirmed branch `codex/015-persistent-mvp-pilot-completion`, starting HEAD `98a6e6745cf5e6c13e76e672a44883ec0bd51201`, clean worktree, and no untracked workbook or secret. Commit `98a6e67` was inspected; migration `202607150001_s015_task_assignment_review_corrections.sql` is a new additive migration and no historical migration was modified. Branch was pushed to Draft PR #37. GitHub Actions `F-001 Quality` run `29404575276` job `87316811754` passed for head SHA `98a6e6745cf5e6c13e76e672a44883ec0bd51201`: npm ci, lint, typecheck, unit 51 files / 182 tests, integration 28 files / 112 tests, local Supabase start/reset, RLS simulator 8 files / 24 tests, pgTAP 6 files / 404 tests, component 19 files / 65 tests, fixture E2E 123 passed, persistent E2E 4 passed, secret scan, and build. Local exact-head `git diff --check` passed. Mandatory evidence checks passed for real Supabase Auth/browser personas, service-role setup/assertion-only use, no `length >= 0` assertion, management task create/assign/edit/reassign, task-assignee `/work` discovery, exact-assignee-only status mutation, old-assignee denial after reassignment, unassigned/client task secrecy, disabled-former-assignee RPC denial, non-recursive RLS, management-only eligible assignees, and client secrecy for internal comments/quality/tasks. S015-P1-049/050/051/052/054 and S015-P2-053/055/056 are fixed and reconciled. No hosted mutation, H008-H010 work, workbook import, Preview mutation, Production action, PR merge, or new milestone occurred. |
+| 2026-07-15 | Independent Checkpoint 1A local corrective verification | local corrective gates green / exact-HEAD CI pending | Full lint PASS; typecheck PASS; unit 51 files / 182 tests PASS; clean Supabase reset and migration `202607150001` replay PASS; pgTAP 6 files / 404 tests PASS. Combined persistent run proved the original lifecycle plus mobile/RTL smokes; after fixing deterministic seed isolation, hydration timing, and late-created workspace-table service-role grants, the real-Auth assignment journey passed independently in 4.0 minutes. Full exact-HEAD PR CI remains the closure gate. No hosted or Production mutation occurred. |
+| 2026-07-15 | Independent review follow-up: exact actor task controls | local non-DB verification partial / DB and exact-HEAD CI pending | Registered S015-P1-054 and S015-P2-055. Migration `202607150001` now exposes task mutation through an active-role wrapper and keeps the prior implementation in a private non-executable core. Drawer status controls require edit authority or exact actor/task assignment, with a pure unit regression. Changed-file ESLint completed with no findings; full lint, clean pgTAP, persistent browser execution, and exact-HEAD CI remain mandatory. No hosted or Production mutation occurred. |
+| 2026-07-15 | Independent Checkpoint 1A review correction | local non-DB verification partial / DB and exact-HEAD CI pending | Exact-HEAD GitHub run `29393394677` failed lint on the new assignment spec. Independent review found that the spec used service role for persona/RLS claims, deliverable/task RLS was mutually recursive, task capabilities were not scoped to the actor's membership, the eligible-assignee query referenced a nonexistent column, `/work` still excluded task-only writers/designers, and task edit/reassign UI was not wired. Added migration `202607150001`, management-gated eligible-assignee RPC, actor-scoped capability resolution, real-Auth actor clients and browser mutations, task edit/reassign UI, fail-closed form behavior, and corrected pgTAP authority setup. Local PASS: typecheck, unit 50/179, integration 28/112, component 19/65, RLS simulator 8/24, secret scan, diff check, and production build. Local lint produced no finding but did not terminate after repeated full and scoped attempts, so no final lint PASS is claimed. Fixture accessibility rerun was locally inconclusive because old routes exceeded the 60-second `page.goto` timeout during slow Next dev compilation; no assertion regression was observed. Docker engine is unavailable, so lint, pgTAP, and persistent E2E remain mandatory on exact-HEAD CI. No hosted mutation, Production action, PR merge, or workbook tracking occurred. |
+| 2026-07-10 | M0 | completed | Local Stage 2C correction commit `c71bfae`; focused unit/typecheck/diff checks passed. |
+| 2026-07-10 | M1 | completed | Canonical package created and retained as the active persistent local MVP package. |
+| 2026-07-10 | M2 | completed | Persistent migration applied after clean replay fixes; `npx supabase@2.107.0 db reset --local --no-seed` PASS. |
+| 2026-07-10 | M2/M3 | completed | S015 persistent workflow pgTAP expanded to cover Tenant A/B, same-tenant Client A/B, assigned/unassigned team roles, exact-version decisions, comment/file secrecy, append-only, replay/conflict, terminal states, atomic rollback, SLA pause/resume/completion, and package ledger consumption. `npm run test:rls:db` PASS 6 files / 228 tests. |
+| 2026-07-10 | UX regression | passed | Kanban disclosure uses deterministic native details without suppression; targeted Playwright passed 6/6 across desktop/mobile/RTL. |
+| 2026-07-10 | P1 corrective review | passed | Corrected account-manager privilege bypass, state-machine guards, cross-deliverable version FKs, comment visibility, persistent internal-change/team-management wiring, nullable team assignment enforcement, and idempotent terminal replay ordering. |
+| 2026-07-10 | Fixture leakage review | passed | Production route reads use scoped persistent Supabase reads outside guarded local/test actor fixtures. Persistent read errors return closed/empty states rather than silently falling back to fixtures. |
+| 2026-07-10 | Mobile RTL board verification | passed | Manual screenshot inspection of failed mobile Kanban artifact showed usable RTL layout but a brittle width assertion; board column width was stabilized and full E2E reran PASS. |
+| 2026-07-10 | Final automated matrix | passed | lint PASS; typecheck PASS; unit 48 files / 171 tests PASS; integration 28 files / 112 tests PASS; component 17 files / 55 tests PASS; RLS simulator 8 files / 24 tests PASS; RLS DB 6 files / 228 tests PASS; E2E 105 PASS / 6 configured skips; secret scan PASS; diff check PASS with line-ending warnings only; build PASS. |
+| 2026-07-11 | Persistent browser acceptance correction | reopened then fixed | Defect `S015-P1-019` reopened T013/T016/T017 because the prior Playwright suite exercised route actor fixtures under `APP_ENV=test`. Added a separate local-only persistent Playwright path using real Supabase Auth/API and `APP_ENV=test-persistent`, where route fixtures are explicitly disabled. |
+| 2026-07-11 | Persistent browser E2E | passed | `npm run test:e2e:persistent` PASS 3 tests. Desktop lifecycle covered real sign-in, assigned team submission, unassigned/same-tenant/other-tenant denial, internal review/change/approval, client send, client viewer read-only secrecy, client change request, stale-version rejection, client approval, delivery, final-file visibility, audit, SLA, idempotency, package ledger, and terminal-state DB assertions. Mobile and RTL smokes covered the client approval surface, keyboard/focus, no horizontal overflow, and no internal content leakage. |
+| 2026-07-11 | Final matrix after persistent path | passed | `npx supabase@2.107.0 db reset --local --no-seed` PASS; lint PASS; typecheck PASS; unit 48 files / 171 tests PASS; integration 28 files / 112 tests PASS; component 17 files / 55 tests PASS; RLS simulator 8 files / 24 tests PASS; RLS DB 6 files / 228 pgTAP tests PASS; fixture E2E 105 PASS / 6 configured skips; persistent E2E 3 PASS; secret scan PASS; diff check PASS with line-ending warnings only; build PASS. |
+| 2026-07-12 | Persistent runner reproducibility hardening | passed | Reproduced from a stopped local Docker engine and clean Supabase reset. Added guarded global DB reset before/after the suite, increased local compile/hook budgets, prevented pre-hydration sign-in submission, and exercised delivery replay through repeated UI submission. Persistent E2E PASS 3/3; fixture E2E PASS 105/6 configured skips; pgTAP PASS 228. |
+| 2026-07-12 | Hosted Team UAT owner authorization | preflight in progress | Owner authorized a controlled Team-Only Hadna Preview/UAT amendment to Spec 015 only. Worktree was clean; `git fetch origin --prune` completed; current branch is `codex/015-persistent-mvp-pilot-completion`; current HEAD is `dd30427721fafa606aa0e0edc2ad848272271b71`; merge base with `origin/main` is `37027d458145dbf8a7e6d8d4e63a0eecd12a9328`. No hosted target was read or mutated in this documentation/preflight step. |
+| 2026-07-12 | Hosted pre-push local DB gate | passed | `npx supabase@2.107.0 db reset --local --no-seed` PASS after local Supabase recovered. `npm run test:rls:db` PASS 6 files / 228 tests. `npm run test:e2e:persistent` initially exposed a brittle sign-in helper retry that clicked non-auth submit buttons after successful navigation; helper was narrowed to the sign-in form and rerun PASS 3/3. |
+| 2026-07-12 | Hosted pre-push full matrix | passed | lint PASS; unit 48 files / 171 tests PASS; integration 28 files / 112 tests PASS; component PASS after standalone rerun 17 files / 55 tests; RLS simulator 8 files / 24 tests PASS; RLS DB 6 files / 228 pgTAP tests PASS; persistent E2E 3 PASS; secret scan PASS; typecheck PASS; build PASS. Component's first parallel run had a worker process exit without a test failure and passed when rerun alone. |
+| 2026-07-12 | H001-H002 hosted amendment preflight | passed | `git fetch origin --prune` completed. Branch: `codex/015-persistent-mvp-pilot-completion`. Merge base with `origin/main`: `37027d458145dbf8a7e6d8d4e63a0eecd12a9328`. Branch commits and full diff/name-status were inspected. No new uncommitted migrations, generated files, or secret-bearing files were introduced in this continuation. Rollback owner/stop authority: project owner; executor: Codex; window: current 2026-07-12 session; rollback bounded to this run's Preview deployment/alias, run-ID-scoped synthetic rows, and access grants created by this run only. No hosted target was read or mutated in H001-H002. |
+| 2026-07-12 | H003 Draft PR and CI | passed | Pushed `codex/015-persistent-mvp-pilot-completion` to origin and opened Draft PR #37. GitHub Actions `quality` passed in 4m36s, including lint, typecheck, unit, integration, Supabase local start/reset, RLS, component, E2E, secret scan, and build. CodeRabbit passed/skipped. PR remains draft and unmerged. |
+| 2026-07-12 | H004 Supabase UAT migration | passed | Verified linked Supabase target category as UAT (`sharik-uat`, ACTIVE_HEALTHY). Migration comparison showed pending `202607100001` and `202607110001`; both were reviewed and applied with `npx supabase@2.107.0 db push --linked`. Post-apply migration list matched local. Smoke query returned counts: S015 tables 6, RLS-enabled tables 6, S015 RPC functions 2. |
+| 2026-07-12 | H005 synthetic Hadna UAT seed | passed | Applied `evidence/s015-hosted-uat-seed.sql` against UAT. The seed was tightened to select an active client-scoped `client_viewer` role through tenant membership instead of the first active client. Count-only result after correction: contracts 1, packages 1, package_lines 1, deliverables 1, versions 1, files 1, comments 1, SLA segments 1. No Auth users, passwords, tokens, or real client data were created by this seed. |
+| 2026-07-12 | H007 Vercel Preview deployment | passed for Preview / team access still gated | Added Preview env for `APP_ENV`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. The first Preview env add included newline-contaminated values and produced a hosted auth header error, so the three Preview env vars were removed, re-added from newline-free values, and redeployed. Current Preview `sharik-platform-jc1deqoyl-omarhussien2s-projects.vercel.app` is Ready and target is `preview`. `vercel curl` generated a redacted automation bypass; Playwright verified Arabic RTL sign-in against Supabase UAT for tenant admin, account manager, and client viewer, with no service-role marker or `S015_INTERNAL_SMOKE_SECRET` leakage. Production alias was not promoted or mutated. |
+| 2026-07-12 | H007 public UAT alias follow-up | passed | Owner connected the Vercel project to the GitHub repository and configured a project alias. The alias was assigned to the reviewed Ready Preview deployment. Normal root and sign-in requests return the application without Deployment Protection. Hosted Playwright smoke through the public alias verified successful tenant admin, account manager, and client viewer sign-in, RTL rendering, zero observed console errors for those valid personas, and no internal secret marker leakage. Production remains untouched. |
+| 2026-07-12 | H006/H008 hosted team access and workflow | blocked on owner persona inputs | The provided client approver credential still returns to sign-in and cannot complete client approval. UAT role categories still lack content_writer/designer/unassigned internal personas for the full H008 matrix. The Vercel team-entry blocker is resolved; stop condition is now limited to `TEAM_ACCESS_INPUT_REQUIRED`. |
+| 2026-07-13 | Product Experience Rescue: visibility, pending inbox, profiles | local implementation and regression evidence | Added exact current-version client visibility in server filters plus additive deliverable content fields and RLS policies for deliverables, versions, comments, and files. Replaced pending route with persistent all-item inbox and exact-version read-only/approver behavior. Added tenant-scoped member profiles and display-safe names. Typecheck, unit 49/172, integration 28/112, component 18/57, RLS simulator 8/24, build, diff check, targeted lint, and desktop fixture E2E 2/2 passed. Real DB reset/RLS pgtap remains unexecuted because Docker Desktop is unavailable. |
+| 2026-07-13 | CI/Preview re-verification after RLS recursion and fixture corrections | passed | GitHub quality run `29239615839` passed lint, typecheck, unit/integration, Supabase DB start/reset, RLS 228/228, component, full fixture E2E 108, secret scan, and build. This is repository CI/Preview evidence for migrations 202607130001/002 only; no later X006 migration, UAT database migration/import, persistent-browser rerun, or hosted persona workflow is proven by it. |
+| 2026-07-12 | H006 owner-approved synthetic UAT access | passed | Owner explicitly approved Hosted UAT and synthetic account creation. Seven categories were created or refreshed for management, account manager, assigned writer, assigned designer, unassigned internal negative tester, client approver, and client viewer. Direct Auth checks succeeded for every category; each has an active tenant membership and role assignment, client personas also have active client membership, and the run-scoped synthetic deliverable is assigned to the writer with the designer as contributor. Credentials are stored only in an ignored local file and are absent from Git evidence. |
+
+Historical status after the 2026-07-12 access setup: ACCESS READY / HOSTED WORKFLOW EXECUTION PENDING. This is superseded by the 2026-07-16 `HOSTED_TEAM_UAT_READY` entries at the top of this log. Production acceptance remains not granted.
+
+| 2026-07-13 | Product Experience Rescue implementation slice | passed locally | Within Spec 015 only: added the project-owned `DESIGN.md`, client RTL shell with discoverable profile/sign-out, real `/client/pending` route, safe human-readable board assignee labels, reduced-motion/focus tokens, and updated component expectations. `npm run typecheck`, `npm run lint`, `npm run test:unit` (48 files / 171 tests), `npm run test:component` (17 files / 55 tests), `npm run secret:scan`, `git diff --check`, and `npm run build` passed. No hosted mutation or Production action was performed in this slice. |
+| 2026-07-13 | Product Experience Rescue E2E regression | corrected and reverified | Initial full E2E surfaced 4 failures caused by duplicate client navigation landmarks/links after the shell was introduced (101 passed / 6 skipped). Removed the legacy duplicate client navigation from client pages and reran the affected accessibility/client tests: 4 passed / 2 skipped across desktop/mobile/RTL. No product security or workflow bypass was observed. |
+| 2026-07-13 | X006/X007 persistent workspace and import slice | passed locally / database CI pending | Added migrations 202607130003-007 for direct-RPC and profile scope hardening, execution tasks/quality data, audited content/comment commands, private Storage authorization, and service-role-only run-scoped import/rollback. Added the shared drawer, RHF/Zod content forms, Tiptap team/client comments, Uppy/Tus uploads, signed previews/downloads, six-lane dnd-kit board, assigned-work List/Board, exception dashboard, and scannable client inbox. Local lint, typecheck, unit 49/172, integration 28/112, component 18/57, secret scan, dependency audit (0 findings), diff check, and build pass. Generic workbook dry-run produced category/count-only evidence: 15 content deliverables, 1 coordination deliverable, 16 draft versions, 7 tasks, 0 approvals, and 0 files. Docker-backed pgTAP, persistent browser E2E, DESIGN.md visual QA, UAT apply/import, and hosted personas remain open. |
+| 2026-07-13 | X006 first CI attempt | corrected package-lock portability | GitHub quality run `29244739041` stopped at `npm ci` before tests because npm on Windows had omitted three Linux-resolved transitive packages from the regenerated lockfile. Added exact direct pins for the already-required Tiptap/wasm dependency graph; local `npm ci --dry-run`, lint, typecheck, and dependency audit (0 findings) pass. No database, application, or hosted UAT gate was claimed from the failed run. |
+| 2026-07-13 | X006 second CI attempt | corrected Supabase bootstrap ordering | GitHub quality run `29244966815` passed npm ci, lint, typecheck, unit, and integration, then stopped during the first `supabase db start`: the CLI applies user migrations before the Storage service creates `storage.buckets`. Bucket and object-policy setup now checks for the Storage schema so the first bootstrap can finish; the workflow's following clean `db reset` and hosted Supabase UAT both apply the complete bucket/policy configuration. No database PASS was claimed from the failed bootstrap. |
+| 2026-07-13 | X006 third CI attempt | corrected full-stack and authorization assertions | GitHub quality run `29245254925` passed npm ci, lint, typecheck, unit, integration, the clean database start/reset, and the RLS simulator (24 scenarios). pgTAP then exposed three bounded issues: database-only startup did not install the real Storage schema, an append-once audit assertion was still executing under writer RLS, and an unassigned deliverable produced `NULL` in the private execution predicate instead of a deny. The workflow now starts the full local Supabase stack and runs persistent E2E, the assertion resets its database role before counting audit rows, and the execution predicate explicitly coalesces an absent assignment to `false`. No pgTAP, persistent E2E, or hosted UAT PASS was claimed from this failed run. |
+| 2026-07-13 | X006 fourth CI attempt | corrected SQL grouping before database verification | GitHub quality run `29245596905` passed npm ci, lint, typecheck, unit, and integration, then stopped while replaying migration `202607130005` because the new `coalesce` denial expression retained one redundant opening parenthesis. The grouping was corrected without changing authorization semantics. No database, Storage, browser, or hosted UAT PASS was claimed from this failed migration replay. |
+| 2026-07-13 | X006 fifth CI attempt | enabled the real local Storage service for policy tests | GitHub quality run `29245745084` passed npm ci, lint, typecheck, unit, integration, full-stack startup, clean migration replay, the earlier pgTAP suites, and all 89 workspace behavior assertions before reaching Storage setup. The checked-in local configuration still had `[storage].enabled = false`, so the real `storage.buckets` and `storage.objects` relations were absent and the 17 Storage foundation assertions could not execute. Local/CI Storage is now enabled using the approved Supabase service; no substitute tables or weakened assertions were introduced. No complete pgTAP, browser, or hosted UAT PASS was claimed from this run. |
+| 2026-07-13 | X006 sixth CI attempt | corrected browser/server schema boundary | GitHub quality run `29245925763` passed npm ci, lint, typecheck, unit, integration, full Supabase startup, clean migration replay, all database/RLS/Storage tests, component tests, and Chromium installation. Fixture E2E then reproduced an HTTP 500 because the client form imported Zod schemas through a `use server` module, which Next.js correctly serialized as server references. Schemas now live in a shared browser/server module, a source-boundary regression test was added, and the approval tests scope their button assertions to the approval action region rather than the newly supported client comment form. Targeted local verification passed: lint, typecheck, 2 boundary unit tests, and 5 desktop approval/isolation E2E scenarios with 1 expected mobile skip. No complete fixture E2E, persistent E2E, or hosted UAT PASS was claimed from this run. |
+| 2026-07-13 | X006 seventh CI attempt | corrected dnd-kit hydration identity and stale text scope | GitHub quality run `29246726503` passed npm ci, lint, typecheck, unit, integration, full Supabase startup/reset, all database/RLS/Storage tests, component tests, and 106 fixture E2E scenarios with 6 configured skips. Five E2E failures remained: dnd-kit generated a different `aria-describedby` identifier between server render and hydration in the Board across mobile/RTL projects, and the account-manager test's broad text query mistook the new allowed `ضغط الفريق` dashboard heading for a forbidden `الفريق` navigation link. `DndContext` now has a stable project-owned ID, and the role test checks the navigation link boundary exactly. No persistent E2E or hosted UAT PASS was claimed from this run. |
+| 2026-07-13 | X006 eighth CI attempt | corrected persistent viewer decision selector | GitHub quality run `29247543916` passed npm ci, lint, typecheck, unit, integration, full Supabase startup/reset, all database/RLS/Storage tests, component tests, fixture E2E 111/117 with 6 configured skips, and the persistent mobile/RTL smokes. The full persistent lifecycle reached the client-viewer secrecy check, where its legacy broad form selector counted the newly supported client comment submit button as an approval button. The assertion now targets only the `client-approval-actions` region, preserving the requirement that a viewer has zero decision controls while allowing scoped client comments. No complete persistent E2E or hosted UAT PASS was claimed from this run. |
+
+| 2026-07-22 | X009-C independent closure review | passed | Review removed production DOM scraping keyed by Arabic `aria-label` and duplicate synthetic test events while retaining the hydration-ready marker. React-controlled state remains the sole wizard source of truth. Exact-head `dc013684f51438467c7adb1dd212d9efaa510248` passed F-001 Quality run `29901885473`, including persistent onboarding E2E and build; Samawah Vercel Preview passed. X009-C is `X009_C_GREEN_OWNER_CAN_CREATE_FIRST_CLIENT`. Production remains untouched and PR #37 remains draft/unmerged. |
+
+## Verification notes
+
+- Docker Desktop was started locally only to unblock the local Supabase/PostgreSQL stack. No hosted database, hosted route, hosted storage, deploy, promotion, production credential, real client data, or production-like mutation was used.
+- One `npm run typecheck` attempt failed while running concurrently with `npm run build` because `.next/types` was being regenerated. A standalone rerun passed and is the recorded result.
+- The six E2E skips are configured duplicate mobile-only scenarios skipped under non-mobile projects; the same mobile coverage passed under `mobile-chromium`.
+- `git diff --check` reported Windows line-ending warnings only and no whitespace errors.
+- The persistent E2E webserver strips hosted/Vercel values and service-role credentials from the browser app process, refuses non-local Supabase URLs, and uses service-role access only inside the Node test setup/assertion harness for synthetic local data.
+- Persistent global setup and teardown validate the local-only environment before resetting the database, so synthetic Auth users and rows are removed after execution, including failed runs.
+
+| 2026-07-13 | X006 evidence reconciliation | partially closed | Owner reported latest GitHub quality CI `29248954232: SUCCESS`; this directly closes X006-A through X006-G against the committed implementation and final migration set. X006-H remains open because the direct Preview visual QA attempt could not start: the temporary Playwright harness hit a Windows ESM import resolution error before navigating. No visual PASS is claimed. |
+| 2026-07-13 | X006-H local visual QA tooling, hosted UAT guard, and matrix | visual green / DB gates blocked locally | Removed reliance on the failed temporary ESM harness by adding `tests/e2e/visual-qa.spec.ts` under the repository Playwright CLI. Local synthetic visual QA passed across desktop, mobile, and Arabic RTL projects: 12/12. Representative screenshots were inspected directly for the six-lane board, universal drawer, and client pending approver state. Fixed 44px touch-target defects in shared buttons, breadcrumbs, sign-out, access-state links, board status controls, and disclosure triggers. Added hosted UAT Playwright tooling that fails closed without a secure local env, explicit hostname allowlist, accepted non-Production target category, and service-role-free process env. Hosted UAT dry listing is 27 tests only when temporary local allowlist/category values are supplied. Local gates passed: lint, typecheck, unit 50/174, integration 28/112, component 18/57, RLS simulator 8/24, fixture E2E 123 passed / 6 configured skips, visual QA 12/12, secret scan, diff check, and build. `npm run test:rls:db` is blocked in this local workspace because Postgres/Supabase is unreachable (`PgClient: Failed to connect`). `npm run test:e2e:persistent` blocks on `ECONNREFUSED 127.0.0.1:54321` with explicit local overrides. No X006-H closure, hosted UAT PASS, or Production acceptance is claimed until exact-HEAD CI/database/persistent evidence exists. |
+| 2026-07-13 | X006-H exact-HEAD CI closure | passed / superseded by later exact-HEAD rerun | PR #37 quality run `29262690895` passed for exact commit `fbb588c3f30cd29fb57ed9543deae3fc91d792db`: npm ci, lint, typecheck, unit 50/174, integration 28/112, Supabase start, clean local reset, RLS, component, Chromium install, fixture E2E, persistent E2E, secret scan, and build. Earlier exact-HEAD attempts `29261051211` and `29261920465` failed only at the new mobile visual overflow helper; the helper now checks actual page horizontal scroll before child-rect diagnostics, and CI passes. This initially closed X006-H and parent X006, then the evidence-doc commit was rechecked by a later exact-HEAD rerun. X007, H008-H010, T032, hosted UAT workflow, UAT import/rollback evidence, and Production acceptance remain open/not granted. |
+| 2026-07-13 | X006 evidence-doc exact-HEAD rerun | passed | PR #37 quality run `29263587871` attempt 2 passed for exact commit `65191fdaf9319bc3b85a2d49d8c951c9c21e93ae`: npm ci, lint, typecheck, unit, integration, Supabase start, clean local reset, RLS, component, Chromium install, fixture E2E, persistent E2E, secret scan, and build. Attempt 1 failed at persistent E2E local Supabase reachability after reset; the rerun passed the same exact SHA. X007, H008-H010, T032, hosted UAT workflow, UAT import/rollback evidence, and Production acceptance remain open/not granted. |
+| 2026-07-14 | X007 Checkpoint 0 — resume and reconcile | reconciliation only | Branch `codex/015-persistent-mvp-pilot-completion` at HEAD `f2c6924`; up to date with origin; Draft PR #37 remains unmerged. Modified `docs/PROJECT_PROGRESS.md` (line-ending only) and `tasks.md` (runbook link) preserved; Glass workbook confirmed ignored; no hosted mutation. Reconciled hosted completion-label drift in `spec.md`: replaced three labels (`HOSTED_TEAM_UAT_PASS`, `HOSTED_TEAM_UAT_READY_AWAITING_TEAM_ACCESS`, `HOSTED_TEAM_UAT_BLOCKED`) with the canonical two (`HOSTED_TEAM_UAT_READY`, `HOSTED_TEAM_UAT_BLOCKED`) required by the rescue prompt, without weakening any gate. Verified trial-critical capability gaps for Checkpoint 1: (1A) no server action or RPC for team task mutation — tables and read-only RLS exist but no INSERT/UPDATE grants/policies; (1B) no server action or RPC for quality-checklist mutation — same read-only boundary; (1C) `listScopedDeliverableWorkspaces` fetches all versions/tasks/files/comments/quality/approvals/SLA/audits for all deliverables up front with no pagination or lazy loading; (1D) drawer has `role=dialog`/`aria-modal`/Escape/focus-return but lacks focus containment within the dialog; (1E) no `/client/files` route exists; (1F) brand uses honest text wordmark, no invented logo. X007, H008-H010, and T032 remain open. |
+| 2026-07-14 | X007 Checkpoint 1 — trial-critical product gaps | local implementation complete / hosted pending | Implemented 1A/1B task and quality mutations through audited, idempotent RPCs and server actions; direct table write grants remain revoked, with RLS policies as defense-in-depth. Added management quality checklist mutation and internal approval quality gate: pending/changes-required checks block internal approval, passed/not-applicable checks allow it. Added drawer task/quality forms and status controls. Implemented 1C lazy workspace detail loading: list/board initial render now uses lightweight per-deliverable counts and fetches full versions/tasks/files/comments/quality/approvals/SLA/activity only when the drawer opens. Implemented 1D focus containment, Escape close, focus return, body scroll lock, labelled dialog, loading state, and RTL-preserving drawer behavior. Implemented 1E `/client/files` route and client-shell navigation, showing only client-safe file visibility categories/final assets with scoped preview/download. Verified 1F uses honest Samawah text monogram/wordmark and generic content-type preview fallbacks; no invented client media or logo was added. Local verification: `npm run lint` PASS, `npm run typecheck` PASS, `npm run test:unit` PASS 50 files / 179 tests, `npm run test:component` PASS 18 files / 57 tests, `npm run build` PASS with `/client/files` in route manifest. Added pgTAP coverage for task mutation, client/team negatives, idempotency conflict, quality mutation, quality role denial, and quality-gated internal approval; DB execution remains for Checkpoint 3. No hosted mutation, no Production action, and no H008/H009/H010/T032 closure claimed. |
+| 2026-07-14 | X007 Checkpoint 2 — workbook dry-run preflight | blocked before mutation | Glass workbook category check: present locally and ignored by Git; contents were not printed. Repository importer was invoked in `--dry-run` mode with an opaque local run category and local node runtime category only. It failed before workbook category/count validation because the configured artifact runtime cannot resolve `@oai/artifact-tool` from the local resolver. No workbook rows, names, URLs, captions, identifiers, credentials, hosted data, database rows, or files were printed or mutated. Checkpoint 2 cannot satisfy its exit gate until an approved artifact runtime containing `@oai/artifact-tool` is provided or the owner authorizes a reviewed importer implementation change. H008/H009/H010/T032 and X007 remain open; hosted state remains `HOSTED_TEAM_UAT_BLOCKED`. |
+| 2026-07-14 | X007 Checkpoint 2 — workbook dry-run retry | dry-run passed / local DB blocked | Owner supplied the Codex Desktop loader-returned runtime path for process-only use; it was not committed, hardcoded, or written to env files. Repository importer `--dry-run` PASS with category-only counts: deliverables 16, content deliverables 15, coordination deliverables 1, versions 16, tasks 7, approval decisions 0, file assets 0. Workbook contents, paths, URLs, captions, direct IDs, and credentials were not printed. Runtime/workbook/run env variables were cleared after use. The next required Checkpoint 2 local import validation is blocked because `npx supabase@2.107.0 db reset --local --no-seed` cannot connect to Docker (`dockerDesktopLinuxEngine` pipe unavailable), Docker Desktop executable was not found in standard paths, and `docker version` confirms the CLI cannot reach the engine. No hosted mutation, local import apply, rollback, or Production action occurred. H008/H009/H010/T032 and X007 remain open; hosted state remains `HOSTED_TEAM_UAT_BLOCKED`. |
+| 2026-07-14 | X007 corrective idempotency and Checkpoint 2/3 local gates | local green / hosted pending | Added additive migration `202607140002_s015_task_quality_idempotency_hardening.sql` to persist task/quality command fingerprints and original resource IDs, making same-payload replay return the first resource and different-payload replay conflict without duplicate tasks/checks/audit. Expanded pgTAP coverage for task create replay, task update replay, quality replay/conflict, cross-scope denial, no duplicate audit rows, and original resource IDs. Checkpoint 2 local import validation PASS using local Supabase only: first apply counts deliverables 16 / versions 16 / tasks 7; same-run replay counts unchanged; rollback dry-run counts 16 / 16 / 7; rollback counts 16 / 16 / 7; imported remaining 0; unrelated client scope stable. Workbook content, workbook path, direct IDs, URLs, captions, credentials, and runtime paths were not committed. Checkpoint 3 local matrix PASS: clean `npx supabase@2.107.0 db reset --local --no-seed`, lint, typecheck, unit 50/179, integration 28/112, component 18/57 after rerun outside parallel worker pressure, RLS simulator 8/24, pgTAP 6 files / 329 tests, fixture E2E 123 passed / 6 configured skips with visual QA included, persistent E2E 3/3, secret scan, diff check, and build. A mobile visual QA hydration wait was increased to 30s after a timeout-only failure; focused mobile visual QA and full fixture E2E passed afterward. No hosted mutation, Production action, PR merge, or workbook tracking occurred. H008/H009/H010/T032 remain open; hosted state remains `HOSTED_TEAM_UAT_BLOCKED`. |
+| 2026-07-14 | X007 exact-HEAD quality follow-up | local fix verified / CI pending | PR #37 quality run `29324709845` failed only at persistent mobile smoke: the client approval detail measured wider than the mobile threshold in CI. Fixed the client deliverable detail surface with explicit viewport-bounded width and long-text wrapping, and increased the persistent smoke timeout to tolerate cold local startup without weakening the mobile width assertion. Local verification after the fix: focused persistent mobile smoke PASS, full persistent E2E PASS 3/3, lint PASS, typecheck PASS, component PASS 18 files / 57 tests, secret scan PASS, diff check PASS, and build PASS. No hosted mutation, Production action, PR merge, or workbook tracking occurred. |
+| 2026-07-14 | X007 corrective slice 1 — task isolation, assignee, delete, quality | local green / CI passed | Added additive migration `202607140003` with narrowed task SELECT RLS, `private.s015_validate_task_assignee`, zero-row delete guard, and quality-check metadata clearing on revert to pending. Added UI eligible-assignee dropdown. Expanded pgTAP to 341 tests covering unassigned/Client B/Tenant B read denial, invalid assignee rejection, valid assignee acceptance, not-found delete rejection, no-audit-on-denied-delete, and quality revert clearing. Exact-HEAD PR quality run `29334543580` passed for commit `efa307e`. No hosted mutation occurred. |
+| 2026-07-14 | X007 corrective slice 2 — team assignee authority and expanded pgTAP | local green / CI pending | Added additive migration `202607140004` restricting team members (non-management) to self-assign or unassign only; management retains full assignment authority. Expanded pgTAP to cover Client A viewer/approver task-read denial, inactive-membership denial, team-member-assigns-other denial with no task/audit/idempotency row created, self-assign and unassign acceptance, management-assign acceptance, different-payload delete replay conflict, same-payload delete replay no-duplicate, unauthorized role delete denial, and quality re-review recording new checked_by/checked_at after revert. No hosted mutation, Production action, PR merge, or workbook tracking occurred. |
+| 2026-07-15 | X007 corrective slice 3 — task assignment authority correction | local green / CI pending | Reopened Checkpoint 1A for a third corrective slice. Added additive migration `202607140005_s015_task_assignment_authority_correction.sql`: (1) removed `created_by` as a permanent task-read grant (S015-P1-044); (2) narrowed deliverables SELECT RLS so management sees all, team sees only owner/contributor/task-assignee deliverables, and project_manager/marketing_manager are now included in management scope (S015-P1-046); (3) restructured `s015_upsert_deliverable_task` with differentiated update authority: management full+reassign, owner/contributor all-except-assignee, task-assignee status-only with all protected fields preserved server-side (S015-P1-045); (4) fixed `s015_validate_task_assignee` to join active role to active membership (S015-P2-048). Added explicit server capabilities (`canCreateTask`, `canAssignOthers`, `canReassignTask`, `canUpdateOwnTaskStatus`) to the workspace read model; eligible assignees are sent to management only with server-side deduplication (S015-P1-047). Fixed `/work` and board pages to include task-assigned deliverables. Fixed empty-string-to-null before Zod/RPC. Added component tests for TaskForm capabilities (7 tests). Added persistent E2E spec for task assignment journey. Expanded pgTAP to cover task-only-assignee read, task-only-assignee cannot see colleagues' tasks, task assignee status update with protected-field preservation, contributor cannot reassign, management reassign, old-assignee denied, new-assignee completes, client-scoped project_manager manages task, creator-loses-scope denied, task-assignee deliverable discoverability, and different-payload conflict. Local verification: typecheck PASS, unit 50/179 PASS, integration 28/112 PASS, component 19 files / 64 tests (7 new task-form-capabilities tests PASS; 1 pre-existing client-pending-inbox flaky failure unrelated to this slice), secret scan PASS. Docker/DB-backed verification (db reset, pgTAP, persistent E2E, build) deferred to CI. No hosted mutation, Production action, PR merge, or workbook tracking occurred. |
+| 2026-07-15 | X007 Checkpoint 4 hosted apply and stop | UAT database green / Preview access blocked | Starting branch/HEAD/worktree/upstream and Draft PR #37 exact-HEAD checks matched the accepted checkpoint. Current-state drift was corrected without rewriting history. Verified the linked Supabase project as healthy non-Production UAT, reviewed six pending additive migrations (`202607140001`-`202607150001`) for tables/functions/RPCs/RLS/grants/Storage/destructive effects and forward rollback, applied only those six, and confirmed post-apply local/remote inventory equality. Using management Auth and audited RPCs, created the minimal approved Glass UAT client/contract/package scope; dry-run/apply imported 16 deliverables, 16 versions, and 7 internal tasks with 0 approvals/files. Same-run replay remained 16/16/7, unrelated scope stayed stable, and rollback dry-run proved 16/16/7 run-scoped removal. The successful exact-HEAD Vercel Preview is protected and redirects to Vercel `/login`; the public UAT alias points elsewhere, and the available CLI identity cannot access the owning team scope to repoint it. Boundary tests passed before the management smoke timed out at Vercel protection; remaining repeats were stopped. No H008/H009/H010/T032 closure, Production action, PR merge, external invitation, public signup, or secret/private artifact commit occurred. Resume marker: remain in Checkpoint 4; first incomplete substep is to obtain authorized access to the owning Vercel team (or an approved protection bypass/owner-side alias update) so the public UAT entry resolves to the exact reviewed Preview, then rerun all seven persona sign-ins and post-apply hosted smoke. Do not reapply migrations or rerun the import unless inventory/run evidence is invalidated. |
+| 2026-07-15 | X007 Checkpoint 4 resume verification | blocked before hosted read/mutation | Required starting HEAD `ccbf88b0d6ce692997cf2db4af28d2ec4e99738e` and branch are unchanged; upstream is not ahead/behind. The secure ignored UAT persona file contains credentials and a base URL but does not contain the required explicit hostname allowlist and non-Production target category. `npm run test:e2e:hosted-uat -- --list` therefore failed closed before navigation with `Hosted UAT requires S015_UAT_ALLOWED_HOSTNAME in the secure env file.` No migration, import, deployment, persona sign-in, Production access, or hosted mutation was repeated. First incomplete substep remains supplying owner-authorized redacted target identity (hostname allowlist, category, and exact-HEAD Preview access) before any Checkpoint 4 hosted action. |
+| 2026-07-15 | X007 Checkpoint 4 hosted guard and route smoke | blocked at hosted persona routes | Process-local non-secret guard metadata derived from the configured secure UAT base URL allowed `npm run test:e2e:hosted-uat -- --list` to enumerate all 27 hosted checks. A hosted harness fix narrowed the Arabic password field selector to the textbox and moved the fixture-impersonation guard to the public sign-in shell. `npm run lint` PASS. Hosted boundary smoke against the configured UAT entry passed 6/6 across desktop, mobile, and RTL for fixture-impersonation refusal and browser-side service-credential secrecy. Persona route smoke failed 21/27 because the configured UAT entry returns 404 for `/work` and `/client/pending` after sign-in. Direct latest Preview exploration stayed Preview-only and was stopped after repeated persona sign-in timeouts; it is not PASS evidence. No migration, import, alias, deployment, Production setting, PR merge, external invitation, public signup, or secret/private artifact commit occurred. Resume marker: remain in Checkpoint 4; first incomplete substep is owner-side correction of exact reviewed Preview/UAT routing/protection/alias, then rerun all seven persona sign-ins and post-apply hosted smoke before H008. Do not reapply migrations or rerun the import unless inventory/run evidence is invalidated. |
+# SIL-52 / SIL-54 local correction verification — 2026-09-10
+
+Owner approved source commit/push and disposable GitHub database tests. Three native workers handled DB read boundary, client projection and package arithmetic; independent cross-review corrected audit authenticity, mixed-role publication selection and fractional arithmetic. Local final-source regression: **966 tests / 157 files PASS**, lint/typecheck/secret scan PASS. SQL pgTAP and migrations are authored but **NOT EXECUTED/applied**. Active GitHub account has read-only permissions; approval to use existing samawah-media login requested. No commit, push, CI dispatch, hosted mutation or deployment yet. [Detailed checkpoint](sil52-sil54-checkpoint.md). Owner acceptance and unexecuted viewer/files/mobile/isolation/recovery cases remain open.

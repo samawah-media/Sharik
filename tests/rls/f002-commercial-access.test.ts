@@ -32,11 +32,11 @@ describe("F-002 commercial raw access RLS simulator", () => {
     ).toBe(false);
   });
 
-  it("allows assigned account managers to read only assigned client commercial rows and ledger rows", () => {
+  it.each(["account_manager", "project_manager"] as const)("allows %s to read only assigned client commercial and ledger rows", (roleKey) => {
     const actor = {
       userId: assignedInternalA.session.userId,
       tenantMemberships: assignedInternalA.tenantMemberships,
-      roleAssignments: assignedInternalA.authorizationActor.roleAssignments,
+      roleAssignments: assignedInternalA.authorizationActor.roleAssignments.map(assignment => ({ ...assignment, roleKey })),
     };
 
     expect(

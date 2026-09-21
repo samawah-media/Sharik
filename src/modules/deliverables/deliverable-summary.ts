@@ -2,6 +2,7 @@ import type { DeliverableLifecycleStatus } from "./deliverable-rules";
 import type { DeliverableSafeSummary } from "./deliverable-repository";
 
 export type DeliverableClientSafeSummary = {
+  id: string;
   name: string;
   type: string;
   status: DeliverableLifecycleStatus;
@@ -16,6 +17,7 @@ export type DeliverableClientSafeSummary = {
 export const toClientDeliverableSummary = (
   deliverable: DeliverableSafeSummary,
 ): DeliverableClientSafeSummary => ({
+  id: deliverable.id,
   name: deliverable.name,
   type: deliverable.type,
   status: deliverable.status,

@@ -439,9 +439,9 @@ On 2026-07-11, T013, T016, and T017 were reopened after defect `S015-P1-019` ide
 ## New team pilot activation — 2026-09-21
 
 - [x] TP21-1 Verify source CI, UAT identity/migrations and exact account existence.
-- [ ] TP21-2 Complete and test project-manager application support.
-- [ ] TP21-3 Review/commit source and pass exact-source full CI.
-- [ ] TP21-4 Apply reviewed UAT migrations and publish tested Preview.
-- [ ] TP21-5 Provision isolated synthetic trial and five account credentials.
+- [x] TP21-2 Complete and test project-manager application support.
+- [x] TP21-3 Review/commit source and pass exact-source full CI.
+- [x] TP21-4 Apply reviewed UAT migrations and publish tested Preview.
+- [x] TP21-5 Provision isolated synthetic trial and five account credentials.
 - [ ] TP21-6 Verify role login, workflow, isolation, persistence and mobile.
 - [ ] TP21-7 Deliver owner credentials and separate team/client guides.

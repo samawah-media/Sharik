@@ -35,7 +35,7 @@ export const signInHostedPersona = async (
 ) => {
   await page.goto("/sign-in", { waitUntil: "domcontentloaded" });
   await page.getByLabel("البريد الإلكتروني").fill(persona.email);
-  await page.getByRole("textbox", { name: "كلمة المرور" }).fill(persona.password);
+  await page.getByLabel("كلمة المرور", { exact: true }).fill(persona.password);
   await page.getByRole("button", { name: "تسجيل الدخول" }).click();
   await expect(page).not.toHaveURL(/\/sign-in(?:\?|$)/u, { timeout: 30_000 });
 };

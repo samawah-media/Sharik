@@ -318,3 +318,7 @@ The authorized disposable CI route has now executed a clean database reset
 and passed PostgreSQL/RLS and component gates on `5e1e283`. Browser and later
 gates are still pending; see [exact-source CI checkpoint](evidence/x010-b-7c-22-ci-checkpoint.md).
 This does not change the hosted publication hold or close owner acceptance.
+
+## New team pilot activation — 2026-09-21
+
+Execute [activation plan](evidence/team-pilot-activation-20260921.md) under the explicit owner authorization. Keep source/CI, migrations, Preview, provisioning and role verification sequential at their dependencies; never infer human acceptance from automated checks.

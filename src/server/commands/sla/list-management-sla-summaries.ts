@@ -13,6 +13,7 @@ import { toManagementSlaSummary } from "@/modules/sla/sla-summary";
 const managementRoleKeys = new Set<RoleKey>([
   "tenant_owner",
   "tenant_administrator",
+  "project_manager",
   "account_manager",
 ]);
 

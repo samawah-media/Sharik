@@ -12,6 +12,7 @@ export type InternalInvitationValidationResult =
     };
 
 export const internalInvitationRoleKeys = [
+  "project_manager",
   "account_manager",
   "content_writer",
   "designer",

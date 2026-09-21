@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { InternalInvitationAcceptance } from "@/ui/invitations/internal-invitation-acceptance";
 import { AssignedClients } from "@/ui/management/assigned-clients";
 import {
@@ -9,6 +9,8 @@ import {
   InternalInviteSaveFailure,
 } from "@/ui/management/internal-invite-form";
 import { InvitationList } from "@/ui/management/invitation-list";
+
+afterEach(cleanup);
 
 describe("internal invitation UI", () => {
   it("shows every invited client before accepting a multi-client invitation", () => {
@@ -33,7 +35,7 @@ describe("internal invitation UI", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders Arabic RTL-ready invite fields", () => {
+  it.each(["designer", "project_manager"])("allows scoped invitation for %s", (roleKey) => {
     render(
       <InternalInviteForm
         clients={[
@@ -81,7 +83,7 @@ describe("internal invitation UI", () => {
     ).toBeDisabled();
 
     fireEvent.change(screen.getByLabelText("الدور"), {
-      target: { value: "designer" },
+      target: { value: roleKey },
     });
 
     expect(

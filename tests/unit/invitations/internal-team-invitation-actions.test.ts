@@ -76,7 +76,7 @@ describe("internal team invitation server actions", () => {
     expect(rpc).toHaveBeenCalledWith("s015_list_internal_team_invitations_v3");
   });
 
-  it("returns a one-time manual invitation link only after RPC success", async () => {
+  it.each(["designer", "project_manager"])("returns a one-time %s invitation link only after RPC success", async (roleKey) => {
     const rpc = vi.fn().mockResolvedValue({
       data: [{ invitation_token: validToken }],
       error: null,
@@ -85,7 +85,7 @@ describe("internal team invitation server actions", () => {
     const formData = new FormData();
     formData.set("displayName", "سارة المصممة");
     formData.set("email", "sara@example.test");
-    formData.set("roleKey", "designer");
+    formData.set("roleKey", roleKey);
     formData.append("clientIds", validClient);
     formData.append("clientIds", secondValidClient);
     formData.set("invitationToken", validToken);

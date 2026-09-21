@@ -17,7 +17,7 @@ const invitationTokenSchema = z
 const inviteSchema = z.object({
   displayName: z.string().trim().min(2).max(120),
   email: z.string().trim().email(),
-  roleKey: z.enum(["account_manager", "content_writer", "designer"]),
+  roleKey: z.enum(["project_manager", "account_manager", "content_writer", "designer"]),
   clientIds: z.array(z.string().uuid()).min(1).max(100),
   invitationToken: invitationTokenSchema,
   idempotencyKey: z.string().trim().min(8).max(200),
@@ -49,7 +49,7 @@ export type InternalTeamInvitation = {
   tenantId: string;
   invitedDisplayName: string;
   invitedEmail: string;
-  roleKey: "account_manager" | "content_writer" | "designer";
+  roleKey: "project_manager" | "account_manager" | "content_writer" | "designer";
   clientIds: string[];
   clientNames: string[];
   status: "pending" | "accepted" | "revoked" | "superseded";
@@ -212,7 +212,7 @@ const invitationAcceptSchema = z.object({
 
 export type InternalInvitationPreview = {
   invitedDisplayName: string;
-  roleKey: "account_manager" | "content_writer" | "designer";
+  roleKey: "project_manager" | "account_manager" | "content_writer" | "designer";
   clientNames: string[];
   expiresAt: string;
   status: "pending" | "accepted";

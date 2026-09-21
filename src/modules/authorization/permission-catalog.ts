@@ -33,6 +33,18 @@ export type PermissionId = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 export const rolePermissions: Record<RoleKey, readonly PermissionId[]> = {
   tenant_owner: Object.values(PERMISSIONS),
   tenant_administrator: Object.values(PERMISSIONS),
+  project_manager: [
+    PERMISSIONS.CLIENT_VIEW,
+    PERMISSIONS.CONTRACT_VIEW,
+    PERMISSIONS.DELIVERABLE_VIEW,
+    PERMISSIONS.DELIVERABLE_CREATE,
+    PERMISSIONS.DELIVERABLE_CANCEL_NOT_STARTED,
+    PERMISSIONS.DELIVERABLE_STATUS_UPDATE,
+    PERMISSIONS.DELIVERABLE_VERSION_SUBMIT,
+    PERMISSIONS.DELIVERABLE_INTERNAL_APPROVE,
+    PERMISSIONS.DELIVERABLE_SEND_TO_CLIENT,
+    PERMISSIONS.LEDGER_VIEW_SUMMARY,
+  ],
   account_manager: [
     PERMISSIONS.CLIENT_VIEW,
     PERMISSIONS.CONTRACT_VIEW,
@@ -75,4 +87,4 @@ export const rolePermissions: Record<RoleKey, readonly PermissionId[]> = {
 export const roleGrantsPermission = (
   roleKey: RoleKey,
   permission: PermissionId,
-) => rolePermissions[roleKey].includes(permission);
+) => Object.hasOwn(rolePermissions, roleKey) && rolePermissions[roleKey].includes(permission);

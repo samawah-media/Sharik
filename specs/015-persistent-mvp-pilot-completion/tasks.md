@@ -435,3 +435,13 @@ Independent review reopened Checkpoint 1A for a fourth bounded corrective slice.
 ## Correction note: persistent browser verification
 
 On 2026-07-11, T013, T016, and T017 were reopened after defect `S015-P1-019` identified that the prior Playwright path used route actor fixtures under `APP_ENV=test` and therefore did not prove a real browser-to-persistent-database journey. They were closed again only after `npm run test:e2e:persistent` passed against the local Supabase API/Auth stack with `APP_ENV=test-persistent`, route fixtures disabled, synthetic Auth users, and DB assertions for version binding, role boundaries, comments/files secrecy, SLA, audit, package ledger, and delivery.
+
+## New team pilot activation — 2026-09-21
+
+- [x] TP21-1 Verify source CI, UAT identity/migrations and exact account existence.
+- [ ] TP21-2 Complete and test project-manager application support.
+- [ ] TP21-3 Review/commit source and pass exact-source full CI.
+- [ ] TP21-4 Apply reviewed UAT migrations and publish tested Preview.
+- [ ] TP21-5 Provision isolated synthetic trial and five account credentials.
+- [ ] TP21-6 Verify role login, workflow, isolation, persistence and mobile.
+- [ ] TP21-7 Deliver owner credentials and separate team/client guides.

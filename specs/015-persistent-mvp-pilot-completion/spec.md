@@ -430,3 +430,7 @@ for tenant and authority denial, audit/idempotency, responsibility blocking,
 last-admin protection, board desktop/mobile/RTL/keyboard/touch behavior, and
 independent count-unit reservation/consumption/cancellation. No ADR, new
 dependency, hosted mutation, deployment, or Production action is authorized.
+
+## Owner-authorized new team pilot — 2026-09-21
+
+Complete the bounded [activation contract](evidence/team-pilot-activation-20260921.md): isolated synthetic training scope, five named real identities, project-manager application support aligned with existing DB authority, reviewed CI/Preview and actual role login/workflow verification. Owner authorizes UAT preparation/publication and in-memory administrative key use; no Production, legacy data deletion or automatic external mail.

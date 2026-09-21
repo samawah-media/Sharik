@@ -42,6 +42,7 @@ const clientOnlyRoleKeys = new Set([
 ]);
 
 const internalAssignedRoleKeys = new Set([
+  "project_manager",
   "account_manager",
   "content_writer",
   "designer",

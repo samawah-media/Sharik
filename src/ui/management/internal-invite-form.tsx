@@ -121,6 +121,7 @@ export function InternalInviteForm({
             <option disabled value="">
               اختر الدور
             </option>
+            <option value="project_manager">{roleLabelAr("project_manager")}</option>
             <option value="account_manager">{roleLabelAr("account_manager")}</option>
             <option value="content_writer">{roleLabelAr("content_writer")}</option>
             <option value="designer">{roleLabelAr("designer")}</option>

@@ -147,6 +147,8 @@ describe("member lifecycle UI", () => {
     expect(within(rows[2]).getByLabelText("عملاء العضو")).toHaveTextContent("جلس");
     expect(within(rows[0]).getByText("إدارة العضو")).toBeVisible();
     expect(within(rows[0]).getAllByRole("combobox", { name: "الدور" })).toHaveLength(2);
+    expect(within(rows[0]).getAllByRole("option", { name: "مدير المشروع" })).toHaveLength(2);
+    expect(within(rows[1]).queryByRole("option", { name: "مدير المشروع" })).not.toBeInTheDocument();
     expect(within(rows[0]).getAllByRole("combobox", { name: "نطاق العميل" })).toHaveLength(2);
     expect(within(rows[0]).getByRole("option", { name: "Glass Studio (غير نشط)" })).toBeInTheDocument();
     expect(within(rows[0]).getAllByRole("button", { name: "حفظ التعديل" })).toHaveLength(2);

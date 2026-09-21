@@ -40,7 +40,8 @@ const deliverableRecord = (
 });
 
 describe("F-003 management SLA summaries", () => {
-  it("returns management-visible SLA status only inside the actor client scope", async () => {
+  it.each(["account_manager", "project_manager"] as const)("returns %s SLA summaries only inside assigned client", async (roleKey) => {
+    const actor = { ...assignedInternalA.authorizationActor, roleAssignments: assignedInternalA.authorizationActor.roleAssignments.map(a => ({ ...a, roleKey })) };
     const audit = new InMemoryAuditSink();
     const deliverables = new InMemoryDeliverableRepository({
       deliverables: [
@@ -55,7 +56,7 @@ describe("F-003 management SLA summaries", () => {
 
     await expect(
       listManagementSlaSummariesCommand({
-        actor: assignedInternalA.authorizationActor,
+        actor,
         deliverables,
         audit,
         input: { clientId: clientA.id },
@@ -74,7 +75,7 @@ describe("F-003 management SLA summaries", () => {
     });
 
     const denied = await listManagementSlaSummariesCommand({
-      actor: assignedInternalA.authorizationActor,
+      actor,
       deliverables,
       audit,
       input: { clientId: clientC.id },

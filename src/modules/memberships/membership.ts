@@ -3,6 +3,7 @@ export type MembershipKind = "tenant" | "client";
 export type RoleKey =
   | "tenant_owner"
   | "tenant_administrator"
+  | "project_manager"
   | "account_manager"
   | "content_writer"
   | "designer"

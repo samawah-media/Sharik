@@ -14,6 +14,7 @@ const assignRoleSchema = z.object({
   roleKey: z.enum([
     "tenant_owner",
     "tenant_administrator",
+    "project_manager",
     "account_manager",
     "content_writer",
     "designer",

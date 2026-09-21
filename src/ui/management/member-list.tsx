@@ -18,6 +18,7 @@ type MemberMutationAction = (
 ) => Promise<MemberActionState>;
 
 const clientRoleOptions = [
+  "project_manager",
   "account_manager",
   "content_writer",
   "designer",
@@ -26,7 +27,6 @@ const clientRoleOptions = [
 const tenantRoleOptions = [
   "tenant_owner",
   "tenant_administrator",
-  "project_manager",
   "marketing_manager",
 ] as const;
 
@@ -243,6 +243,7 @@ export function RoleSelector() {
         className="rounded-md border border-border bg-background px-3 py-2"
         defaultValue="account_manager"
       >
+        <option value="project_manager">{roleLabelAr("project_manager")}</option>
         <option value="account_manager">مدير حساب</option>
         <option value="content_writer">كاتب محتوى</option>
         <option value="designer">مصمم</option>

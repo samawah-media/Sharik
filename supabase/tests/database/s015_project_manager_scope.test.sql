@@ -42,6 +42,10 @@ insert into public.client_memberships(id,tenant_id,client_id,auth_user_id,status
 ('18000000-0000-4000-8000-000000000210','18000000-0000-4000-8000-000000000001','18000000-0000-4000-8000-000000000101','18000000-0000-4000-8000-000000000308','active');
 insert into public.role_assignments(id,tenant_id,membership_id,role_key,scope_type,scope_id,status) values
 ('18000000-0000-4000-8000-000000000410','18000000-0000-4000-8000-000000000001','18000000-0000-4000-8000-000000000209','client_approver','client','18000000-0000-4000-8000-000000000101','active');
+insert into public.tenant_memberships(id,tenant_id,auth_user_id,status) values
+('18000000-0000-4000-8000-000000000211','18000000-0000-4000-8000-000000000001','18000000-0000-4000-8000-000000000309','active');
+insert into public.role_assignments(id,tenant_id,membership_id,role_key,scope_type,scope_id,status) values
+('18000000-0000-4000-8000-000000000411','18000000-0000-4000-8000-000000000001','18000000-0000-4000-8000-000000000211','designer','client','18000000-0000-4000-8000-000000000101','active');
 insert into public.contracts(id,tenant_id,client_id,name,status)
 select gen_random_uuid(),tenant_id,id,'PM test contract','active' from public.clients;
 insert into public.packages(id,tenant_id,client_id,contract_id,name,status)
@@ -106,9 +110,11 @@ select ok(private.s015_can_read_member_profile('18000000-0000-4000-8000-00000000
 select ok(not private.s015_can_read_member_profile('18000000-0000-4000-8000-000000000001','18000000-0000-4000-8000-000000000301'),'PM cannot read unrelated same-tenant profile');
 select ok(not private.s015_can_read_member_profile('18000000-0000-4000-8000-000000000002','18000000-0000-4000-8000-000000000304'),'PM cannot read cross-tenant profile');
 select lives_ok($$select public.s015_upsert_deliverable_task(
-'18000000-0000-4000-8000-000000000101','18000000-0000-4000-8000-000000000902',gen_random_uuid(),
-'Prepare trial content',null,'todo','normal','18000000-0000-4000-8000-000000000303',null,0,
+'18000000-0000-4000-8000-000000000101','18000000-0000-4000-8000-000000000902',null,
+'Prepare trial content',null,'todo','normal','18000000-0000-4000-8000-000000000309',null,0,
 gen_random_uuid(),gen_random_uuid(),'tp21-assign-task')$$,'PM assigns work in scoped client');
+select is((select assignee_user_id from public.deliverable_tasks where deliverable_id='18000000-0000-4000-8000-000000000902'),
+'18000000-0000-4000-8000-000000000309'::uuid,'PM task assignment persists for the selected member');
 select lives_ok($$select * from public.s015_save_or_submit_version(
 '18000000-0000-4000-8000-000000000101','18000000-0000-4000-8000-000000000902','18000000-0000-4000-8000-000000000903',1,true,
 'Trial brief','Real review content for a scoped project manager',null,null,null,null,null,null,
@@ -141,12 +147,20 @@ select lives_ok($$select * from public.s015_client_decide_version(
 '18000000-0000-4000-8000-000000000101','18000000-0000-4000-8000-000000000902','18000000-0000-4000-8000-000000000903',
 'approved',null,gen_random_uuid(),gen_random_uuid(),'tp21-client-approved')$$,'real client persona approves sent version');
 select set_config('request.jwt.claim.sub','18000000-0000-4000-8000-000000000302',true);
-select lives_ok($$select * from public.s015_execute_internal_workflow(
+select throws_ok($$select * from public.s015_deliver_ready_version(
 '18000000-0000-4000-8000-000000000101','18000000-0000-4000-8000-000000000902','18000000-0000-4000-8000-000000000903',
-'deliver',null,null,gen_random_uuid(),gen_random_uuid(),'tp21-complete-delivery')$$,'PM delivers after real client approval');
+gen_random_uuid(),gen_random_uuid(),'tp21-deny-unprepared-delivery')$$,
+'P0001','ready_for_delivery required','PM cannot skip preparation after client approval');
+select lives_ok($$select * from public.s015_prepare_delivery(
+'18000000-0000-4000-8000-000000000101','18000000-0000-4000-8000-000000000902','18000000-0000-4000-8000-000000000903',
+gen_random_uuid(),gen_random_uuid(),'tp21-prepare-delivery')$$,'PM prepares the exact client-approved version');
+select is((select status from public.deliverables where id='18000000-0000-4000-8000-000000000902'),'ready_for_delivery','PM delivery preparation persists');
+select lives_ok($$select * from public.s015_deliver_ready_version(
+'18000000-0000-4000-8000-000000000101','18000000-0000-4000-8000-000000000902','18000000-0000-4000-8000-000000000903',
+gen_random_uuid(),gen_random_uuid(),'tp21-complete-delivery')$$,'PM delivers the prepared client-approved version');
 select is((select status from public.deliverables where id='18000000-0000-4000-8000-000000000902'),'delivered','PM delivery persists');
 reset role;
-select is((select count(*)::integer from public.audit_events where actor_user_id='18000000-0000-4000-8000-000000000302' and action in ('DeliverableVersionInternallyApproved','DeliverableVersionSentToClient','DeliverableFinalDelivered')),3,'PM approval/send/delivery emit audit records');
+select is((select count(*)::integer from public.audit_events where actor_user_id='18000000-0000-4000-8000-000000000302' and action in ('DeliverableVersionInternallyApproved','DeliverableVersionSentToClient','DeliverablePreparedForDelivery','DeliverableFinalDelivered')),4,'PM approval/send/preparation/delivery emit audit records');
 update public.tenant_memberships set status='disabled' where id='18000000-0000-4000-8000-000000000202';
 set local role authenticated;
 select is((select count(*)::integer from public.clients),0,'disabled PM loses client reads');

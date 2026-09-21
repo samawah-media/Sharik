@@ -1,4 +1,4 @@
-﻿# Tasks: Persistent MVP Pilot Completion
+# Tasks: Persistent MVP Pilot Completion
 
 ## X010-B-7C-23 — remaining findings execution
 
@@ -443,5 +443,5 @@ On 2026-07-11, T013, T016, and T017 were reopened after defect `S015-P1-019` ide
 - [x] TP21-3 Review/commit source and pass exact-source full CI.
 - [x] TP21-4 Apply reviewed UAT migrations and publish tested Preview.
 - [x] TP21-5 Provision isolated synthetic trial and five account credentials.
-- [ ] TP21-6 Verify role login, workflow, isolation, persistence and mobile.
-- [ ] TP21-7 Deliver owner credentials and separate team/client guides.
+- [x] TP21-6 Verify role login, workflow, isolation, persistence and mobile.
+- [x] TP21-7 Deliver owner credentials and separate team/client guides.

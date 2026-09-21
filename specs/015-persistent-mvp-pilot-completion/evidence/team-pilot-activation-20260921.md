@@ -37,7 +37,7 @@ Owner is rollback/stop authority; rollback window is this preparation and initia
 
 ## Ledger
 
-Pending execution; no account provision, password delivery, migration, deployment or readiness is claimed by this plan.
+The initial plan was executed through the dated checkpoints below. Final readiness is determined by the latest verification checkpoint, not the historical pending notes.
 
 ## PM capability ruling — 2026-09-21
 
@@ -79,3 +79,20 @@ Auth-only preparation completed successfully while browser CI runs: five owner-a
 - Corrected hosted test password locator to exact accessible label: password inputs do not have an implicit textbox role. Test helper only; deployed application source remains f731812. Scoped ESLint PASS.
 - Authenticated training read verification PASS for all five real participants: internal actors see two training items and four tasks (two assigned to each writer/designer), client sees only the sent item and no internal comment. PM confirms active SLA segment paused_waiting_client. This is API/data evidence, not a substitute for pending hosted browser lifecycle.
 - Owner-only password table and five individual credential cards generated in ACL-restricted ignored directory. No invitation email or password email sent. Human usability acceptance remains pending actual team use.
+
+### Approved sharing and role-browser checkpoint — 2026-09-21
+
+- Owner explicitly approved the pending Vercel sharing action. Enabled Anyone with the link for the immutable Preview deployment dpl_6WS6bPRhcTymLJNPADiFfqEHU6Uc at source f731812. The newly generated share URL replaces the older share link and is kept only in ignored handoff files. Application authentication remains required.
+- Fresh Playwright browser contexts reached the app through the share URL, without Vercel account login. Five real participants × desktop/mobile/Arabic RTL = 15 PASS in 1.9 minutes, including reload, authorized landing, no horizontal overflow and restricted route checks.
+- Internal roles display their expected account label. Client identity is verified through exact Auth credentials; its UI verifies the intended client scope and redirects from management routes. The client shell does not display the internal account-identity component.
+- Role test corrected to follow the existing client shell and redirect behavior; no application behavior changed. Hosted lifecycle test selects all authorized work explicitly instead of relying on the action-required default, including the unassigned negative check. It waits for version-save feedback and workflow redirects before ending a session.
+- Full hosted lifecycle remains in progress at this checkpoint. Role HTML report retained under ignored tmp/team-pilot-20260920/role-access-passed-20260921. No email or password message has been sent.
+
+### Final verification and handoff — 2026-09-21
+
+- Hosted full lifecycle PASS (1 test, 3.1 minutes) on the shared immutable f731812 Preview: assigned task update, version submissions, internal correction/quality approval, internal comment/file secrecy, failed upload recovery, client revision request, SLA pause/resume, processed stale-version decision denial, current-version approval, prepare/deliver and exactly-once audit/ledger, terminal-state denial, authorized final-video preview metadata and viewport checks.
+- Updated only hosted test mechanics: wait for persistence before closing each actor session, observe the actual stale-version POST regardless of transport headers, select authorized-work scope, and locate the current client-file preview dialog after hydration. A generated 32x32 WebM replaces fake text bytes for the final media fixture. Preview assertion proves loaded dimensions, not human playback acceptance. Independent test review found no blocking regression; scoped ESLint and diff checks PASS.
+- Report retained at ignored tmp/team-pilot-20260920/lifecycle-passed-20260921. Earlier failed runs are historical diagnostics, not successful evidence.
+- One interrupted test fixture was hidden with the same run-tag transition as test teardown; no business history deleted. Original two training items, four assignments, client secrecy and waiting-client SLA reverified PASS for all five real participants after tests.
+- Owner credential table and five individual cards match the approved share URL and exact credentials; passwords are excluded from guide sources and Git. Guides include owner/team/client instructions, verification report, human-session checklist, two sample text files and a generated sample video. Human checklist stays uncompleted until actual team use.
+- Ready for the bounded team trial. No invitation or password message sent, no Production deployment, no merge. Existing QA commercial contexts are explicitly distinguished from the named three-unit training package. No claim about inbox delivery or legacy UAT investigation closure.

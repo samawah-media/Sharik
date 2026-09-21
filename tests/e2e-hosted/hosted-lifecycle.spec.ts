@@ -102,6 +102,11 @@ const openDrawerTab = async (drawer: Locator, name: string) => {
 };
 
 const openDeliverableWorkspace = async (page: Page, name: string) => {
+  // The current /work default is action-required; lifecycle steps also revisit
+  // waiting and terminal items, so explicitly select the authorized-work view.
+  const workScope = page.getByRole("combobox", { name: "عرض العمل", exact: true });
+  await expectReactHydrated(workScope);
+  await workScope.selectOption({ label: "كل العمل المصرّح لي" });
   const card = cardFor(page, name);
   await expect(card).toBeVisible();
   const trigger = card.getByRole("button", { name: "فتح مساحة المخرج" });
@@ -188,6 +193,8 @@ const submitVersion = async ({
   await form
     .getByRole("button", { name: "حفظ وإرسال للمراجعة" })
     .click();
+  await expect(drawer.getByText("تم إرسال النسخة للمراجعة الداخلية.", { exact: true }))
+    .toBeVisible({ timeout: 60_000 });
 };
 
 const addInternalComment = async ({
@@ -315,6 +322,7 @@ const runManagementWorkflow = async ({
   await expect(form).toBeVisible();
   if (reason) await form.locator('textarea[name="reason"]').fill(reason);
   await form.locator('button[type="submit"]').click();
+  await drawer.page().waitForURL(/saved=/u);
 };
 
 const uploadWorkspaceFile = async ({
@@ -342,8 +350,10 @@ const uploadWorkspaceFile = async ({
   await expect(input).toBeAttached({ timeout: 60_000 });
   await input.setInputFiles({
     name: fileName,
-    mimeType: fileName.endsWith(".mp4") ? "video/mp4" : "text/plain",
-    buffer: Buffer.from(`Synthetic hosted UAT file: ${fileName}`, "utf8"),
+    mimeType: fileName.endsWith(".webm") ? "video/webm" : fileName.endsWith(".mp4") ? "video/mp4" : "text/plain",
+    buffer: fileName.endsWith(".webm")
+      ? fs.readFileSync(path.resolve("tests/fixtures/hosted-preview.webm"))
+      : Buffer.from(`Synthetic hosted UAT file: ${fileName}`, "utf8"),
   });
   const upload = drawer.locator("button.uppy-StatusBar-actionBtn--upload");
   await expect(upload).toBeVisible({ timeout: 60_000 });
@@ -397,7 +407,7 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
   const internalComment = `تعليق داخلي اصطناعي ${token}`;
   const internalFileName = `internal-uat-${token}.txt`;
   const failedReplacementName = `failed-replacement-${token}.mp4`;
-  const finalFileName = `final-uat-${token}.mp4`;
+  const finalFileName = `final-uat-${token}.webm`;
 
   await withPersona({
     actor: seed.actors.ACCOUNT_MANAGER,
@@ -418,6 +428,9 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
     run: async (page) => {
       await page.goto("/work", { waitUntil: "domcontentloaded" });
       await expect(page.getByRole("main")).toBeVisible();
+      const workScope = page.getByRole("combobox", { name: "عرض العمل", exact: true });
+      await expectReactHydrated(workScope);
+      await workScope.selectOption({ label: "كل العمل المصرّح لي" });
       await expect(page.getByText(seed.deliverableName)).toHaveCount(0);
     },
   });
@@ -466,6 +479,12 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
       await drawer
         .getByRole("combobox", { name: `حالة المهمة: ${seed.taskTitle}` })
         .selectOption("done");
+      await expect.poll(async () => {
+        const response = await client.from("deliverable_tasks")
+          .select("status").eq("id", taskResponse.data!.id).single();
+        expect(response.error).toBeNull();
+        return response.data?.status;
+      }, { timeout: 60_000 }).toBe("done");
     },
   });
   await expect
@@ -755,6 +774,11 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
         .locator('textarea[name="reason"]')
         .fill(`طلب تعديل عميل اصطناعي ${token}`);
       await changesForm.locator('button[type="submit"]').click();
+      await expectDeliverable({
+        client,
+        deliverableId: seed.deliverableId,
+        expected: { status: "client_changes_requested", current_version_id: version2.id },
+      });
     },
   });
   await expectDeliverable({
@@ -827,7 +851,16 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
   const staleApproveForm = staleDetail.locator(
     'form:has(input[name="clientApprovalAction"][value="approve"])',
   );
+  const staleDecisionResponse = staleSession.page.waitForResponse((response) =>
+    response.request().method() === "POST" &&
+    Boolean(response.request().postData()?.includes(version2.id)) &&
+    new URL(response.url()).pathname === "/client/pending",
+    { timeout: 60_000 },
+  );
   await staleApproveForm.locator('button[type="submit"]').click();
+  const processedStaleDecision = await staleDecisionResponse;
+  expect(await processedStaleDecision.finished()).toBeNull();
+  expect(processedStaleDecision.status()).toBeLessThan(400);
   await expectDeliverable({
     client,
     deliverableId: seed.deliverableId,
@@ -856,6 +889,11 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
           'form:has(input[name="clientApprovalAction"][value="approve"]) button[type="submit"]',
         )
         .click();
+      await expectDeliverable({
+        client,
+        deliverableId: seed.deliverableId,
+        expected: { status: "client_approved", current_version_id: version3.id },
+      });
     },
   });
   await expectDeliverable({
@@ -898,6 +936,11 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
       await deliveryButton.evaluate((button: HTMLButtonElement) => {
         button.click();
         button.click();
+      });
+      await expectDeliverable({
+        client,
+        deliverableId: seed.deliverableId,
+        expected: { status: "delivered", progress_percentage: 100, current_version_id: version3.id },
       });
     },
   });
@@ -1153,10 +1196,14 @@ test("hosted UAT completes the exact persistent team-to-client lifecycle", async
       const finalFile = page.locator("li").filter({ hasText: finalFileName });
       await expect(finalFile).toBeVisible({ timeout: 60_000 });
       await expect(page.getByText(internalFileName)).toHaveCount(0);
-      await finalFile.getByRole("button", { name: "معاينة" }).click();
-      await expect(finalFile.locator("video[controls]")).toBeVisible({
+      const previewTrigger = finalFile.getByRole("button", { name: `فتح معاينة ${finalFileName}`, exact: true });
+      await expectReactHydrated(previewTrigger);
+      await previewTrigger.click();
+      const preview = page.getByRole("dialog", { name: `معاينة ${finalFileName}`, exact: true });
+      await expect(preview.locator("video[controls]")).toBeVisible({
         timeout: 60_000,
       });
+      await expect.poll(() => preview.locator("video").evaluate((video: HTMLVideoElement) => video.videoWidth), { timeout: 60_000 }).toBe(32);
       await expectNoHorizontalOverflow(page);
     },
   });

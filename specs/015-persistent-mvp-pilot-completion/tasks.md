@@ -445,3 +445,15 @@ On 2026-07-11, T013, T016, and T017 were reopened after defect `S015-P1-019` ide
 - [x] TP21-5 Provision isolated synthetic trial and five account credentials.
 - [x] TP21-6 Verify role login, workflow, isolation, persistence and mobile.
 - [x] TP21-7 Deliver owner credentials and separate team/client guides.
+# Team files before text — 2026-10-05
+
+- [x] Add audited, scope-checked, concurrency-safe empty-version preparation (exact-source CI and hosted UAT database PASS).
+- [x] Enable the file tab before text entry; verify preparation failures/retry and later text on the same draft (component 24/24 PASS; typecheck PASS).
+- [x] Run component/type/lint checks and database authorization regression.
+  - Local component 24/24, typecheck, scoped lint and diff checks PASS. Full
+    exact-source CI includes clean migrations, pgTAP/RLS and persistent E2E.
+    UAT migration 202610050001 is applied and remote inventory matches local.
+- [x] Publish reviewed Preview and owner-authorized deployment share; verify
+  platform sign-in without a Vercel account and real Storage upload before text.
+- [x] Verify hosted browser continuation: later text retains the file version,
+  and reload/reopening preserves the uploaded file (seven combined UI checks PASS).

@@ -57,6 +57,13 @@ Vercel login. Signed-in QA writer uploaded a file through the card Files tab
 before text, and the persisted file was registered ready in Storage/database.
 Synthetic UI cards are hidden after testing; audit/file records are retained.
 
+Hosted browser continuation PASS: later text saved on the existing file version,
+and after reload/reopening the card the uploaded file remained visible. The
+initial continuation timeouts were test selector errors: populated tab names
+include count badges, and reloading closes the drawer so the test must reopen
+it. Corrected selectors and reopening passed; no application code change was
+needed. Combined hosted UI checks: seven PASS.
+
 No production deployment, global protection change, actual team account/role
 mutation, client publication, workflow/SLA change, or PR merge was performed.
 No new technology or architecture decision was introduced; no ADR is required.

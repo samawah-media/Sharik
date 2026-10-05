@@ -455,3 +455,5 @@ On 2026-07-11, T013, T016, and T017 were reopened after defect `S015-P1-019` ide
     UAT migration 202610050001 is applied and remote inventory matches local.
 - [x] Publish reviewed Preview and owner-authorized deployment share; verify
   platform sign-in without a Vercel account and real Storage upload before text.
+- [x] Verify hosted browser continuation: later text retains the file version,
+  and reload/reopening preserves the uploaded file (seven combined UI checks PASS).

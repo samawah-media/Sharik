@@ -23,6 +23,43 @@ permissions could not be verified. Owner agreed to log in; the official CLI
 device authentication request ended without completing login. No credentials
 or device codes are stored in this evidence. Sharing/protection is unchanged.
 
-No hosted migration or publication has been performed. The supplied URL is an
+At the initial checkpoint, no hosted migration or publication had been performed. The supplied URL is an
 immutable historical deployment, so any replacement Preview URL must be
 verified and handed off explicitly; never claim the old artifact was updated.
+
+## Final activation checkpoint (supersedes the initial access blocker)
+
+Owner completed official Vercel authentication and explicitly authorized team
+access without Vercel accounts. Project protection remains enabled; a shareable
+link is scoped to the new Preview and still requires platform authentication.
+The share secret is excluded from source and evidence.
+
+Reviewed application source: `8964cbde380c70e662086c87e149384ada403983`.
+Exact-source GitHub CI [37303107311](https://github.com/samawah-media/Sharik/actions/runs/37303107311)
+passed, including clean migrations, pgTAP/RLS, unit, integration, components,
+fixture and persistent E2E, secret scan and build. Draft PR:
+[39](https://github.com/samawah-media/Sharik/pull/39).
+
+Applied additive migration `202610050001` only to linked `sharik-uat`;
+remote migration inventory matches local. Published READY Preview deployment
+`dpl_7o1NyCBkBLdnNHAKeipvzk8X9XrF` at
+`https://shrik-45csp1m04-samawahs-projects.vercel.app`, with verified reviewed SHA
+metadata. The original immutable deployment remains available for rollback.
+
+Hosted backend smoke passed ten checks using separate synthetic QA actors:
+writer/designer permissions, concurrent draft reuse, empty text, unchanged
+status/progress, unassigned/client/cross-client denial, real Storage upload and
+registration, client file secrecy/download denial, authorized byte persistence,
+later text using the same version, and exactly one preparation audit event.
+
+Fresh browser reached application sign-in using the authorized share, without
+Vercel login. Signed-in QA writer uploaded a file through the card Files tab
+before text, and the persisted file was registered ready in Storage/database.
+Synthetic UI cards are hidden after testing; audit/file records are retained.
+
+No production deployment, global protection change, actual team account/role
+mutation, client publication, workflow/SLA change, or PR merge was performed.
+No new technology or architecture decision was introduced; no ADR is required.
+Specs/plan/tasks and security documentation cover the change. Human team
+acceptance remains an operational follow-up, not a substitute for the automated
+checks above.

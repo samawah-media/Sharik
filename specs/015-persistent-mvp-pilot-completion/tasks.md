@@ -447,9 +447,11 @@ On 2026-07-11, T013, T016, and T017 were reopened after defect `S015-P1-019` ide
 - [x] TP21-7 Deliver owner credentials and separate team/client guides.
 # Team files before text — 2026-10-05
 
-- [x] Add audited, scope-checked, concurrency-safe empty-version preparation (local source; database execution pending).
+- [x] Add audited, scope-checked, concurrency-safe empty-version preparation (exact-source CI and hosted UAT database PASS).
 - [x] Enable the file tab before text entry; verify preparation failures/retry and later text on the same draft (component 24/24 PASS; typecheck PASS).
-- [ ] Run component/type/lint checks and database authorization regression.
-  - Local component 24/24, typecheck, scoped lint and diff checks PASS. Database
-    execution blocked: local PostgreSQL connection fails. Additive migration is
-    not applied to hosted environments; hosted upload acceptance remains pending.
+- [x] Run component/type/lint checks and database authorization regression.
+  - Local component 24/24, typecheck, scoped lint and diff checks PASS. Full
+    exact-source CI includes clean migrations, pgTAP/RLS and persistent E2E.
+    UAT migration 202610050001 is applied and remote inventory matches local.
+- [x] Publish reviewed Preview and owner-authorized deployment share; verify
+  platform sign-in without a Vercel account and real Storage upload before text.

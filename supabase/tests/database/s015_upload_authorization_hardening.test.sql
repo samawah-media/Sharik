@@ -745,5 +745,50 @@ select is(
 );
 reset role;
 
+-- Empty-card preparation must not change workflow or publish content.
+insert into public.deliverables (
+  id, tenant_id, client_id, name, type, status, progress_percentage,
+  idempotency_key, requires_internal_approval, requires_client_approval, owner_user_id
+) values (
+  '31000000-0000-4000-8000-000000000599', '31000000-0000-4000-8000-000000000001',
+  '31000000-0000-4000-8000-000000000301', 'Files before text', 'post', 'not_started', 0,
+  'files-before-text', true, true, '31000000-0000-4000-8000-000000000203'
+);
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '31000000-0000-4000-8000-000000000203', true);
+select lives_ok($$select public.s015_prepare_file_version(
+  '31000000-0000-4000-8000-000000000301', '31000000-0000-4000-8000-000000000599')$$,
+  'assigned writer can prepare files before text');
+select lives_ok($$select public.s015_prepare_file_version(
+  '31000000-0000-4000-8000-000000000301', '31000000-0000-4000-8000-000000000599')$$,
+  'repeated preparation reuses the version');
+select throws_ok($$select public.s015_prepare_file_version(
+  '31000000-0000-4000-8000-000000000302', '31000000-0000-4000-8000-000000000599')$$,
+  '42501', 'file preparation denied', 'cross-client preparation denied');
+select set_config('request.jwt.claim.sub', '31000000-0000-4000-8000-000000000202', true);
+select throws_ok($$select public.s015_prepare_file_version(
+  '31000000-0000-4000-8000-000000000301', '31000000-0000-4000-8000-000000000599')$$,
+  '42501', 'file preparation denied', 'client cannot prepare internal attachments');
+select set_config('request.jwt.claim.sub', '31000000-0000-4000-8000-000000000204', true);
+select throws_ok($$select public.s015_prepare_file_version(
+  '31000000-0000-4000-8000-000000000301', '31000000-0000-4000-8000-000000000599')$$,
+  '42501', 'file preparation denied', 'unassigned designer cannot prepare attachments');
+reset role;
+select is((select count(*)::integer from public.deliverable_versions
+  where deliverable_id = '31000000-0000-4000-8000-000000000599'), 1,
+  'preparation creates exactly one version');
+select is((select status from public.deliverables
+  where id = '31000000-0000-4000-8000-000000000599'), 'not_started',
+  'preparation preserves card status');
+select is((select count(*)::integer from public.deliverable_versions
+  where deliverable_id = '31000000-0000-4000-8000-000000000599'
+    and status = 'draft' and content_body is null and caption is null), 1,
+  'prepared version is an empty internal draft');
+select is((select count(*)::integer from public.audit_events
+  where reason = 'prepare_internal_file_upload'
+    and target_id = (select current_version_id::text from public.deliverables
+      where id = '31000000-0000-4000-8000-000000000599')), 1,
+  'one audit event for preparation despite retry');
+
 select * from finish();
 rollback;

@@ -438,3 +438,12 @@ dependency, hosted mutation, deployment, or Production action is authorized.
 ## Owner-authorized new team pilot — 2026-09-21
 
 Complete the bounded [activation contract](evidence/team-pilot-activation-20260921.md): isolated synthetic training scope, five named real identities, project-manager application support aligned with existing DB authority, reviewed CI/Preview and actual role login/workflow verification. Owner authorizes UAT preparation/publication and in-memory administrative key use; no Production, legacy data deletion or automatic external mail.
+# Team files before text — 2026-10-05
+
+Authorized team members can upload internal files from workspace cards in any
+deliverable stage, without entering text first. If no working version exists,
+prepare an empty internal draft atomically and reuse it on concurrent/repeated
+requests. Preparing files must preserve status, progress, SLA and approval
+history. Existing current-version upload binding, role/assignment/client scope,
+durable attempt recovery and client secrecy remain mandatory. Client publication
+and final-delivery privileges are out of scope.

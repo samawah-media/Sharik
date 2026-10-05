@@ -445,3 +445,11 @@ On 2026-07-11, T013, T016, and T017 were reopened after defect `S015-P1-019` ide
 - [x] TP21-5 Provision isolated synthetic trial and five account credentials.
 - [x] TP21-6 Verify role login, workflow, isolation, persistence and mobile.
 - [x] TP21-7 Deliver owner credentials and separate team/client guides.
+# Team files before text — 2026-10-05
+
+- [x] Add audited, scope-checked, concurrency-safe empty-version preparation (local source; database execution pending).
+- [x] Enable the file tab before text entry; verify preparation failures/retry and later text on the same draft (component 24/24 PASS; typecheck PASS).
+- [ ] Run component/type/lint checks and database authorization regression.
+  - Local component 24/24, typecheck, scoped lint and diff checks PASS. Database
+    execution blocked: local PostgreSQL connection fails. Additive migration is
+    not applied to hosted environments; hosted upload acceptance remains pending.

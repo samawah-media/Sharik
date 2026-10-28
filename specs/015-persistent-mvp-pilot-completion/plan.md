@@ -322,3 +322,19 @@ This does not change the hosted publication hold or close owner acceptance.
 ## New team pilot activation — 2026-09-21
 
 Execute [activation plan](evidence/team-pilot-activation-20260921.md) under the explicit owner authorization. Keep source/CI, migrations, Preview, provisioning and role verification sequential at their dependencies; never infer human acceptance from automated checks.
+# Team files before text — implementation amendment
+
+Add a scoped, assigned-team RPC that locks the deliverable, returns its existing
+working version or creates an audited empty draft. Keep the existing upload
+pipeline and visibility matrix. Expose preparation from the file tab when no
+version exists; no new dependencies or approval/SLA changes.
+
+Owner requested hosted activation on 2026-10-05 for the existing team Preview
+`shrik-a5et0qaoa-samawahs-projects.vercel.app`. Target only
+`samawahs-projects/shrik` and linked healthy `sharik-uat` (jnvuccapgsabrwwkxnbh).
+Run reviewed-source CI/database gates before applying the one additive migration
+and publishing a replacement Preview. Preserve existing team credentials,
+application authentication, memberships and business rows. Verify assigned-team
+upload before text plus client secrecy and persistence with synthetic test data.
+Do not promote to Production or change sharing/protection while resolving
+deployment access. The supplied immutable deployment remains the rollback source.

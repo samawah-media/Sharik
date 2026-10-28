@@ -15,6 +15,7 @@ import {
   createWorkspaceFileDownload,
   createWorkspaceFilePreview,
   beginWorkspaceFileUpload,
+  prepareWorkspaceFileVersion,
   cancelWorkspaceFileUpload,
   failWorkspaceFileUpload,
   listWorkspaceFileUploadAttempts,
@@ -184,7 +185,7 @@ const formatFileSize = (bytes: number) => {
 
 export function WorkspaceFileUpload({
   deliverable,
-  currentVersionId,
+  currentVersionId: savedVersionId,
   canPublishClientFile,
   files,
   uploadAttempts,
@@ -202,6 +203,9 @@ export function WorkspaceFileUpload({
   onSafetyStateChange?: (state: WorkspaceUploadSafetyState) => void;
 }) {
   const router = useRouter();
+  const [preparedVersionId, setPreparedVersionId] = useState<string>();
+  const [preparing, setPreparing] = useState(false);
+  const currentVersionId = savedVersionId ?? preparedVersionId;
   const [uppy, setUppy] = useState<Uppy>();
   const [feedback, setFeedback] = useState<string>();
   const [uploadRows, setUploadRows] = useState<UploadRow[]>([]);
@@ -734,7 +738,30 @@ export function WorkspaceFileUpload({
     );
   };
 
-  if (!currentVersionId) return <p className="text-sm text-muted">احفظ نسخة أولًا لرفع ملفات مرتبطة بها.</p>;
+  if (!currentVersionId) return (
+    <div className="grid gap-3">
+      <p className="text-sm text-muted">يمكنك رفع الملفات قبل كتابة المحتوى النصي.</p>
+      <Button disabled={preparing} onClick={async () => {
+        setPreparing(true);
+        setFeedback(undefined);
+        try {
+          const result = await prepareWorkspaceFileVersion({ clientId: deliverable.clientId, deliverableId: deliverable.id });
+          if (result.ok) {
+            setPreparedVersionId(result.versionId);
+            onMutated?.();
+            router.refresh();
+          } else {
+            setFeedback("تعذر تجهيز رفع الملفات. حاول مجددًا.");
+          }
+        } catch {
+          setFeedback("تعذر تجهيز رفع الملفات. حاول مجددًا.");
+        } finally {
+          setPreparing(false);
+        }
+      }}>{preparing ? "جارٍ التجهيز…" : "رفع ملفات"}</Button>
+      {feedback ? <p role="status">{feedback}</p> : null}
+    </div>
+  );
   return (
     <div className="grid gap-3 rounded-xl border border-border bg-background p-4">
       {canPublishClientFile ? (

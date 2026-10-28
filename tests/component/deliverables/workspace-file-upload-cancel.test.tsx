@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableUploadAttemptWorkspace } from "@/modules/deliverables/deliverable-workspace";
 import { WorkspaceFileUpload } from "@/ui/deliverables/workspace-files";
+import { prepareWorkspaceFileVersion } from "@/server/actions/deliverable-workspace-actions";
 
 type MockUppyFile = {
   id: string;
@@ -78,6 +79,7 @@ vi.mock("@uppy/react/dashboard", () => ({
 }));
 
 vi.mock("@/server/actions/deliverable-workspace-actions", () => ({
+  prepareWorkspaceFileVersion: vi.fn(),
   beginWorkspaceFileUpload: vi.fn().mockResolvedValue({ ok: true }),
   cancelWorkspaceFileUpload: cancelUpload,
   createWorkspaceFileDownload: vi.fn(),
@@ -134,6 +136,26 @@ afterEach(() => {
 });
 
 describe("WorkspaceFileUpload", () => {
+  it("prepares files before text and opens the uploader", async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "public-key";
+    vi.mocked(prepareWorkspaceFileVersion).mockResolvedValue({ ok: true, versionId: deliverable.currentVersionId! });
+    render(<WorkspaceFileUpload canPublishClientFile={false} deliverable={{ ...deliverable, status: "not_started", currentVersionId: undefined }} />);
+    expect(screen.queryByTestId("uppy-dashboard")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "رفع ملفات" }));
+    await waitFor(() => expect(screen.getByTestId("uppy-dashboard")).toBeInTheDocument());
+    expect(prepareWorkspaceFileVersion).toHaveBeenCalledWith({ clientId: deliverable.clientId, deliverableId: deliverable.id });
+  });
+
+  it("keeps preparation failures retryable without claiming upload success", async () => {
+    vi.mocked(prepareWorkspaceFileVersion).mockResolvedValue({ ok: false });
+    render(<WorkspaceFileUpload canPublishClientFile={false} deliverable={deliverable} />);
+    fireEvent.click(screen.getByRole("button", { name: "رفع ملفات" }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("تعذر تجهيز"));
+    expect(screen.getByRole("button", { name: "رفع ملفات" })).toBeEnabled();
+    expect(screen.queryByTestId("uppy-dashboard")).not.toBeInTheDocument();
+  });
+
   it("passes the installed Arabic Dashboard locale keys to Uppy", async () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "public-key";

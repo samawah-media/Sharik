@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useRouter } from "next/navigation";
-import { useId, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
@@ -74,6 +74,12 @@ export function VersionContentForm({
       idempotencyKey: crypto.randomUUID(),
     },
   });
+
+  useEffect(() => {
+    if (!draft || form.getValues("versionId") === draft.id) return;
+    form.setValue("versionId", draft.id);
+    form.setValue("versionNumber", draft.versionNumber);
+  }, [draft, form]);
 
   if (!editable) return null;
 

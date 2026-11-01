@@ -4,7 +4,6 @@ import {
   buildTrelloCardImportPlans,
   HUSSAM_TRELLO_EXPECTED_ACTIVE_CARDS,
   HUSSAM_TRELLO_TARGET_CLIENT_ID,
-  isHussamTrelloImportAdministrator,
   trelloActionTasks,
   trelloDeliverableIdempotencyKey,
   type TrelloHussamBoard,
@@ -125,20 +124,4 @@ describe("Hussam Trello import planning", () => {
     );
   });
 
-  it.each([
-    ["tenant_owner", "tenant", true],
-    ["tenant_administrator", "tenant", true],
-    ["project_manager", "tenant", false],
-    ["tenant_administrator", "client", false],
-  ])(
-    "allows only tenant administrators: %s at %s scope",
-    (roleKey, scopeType, expected) => {
-      expect(
-        isHussamTrelloImportAdministrator({
-          tenantId: "tenant-1",
-          roleAssignments: [{ roleKey, scopeType, scopeId: "tenant-1" }],
-        }),
-      ).toBe(expected);
-    },
-  );
 });

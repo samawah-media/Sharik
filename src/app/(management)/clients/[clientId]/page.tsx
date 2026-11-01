@@ -2,7 +2,6 @@ import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import {
   HUSSAM_TRELLO_TARGET_CLIENT_ID,
-  isHussamTrelloImportAdministrator,
 } from "@/modules/imports/trello-hussam";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
@@ -109,10 +108,16 @@ export default async function ClientDetailPage({
     }).allowed;
   const canImportHussamTrello =
     client.id === HUSSAM_TRELLO_TARGET_CLIENT_ID &&
-    isHussamTrelloImportAdministrator({
-      tenantId: runtime.actor.tenantId,
-      roleAssignments: runtime.actor.roleAssignments,
-    });
+    evaluatePermission({
+      actor: runtime.actor,
+      permission: PERMISSIONS.DELIVERABLE_CREATE,
+      resource: permissionResource,
+    }).allowed &&
+    evaluatePermission({
+      actor: runtime.actor,
+      permission: PERMISSIONS.LEDGER_VIEW_SUMMARY,
+      resource: permissionResource,
+    }).allowed;
   const supabase = canUseRouteActorFixtures()
     ? undefined
     : await createSupabaseServerClient();

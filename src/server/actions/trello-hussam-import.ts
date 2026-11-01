@@ -11,7 +11,6 @@ import {
   HUSSAM_TRELLO_CONFIRMATION,
   HUSSAM_TRELLO_EXPECTED_ACTIVE_CARDS,
   HUSSAM_TRELLO_TARGET_CLIENT_ID,
-  isHussamTrelloImportAdministrator,
   trelloDueDate,
   trelloHussamBoardSchema,
   trelloTaskIdempotencyKey,
@@ -19,6 +18,8 @@ import {
   type ExistingDeliverableIdentity,
   type TrelloCardImportPlan,
 } from "@/modules/imports/trello-hussam";
+import { evaluatePermission } from "@/modules/authorization/evaluator";
+import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { projectPackageBalance } from "@/modules/packages/package-ledger";
 import { resolveRuntimeContext } from "@/server/auth/runtime-context";
 import { createDeliverableViaRpc } from "./deliverable-write-rpc";
@@ -80,17 +81,27 @@ async function authorizedImportContext(): Promise<ImportContext | undefined> {
   const runtime = await resolveRuntimeContext(supabase);
   if (!runtime.ok) return undefined;
 
-  const isAdministrator = isHussamTrelloImportAdministrator({
-    tenantId: runtime.actor.tenantId,
-    roleAssignments: runtime.actor.roleAssignments,
-  });
   const targetClient = runtime.clients.find(
     (client) =>
       client.id === HUSSAM_TRELLO_TARGET_CLIENT_ID &&
       client.tenantId === runtime.actor.tenantId &&
       client.status === "active",
   );
-  return isAdministrator && targetClient
+  const resource = {
+    tenantId: runtime.actor.tenantId,
+    clientId: HUSSAM_TRELLO_TARGET_CLIENT_ID,
+  };
+  const canCreate = evaluatePermission({
+    actor: runtime.actor,
+    permission: PERMISSIONS.DELIVERABLE_CREATE,
+    resource,
+  }).allowed;
+  const canViewBalance = evaluatePermission({
+    actor: runtime.actor,
+    permission: PERMISSIONS.LEDGER_VIEW_SUMMARY,
+    resource,
+  }).allowed;
+  return canCreate && canViewBalance && targetClient
     ? { supabase, tenantId: runtime.actor.tenantId }
     : undefined;
 }

@@ -67,12 +67,6 @@ export type TrelloCardImportPlan = {
   tasks: TrelloActionTask[];
 };
 
-type ImportRoleAssignment = {
-  roleKey: string;
-  scopeType: string;
-  scopeId: string;
-};
-
 const actionTasksByLabel = new Map<
   string,
   Omit<TrelloActionTask, "sourceLabel">
@@ -82,22 +76,6 @@ const actionTasksByLabel = new Map<
   ["محتوى بحاجة للتعميد", { key: "approve-content", title: "اعتماد المحتوى" }],
   ["تصميم يحتاج تعميد", { key: "approve-design", title: "اعتماد التصميم" }],
 ]);
-
-export function isHussamTrelloImportAdministrator({
-  tenantId,
-  roleAssignments,
-}: {
-  tenantId: string;
-  roleAssignments: ImportRoleAssignment[];
-}): boolean {
-  return roleAssignments.some(
-    (assignment) =>
-      assignment.scopeType === "tenant" &&
-      assignment.scopeId === tenantId &&
-      (assignment.roleKey === "tenant_owner" ||
-        assignment.roleKey === "tenant_administrator"),
-  );
-}
 
 export function activeHussamTrelloCards(
   board: TrelloHussamBoard,

@@ -2,29 +2,27 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   activeHussamTrelloCards,
   buildTrelloCardImportPlans,
-  HUSSAM_TRELLO_BOARD_ID,
-  HUSSAM_TRELLO_BOARD_SHORT_ID,
   HUSSAM_TRELLO_CONFIRMATION,
   HUSSAM_TRELLO_EXPECTED_ACTIVE_CARDS,
   HUSSAM_TRELLO_TARGET_CLIENT_ID,
   trelloDueDate,
-  trelloHussamBoardSchema,
   trelloTaskIdempotencyKey,
   trelloVersionIdempotencyKey,
   type ExistingDeliverableIdentity,
   type TrelloCardImportPlan,
 } from "@/modules/imports/trello-hussam";
-import { evaluatePermission } from "@/modules/authorization/evaluator";
-import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { projectPackageBalance } from "@/modules/packages/package-ledger";
-import { resolveRuntimeContext } from "@/server/auth/runtime-context";
+import {
+  authorizedHussamImportContext,
+  fetchHussamTrelloBoard,
+  type HussamImportContext,
+} from "@/server/imports/trello-hussam-context";
 import { createDeliverableViaRpc } from "./deliverable-write-rpc";
 
-type Supabase = Awaited<ReturnType<typeof createSupabaseServerClient>>;
+type Supabase = HussamImportContext["supabase"];
 
 export type PackageOption = {
   packageId: string;
@@ -59,10 +57,7 @@ export type HussamTrelloImportState = {
   remainingCount?: number;
 };
 
-type ImportContext = {
-  supabase: Supabase;
-  tenantId: string;
-};
+type ImportContext = HussamImportContext;
 
 const importConfirmationSchema = z.object({
   packageLineId: z.string().uuid(),
@@ -71,65 +66,9 @@ const importConfirmationSchema = z.object({
 });
 
 const IMPORT_BATCH_SIZE = 10;
-const MAX_TRELLO_RESPONSE_BYTES = 5_000_000;
 
 const toNumber = (value: number | string) =>
   typeof value === "number" ? value : Number(value);
-
-async function authorizedImportContext(): Promise<ImportContext | undefined> {
-  const supabase = await createSupabaseServerClient();
-  const runtime = await resolveRuntimeContext(supabase);
-  if (!runtime.ok) return undefined;
-
-  const targetClient = runtime.clients.find(
-    (client) =>
-      client.id === HUSSAM_TRELLO_TARGET_CLIENT_ID &&
-      client.tenantId === runtime.actor.tenantId &&
-      client.status === "active",
-  );
-  const resource = {
-    tenantId: runtime.actor.tenantId,
-    clientId: HUSSAM_TRELLO_TARGET_CLIENT_ID,
-  };
-  const canCreate = evaluatePermission({
-    actor: runtime.actor,
-    permission: PERMISSIONS.DELIVERABLE_CREATE,
-    resource,
-  }).allowed;
-  const canViewBalance = evaluatePermission({
-    actor: runtime.actor,
-    permission: PERMISSIONS.LEDGER_VIEW_SUMMARY,
-    resource,
-  }).allowed;
-  return canCreate && canViewBalance && targetClient
-    ? { supabase, tenantId: runtime.actor.tenantId }
-    : undefined;
-}
-
-async function fetchHussamTrelloBoard() {
-  const response = await fetch(
-    `https://trello.com/b/${HUSSAM_TRELLO_BOARD_SHORT_ID}.json`,
-    {
-      cache: "no-store",
-      headers: { accept: "application/json" },
-      signal: AbortSignal.timeout(15_000),
-    },
-  );
-  if (!response.ok) throw new Error("TRELLO_BOARD_UNAVAILABLE");
-  const declaredLength = Number(response.headers.get("content-length") ?? 0);
-  if (declaredLength > MAX_TRELLO_RESPONSE_BYTES) {
-    throw new Error("TRELLO_BOARD_TOO_LARGE");
-  }
-  const payload = await response.text();
-  if (Buffer.byteLength(payload, "utf8") > MAX_TRELLO_RESPONSE_BYTES) {
-    throw new Error("TRELLO_BOARD_TOO_LARGE");
-  }
-  const board = trelloHussamBoardSchema.parse(JSON.parse(payload));
-  if (board.id !== HUSSAM_TRELLO_BOARD_ID) {
-    throw new Error("TRELLO_BOARD_ID_MISMATCH");
-  }
-  return board;
-}
 
 async function listPackageOptions(
   supabase: Supabase,
@@ -256,7 +195,7 @@ export async function loadHussamTrelloImportPreview(): Promise<
   | { ok: true; preview: HussamTrelloImportPreview }
   | { ok: false; reason: "denied" | "unavailable" }
 > {
-  const context = await authorizedImportContext();
+  const context = await authorizedHussamImportContext();
   if (!context) return { ok: false, reason: "denied" };
   try {
     const { board, plans, packageOptions } = await buildImportPreview(context);
@@ -418,7 +357,7 @@ export async function importHussamTrelloAction(
     };
   }
 
-  const context = await authorizedImportContext();
+  const context = await authorizedHussamImportContext();
   if (!context)
     return { status: "error", message: "لا تملك صلاحية هذا الاستيراد." };
 
@@ -487,9 +426,9 @@ export async function importHussamTrelloAction(
         ? `اكتملت دفعة من ${completed} بطاقات، وسيبدأ النظام الدفعة التالية تلقائيًا.`
         : "اكتمل نقل البيانات النصية من Trello دون نقل الملفات.",
     createdCount: batch.filter((plan) => plan.state === "ready").length,
-    repairedCount: preview.plans.filter(
-      (plan) => plan.state === "incomplete_import",
-    ).slice(0, IMPORT_BATCH_SIZE).length,
+    repairedCount: preview.plans
+      .filter((plan) => plan.state === "incomplete_import")
+      .slice(0, IMPORT_BATCH_SIZE).length,
     duplicateCount: preview.plans.filter(
       (plan) => plan.state === "exact_duplicate",
     ).length,

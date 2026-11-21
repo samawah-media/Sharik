@@ -4,6 +4,7 @@ import {
   HUSSAM_TRELLO_TARGET_CLIENT_ID,
 } from "@/modules/imports/trello-hussam";
 import { loadHussamTrelloImportPreview } from "@/server/actions/trello-hussam-import";
+import { loadHussamAttachmentImportPreview } from "@/server/actions/trello-hussam-attachments";
 import { Badge } from "@/ui/core/badge";
 import { ButtonLink } from "@/ui/core/button";
 import {
@@ -18,6 +19,7 @@ import {
   ClientUnavailableState,
 } from "@/ui/shared/access-states";
 import { TrelloHussamImportForm } from "@/ui/management/trello-hussam-import-form";
+import { TrelloHussamAttachmentForm } from "@/ui/management/trello-hussam-attachment-form";
 
 export const maxDuration = 300;
 
@@ -39,7 +41,10 @@ export default async function HussamTrelloImportPage({
     return <ClientUnavailableState />;
   }
 
-  const previewResult = await loadHussamTrelloImportPreview();
+  const [previewResult, attachmentPreviewResult] = await Promise.all([
+    loadHussamTrelloImportPreview(),
+    loadHussamAttachmentImportPreview(),
+  ]);
   if (!previewResult.ok) {
     return previewResult.reason === "denied" ? (
       <AccessDeniedState returnHref={`/clients/${clientId}`} />
@@ -189,6 +194,63 @@ export default async function HussamTrelloImportPage({
             packageOptions={preview.packageOptions}
             requiredCapacity={preview.readyCount}
           />
+        )}
+      </SectionPanel>
+
+      <SectionPanel label="نقل المرفقات">
+        <h2 className="text-lg font-semibold">نقل المرفقات المؤهلة تلقائيًا</h2>
+        {!attachmentPreviewResult.ok ? (
+          <p className="mt-3 rounded-lg border border-danger/40 bg-danger/10 p-3 text-sm text-danger">
+            تعذر تحميل معاينة المرفقات. لن يبدأ أي نقل.
+          </p>
+        ) : (
+          <div className="mt-3 grid gap-4">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <SummaryCard
+                label="مرفقات مؤهلة حاليًا"
+                value={attachmentPreviewResult.preview.eligibleCount}
+              />
+              <SummaryCard
+                label="تم نقلها"
+                value={attachmentPreviewResult.preview.importedCount}
+              />
+              <SummaryCard
+                label="متبقية"
+                value={attachmentPreviewResult.preview.remainingCount}
+              />
+              <SummaryCard
+                label="مستبعدة"
+                value={
+                  attachmentPreviewResult.preview.excludedSharePointCount +
+                  attachmentPreviewResult.preview.excludedUnsupportedCount +
+                  attachmentPreviewResult.preview.excludedTooLargeCount +
+                  attachmentPreviewResult.preview.excludedUnavailableCount
+                }
+              />
+            </div>
+            <p className="text-sm leading-6 text-muted">
+              المستبعد الآن: SharePoint{" "}
+              {attachmentPreviewResult.preview.excludedSharePointCount}، نوع غير
+              مدعوم مثل PSD{" "}
+              {attachmentPreviewResult.preview.excludedUnsupportedCount}، أكبر
+              من 100MB {attachmentPreviewResult.preview.excludedTooLargeCount}،
+              ومصدر غير متاح{" "}
+              {attachmentPreviewResult.preview.excludedUnavailableCount}. روابط
+              Google Drive العامة وملفات Trello المسموحة تُنقل كملفات داخلية.
+            </p>
+            {preview.readyCount > 0 || preview.incompleteImportCount > 0 ? (
+              <p className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
+                أكمل استيراد البيانات النصية أولًا؛ المرفق لا يُنقل إلا إذا كان
+                مخرجه ونسخته موجودين بالفعل.
+              </p>
+            ) : attachmentPreviewResult.preview.remainingCount > 0 ? (
+              <TrelloHussamAttachmentForm />
+            ) : (
+              <p className="text-sm text-success">
+                لا توجد مرفقات مؤهلة متبقية.
+              </p>
+            )}
+          </div>
         )}
       </SectionPanel>
     </main>

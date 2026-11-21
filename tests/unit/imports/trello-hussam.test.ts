@@ -4,7 +4,9 @@ import {
   buildTrelloCardImportPlans,
   HUSSAM_TRELLO_EXPECTED_ACTIVE_CARDS,
   HUSSAM_TRELLO_TARGET_CLIENT_ID,
+  hussamAttachmentCandidates,
   trelloActionTasks,
+  trelloAttachmentIdempotencyKey,
   trelloDeliverableIdempotencyKey,
   type TrelloHussamBoard,
 } from "@/modules/imports/trello-hussam";
@@ -30,6 +32,7 @@ function card(
     pos: index,
     shortUrl: `https://trello.com/c/card-${index}`,
     labels: [],
+    attachments: [],
     ...overrides,
   };
 }
@@ -124,4 +127,87 @@ describe("Hussam Trello import planning", () => {
     );
   });
 
+  it("selects current Trello and Drive files while excluding PSD and SharePoint", () => {
+    const cards = [
+      {
+        ...card(1),
+        listName: activeList.name,
+        attachments: [
+          {
+            id: "png",
+            name: "design.png",
+            url: "https://trello.com/1/cards/card-1/attachments/png/download/design.png",
+            mimeType: "image/png",
+            bytes: 500,
+            isUpload: true,
+            fileName: "design.png",
+            previews: [],
+          },
+          {
+            id: "psd",
+            name: "source.psd",
+            url: "https://trello.com/1/cards/card-1/attachments/psd/download/source.psd",
+            mimeType: "image/vnd.adobe.photoshop",
+            bytes: 500,
+            isUpload: true,
+            fileName: "source.psd",
+            previews: [],
+          },
+          {
+            id: "drive",
+            name: "مرجع المشروع",
+            url: "https://drive.google.com/file/d/drive-file_1/view?usp=sharing",
+            mimeType: "",
+            bytes: null,
+            isUpload: false,
+            fileName: "view",
+            previews: [],
+          },
+          {
+            id: "sharepoint",
+            name: "ملف داخلي",
+            url: "https://tenant.sharepoint.com/:f:/r/internal",
+            mimeType: "",
+            bytes: null,
+            isUpload: false,
+            fileName: "internal",
+            previews: [],
+          },
+          {
+            id: "oversized",
+            name: "large.mp4",
+            url: "https://trello.com/1/cards/card-1/attachments/oversized/download/large.mp4",
+            mimeType: "video/mp4",
+            bytes: 104_857_601,
+            isUpload: true,
+            fileName: "large.mp4",
+            previews: [],
+          },
+        ],
+      },
+    ];
+
+    const candidates = hussamAttachmentCandidates(cards);
+    expect(
+      candidates.map(({ attachmentId, exclusion }) => [
+        attachmentId,
+        exclusion,
+      ]),
+    ).toEqual([
+      ["png", undefined],
+      ["psd", "unsupported_type"],
+      ["drive", undefined],
+      ["sharepoint", "sharepoint"],
+      ["oversized", "too_large"],
+    ]);
+    expect(candidates[2].downloadUrl).toContain(
+      "drive.usercontent.google.com/download?id=drive-file_1",
+    );
+  });
+
+  it("uses a stable per-attachment key", () => {
+    expect(trelloAttachmentIdempotencyKey("attachment-1")).toBe(
+      "trello-attachment-6a6a06dc697272f9f9cc5e9c-attachment-1",
+    );
+  });
 });

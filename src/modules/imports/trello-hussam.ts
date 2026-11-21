@@ -8,6 +8,21 @@ export const HUSSAM_TRELLO_TARGET_CLIENT_ID =
 export const HUSSAM_TRELLO_CONFIRMATION = "استيراد محتوى الحسام";
 
 const trelloLabelSchema = z.object({ name: z.string() });
+const trelloPreviewSchema = z.object({
+  url: z.string().url(),
+  bytes: z.number().int().positive(),
+  width: z.number().int().positive(),
+});
+const trelloAttachmentSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().trim().min(1),
+  url: z.string().url(),
+  mimeType: z.string(),
+  bytes: z.number().int().positive().nullable(),
+  isUpload: z.boolean(),
+  fileName: z.string(),
+  previews: z.array(trelloPreviewSchema).default([]),
+});
 const trelloListSchema = z.object({
   id: z.string().min(1),
   name: z.string().trim().min(1),
@@ -24,6 +39,7 @@ const trelloCardSchema = z.object({
   pos: z.number(),
   shortUrl: z.string().url(),
   labels: z.array(trelloLabelSchema),
+  attachments: z.array(trelloAttachmentSchema).default([]),
 });
 
 export const trelloHussamBoardSchema = z.object({
@@ -66,6 +82,38 @@ export type TrelloCardImportPlan = {
   existingDeliverableId?: string;
   tasks: TrelloActionTask[];
 };
+
+export const importedAttachmentMimeTypes = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "video/mp4",
+  "video/webm",
+  "application/pdf",
+  "text/plain",
+] as const;
+
+export type ImportedAttachmentMimeType =
+  (typeof importedAttachmentMimeTypes)[number];
+export type HussamAttachmentExclusion =
+  | "sharepoint"
+  | "unsupported_type"
+  | "too_large"
+  | "unavailable_source";
+export type HussamAttachmentCandidate = {
+  attachmentId: string;
+  cardId: string;
+  displayName: string;
+  downloadUrl: string;
+  mimeType?: ImportedAttachmentMimeType;
+  declaredBytes?: number;
+  source: "trello" | "google_drive";
+  exclusion?: HussamAttachmentExclusion;
+};
+
+const MAX_ATTACHMENT_BYTES = 104_857_600;
+const allowedAttachmentTypes = new Set<string>(importedAttachmentMimeTypes);
 
 const actionTasksByLabel = new Map<
   string,
@@ -165,4 +213,90 @@ export function buildTrelloCardImportPlans({
 
 export function trelloDueDate(due: string | null): string | null {
   return due ? due.slice(0, 10) : null;
+}
+
+function googleDriveFileId(url: string): string | undefined {
+  const match = new URL(url).pathname.match(/^\/file\/d\/([a-zA-Z0-9_-]+)\//);
+  return match?.[1];
+}
+
+export function hussamAttachmentCandidates(
+  cards: TrelloHussamCard[],
+): HussamAttachmentCandidate[] {
+  return cards.flatMap((card) =>
+    card.attachments.map((attachment) => {
+      const sourceUrl = new URL(attachment.url);
+      const base = {
+        attachmentId: attachment.id,
+        cardId: card.id,
+        displayName: attachment.name,
+      };
+      if (
+        sourceUrl.hostname === "sharepoint.com" ||
+        sourceUrl.hostname.endsWith(".sharepoint.com")
+      ) {
+        return {
+          ...base,
+          downloadUrl: attachment.url,
+          source: "trello" as const,
+          exclusion: "sharepoint" as const,
+        };
+      }
+      if (sourceUrl.hostname === "drive.google.com") {
+        const fileId = googleDriveFileId(attachment.url);
+        return fileId
+          ? {
+              ...base,
+              downloadUrl: `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`,
+              source: "google_drive" as const,
+            }
+          : {
+              ...base,
+              downloadUrl: attachment.url,
+              source: "google_drive" as const,
+              exclusion: "unavailable_source" as const,
+            };
+      }
+      const expectedTrelloPath = `/1/cards/${card.id}/attachments/${attachment.id}/download/`;
+      if (
+        !attachment.isUpload ||
+        sourceUrl.hostname !== "trello.com" ||
+        !sourceUrl.pathname.startsWith(expectedTrelloPath)
+      ) {
+        return {
+          ...base,
+          downloadUrl: attachment.url,
+          source: "trello" as const,
+          exclusion: "unavailable_source" as const,
+        };
+      }
+      if (!allowedAttachmentTypes.has(attachment.mimeType)) {
+        return {
+          ...base,
+          downloadUrl: attachment.url,
+          source: "trello" as const,
+          exclusion: "unsupported_type" as const,
+        };
+      }
+      if (!attachment.bytes || attachment.bytes > MAX_ATTACHMENT_BYTES) {
+        return {
+          ...base,
+          downloadUrl: attachment.url,
+          source: "trello" as const,
+          exclusion: "too_large" as const,
+        };
+      }
+      return {
+        ...base,
+        downloadUrl: attachment.url,
+        mimeType: attachment.mimeType as ImportedAttachmentMimeType,
+        declaredBytes: attachment.bytes,
+        source: "trello" as const,
+      };
+    }),
+  );
+}
+
+export function trelloAttachmentIdempotencyKey(attachmentId: string): string {
+  return `trello-attachment-${HUSSAM_TRELLO_BOARD_ID}-${attachmentId}`;
 }

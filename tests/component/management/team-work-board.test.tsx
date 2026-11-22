@@ -206,7 +206,7 @@ describe("team work board optimistic updates", () => {
     expect(
       await screen.findByRole("button", { name: "تغيير الحالة مخرج للتجربة" }),
     ).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "إغلاق", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: /^إغلاق$/ }));
     fireEvent.click(
       within(deniedCard!).getByRole("button", {
         name: "فتح مخرج خارج الصلاحية",

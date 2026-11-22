@@ -61,6 +61,18 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("UI3 real version content form", () => {
+  it("saves later text on the draft prepared for attachments without losing entered text", async () => {
+    const { rerender } = render(<VersionContentForm deliverable={deliverable} />);
+    fireEvent.change(screen.getByLabelText("المحتوى"), { target: { value: "نص قبل الرفع" } });
+    rerender(<VersionContentForm deliverable={deliverable} currentVersion={{ ...draft, body: undefined }} />);
+    fireEvent.click(screen.getByRole("button", { name: "حفظ مسودة" }));
+    await screen.findByText("تم حفظ المسودة.");
+    expect(saveVersion).toHaveBeenCalledWith(expect.objectContaining({
+      versionId: draft.id, versionNumber: draft.versionNumber,
+      contentBody: "نص قبل الرفع", submit: false,
+    }));
+  });
+
   it("clears a prior success before a later failed attempt without refreshing", async () => {
     const onMutationStarted = vi.fn();
     const onMutated = vi.fn();

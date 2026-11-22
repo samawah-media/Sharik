@@ -206,20 +206,9 @@ for (const surface of surfaces) {
       }
       if (surface.name === "deep management trail") {
         const trail = shell.getByRole("navigation", { name: "مسار الصفحة" });
-        expect(
-          await trail
-            .getByRole("link")
-            .evaluateAll((links) =>
-              links.map((link) => link.getAttribute("href")),
-            ),
-        ).toEqual([
-          "/portfolio",
-          "/clients",
-          "/clients/client_a",
-          "/clients/client_a/deliverables",
-        ]);
+        await expect(trail).toHaveCount(0);
         await expect(
-          trail.getByText("لوحة العمل", { exact: true }),
+          shell.getByRole("heading", { name: "لوحة العمل", exact: true }),
         ).toBeVisible();
       }
       const controls = shell
@@ -254,7 +243,7 @@ for (const surface of surfaces) {
     });
   }
 
-  test(`${surface.name}: desktop keeps the right rail and account controls`, async ({
+  test(`${surface.name}: desktop preserves navigation and account controls`, async ({
     page,
   }, testInfo) => {
     test.skip(
@@ -278,10 +267,17 @@ for (const surface of surfaces) {
       caret: "initial",
       path: testInfo.outputPath("desktop-shell-viewport.png"),
     });
-    expect(railBox!.width).toBeCloseTo(248, 0);
-    expect(railBox!.x + railBox!.width).toBeCloseTo(1440, 0);
-    expect(headerBox!.y).toBe(0);
-    expect(headerBox!.x + headerBox!.width).toBeLessThanOrEqual(railBox!.x + 1);
+    if (surface.kind === "management") {
+      expect(railBox!.width).toBeCloseTo(1440, 0);
+      expect(railBox!.height).toBeLessThanOrEqual(80);
+    } else {
+      expect(railBox!.width).toBeCloseTo(248, 0);
+      expect(railBox!.x + railBox!.width).toBeCloseTo(1440, 0);
+      expect(headerBox!.y).toBe(0);
+      expect(headerBox!.x + headerBox!.width).toBeLessThanOrEqual(
+        railBox!.x + 1,
+      );
+    }
     await expect(
       rail.getByRole("button", { name: "تسجيل الخروج" }),
     ).toBeVisible();

@@ -1,5 +1,8 @@
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
+import {
+  HUSSAM_TRELLO_TARGET_CLIENT_ID,
+} from "@/modules/imports/trello-hussam";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   fixtureManagementCommercialSummary,
@@ -98,6 +101,18 @@ export default async function ClientDetailPage({
   }).allowed;
   const canViewCommercial =
     canViewContracts &&
+    evaluatePermission({
+      actor: runtime.actor,
+      permission: PERMISSIONS.LEDGER_VIEW_SUMMARY,
+      resource: permissionResource,
+    }).allowed;
+  const canImportHussamTrello =
+    client.id === HUSSAM_TRELLO_TARGET_CLIENT_ID &&
+    evaluatePermission({
+      actor: runtime.actor,
+      permission: PERMISSIONS.DELIVERABLE_CREATE,
+      resource: permissionResource,
+    }).allowed &&
     evaluatePermission({
       actor: runtime.actor,
       permission: PERMISSIONS.LEDGER_VIEW_SUMMARY,
@@ -213,6 +228,24 @@ export default async function ClientDetailPage({
               })}
             >
               المتابعة / SLA
+            </span>
+          </CardLink>
+        ) : null}
+        {canImportHussamTrello ? (
+          <CardLink href={`/clients/${client.id}/imports/trello-hussam`}>
+            <CardHeader>
+              <CardTitle>استيراد Trello</CardTitle>
+              <CardDescription>
+                معاينة ونقل محتوى الحسام النصي بأمان.
+              </CardDescription>
+            </CardHeader>
+            <span
+              className={buttonStyles({
+                className: "mt-4",
+                variant: "secondary",
+              })}
+            >
+              فتح المعاينة
             </span>
           </CardLink>
         ) : null}

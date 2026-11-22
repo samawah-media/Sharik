@@ -138,6 +138,19 @@ export async function listWorkspaceFileUploadAttempts(
   };
 }
 
+export async function prepareWorkspaceFileVersion(input: { clientId: string; deliverableId: string }) {
+  const parsed = z.object({ clientId: z.string().uuid(), deliverableId: z.string().uuid() }).safeParse(input);
+  if (!parsed.success) return { ok: false as const };
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("s015_prepare_file_version", {
+    target_client_id: parsed.data.clientId,
+    target_deliverable_id: parsed.data.deliverableId,
+  });
+  if (error || !z.string().uuid().safeParse(data).success) return { ok: false as const };
+  revalidatePath(`/clients/${parsed.data.clientId}/deliverables/board`);
+  return { ok: true as const, versionId: data as string };
+}
+
 export async function saveOrSubmitVersionContent(
   input: z.input<typeof versionContentInputSchema>,
 ) {

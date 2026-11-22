@@ -19,6 +19,8 @@ const { moveDeliverableOnBoard } = vi.hoisted(() => ({
   moveDeliverableOnBoard: vi.fn(),
 }));
 
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+
 vi.mock(
   "@/server/actions/deliverable-workspace-actions",
   async (importOriginal) => ({
@@ -26,6 +28,22 @@ vi.mock(
       typeof import("@/server/actions/deliverable-workspace-actions")
     >()),
     moveDeliverableOnBoard,
+    fetchDeliverableWorkspace: vi.fn(async () => ({
+      ok: true,
+      workspace: {
+        deliverableId: "del-1",
+        versions: [],
+        tasks: [],
+        files: [],
+        comments: [],
+        qualityChecks: [],
+        activity: [],
+        uploadAttempts: [],
+        eligibleAssignees: [],
+        taskCapabilities: {},
+        counts: { versions: 0, tasks: 0, files: 0, comments: 0 },
+      },
+    })),
   }),
 );
 
@@ -129,9 +147,7 @@ describe("team work board optimistic updates", () => {
     await waitFor(() =>
       expect(screen.getByText(/تم حفظ الحركة/)).toBeInTheDocument(),
     );
-    fireEvent.click(
-      screen.getByRole("button", { name: /فتح مساحة المخرج/ }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "فتح مخرج للتجربة" }));
     expect(screen.getByText(/أكمل العمل/)).toBeInTheDocument();
     expect(moveDeliverableOnBoard).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -154,13 +170,11 @@ describe("team work board optimistic updates", () => {
     await waitFor(() =>
       expect(screen.getByText(/تعذر حفظ الحركة/)).toBeInTheDocument(),
     );
-    fireEvent.click(
-      screen.getByRole("button", { name: /فتح مساحة المخرج/ }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "فتح مخرج للتجربة" }));
     expect(screen.getByText(/ابدأ العمل/)).toBeInTheDocument();
   });
 
-  it("fails closed when a deliverable is missing from the capability map", () => {
+  it("fails closed when a deliverable is missing from the capability map", async () => {
     const deniedDeliverable = {
       ...mockDeliverable,
       id: "del-2",
@@ -186,13 +200,21 @@ describe("team work board optimistic updates", () => {
       .closest("article");
     expect(allowedCard).not.toBeNull();
     expect(deniedCard).not.toBeNull();
+    fireEvent.click(
+      within(allowedCard!).getByRole("button", { name: "فتح مخرج للتجربة" }),
+    );
     expect(
-      within(allowedCard!).getByRole("button", {
-        name: "تغيير الحالة مخرج للتجربة",
-      }),
+      await screen.findByRole("button", { name: "تغيير الحالة مخرج للتجربة" }),
     ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /^إغلاق$/ }));
+    fireEvent.click(
+      within(deniedCard!).getByRole("button", {
+        name: "فتح مخرج خارج الصلاحية",
+      }),
+    );
+    await screen.findByRole("heading", { name: "نظرة عامة" });
     expect(
-      within(deniedCard!).queryByRole("button", {
+      screen.queryByRole("button", {
         name: "تغيير الحالة مخرج خارج الصلاحية",
       }),
     ).not.toBeInTheDocument();

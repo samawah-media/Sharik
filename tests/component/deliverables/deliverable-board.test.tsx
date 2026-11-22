@@ -14,6 +14,28 @@ import {
 
 afterEach(() => cleanup());
 
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+
+vi.mock("@/server/actions/deliverable-workspace-actions", () => ({
+  fetchDeliverableWorkspace: vi.fn(async () => ({
+    ok: true,
+    workspace: {
+      deliverableId: "deliverable_a",
+      versions: [],
+      tasks: [],
+      files: [],
+      comments: [],
+      qualityChecks: [],
+      activity: [],
+      uploadAttempts: [],
+      eligibleAssignees: [],
+      taskCapabilities: {},
+      counts: { versions: 0, tasks: 0, files: 0, comments: 0 },
+    },
+  })),
+  moveDeliverableOnBoard: vi.fn(async () => ({ ok: true })),
+}));
+
 const deliverables: DeliverableSafeSummary[] = [
   {
     id: "deliverable_a",
@@ -102,8 +124,7 @@ describe("internal deliverable work board", () => {
     const board = renderScrollableBoard();
 
     expect(board).toHaveClass(
-      "h-[70dvh]",
-      "lg:h-[calc(100dvh-16rem)]",
+      "h-[calc(100dvh-14rem)]",
       "overflow-auto",
       "overscroll-contain",
     );
@@ -208,7 +229,7 @@ describe("internal deliverable work board", () => {
     expect(board.scrollBy).toHaveBeenCalledTimes(1);
   });
 
-  it("renders active columns, scoped cards, SLA, due dates, and status update forms", () => {
+  it("renders compact scoped cards and keeps operational controls in the workspace", async () => {
     render(
       <DeliverableBoard
         action={async () => undefined}
@@ -230,7 +251,7 @@ describe("internal deliverable work board", () => {
     ).toBeInTheDocument();
     expect(screen.getAllByTestId("kanban-column")).toHaveLength(7);
     expect(screen.getAllByTestId("kanban-column")[0]).toHaveClass(
-      "min-w-[20rem]",
+      "min-w-[17rem]",
     );
     expect(
       within(board).getByRole("region", { name: "لم يبدأ" }),
@@ -240,15 +261,19 @@ describe("internal deliverable work board", () => {
     ).toBeInTheDocument();
     expect(within(board).getAllByText("منشور إطلاق الحملة")).toHaveLength(1);
     expect(within(board).getAllByText("تصميم إعلان المنتج")).toHaveLength(1);
-    expect(document.querySelectorAll("[data-content-card]")).toHaveLength(2);
-    expect(within(board).getAllByText("أحمد العتيبي").length).toBeGreaterThan(
+    expect(document.querySelectorAll("[data-content-card]")).toHaveLength(0);
+    expect(screen.getAllByTestId("compact-board-card")).toHaveLength(2);
+    expect(within(board).getAllByTitle("أحمد العتيبي").length).toBeGreaterThan(
       0,
     );
     expect(within(board).getByText("٣ يوليو ٢٠٢٦")).toBeInTheDocument();
-    expect(within(board).getByText("0%")).toBeInTheDocument();
-    expect(within(board).getByText("70%")).toBeInTheDocument();
+    expect(within(board).getByText(/تقدم 0%/)).toBeInTheDocument();
+    expect(within(board).getByText(/تقدم 70%/)).toBeInTheDocument();
 
-    fireEvent.click(screen.getAllByText(/^تغيير الحالة/)[0]);
+    fireEvent.click(
+      screen.getByRole("button", { name: "فتح منشور إطلاق الحملة" }),
+    );
+    fireEvent.click(await screen.findByText(/^تغيير الحالة/));
 
     const firstForm = screen.getByRole("form", {
       name: "تغيير حالة منشور إطلاق الحملة",
@@ -267,7 +292,7 @@ describe("internal deliverable work board", () => {
     expect(screen.queryByText("approval log")).not.toBeInTheDocument();
   });
 
-  it("does not offer protected workflow transitions in the generic status form", () => {
+  it("does not offer protected workflow transitions in the generic status form", async () => {
     render(
       <DeliverableBoard
         action={async () => undefined}
@@ -276,15 +301,19 @@ describe("internal deliverable work board", () => {
       />,
     );
 
-    fireEvent.click(screen.getByText(/^تغيير الحالة/));
+    fireEvent.click(
+      screen.getByRole("button", { name: "فتح منشور إطلاق الحملة" }),
+    );
+    fireEvent.click(await screen.findByText(/^تغيير الحالة/));
 
-    expect(screen.getAllByRole("option")).toHaveLength(2);
+    expect(
+      within(
+        screen.getByRole("form", { name: "تغيير حالة منشور إطلاق الحملة" }),
+      ).getAllByRole("option"),
+    ).toHaveLength(2);
     expect(
       screen.queryByRole("option", { name: "بانتظار اعتماد العميل" }),
     ).not.toBeInTheDocument();
-    expect(
-      screen.getAllByText("إجراء محمي من مساحة المخرج.").length,
-    ).toBeGreaterThan(0);
   });
 
   it("keeps empty columns readable without stretching cards", () => {
@@ -319,9 +348,7 @@ describe("internal deliverable work board", () => {
     expect(
       screen.queryByRole("form", { name: /إرسال للعميل/ }),
     ).not.toBeInTheDocument();
-    expect(
-      screen.getAllByRole("button", { name: "فتح مساحة المخرج" }),
-    ).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: /^فتح / })).toHaveLength(2);
   });
 
   it("renders a safe empty state", () => {
@@ -331,5 +358,29 @@ describe("internal deliverable work board", () => {
       screen.getByRole("heading", { name: "لا توجد مخرجات على اللوحة بعد" }),
     ).toBeInTheDocument();
     expect(screen.queryByText("tenant_a")).not.toBeInTheDocument();
+  });
+
+  it("filters compact cards by search and contributing team member without changing source data", () => {
+    render(
+      <DeliverableBoard deliverables={deliverables} actorUserId="designer_a" />,
+    );
+    fireEvent.change(screen.getByLabelText("ابحث عن بطاقة"), {
+      target: { value: "غير موجود" },
+    });
+    expect(screen.queryAllByTestId("compact-board-card")).toHaveLength(0);
+    fireEvent.change(screen.getByLabelText("ابحث عن بطاقة"), {
+      target: { value: "" },
+    });
+    fireEvent.change(screen.getByLabelText("المسؤول"), {
+      target: { value: "mine" },
+    });
+    expect(screen.getAllByTestId("compact-board-card")).toHaveLength(1);
+    expect(
+      screen.getByRole("button", { name: "فتح تصميم إعلان المنتج" }),
+    ).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("المسؤول"), {
+      target: { value: "all" },
+    });
+    expect(screen.getAllByTestId("compact-board-card")).toHaveLength(2);
   });
 });

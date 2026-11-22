@@ -1,5 +1,7 @@
 # Deliverable Workspace UX: شريك
 
+> Owner update, 2026-11-22 (Spec 016): desktop details now open in a centered modal instead of a side drawer; small screens use the full viewport. Existing tab content, focus restoration, Escape handling and active/failed upload close protection are retained. This supersedes the original Drawer placement below.
+
 **المرحلة:** Phase 05 - Information Architecture, UX Model & Role-Based User Flows  
 **نوع الوثيقة:** Deliverable Workspace UX  
 **الحالة:** Draft for owner review  

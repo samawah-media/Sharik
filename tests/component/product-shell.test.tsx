@@ -392,7 +392,7 @@ describe("management product shell", () => {
     const header = screen.getByTestId("product-shell").querySelector("header");
     expect(header).not.toBeNull();
     expect(header).not.toHaveClass("backdrop-blur");
-    expect(header).toHaveClass("lg:backdrop-blur");
+    expect(header).not.toHaveClass("lg:backdrop-blur");
   });
 
   describe("client portal mobile shell", () => {

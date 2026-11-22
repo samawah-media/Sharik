@@ -1,21 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f7f8fc;
-  --foreground: #242136;
-  --muted: #635f72;
-  --border: #e6e3ee;
+  --background: #f5f7fa;
+  --foreground: #18263b;
+  --muted: #5e6b7d;
+  --border: #dde4ed;
   --surface: #ffffff;
-  --accent: #6340df;
-  --accent-soft: #eee9ff;
+  --accent: #2563eb;
+  --accent-soft: #e8f0ff;
+  --board-lane: #edf1f6;
   --success: #1a7f64;
   --warning: #a86600;
   --danger: #b42318;
-  --focus: #6340df;
+  --focus: #2563eb;
   --shell: #ffffff;
-  --shell-foreground: #242136;
-  --shell-muted: #635f72;
-  --shell-border: #e6e3ee;
+  --shell-foreground: #18263b;
+  --shell-muted: #5e6b7d;
+  --shell-border: #dde4ed;
 }
 
 @theme inline {
@@ -24,6 +25,7 @@
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-surface: var(--surface);
+  --color-board-lane: var(--board-lane);
   --color-card: var(--surface);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
@@ -73,7 +75,13 @@ a {
 }
 
 [data-product-shell] > div > aside nav a[aria-current="page"] {
-  color: var(--accent);
+  color: white;
+}
+
+.workspace-shell {
+  background-image:
+    radial-gradient(ellipse at 95% 0%, #dceaff 0%, transparent 42%),
+    radial-gradient(ellipse at 5% 15%, #e7effa 0%, transparent 38%);
 }
 
 [data-product-shell] > div > aside a:focus-visible {

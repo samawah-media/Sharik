@@ -2,9 +2,7 @@ import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { listScopedDeliverables } from "@/server/actions/deliverable-read";
 import { listScopedDeliverableWorkspaceSummaries } from "@/server/actions/deliverable-workspace-read";
-import {
-  updateDeliverableStatusAction,
-} from "@/server/actions/deliverable-status";
+import { updateDeliverableStatusAction } from "@/server/actions/deliverable-status";
 import {
   guardClientDetailRoute,
   resolveRouteRuntime,
@@ -148,7 +146,7 @@ export default async function ClientDeliverablesBoardPage({
             قائمة المخرجات
           </ButtonLink>
         }
-        description={displayClientName}
+        description={`${displayClientName} · تابع شغل الفريق وافتح أي بطاقة للتفاصيل والملفات.`}
         status={
           <div className="flex flex-wrap gap-2">
             {query?.saved === "status-updated" ? (
@@ -163,6 +161,7 @@ export default async function ClientDeliverablesBoardPage({
       />
       {visibleDeliverables.length > 0 ? (
         <DeliverableBoard
+          actorUserId={runtime.actor.userId}
           action={
             canUpdateDeliverableStatus
               ? updateDeliverableStatusAction
@@ -173,7 +172,9 @@ export default async function ClientDeliverablesBoardPage({
           }
           clientNames={{ [client.id]: displayClientName }}
           deliverables={visibleDeliverables}
-          key={visibleDeliverables.map((deliverable) => `${deliverable.id}:${deliverable.revision}`).join("|")}
+          key={visibleDeliverables
+            .map((deliverable) => `${deliverable.id}:${deliverable.revision}`)
+            .join("|")}
           workspaces={workspaces}
         />
       ) : (

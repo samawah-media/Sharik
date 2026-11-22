@@ -196,17 +196,17 @@ export function ProductShell({
 
   return (
     <section
-      className="min-h-screen bg-background text-foreground"
+      className="workspace-shell min-h-screen bg-background text-foreground"
       data-product-shell="management"
       data-testid="product-shell"
       dir="rtl"
     >
       <SessionChangeNotice />
-      <div className="grid min-h-screen grid-rows-[auto_minmax(0,1fr)] lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:grid-rows-1">
-        <aside className="min-w-0 border-b border-shell-border bg-shell px-3 py-1 text-shell-foreground lg:border-b-0 lg:border-l lg:px-3 lg:py-4">
-          <div className="mx-auto grid gap-0 lg:sticky lg:top-4 lg:gap-4">
+      <div className="grid min-h-screen grid-rows-[auto_minmax(0,1fr)]">
+        <aside className="min-w-0 px-4 pt-4 text-shell-foreground sm:px-6 lg:px-8">
+          <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-3">
             <Link
-              className="flex min-h-11 items-center gap-3 rounded-xl px-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent lg:py-2"
+              className="flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               href={homeHref}
             >
               <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-sm font-bold text-white shadow-sm shadow-black/20">
@@ -222,7 +222,7 @@ export function ProductShell({
             {navigationItems.length > 0 ? (
               <nav
                 aria-label={navigationLabel}
-                className="flex snap-x gap-2 overflow-x-auto pb-1 lg:grid lg:overflow-visible lg:pb-0"
+                className="flex max-w-full snap-x gap-1 overflow-x-auto rounded-full border border-white/80 bg-surface/85 p-1 shadow-sm"
               >
                 {navigationItems.map((item) => {
                   const Icon = shellIcons[item.icon ?? "briefcase"];
@@ -231,10 +231,10 @@ export function ProductShell({
                   return (
                     <Link
                       className={cn(
-                        "flex min-h-11 min-w-fit snap-start items-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-semibold transition-colors",
+                        "flex min-h-11 min-w-fit snap-start items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors",
                         "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
                         active
-                          ? "border-accent bg-accent-soft text-accent"
+                          ? "border-accent bg-accent text-white shadow-sm shadow-accent/20"
                           : "border-transparent text-shell-muted hover:bg-accent-soft/50 hover:text-shell-foreground",
                       )}
                       href={item.href}
@@ -248,17 +248,11 @@ export function ProductShell({
                 })}
               </nav>
             ) : null}
-            <div className="hidden rounded-xl border border-shell-border bg-background p-3 text-shell-foreground lg:grid lg:gap-2 [&_button]:border-shell-border [&_button]:hover:bg-accent-soft">
-              <p className="text-xs font-semibold text-shell-muted">
-                الحساب الحالي
-              </p>
-              <SignOutButton />
-            </div>
           </div>
         </aside>
         <div className="min-w-0">
-          <header className="sticky top-0 z-20 border-b border-border bg-background/92 px-4 py-0.5 sm:px-5 lg:py-2.5 lg:backdrop-blur">
-            <div className="mx-auto flex max-w-[90rem] flex-col gap-0 sm:flex-row sm:items-center sm:justify-between lg:gap-1.5">
+          <header className="relative z-20 px-4 py-1 sm:px-6 lg:px-8">
+            <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-1">
               <Breadcrumbs
                 pathname={pathname}
                 rootHref={breadcrumbRootHref}
@@ -281,13 +275,13 @@ export function ProductShell({
                 ) : (
                   <span>حساب الفريق</span>
                 )}
-                <span className="lg:hidden">
+                <span>
                   <SignOutButton />
                 </span>
               </div>
             </div>
           </header>
-          <div className="mx-auto w-full max-w-[90rem] px-4 py-5 sm:px-5 lg:px-6">
+          <div className="mx-auto w-full max-w-[100rem] px-4 pb-5 pt-3 sm:px-6 lg:px-8">
             {children}
           </div>
         </div>

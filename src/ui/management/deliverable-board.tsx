@@ -14,7 +14,14 @@ import {
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical } from "lucide-react";
+import {
+  Clock3,
+  GripVertical,
+  MessageSquare,
+  Paperclip,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DeliverableSafeSummary } from "@/modules/deliverables/deliverable-repository";
 import type { DeliverableWorkspaceSummary } from "@/modules/deliverables/deliverable-workspace";
@@ -31,7 +38,7 @@ import { Button } from "@/ui/core/button";
 import { EmptyState } from "@/ui/core/states";
 import { DeliverableStatusDisclosure } from "./deliverable-status-disclosure";
 import { UniversalDeliverableDrawer } from "@/ui/deliverables/universal-deliverable-drawer";
-import { DeliverableContentCard } from "@/ui/deliverables/deliverable-content-card";
+import { formatArabicDate } from "@/modules/localization/arabic-display";
 import {
   projectTeamWork,
   type TeamWorkCapabilities,
@@ -168,34 +175,6 @@ const kanbanDeniedReasonLabel = (
   }
 };
 
-const priorityTone = (priority: DeliverableSafeSummary["priority"]) => {
-  if (priority === "urgent") {
-    return "danger";
-  }
-
-  if (priority === "high") {
-    return "warning";
-  }
-
-  return "muted";
-};
-
-const slaTone = (status: SlaStatus) => {
-  if (status === "overdue") {
-    return "danger";
-  }
-
-  if (status === "at_risk" || status.startsWith("paused_")) {
-    return "warning";
-  }
-
-  if (status === "completed") {
-    return "success";
-  }
-
-  return "accent";
-};
-
 function DeliverableStatusControl({
   deliverable,
   action,
@@ -283,56 +262,96 @@ function DeliverableCard({
   });
   const statusLabel = kanbanStatusLabels[deliverable.status];
 
+  const due =
+    deliverable.internalDueDate ??
+    deliverable.clientDueDate ??
+    deliverable.finalDueDate ??
+    deliverable.plannedPublishDate;
+  const owner = deliverable.ownerDisplay;
   return (
-    <article className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface p-3 shadow-xs transition-shadow hover:shadow-md sm:p-4">
-      <DeliverableContentCard
+    <article className="min-w-0" data-testid="compact-board-card">
+      <UniversalDeliverableDrawer
+        approvalAction={approvalAction}
+        canPublishClientComment={canPublishClientComment}
         clientName={clientName}
         deliverable={deliverable}
-        statusLabel={statusLabel}
+        nextActionLabel={nextActionLabel}
         summary={summary}
-        typeLabel={getDeliverableTypeLabel(deliverable.type)}
+        operationalControl={
+          action ? (
+            <DeliverableStatusControl
+              action={action}
+              deliverable={deliverable}
+            />
+          ) : undefined
+        }
+        triggerClassName="group grid min-h-32 w-full cursor-pointer gap-2.5 rounded-xl border border-border/80 bg-surface p-3 text-right shadow-sm transition-[border-color,box-shadow] hover:border-accent/45 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+        triggerContent={
+          <>
+            <span className="flex flex-wrap items-center gap-1.5 text-xs">
+              {clientName ? (
+                <span className="max-w-40 truncate rounded-md bg-accent-soft px-2 py-0.5 font-semibold text-accent">
+                  {clientName}
+                </span>
+              ) : null}
+              <span className="rounded-md bg-background px-2 py-0.5 text-muted">
+                {getDeliverableTypeLabel(deliverable.type)}
+              </span>
+              {deliverable.priority === "urgent" ||
+              deliverable.priority === "high" ? (
+                <span className="rounded-md bg-warning/10 px-2 py-0.5 text-warning">
+                  {priorityLabels[deliverable.priority]}
+                </span>
+              ) : null}
+            </span>
+            <span
+              className="line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-foreground"
+              title={deliverable.name}
+            >
+              {deliverable.name}
+            </span>
+            <span className="flex min-h-6 items-center justify-between gap-2 text-xs text-muted">
+              <span
+                className={`inline-flex items-center gap-1 rounded-md px-1.5 py-1 ${sla.status === "overdue" ? "bg-danger/10 text-danger" : due ? "bg-accent-soft/60" : ""}`}
+                title={slaLabels[sla.status]}
+              >
+                <Clock3 aria-hidden="true" size={13} />
+                {due ? formatArabicDate(due) : "بلا موعد"}
+              </span>
+              <span className="flex items-center gap-2">
+                {Boolean(summary?.counts.files) ? (
+                  <span
+                    aria-label={`${summary?.counts.files} ملفات`}
+                    className="inline-flex items-center gap-1"
+                  >
+                    <Paperclip aria-hidden="true" size={13} />
+                    {summary?.counts.files}
+                  </span>
+                ) : null}
+                {Boolean(summary?.counts.comments) ? (
+                  <span
+                    aria-label={`${summary?.counts.comments} تعليقات`}
+                    className="inline-flex items-center gap-1"
+                  >
+                    <MessageSquare aria-hidden="true" size={13} />
+                    {summary?.counts.comments}
+                  </span>
+                ) : null}
+                <span
+                  className="grid size-6 place-items-center rounded-full border-2 border-white bg-accent-soft font-bold text-accent ring-1 ring-border"
+                  title={owner?.displayName ?? "بانتظار الإسناد"}
+                >
+                  {owner?.initial ?? "—"}
+                </span>
+              </span>
+            </span>
+            <span className="sr-only">
+              {statusLabel}، تقدم {deliverable.progressPercentage}%،{" "}
+              {slaLabels[sla.status]}
+            </span>
+          </>
+        }
       />
-      <div className="mt-4 grid gap-3">
-        <div className="flex justify-end">
-          <Badge tone="accent">{deliverable.progressPercentage}%</Badge>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Badge tone="neutral">{statusLabel}</Badge>
-          <Badge tone="muted">
-            {getDeliverableTypeLabel(deliverable.type)}
-          </Badge>
-          <Badge tone={priorityTone(deliverable.priority)}>
-            {priorityLabels[deliverable.priority]}
-          </Badge>
-          <Badge tone={slaTone(sla.status)}>{slaLabels[sla.status]}</Badge>
-        </div>
-      </div>
-      <div
-        className="mt-4 h-1.5 overflow-hidden rounded-full bg-border"
-        aria-label={`تقدم ${deliverable.progressPercentage}%`}
-        role="progressbar"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={deliverable.progressPercentage}
-      >
-        <div
-          className="h-full rounded-full bg-accent transition-all"
-          style={{ width: `${deliverable.progressPercentage}%` }}
-        />
-      </div>
-      <div className="mt-4">
-        <UniversalDeliverableDrawer
-          approvalAction={approvalAction}
-          canPublishClientComment={canPublishClientComment}
-          clientName={clientName}
-          deliverable={deliverable}
-          nextActionLabel={nextActionLabel}
-          summary={summary}
-        />
-      </div>
-      {action ? (
-        <DeliverableStatusControl action={action} deliverable={deliverable} />
-      ) : null}
     </article>
   );
 }
@@ -354,6 +373,7 @@ function DraggableDeliverableCard({
     });
   return (
     <div
+      className="group/drag relative"
       ref={setNodeRef}
       style={{
         transform: CSS.Translate.toString(transform),
@@ -363,13 +383,12 @@ function DraggableDeliverableCard({
       {canDrag ? (
         <button
           aria-label={`سحب ${deliverable.name}. استخدم مفتاح المسافة ثم الأسهم للتحريك.`}
-          className="mb-1 flex min-h-11 w-full touch-none items-center justify-center rounded-lg border border-dashed border-border bg-surface text-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+          className="absolute -end-1 top-8 z-10 flex min-h-11 min-w-11 touch-none cursor-grab items-center justify-center rounded-lg text-muted opacity-60 transition-opacity hover:bg-accent-soft hover:text-accent active:cursor-grabbing sm:opacity-0 sm:group-hover/drag:opacity-100 sm:focus-visible:opacity-100"
           type="button"
           {...listeners}
           {...attributes}
         >
           <GripVertical aria-hidden="true" size={18} />
-          <span className="ms-2 text-xs">تحريك البطاقة</span>
         </button>
       ) : null}
       {children}
@@ -399,7 +418,7 @@ function MacroLaneColumn({
   return (
     <section
       aria-label={lane.label}
-      className={`flex min-h-[32rem] w-[20rem] min-w-[20rem] flex-col rounded-xl border bg-background ${isOver && valid ? "border-accent ring-2 ring-accent/30" : "border-border"}`}
+      className={`flex min-h-80 w-[17rem] min-w-[17rem] flex-col rounded-2xl border bg-board-lane/85 ${isOver && valid ? "border-accent ring-2 ring-accent/30" : "border-border/50"}`}
       data-drop-valid={valid ? "true" : "false"}
       data-testid="kanban-column"
       ref={setNodeRef}
@@ -440,6 +459,38 @@ export function DeliverableBoard({
   capabilitiesByDeliverable?: Record<string, TeamWorkCapabilities>;
 }) {
   const [items, setItems] = useState(deliverables);
+  const [search, setSearch] = useState("");
+  const [assignee, setAssignee] = useState("all");
+  const [priority, setPriority] = useState("all");
+  const members = useMemo(
+    () => [
+      ...new Map(
+        items.flatMap((item) =>
+          [
+            ...(item.ownerDisplay ? [item.ownerDisplay] : []),
+            ...(item.contributorDisplays ?? []),
+          ].map((member) => [member.userId, member] as const),
+        ),
+      ).values(),
+    ],
+    [items],
+  );
+  const filteredItems = items.filter((item) => {
+    const query = search.trim().toLocaleLowerCase("ar");
+    return (
+      (!query ||
+        `${item.name} ${clientNames[item.clientId] ?? ""}`
+          .toLocaleLowerCase("ar")
+          .includes(query)) &&
+      (assignee === "all" ||
+        (assignee === "mine"
+          ? item.ownerUserId === actorUserId ||
+            item.contributorUserIds.includes(actorUserId ?? "")
+          : item.ownerUserId === assignee ||
+            item.contributorUserIds.includes(assignee))) &&
+      (priority === "all" || item.priority === priority)
+    );
+  });
 
   const nextActionByDeliverable = useMemo(() => {
     if (!actorUserId || !capabilitiesByDeliverable) {
@@ -468,9 +519,9 @@ export function DeliverableBoard({
   ]);
   const [activeId, setActiveId] = useState<string>();
   const [dragFeedback, setDragFeedback] = useState<string>();
-  const [pendingDeliverableIds, setPendingDeliverableIds] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [pendingDeliverableIds, setPendingDeliverableIds] = useState<
+    Set<string>
+  >(() => new Set());
   const pendingDeliverableIdsRef = useRef(new Set<string>());
   const boardRef = useRef<HTMLElement>(null);
   const sensors = useSensors(
@@ -507,9 +558,10 @@ export function DeliverableBoard({
     };
     fitBoardToViewport();
     window.addEventListener("resize", fitBoardToViewport);
-    const layoutObserver = typeof ResizeObserver === "undefined"
-      ? undefined
-      : new ResizeObserver(fitBoardToViewport);
+    const layoutObserver =
+      typeof ResizeObserver === "undefined"
+        ? undefined
+        : new ResizeObserver(fitBoardToViewport);
     if (board.parentElement) layoutObserver?.observe(board.parentElement);
 
     return () => {
@@ -650,114 +702,213 @@ export function DeliverableBoard({
   };
 
   return (
-    <section
-      aria-label="لوحة العمل"
-      className="h-[70dvh] max-w-full overflow-auto overscroll-contain px-1 pb-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent lg:h-[calc(100dvh-16rem)]"
-      data-testid="kanban-board-scroll"
-      dir="rtl"
-      onKeyDown={scrollBoardWithKeyboard}
-      ref={boardRef}
-      tabIndex={0}
-    >
-      <p className="mb-3 rounded-lg border border-border bg-surface px-3 py-2 text-sm leading-6 text-muted">
-        {protectedMoveExplanation}
-      </p>
-      {dragFeedback ? (
-        <p
-          aria-live="polite"
-          className="mb-3 rounded-lg bg-surface px-3 py-2 text-sm"
+    <div className="grid min-w-0 gap-4">
+      <div
+        className="flex flex-wrap items-center justify-between gap-3"
+        aria-label="فلاتر لوحة العمل"
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="relative block">
+            <Search
+              aria-hidden="true"
+              className="pointer-events-none absolute start-3 top-3.5 text-muted"
+              size={16}
+            />
+            <input
+              aria-label="ابحث عن بطاقة"
+              className="min-h-11 w-52 rounded-full border border-border bg-surface/80 pe-3 ps-9 text-sm outline-offset-2"
+              placeholder="ابحث عن بطاقة…"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </label>
+          <label className="sr-only" htmlFor="board-assignee">
+            المسؤول
+          </label>
+          <select
+            id="board-assignee"
+            className="min-h-11 max-w-44 rounded-full border border-border bg-surface/80 px-3 text-sm"
+            value={assignee}
+            onChange={(event) => setAssignee(event.target.value)}
+          >
+            <option value="all">كل الفريق</option>
+            {actorUserId ? <option value="mine">مهامي</option> : null}
+            {members.map((member) => (
+              <option key={member.userId} value={member.userId}>
+                {member.displayName}
+              </option>
+            ))}
+          </select>
+          <label className="sr-only" htmlFor="board-priority">
+            الأولوية
+          </label>
+          <select
+            id="board-priority"
+            className="min-h-11 rounded-full border border-border bg-surface/80 px-3 text-sm"
+            value={priority}
+            onChange={(event) => setPriority(event.target.value)}
+          >
+            <option value="all">كل الأولويات</option>
+            {Object.entries(priorityLabels).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <span className="inline-flex items-center gap-2 text-xs text-muted">
+          <SlidersHorizontal aria-hidden="true" size={14} />
+          {filteredItems.length} بطاقة
+        </span>
+      </div>
+      {members.length > 0 ? (
+        <div
+          className="flex gap-2 overflow-x-auto pb-1"
+          aria-label="الفريق على اللوحة"
         >
-          {dragFeedback}
+          {members.map((member) => (
+            <button
+              aria-pressed={assignee === member.userId}
+              key={member.userId}
+              className={`inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 rounded-full border px-3 text-xs transition-colors ${assignee === member.userId ? "border-accent bg-accent-soft text-accent" : "border-border bg-surface/70 text-muted hover:border-accent/40"}`}
+              onClick={() =>
+                setAssignee(assignee === member.userId ? "all" : member.userId)
+              }
+              type="button"
+            >
+              <span className="grid size-6 place-items-center rounded-full bg-accent-soft font-bold text-accent">
+                {member.initial}
+              </span>
+              {member.displayName}
+              <span>
+                {
+                  items.filter(
+                    (item) =>
+                      (item.ownerUserId === member.userId ||
+                        item.contributorUserIds.includes(member.userId)) &&
+                      !["delivered", "archived", "cancelled"].includes(
+                        item.status,
+                      ),
+                  ).length
+                }{" "}
+                مفتوحة
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+      {filteredItems.length === 0 ? (
+        <p
+          role="status"
+          className="rounded-xl border border-dashed border-border bg-surface/70 p-4 text-sm text-muted"
+        >
+          ما لقينا بطاقات تطابق الفلاتر. جرّب تغيير البحث أو المسؤول.
         </p>
       ) : null}
-      <DndContext
-        collisionDetection={closestCenter}
-        id="deliverables-board"
-        onDragCancel={() => setActiveId(undefined)}
-        onDragEnd={finishDrag}
-        onDragStart={({ active }) => setActiveId(String(active.id))}
-        sensors={sensors}
+      <section
+        aria-label="لوحة العمل"
+        className="h-[70dvh] max-w-full overflow-auto overscroll-contain pb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent lg:h-[calc(100dvh-19rem)]"
+        data-testid="kanban-board-scroll"
+        dir="rtl"
+        onKeyDown={scrollBoardWithKeyboard}
+        ref={boardRef}
+        tabIndex={0}
       >
-        <div className="flex min-w-max gap-4">
-          {macroLanes.map((lane) => {
-            const laneItems = items.filter((deliverable) =>
-              lane.statuses.includes(deliverable.status as never),
-            );
+        <p className="sr-only">{protectedMoveExplanation}</p>
+        {dragFeedback ? (
+          <p
+            aria-live="polite"
+            className="mb-3 rounded-lg bg-surface px-3 py-2 text-sm"
+          >
+            {dragFeedback}
+          </p>
+        ) : null}
+        <DndContext
+          collisionDetection={closestCenter}
+          id="deliverables-board"
+          onDragCancel={() => setActiveId(undefined)}
+          onDragEnd={finishDrag}
+          onDragStart={({ active }) => setActiveId(String(active.id))}
+          sensors={sensors}
+        >
+          <div className="flex min-w-max items-start gap-3">
+            {macroLanes.map((lane) => {
+              const laneItems = filteredItems.filter((deliverable) =>
+                lane.statuses.includes(deliverable.status as never),
+              );
 
-            return (
-              <MacroLaneColumn
-                activeDeliverable={activeDeliverable}
-                key={lane.id}
-                lane={lane}
-              >
-                <div className="sticky top-0 z-10 flex items-start justify-between gap-2 border-b border-border bg-background/95 p-3">
-                  <div className="min-w-0">
-                    <h2 className="truncate text-sm font-semibold">
-                      {lane.label}
-                    </h2>
-                    <p className="mt-1 text-xs text-muted">
-                      {lane.targetStatus
-                        ? "يمكن السحب هنا للتشغيل العام."
-                        : "إجراء محمي من مساحة المخرج."}
-                    </p>
+              return (
+                <MacroLaneColumn
+                  activeDeliverable={activeDeliverable}
+                  key={lane.id}
+                  lane={lane}
+                >
+                  <div className="sticky top-0 z-10 flex min-h-12 items-center justify-between gap-2 rounded-t-2xl bg-board-lane/95 px-3 py-2">
+                    <div className="min-w-0">
+                      <h2 className="truncate text-sm font-semibold">
+                        {lane.label}
+                      </h2>
+                    </div>
+                    <Badge tone="muted">{laneItems.length}</Badge>
                   </div>
-                  <Badge tone="muted">{laneItems.length}</Badge>
-                </div>
-                <div className="grid content-start gap-3 p-3">
-                  {laneItems.length > 0 ? (
-                    laneItems.map((deliverable) => {
-                      const capabilities =
-                        capabilitiesByDeliverable?.[deliverable.id];
-                      const canUpdateStatus =
-                        Boolean(action) &&
-                        (capabilitiesByDeliverable
-                          ? capabilities?.canUpdateStatus === true
-                          : true);
-                      const canApproveInternally =
-                        Boolean(approvalAction) &&
-                        (capabilitiesByDeliverable
-                          ? capabilities?.canApproveInternally === true
-                          : true);
-                      return (
-                      <DraggableDeliverableCard
-                        canDrag={
-                          canUpdateStatus &&
-                          !pendingDeliverableIds.has(deliverable.id) &&
-                          ["not_started", "in_progress"].includes(
-                            deliverable.status,
-                          )
-                        }
-                        deliverable={deliverable}
-                        key={deliverable.id}
-                      >
-                        <DeliverableCard
-                          action={canUpdateStatus ? action : undefined}
-                          approvalAction={
-                            canApproveInternally ? approvalAction : undefined
-                          }
-                          canPublishClientComment={canApproveInternally}
-                          clientName={clientNames[deliverable.clientId]}
-                          deliverable={deliverable}
-                          nextActionLabel={
-                            nextActionByDeliverable[deliverable.id]
-                          }
-                          now={now}
-                          summary={workspaces[deliverable.id]}
-                        />
-                      </DraggableDeliverableCard>
-                      );
-                    })
-                  ) : (
-                    <p className="rounded-lg border border-dashed border-border bg-surface p-4 text-sm leading-6 text-muted">
-                      ما فيه مخرجات في هذه المرحلة.
-                    </p>
-                  )}
-                </div>
-              </MacroLaneColumn>
-            );
-          })}
-        </div>
-      </DndContext>
-    </section>
+                  <div className="grid content-start gap-2.5 px-2 pb-3">
+                    {laneItems.length > 0 ? (
+                      laneItems.map((deliverable) => {
+                        const capabilities =
+                          capabilitiesByDeliverable?.[deliverable.id];
+                        const canUpdateStatus =
+                          Boolean(action) &&
+                          (capabilitiesByDeliverable
+                            ? capabilities?.canUpdateStatus === true
+                            : true);
+                        const canApproveInternally =
+                          Boolean(approvalAction) &&
+                          (capabilitiesByDeliverable
+                            ? capabilities?.canApproveInternally === true
+                            : true);
+                        return (
+                          <DraggableDeliverableCard
+                            canDrag={
+                              canUpdateStatus &&
+                              !pendingDeliverableIds.has(deliverable.id) &&
+                              ["not_started", "in_progress"].includes(
+                                deliverable.status,
+                              )
+                            }
+                            deliverable={deliverable}
+                            key={deliverable.id}
+                          >
+                            <DeliverableCard
+                              action={canUpdateStatus ? action : undefined}
+                              approvalAction={
+                                canApproveInternally
+                                  ? approvalAction
+                                  : undefined
+                              }
+                              canPublishClientComment={canApproveInternally}
+                              clientName={clientNames[deliverable.clientId]}
+                              deliverable={deliverable}
+                              nextActionLabel={
+                                nextActionByDeliverable[deliverable.id]
+                              }
+                              now={now}
+                              summary={workspaces[deliverable.id]}
+                            />
+                          </DraggableDeliverableCard>
+                        );
+                      })
+                    ) : (
+                      <p className="rounded-lg border border-dashed border-border bg-surface p-4 text-sm leading-6 text-muted">
+                        ما فيه مخرجات في هذه المرحلة.
+                      </p>
+                    )}
+                  </div>
+                </MacroLaneColumn>
+              );
+            })}
+          </div>
+        </DndContext>
+      </section>
+    </div>
   );
 }

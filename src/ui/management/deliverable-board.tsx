@@ -447,6 +447,7 @@ export function DeliverableBoard({
   now = new Date().toISOString(),
   actorUserId,
   capabilitiesByDeliverable,
+  showFilters = true,
 }: {
   deliverables: DeliverableSafeSummary[];
   action?: StatusUpdateAction;
@@ -457,6 +458,7 @@ export function DeliverableBoard({
   now?: string;
   actorUserId?: string;
   capabilitiesByDeliverable?: Record<string, TeamWorkCapabilities>;
+  showFilters?: boolean;
 }) {
   const [items, setItems] = useState(deliverables);
   const [search, setSearch] = useState("");
@@ -554,7 +556,7 @@ export function DeliverableBoard({
 
     const fitBoardToViewport = () => {
       const top = Math.max(0, board.getBoundingClientRect().top);
-      board.style.maxHeight = `${Math.max(0, window.innerHeight - top - 16)}px`;
+      board.style.height = `${Math.max(160, window.innerHeight - top - 12)}px`;
     };
     fitBoardToViewport();
     window.addEventListener("resize", fitBoardToViewport);
@@ -702,100 +704,106 @@ export function DeliverableBoard({
   };
 
   return (
-    <div className="grid min-w-0 gap-4">
-      <div
-        className="flex flex-wrap items-center justify-between gap-3"
-        aria-label="فلاتر لوحة العمل"
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="relative block">
-            <Search
-              aria-hidden="true"
-              className="pointer-events-none absolute start-3 top-3.5 text-muted"
-              size={16}
-            />
-            <input
-              aria-label="ابحث عن بطاقة"
-              className="min-h-11 w-52 rounded-full border border-border bg-surface/80 pe-3 ps-9 text-sm outline-offset-2"
-              placeholder="ابحث عن بطاقة…"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-          </label>
-          <label className="sr-only" htmlFor="board-assignee">
-            المسؤول
-          </label>
-          <select
-            id="board-assignee"
-            className="min-h-11 max-w-44 rounded-full border border-border bg-surface/80 px-3 text-sm"
-            value={assignee}
-            onChange={(event) => setAssignee(event.target.value)}
+    <div className="grid min-w-0 gap-2.5">
+      {showFilters ? (
+        <>
+          <div
+            className="flex flex-wrap items-center justify-between gap-3"
+            aria-label="فلاتر لوحة العمل"
           >
-            <option value="all">كل الفريق</option>
-            {actorUserId ? <option value="mine">مهامي</option> : null}
-            {members.map((member) => (
-              <option key={member.userId} value={member.userId}>
-                {member.displayName}
-              </option>
-            ))}
-          </select>
-          <label className="sr-only" htmlFor="board-priority">
-            الأولوية
-          </label>
-          <select
-            id="board-priority"
-            className="min-h-11 rounded-full border border-border bg-surface/80 px-3 text-sm"
-            value={priority}
-            onChange={(event) => setPriority(event.target.value)}
-          >
-            <option value="all">كل الأولويات</option>
-            {Object.entries(priorityLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <span className="inline-flex items-center gap-2 text-xs text-muted">
-          <SlidersHorizontal aria-hidden="true" size={14} />
-          {filteredItems.length} بطاقة
-        </span>
-      </div>
-      {members.length > 0 ? (
-        <div
-          className="flex gap-2 overflow-x-auto pb-1"
-          aria-label="الفريق على اللوحة"
-        >
-          {members.map((member) => (
-            <button
-              aria-pressed={assignee === member.userId}
-              key={member.userId}
-              className={`inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 rounded-full border px-3 text-xs transition-colors ${assignee === member.userId ? "border-accent bg-accent-soft text-accent" : "border-border bg-surface/70 text-muted hover:border-accent/40"}`}
-              onClick={() =>
-                setAssignee(assignee === member.userId ? "all" : member.userId)
-              }
-              type="button"
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="relative block">
+                <Search
+                  aria-hidden="true"
+                  className="pointer-events-none absolute start-3 top-3.5 text-muted lg:top-2.5"
+                  size={16}
+                />
+                <input
+                  aria-label="ابحث عن بطاقة"
+                  className="min-h-11 w-52 rounded-full border border-border bg-surface/80 pe-3 ps-9 text-sm outline-offset-2 lg:min-h-9"
+                  placeholder="ابحث عن بطاقة…"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                />
+              </label>
+              <label className="sr-only" htmlFor="board-assignee">
+                المسؤول
+              </label>
+              <select
+                id="board-assignee"
+                className="min-h-11 max-w-44 rounded-full border border-border bg-surface/80 px-3 text-sm lg:min-h-9"
+                value={assignee}
+                onChange={(event) => setAssignee(event.target.value)}
+              >
+                <option value="all">كل الفريق</option>
+                {actorUserId ? <option value="mine">مهامي</option> : null}
+                {members.map((member) => (
+                  <option key={member.userId} value={member.userId}>
+                    {member.displayName}
+                  </option>
+                ))}
+              </select>
+              <label className="sr-only" htmlFor="board-priority">
+                الأولوية
+              </label>
+              <select
+                id="board-priority"
+                className="min-h-11 rounded-full border border-border bg-surface/80 px-3 text-sm lg:min-h-9"
+                value={priority}
+                onChange={(event) => setPriority(event.target.value)}
+              >
+                <option value="all">كل الأولويات</option>
+                {Object.entries(priorityLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <span className="inline-flex items-center gap-2 text-xs text-muted">
+              <SlidersHorizontal aria-hidden="true" size={14} />
+              {filteredItems.length} بطاقة
+            </span>
+          </div>
+          {members.length > 0 ? (
+            <div
+              className="flex gap-2 overflow-x-auto pb-1"
+              aria-label="الفريق على اللوحة"
             >
-              <span className="grid size-6 place-items-center rounded-full bg-accent-soft font-bold text-accent">
-                {member.initial}
-              </span>
-              {member.displayName}
-              <span>
-                {
-                  items.filter(
-                    (item) =>
-                      (item.ownerUserId === member.userId ||
-                        item.contributorUserIds.includes(member.userId)) &&
-                      !["delivered", "archived", "cancelled"].includes(
-                        item.status,
-                      ),
-                  ).length
-                }{" "}
-                مفتوحة
-              </span>
-            </button>
-          ))}
-        </div>
+              {members.map((member) => (
+                <button
+                  aria-pressed={assignee === member.userId}
+                  key={member.userId}
+                  className={`inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 rounded-full border px-3 text-xs transition-colors lg:min-h-8 ${assignee === member.userId ? "border-accent bg-accent-soft text-accent" : "border-border bg-surface/70 text-muted hover:border-accent/40"}`}
+                  onClick={() =>
+                    setAssignee(
+                      assignee === member.userId ? "all" : member.userId,
+                    )
+                  }
+                  type="button"
+                >
+                  <span className="grid size-6 place-items-center rounded-full bg-accent-soft font-bold text-accent">
+                    {member.initial}
+                  </span>
+                  {member.displayName}
+                  <span>
+                    {
+                      items.filter(
+                        (item) =>
+                          (item.ownerUserId === member.userId ||
+                            item.contributorUserIds.includes(member.userId)) &&
+                          !["delivered", "archived", "cancelled"].includes(
+                            item.status,
+                          ),
+                      ).length
+                    }{" "}
+                    مفتوحة
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </>
       ) : null}
       {filteredItems.length === 0 ? (
         <p
@@ -807,7 +815,7 @@ export function DeliverableBoard({
       ) : null}
       <section
         aria-label="لوحة العمل"
-        className="h-[70dvh] max-w-full overflow-auto overscroll-contain pb-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent lg:h-[calc(100dvh-19rem)]"
+        className="h-[calc(100dvh-14rem)] max-w-full overflow-auto overscroll-contain pb-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
         data-testid="kanban-board-scroll"
         dir="rtl"
         onKeyDown={scrollBoardWithKeyboard}

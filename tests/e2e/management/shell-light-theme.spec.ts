@@ -104,7 +104,11 @@ for (const surface of [
       await expect(shell).toBeVisible();
       await page.evaluate(() => document.fonts.ready);
       const rail = shell.locator("aside");
-      await expect(rail).toHaveCSS("background-color", "rgb(255, 255, 255)");
+      if (surface.kind === "client") {
+        await expect(rail).toHaveCSS("background-color", "rgb(255, 255, 255)");
+      } else {
+        await expect(rail).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+      }
       // Fixture management intentionally omits sidebar nav; its role routes
       // remain covered by product-shell component tests, not invented here.
       const links = rail.getByRole("link");

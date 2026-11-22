@@ -194,6 +194,7 @@ export function TeamWorkspace({
       </div>
       {view === "board" ? (
         <DeliverableBoard
+          showFilters={false}
           action={statusAction}
           approvalAction={approvalAction}
           actorUserId={actorUserId}

@@ -75,6 +75,10 @@ a {
 }
 
 [data-product-shell] > div > aside nav a[aria-current="page"] {
+  color: var(--accent);
+}
+
+[data-product-shell="management"] > div > aside nav a[aria-current="page"] {
   color: white;
 }
 
@@ -88,6 +92,10 @@ a {
   outline-color: var(--focus);
   /* The compact brand sits too close to the viewport edge for an outward ring. */
   outline-offset: -3px;
+}
+
+[data-product-shell="management"] > div > aside nav a[aria-current="page"]:focus-visible {
+  outline-color: white;
 }
 
 :focus-visible {

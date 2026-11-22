@@ -101,3 +101,5 @@ The generic status selector offers only safe operational states (`not_started`, 
 ## Owner-approved compact board — 2026-11-22
 
 Spec 016 supersedes the original oversized card presentation: 272px lanes, compact whole-card triggers, client/type labels, title, due date, owner and file/comment counts. Full media and text remain inside the workspace. Search, priority and owner/contributor filters act on authorized in-memory summaries. The operational status alternative is in the workspace overview. Existing DndKit transitions, authorization and rollback remain unchanged.
+
+The owner's density follow-up combines brand, navigation and account utilities in one desktop row, omits redundant board breadcrumbs and shortens the heading/filter area. The board measures its top position and fills the remaining viewport, including on resize. Embedded team boards reuse their parent filters. Desktop browser acceptance requires the board to start above 240px and occupy over 60% of the viewport height.

@@ -12,10 +12,7 @@ const { pathnameState, authListeners } = vi.hoisted(() => ({
     value: "/clients/b0060000-0000-4000-8000-000000000301/deliverables/board",
   },
   authListeners: [] as Array<
-    (
-      event: string,
-      session: { user?: { id: string } | null } | null,
-    ) => void
+    (event: string, session: { user?: { id: string } | null } | null) => void
   >,
 }));
 
@@ -29,7 +26,9 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/lib/supabase/browser", () => ({
   createSupabaseBrowserClient: () => ({
     auth: {
-      onAuthStateChange: (listener: (event: string, session: unknown) => void) => {
+      onAuthStateChange: (
+        listener: (event: string, session: unknown) => void,
+      ) => {
         authListeners.push(listener as never);
         return { data: { subscription: { unsubscribe: vi.fn() } } };
       },
@@ -87,6 +86,8 @@ describe("management product shell", () => {
   });
 
   it("preserves every deep breadcrumb destination when the mobile trail becomes scrollable", () => {
+    pathnameState.value =
+      "/clients/b0060000-0000-4000-8000-000000000301/contracts/new";
     render(
       <ProductShell>
         <main>المحتوى</main>
@@ -101,9 +102,9 @@ describe("management product shell", () => {
       "/clients",
       "/clients",
       "/clients/b0060000-0000-4000-8000-000000000301",
-      "/clients/b0060000-0000-4000-8000-000000000301/deliverables",
+      "/clients/b0060000-0000-4000-8000-000000000301/contracts",
     ]);
-    expect(trail.getByText("لوحة العمل")).toBeVisible();
+    expect(trail.getByText("إضافة")).toBeVisible();
   });
 
   it.each([
@@ -153,6 +154,8 @@ describe("management product shell", () => {
   );
 
   it("renders an RTL shell with sidebar navigation, top context, breadcrumbs, and bounded content", () => {
+    pathnameState.value =
+      "/clients/b0060000-0000-4000-8000-000000000301/deliverables";
     render(
       <ProductShell>
         <main>
@@ -187,8 +190,7 @@ describe("management product shell", () => {
   });
 
   it("shows the team member's safe display name and Arabic role labels instead of the generic account label", () => {
-    const displayName =
-      "نورةالشمرينورةالشمرينورةالشمرينورةالشمرينورةالشمري";
+    const displayName = "نورةالشمرينورةالشمرينورةالشمرينورةالشمرينورةالشمري";
     render(
       <ProductShell
         accountIdentity={{
@@ -205,8 +207,9 @@ describe("management product shell", () => {
     const controls = identity.parentElement;
     expect(controls).not.toBeNull();
     expect(controls).toHaveClass("min-w-0", "max-w-full");
-    expect(identity).toHaveClass("min-w-0", "max-w-full");
-    expect(name).toHaveClass("break-words", "[overflow-wrap:anywhere]");
+    expect(identity).toHaveClass("min-w-0", "max-w-36");
+    expect(name).toHaveClass("truncate");
+    expect(name).toHaveAttribute("title", displayName);
     expect(name).toHaveTextContent(displayName);
     expect(within(identity).getByText("مدير الحساب · المصمم")).toBeVisible();
     expect(
@@ -240,7 +243,9 @@ describe("management product shell", () => {
       </ProductShell>,
     );
 
-    await emitAuthEvent("INITIAL_SESSION", { user: { id: "auth-user-initial" } });
+    await emitAuthEvent("INITIAL_SESSION", {
+      user: { id: "auth-user-initial" },
+    });
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 
     await emitAuthEvent("SIGNED_IN", { user: { id: "auth-user-second" } });
@@ -326,10 +331,7 @@ describe("management product shell", () => {
     pathnameState.value = "/portfolio";
 
     const { rerender } = render(
-      <ProductShell
-        breadcrumbRootHref="/work"
-        breadcrumbRootLabel="مهامي"
-      >
+      <ProductShell breadcrumbRootHref="/work" breadcrumbRootLabel="مهامي">
         <main>team portfolio</main>
       </ProductShell>,
     );
@@ -389,10 +391,25 @@ describe("management product shell", () => {
       </ProductShell>,
     );
 
-    const header = screen.getByTestId("product-shell").querySelector("header");
+    const header = screen.getByTestId("product-shell").querySelector("aside");
     expect(header).not.toBeNull();
     expect(header).not.toHaveClass("backdrop-blur");
     expect(header).not.toHaveClass("lg:backdrop-blur");
+  });
+
+  it("omits redundant breadcrumbs on the board while preserving the top navigation and account controls", () => {
+    render(
+      <ProductShell>
+        <main>لوحة العمل</main>
+      </ProductShell>,
+    );
+    expect(
+      screen.queryByRole("navigation", { name: "مسار الصفحة" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("navigation", { name: "تنقل الإدارة" }),
+    ).toBeVisible();
+    expect(screen.getByRole("button", { name: "تسجيل الخروج" })).toBeVisible();
   });
 
   describe("client portal mobile shell", () => {
@@ -447,8 +464,7 @@ describe("management product shell", () => {
     });
 
     it("hides a cookie-selected workspace label on a bookmarked work detail", () => {
-      pathnameState.value =
-        "/client/work/b0060000-0000-4000-8000-000000000399";
+      pathnameState.value = "/client/work/b0060000-0000-4000-8000-000000000399";
       const { rerender } = render(
         <ClientShell workspaceSelector={<p>مساحة عميل مختلف</p>}>
           <main>المخرج المصرح</main>
@@ -525,7 +541,9 @@ describe("management product shell", () => {
         </ClientShell>,
       );
 
-      await emitAuthEvent("INITIAL_SESSION", { user: { id: "auth-user-initial" } });
+      await emitAuthEvent("INITIAL_SESSION", {
+        user: { id: "auth-user-initial" },
+      });
       expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 
       await emitAuthEvent("SIGNED_IN", { user: { id: "auth-user-second" } });

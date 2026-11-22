@@ -174,7 +174,7 @@ describe("team workspace", () => {
     expect(screen.getByText(actorNextAction)).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "لوحة العمل" }));
     fireEvent.click(
-      screen.getByRole("button", { name: "فتح مساحة المخرج" }),
+      screen.getByRole("button", { name: `فتح ${actorWork.name}` }),
     );
 
     expect(screen.getByText(new RegExp(actorNextAction))).toBeVisible();

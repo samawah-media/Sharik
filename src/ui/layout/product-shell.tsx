@@ -193,6 +193,31 @@ export function ProductShell({
   notifications?: NotificationBellData;
 }) {
   const pathname = usePathname() ?? "/clients";
+  const compactBoardPage = pathname.endsWith("/deliverables/board");
+  const accountControls = (
+    <div className="flex min-h-11 min-w-0 max-w-full items-center gap-2 text-xs text-muted">
+      <NotificationBell data={notifications} />
+      {accountIdentity ? (
+        <span
+          className="grid min-w-0 max-w-36 text-right"
+          data-testid="product-shell-account-identity"
+        >
+          <span
+            className="truncate font-semibold text-foreground"
+            title={accountIdentity.displayName}
+          >
+            {accountIdentity.displayName}
+          </span>
+          <span className="truncate text-muted">
+            {accountIdentity.roleLabels.join(" · ")}
+          </span>
+        </span>
+      ) : (
+        <span>حساب الفريق</span>
+      )}
+      <SignOutButton />
+    </div>
+  );
 
   return (
     <section
@@ -203,8 +228,8 @@ export function ProductShell({
     >
       <SessionChangeNotice />
       <div className="grid min-h-screen grid-rows-[auto_minmax(0,1fr)]">
-        <aside className="min-w-0 px-4 pt-4 text-shell-foreground sm:px-6 lg:px-8">
-          <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-3">
+        <aside className="min-w-0 px-4 pt-2 text-shell-foreground sm:px-6 lg:px-8">
+          <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-x-4 gap-y-1 lg:flex-nowrap">
             <Link
               className="flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               href={homeHref}
@@ -222,7 +247,7 @@ export function ProductShell({
             {navigationItems.length > 0 ? (
               <nav
                 aria-label={navigationLabel}
-                className="flex max-w-full snap-x gap-1 overflow-x-auto rounded-full border border-white/80 bg-surface/85 p-1 shadow-sm"
+                className="order-3 flex max-w-full basis-full snap-x justify-start gap-1 overflow-x-auto rounded-full border border-white/80 bg-surface/85 p-1 shadow-sm lg:order-none lg:basis-auto lg:justify-center"
               >
                 {navigationItems.map((item) => {
                   const Icon = shellIcons[item.icon ?? "briefcase"];
@@ -231,7 +256,7 @@ export function ProductShell({
                   return (
                     <Link
                       className={cn(
-                        "flex min-h-11 min-w-fit snap-start items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors",
+                        "flex min-h-11 min-w-fit snap-start items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors lg:min-h-9 lg:py-1.5",
                         "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
                         active
                           ? "border-accent bg-accent text-white shadow-sm shadow-accent/20"
@@ -248,40 +273,27 @@ export function ProductShell({
                 })}
               </nav>
             ) : null}
+            {accountControls}
           </div>
         </aside>
         <div className="min-w-0">
-          <header className="relative z-20 px-4 py-1 sm:px-6 lg:px-8">
-            <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-1">
-              <Breadcrumbs
-                pathname={pathname}
-                rootHref={breadcrumbRootHref}
-                rootLabel={breadcrumbRootLabel}
-              />
-              <div className="flex min-h-11 min-w-0 max-w-full items-center gap-2 text-xs text-muted">
-                <NotificationBell data={notifications} />
-                {accountIdentity ? (
-                  <span
-                    className="grid min-w-0 max-w-full text-right"
-                    data-testid="product-shell-account-identity"
-                  >
-                    <span className="min-w-0 break-words font-semibold text-foreground [overflow-wrap:anywhere]">
-                      {accountIdentity.displayName}
-                    </span>
-                    <span className="text-muted">
-                      {accountIdentity.roleLabels.join(" · ")}
-                    </span>
-                  </span>
-                ) : (
-                  <span>حساب الفريق</span>
-                )}
-                <span>
-                  <SignOutButton />
-                </span>
+          {!compactBoardPage ? (
+            <header className="relative z-20 px-4 py-1 sm:px-6 lg:px-8">
+              <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-1">
+                <Breadcrumbs
+                  pathname={pathname}
+                  rootHref={breadcrumbRootHref}
+                  rootLabel={breadcrumbRootLabel}
+                />
               </div>
-            </div>
-          </header>
-          <div className="mx-auto w-full max-w-[100rem] px-4 pb-5 pt-3 sm:px-6 lg:px-8">
+            </header>
+          ) : null}
+          <div
+            className={cn(
+              "mx-auto w-full max-w-[100rem] px-4 sm:px-6 lg:px-8",
+              compactBoardPage ? "pb-2 pt-2" : "pb-5 pt-3",
+            )}
+          >
             {children}
           </div>
         </div>

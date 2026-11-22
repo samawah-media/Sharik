@@ -136,8 +136,9 @@ export default async function ClientDeliverablesBoardPage({
   });
 
   return (
-    <main className="grid gap-5" dir="rtl">
+    <main className="grid gap-2" dir="rtl">
       <PageHeader
+        className="flex-row items-center gap-2 border-0 pb-1 sm:items-center [&_h1]:text-xl [&_h1]:leading-7 [&_h1]:sm:text-xl [&_h1+div]:mt-0 [&_h1+div]:line-clamp-1 [&_h1+div]:text-xs [&_h1+div]:leading-5"
         actions={
           <ButtonLink
             href={`/clients/${client.id}/deliverables`}
@@ -146,16 +147,18 @@ export default async function ClientDeliverablesBoardPage({
             قائمة المخرجات
           </ButtonLink>
         }
-        description={`${displayClientName} · تابع شغل الفريق وافتح أي بطاقة للتفاصيل والملفات.`}
+        description={displayClientName}
         status={
-          <div className="flex flex-wrap gap-2">
-            {query?.saved === "status-updated" ? (
-              <Badge tone="success">تم تحديث حالة المخرج.</Badge>
-            ) : null}
-            {query?.saved === "denied" ? (
-              <Badge tone="danger">تعذر تنفيذ تغيير الحالة بأمان.</Badge>
-            ) : null}
-          </div>
+          query?.saved ? (
+            <div className="flex flex-wrap gap-2">
+              {query?.saved === "status-updated" ? (
+                <Badge tone="success">تم تحديث حالة المخرج.</Badge>
+              ) : null}
+              {query?.saved === "denied" ? (
+                <Badge tone="danger">تعذر تنفيذ تغيير الحالة بأمان.</Badge>
+              ) : null}
+            </div>
+          ) : undefined
         }
         title="لوحة العمل"
       />

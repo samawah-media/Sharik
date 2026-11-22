@@ -124,8 +124,7 @@ describe("internal deliverable work board", () => {
     const board = renderScrollableBoard();
 
     expect(board).toHaveClass(
-      "h-[70dvh]",
-      "lg:h-[calc(100dvh-19rem)]",
+      "h-[calc(100dvh-14rem)]",
       "overflow-auto",
       "overscroll-contain",
     );

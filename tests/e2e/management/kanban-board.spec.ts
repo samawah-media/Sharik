@@ -64,6 +64,10 @@ test("tenant admin can open the internal Kanban board from deliverables", async 
   ).toBeVisible({ timeout: 30_000 });
 
   const boardBox = await board.boundingBox();
+  if (page.viewportSize()!.width >= 1024 && boardBox) {
+    expect(boardBox.y).toBeLessThan(240);
+    expect(boardBox.height).toBeGreaterThan(page.viewportSize()!.height * 0.6);
+  }
   if (boardBox) {
     const nestedScrollProbe = board.locator(
       '[data-testid="nested-scroll-probe"]',

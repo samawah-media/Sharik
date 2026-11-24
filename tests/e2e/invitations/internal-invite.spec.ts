@@ -10,8 +10,9 @@ test("shows internal invite form and assigned-client portfolio surface", async (
   ).toBeVisible();
   await expect(page.getByLabel("اسم العضو")).toBeVisible();
   await expect(page.getByLabel("بريد العضو")).toBeVisible();
-  await expect(page.getByLabel("الدور")).toBeVisible();
-  await expect(page.getByLabel("الدور")).toHaveValue("");
+  const roles = page.getByRole("group", { name: "الدور", exact: true });
+  await expect(roles).toBeVisible();
+  await expect(roles.getByRole("radio", { checked: true })).toHaveCount(0);
   await expect(
     page.getByRole("group", { name: "العملاء الذين سيعمل عليهم" }),
   ).toBeVisible();

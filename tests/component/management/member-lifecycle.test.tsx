@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { InvitationList } from "@/ui/management/invitation-list";
 import {
@@ -145,21 +146,80 @@ describe("member lifecycle UI", () => {
     expect(within(rows[2]).getByText("عضوية معطلة")).toBeVisible();
     expect(within(rows[2]).getByText("مدير الحساب")).toBeVisible();
     expect(within(rows[2]).getByLabelText("عملاء العضو")).toHaveTextContent("جلس");
-    expect(within(rows[0]).getByText("إدارة العضو")).toBeVisible();
-    expect(within(rows[0]).getAllByRole("combobox", { name: "الدور" })).toHaveLength(2);
-    expect(within(rows[0]).getAllByRole("option", { name: "مدير المشروع" })).toHaveLength(2);
-    expect(within(rows[1]).queryByRole("option", { name: "مدير المشروع" })).not.toBeInTheDocument();
+    fireEvent.click(within(rows[0]).getByText("إدارة العضو"));
+    fireEvent.click(within(rows[1]).getByText("إدارة العضو"));
+    expect(within(rows[0]).getAllByRole("group", { name: "الدور" })).toHaveLength(2);
+    expect(within(rows[0]).getAllByRole("radio", { name: "مدير المشروع" })).toHaveLength(2);
+    expect(within(rows[1]).queryByRole("radio", { name: "مدير المشروع" })).not.toBeInTheDocument();
+    expect(within(rows[1]).getByRole("region", { name: "معاينة الصلاحيات" })).toHaveTextContent("مساحة سماوة");
     expect(within(rows[0]).getAllByRole("combobox", { name: "نطاق العميل" })).toHaveLength(2);
     expect(within(rows[0]).getByRole("option", { name: "Glass Studio (غير نشط)" })).toBeInTheDocument();
     expect(within(rows[0]).getAllByRole("button", { name: "حفظ التعديل" })).toHaveLength(2);
     expect(within(rows[0]).getAllByRole("button", { name: "إزالة نطاق العميل" })).toHaveLength(2);
     expect(within(rows[0]).getAllByLabelText(/أؤكد إزالة دور .* للعضو «سارة مصممة المحتوى» من العميل/)).toHaveLength(2);
-    fireEvent.click(within(rows[0]).getByText("إدارة العضو"));
     expect(within(rows[0]).getByLabelText("اكتب «تعطيل» للتأكيد")).toBeRequired();
     expect(within(rows[0]).getByText(/سيُعطّل دخول «سارة مصممة المحتوى»/)).toBeVisible();
     expect(within(rows[0]).getByRole("button", { name: "تعطيل العضوية" })).toBeVisible();
     expect(within(rows[2]).queryByText("إدارة العضو")).not.toBeInTheDocument();
     expect(directory).not.toHaveTextContent(/membership-|user-|assignment-|client-|tenant-|content_writer|account_manager/);
+  });
+
+  it("previews and saves the replacement role and client for the same assignment", async () => {
+    const user = userEvent.setup();
+    let submittedAssignment: Record<string, FormDataEntryValue> | undefined;
+    render(
+      <InternalTeamDirectory
+        members={[{
+          membershipId: "membership-sara",
+          userId: "user-sara",
+          displayName: "سارة",
+          status: "active",
+          roleKeys: ["designer"],
+          clientNames: ["هدنة"],
+          assignments: [{
+            assignmentId: "assignment-sara",
+            roleKey: "designer",
+            scopeType: "client",
+            scopeId: "client-hudna",
+            scopeName: "هدنة",
+            status: "active",
+          }],
+          availableClients: [
+            { clientId: "client-hudna", clientName: "هدنة" },
+            { clientId: "client-glass", clientName: "Glass Studio" },
+          ],
+        }]}
+        updateAssignmentAction={async (_previousState, formData) => {
+          submittedAssignment = Object.fromEntries(formData);
+          return { status: "success", message: "تم حفظ التغيير." };
+        }}
+      />,
+    );
+
+    await user.click(screen.getByText("إدارة العضو"));
+    expect(screen.getByRole("radio", { name: "المصمم" })).toBeChecked();
+
+    await user.click(screen.getByRole("radio", { name: "مدير المشروع" }));
+    await user.selectOptions(screen.getByRole("combobox", { name: "نطاق العميل" }), "client-glass");
+
+    const preview = screen.getByRole("region", { name: "معاينة الصلاحيات" });
+    expect(preview).toHaveTextContent("مدير المشروع");
+    expect(preview).toHaveTextContent("Glass Studio");
+    expect(preview).not.toHaveTextContent("هدنة");
+
+    await user.type(screen.getByLabelText("سبب التعديل"), "إعادة توزيع العملاء");
+    await user.click(screen.getByRole("button", { name: "حفظ التعديل" }));
+
+    expect(await screen.findByText("تم حفظ التغيير.")).toBeVisible();
+    expect(submittedAssignment).toMatchObject({
+      membershipId: "membership-sara",
+      assignmentId: "assignment-sara",
+      scopeType: "client",
+      scopeId: "client-glass",
+      roleKey: "project_manager",
+      reason: "إعادة توزيع العملاء",
+      idempotencyKey: expect.stringMatching(/^member-update-/u),
+    });
   });
 
   it("keeps the empty directory honest without placeholder members", () => {

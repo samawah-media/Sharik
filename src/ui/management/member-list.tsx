@@ -11,6 +11,11 @@ import {
   type InternalTeamMember,
   type InternalTeamMemberAssignment,
 } from "@/server/actions/internal-team-members";
+import {
+  TeamAccessPreview,
+  TeamRolePicker,
+  type TeamRoleOption,
+} from "./team-role-access";
 
 type MemberMutationAction = (
   previousState: MemberActionState,
@@ -53,6 +58,12 @@ function AssignmentEditor({
   updateAction: MemberMutationAction;
   removeAction: MemberMutationAction;
 }) {
+  const roles: readonly TeamRoleOption[] =
+    assignment.scopeType === "tenant" ? tenantRoleOptions : clientRoleOptions;
+  const [selectedRole, setSelectedRole] = useState<TeamRoleOption | "">(
+    roles.includes(assignment.roleKey) ? assignment.roleKey : "",
+  );
+  const [selectedScopeId, setSelectedScopeId] = useState(assignment.scopeId);
   const [updateKey, setUpdateKey] = useState(() => crypto.randomUUID());
   const [removeKey, setRemoveKey] = useState(() => crypto.randomUUID());
   const [updateState, updateFormAction, updatePending] = useActionState(
@@ -71,7 +82,6 @@ function AssignmentEditor({
     },
     initialMemberActionState,
   );
-  const roles = assignment.scopeType === "tenant" ? tenantRoleOptions : clientRoleOptions;
   const availableClients = member.availableClients ?? [];
   const currentClientIsAvailable = availableClients.some(
     (client) => client.clientId === assignment.scopeId,
@@ -79,35 +89,35 @@ function AssignmentEditor({
   const clientOptions = assignment.scopeType === "client" && !currentClientIsAvailable
     ? [{ clientId: assignment.scopeId, clientName: `${assignment.scopeName} (غير نشط)` }, ...availableClients]
     : availableClients;
+  const selectedScopeName = assignment.scopeType === "tenant"
+    ? assignment.scopeName
+    : clientOptions.find((client) => client.clientId === selectedScopeId)?.clientName;
 
   return (
-    <div className="grid gap-3 rounded-lg border border-border bg-background p-3">
-      <form action={updateFormAction} className="grid gap-3 sm:grid-cols-2">
+    <div className="grid min-w-0 gap-3 rounded-lg border border-border bg-background p-3">
+      <form action={updateFormAction} className="grid min-w-0 gap-3 sm:grid-cols-2">
         <input name="membershipId" type="hidden" value={member.membershipId} />
         <input name="assignmentId" type="hidden" value={assignment.assignmentId} />
         <input name="scopeType" type="hidden" value={assignment.scopeType} />
         <input name="idempotencyKey" type="hidden" value={`member-update-${updateKey}`} />
-        <label className="grid gap-1 text-sm font-medium">
-          الدور
-          <select
-            aria-label="الدور"
-            className="min-h-11 rounded-md border border-border bg-surface px-3"
-            defaultValue={assignment.roleKey}
-            name="roleKey"
-          >
-            {roles.map((roleKey) => (
-              <option key={roleKey} value={roleKey}>{roleLabelAr(roleKey)}</option>
-            ))}
-          </select>
-        </label>
+        <div className="min-w-0 sm:col-span-2">
+          <TeamRolePicker
+            disabled={updatePending}
+            onRoleChange={setSelectedRole}
+            options={roles}
+            selectedRole={selectedRole}
+          />
+        </div>
         {assignment.scopeType === "client" ? (
-          <label className="grid gap-1 text-sm font-medium">
+          <label className="grid min-w-0 gap-1 text-sm font-medium">
             نطاق العميل
             <select
               aria-label="نطاق العميل"
-              className="min-h-11 rounded-md border border-border bg-surface px-3"
-              defaultValue={assignment.scopeId}
+              className="min-h-11 w-full rounded-md border border-border bg-surface px-3"
+              disabled={updatePending}
               name="scopeId"
+              onChange={(event) => setSelectedScopeId(event.target.value)}
+              value={selectedScopeId}
             >
               {clientOptions.map((client) => (
                 <option key={client.clientId} value={client.clientId}>{client.clientName}</option>
@@ -117,7 +127,7 @@ function AssignmentEditor({
         ) : (
           <input name="scopeId" type="hidden" value={assignment.scopeId} />
         )}
-        <label className="grid gap-1 text-sm font-medium sm:col-span-2">
+        <label className="grid min-w-0 gap-1 text-sm font-medium">
           سبب التعديل
           <input
             className="min-h-11 rounded-md border border-border bg-surface px-3"
@@ -128,6 +138,12 @@ function AssignmentEditor({
             required
           />
         </label>
+        <div className="min-w-0 sm:col-span-2">
+          <TeamAccessPreview
+            role={selectedRole}
+            scopeNames={selectedScopeName ? [selectedScopeName] : []}
+          />
+        </div>
         <button
           className="min-h-11 rounded-md bg-accent px-4 text-sm font-semibold text-accent-foreground disabled:opacity-60"
           disabled={updatePending}

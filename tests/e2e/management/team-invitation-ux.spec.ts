@@ -5,12 +5,14 @@ test("keeps team invitation scope explicit, compact, and overflow-free", async (
 }, testInfo) => {
   await page.goto("/invitations/internal", { waitUntil: "domcontentloaded" });
 
-  const role = page.getByLabel("الدور");
+  const roles = page.getByRole("group", { name: "الدور", exact: true });
+  const designer = roles.getByRole("radio", { name: "المصمم", exact: true });
+  const preview = page.getByRole("region", { name: "معاينة الصلاحيات" });
   const hadna = page.getByRole("checkbox", { name: "هدنة" });
   const secondClient = page.getByRole("checkbox", { name: "عميل تجريبي ب" });
   const submit = page.getByRole("button", { name: "إنشاء رابط الدعوة" });
 
-  await expect(role).toHaveValue("");
+  await expect(roles.getByRole("radio", { checked: true })).toHaveCount(0);
   await expect(hadna).not.toBeChecked();
   await expect(secondClient).not.toBeChecked();
   await expect(submit).toBeDisabled();
@@ -19,8 +21,17 @@ test("keeps team invitation scope explicit, compact, and overflow-free", async (
   await secondClient.check();
   await expect(submit).toBeDisabled();
 
-  await role.selectOption("designer");
+  await expect(designer).toBeEnabled();
+  await designer.focus();
+  await page.keyboard.press("Space");
+  await expect(designer).toBeChecked();
   await expect(submit).toBeEnabled();
+  await expect(preview).toContainText("المصمم");
+  await expect(preview).toContainText("هدنة");
+  await expect(preview).toContainText("عميل تجريبي ب");
+
+  await secondClient.uncheck();
+  await expect(preview).not.toContainText("عميل تجريبي ب");
 
   await expect(page.getByText("عضو مقبول يظهر في الفريق")).toHaveCount(0);
   await expect(page.getByText("دعوات بانتظار القبول")).toBeVisible();

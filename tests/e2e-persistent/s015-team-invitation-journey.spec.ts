@@ -20,10 +20,11 @@ test("a scoped team invitation is created, denied to the wrong email, and accept
   const form = page.getByRole("form", { name: "دعوة عضو داخلي" });
   await form.getByLabel("اسم العضو").fill("مصمم العميل الثاني");
   await form.getByLabel("بريد العضو").fill(invitedActor.email);
-  await form.getByLabel("الدور").selectOption("designer");
+  await form.getByRole("radio", { name: "المصمم", exact: true }).press("Space");
   const invitedClient = form.getByRole("checkbox", { name: "Glass", exact: true });
   await expect(invitedClient).toHaveValue(seed.clientB);
   await invitedClient.check();
+  await expect(form.getByRole("region", { name: "معاينة الصلاحيات" })).toContainText("Glass");
   await form.getByRole("button", { name: "إنشاء رابط الدعوة" }).click();
 
   await expect(

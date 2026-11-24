@@ -1,5 +1,6 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import type { InvitationActionState } from "@/modules/invitations/internal-team-invitation-state";
 import { InternalInvitationAcceptance } from "@/ui/invitations/internal-invitation-acceptance";
 import { AssignedClients } from "@/ui/management/assigned-clients";
 import {
@@ -35,60 +36,86 @@ describe("internal invitation UI", () => {
     ).toBeInTheDocument();
   });
 
-  it.each(["designer", "project_manager"])("allows scoped invitation for %s", (roleKey) => {
-    render(
-      <InternalInviteForm
-        clients={[
-          {
-            id: "00000000-0000-4000-8000-000000000101",
-            name: "هدنة",
-          },
-          {
-            id: "00000000-0000-4000-8000-000000000102",
-            name: "جلس",
-          },
-        ]}
-      />,
-    );
-
-    expect(
-      screen.getByRole("form", { name: "دعوة عضو داخلي" }),
-    ).toBeInTheDocument();
-    expect(screen.getByLabelText("اسم العضو")).toBeRequired();
-    expect(screen.getByLabelText("بريد العضو")).toBeRequired();
-    expect(screen.getByLabelText("الدور")).toBeRequired();
-    expect(screen.getByLabelText("الدور")).toHaveValue("");
-    expect(screen.getByRole("option", { name: "اختر الدور" })).toBeDisabled();
-    expect(
-      screen.getByRole("group", { name: "العملاء الذين سيعمل عليهم" }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("checkbox", { name: "هدنة" })).not.toBeChecked();
-    expect(screen.getByRole("checkbox", { name: "جلس" })).not.toBeChecked();
-    expect(
-      screen.getByRole("button", { name: "إنشاء رابط الدعوة" }),
-    ).toBeDisabled();
-    expect(screen.getByRole("checkbox", { name: "هدنة" })).toHaveAttribute(
-      "value",
-      "00000000-0000-4000-8000-000000000101",
-    );
-    expect(screen.queryByRole("option", { name: "Client B" })).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("checkbox", { name: "هدنة" }));
-    fireEvent.click(screen.getByRole("checkbox", { name: "جلس" }));
-
-    expect(screen.getByRole("checkbox", { name: "هدنة" })).toBeChecked();
-    expect(screen.getByRole("checkbox", { name: "جلس" })).toBeChecked();
-    expect(
-      screen.getByRole("button", { name: "إنشاء رابط الدعوة" }),
-    ).toBeDisabled();
-
-    fireEvent.change(screen.getByLabelText("الدور"), {
-      target: { value: roleKey },
+  it.each([
+    { roleKey: "designer", roleLabel: "المصمم", canApproveInternally: false },
+    { roleKey: "project_manager", roleLabel: "مدير المشروع", canApproveInternally: true },
+  ])("previews and sends the selected $roleKey role for the invited clients", async ({
+    roleKey,
+    roleLabel,
+    canApproveInternally,
+  }) => {
+    const clients = [
+      { id: "00000000-0000-4000-8000-000000000101", name: "هدنة" },
+      { id: "00000000-0000-4000-8000-000000000102", name: "جلس" },
+      { id: "00000000-0000-4000-8000-000000000103", name: "زهر" },
+    ];
+    const action = vi.fn<(
+      state: InvitationActionState,
+      formData: FormData,
+    ) => Promise<InvitationActionState>>().mockResolvedValue({
+      status: "success",
+      message: "تم إنشاء الدعوة.",
+      invitationPath: "/invite/generated-test-link",
     });
 
-    expect(
-      screen.getByRole("button", { name: "إنشاء رابط الدعوة" }),
-    ).toBeEnabled();
+    render(<InternalInviteForm action={action} clients={clients} />);
+
+    expect(screen.getByRole("form", { name: "دعوة عضو داخلي" })).toBeInTheDocument();
+    const nameInput = screen.getByLabelText("اسم العضو");
+    const emailInput = screen.getByLabelText("بريد العضو");
+    expect(nameInput).toBeRequired();
+    expect(emailInput).toBeRequired();
+
+    const roleGroup = screen.getByRole("group", { name: "الدور" });
+    const roleCard = within(roleGroup).getByRole("radio", { name: roleLabel });
+    expect(roleCard).toBeRequired();
+    expect(within(roleGroup).queryByRole("radio", { checked: true })).not.toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "العملاء الذين سيعمل عليهم" })).toBeInTheDocument();
+
+    const inviteButton = screen.getByRole("button", { name: "إنشاء رابط الدعوة" });
+    expect(inviteButton).toBeDisabled();
+    fireEvent.click(roleCard);
+    expect(roleCard).toBeChecked();
+    expect(inviteButton).toBeDisabled();
+
+    const firstClient = screen.getByRole("checkbox", { name: "هدنة" });
+    const secondClient = screen.getByRole("checkbox", { name: "جلس" });
+    expect(firstClient).not.toBeChecked();
+    expect(secondClient).not.toBeChecked();
+    fireEvent.click(firstClient);
+    fireEvent.click(secondClient);
+
+    const preview = screen.getByRole("region", { name: "معاينة الصلاحيات" });
+    expect(preview).toHaveTextContent(roleLabel);
+    expect(preview).toHaveTextContent("هدنة");
+    expect(preview).toHaveTextContent("جلس");
+    expect(preview).not.toHaveTextContent("زهر");
+    expect(within(preview).getByText("تقديم نسخ العمل للمراجعة")).toBeVisible();
+    const internalApproval = within(preview).queryByText("الاعتماد الداخلي للمخرجات");
+    if (canApproveInternally) {
+      expect(internalApproval).toBeVisible();
+    } else {
+      expect(internalApproval).not.toBeInTheDocument();
+    }
+
+    fireEvent.click(secondClient);
+    expect(preview).not.toHaveTextContent("جلس");
+    fireEvent.click(secondClient);
+    expect(inviteButton).toBeEnabled();
+
+    fireEvent.change(nameInput, { target: { value: "سارة محمد" } });
+    fireEvent.change(emailInput, { target: { value: "member@example.test" } });
+    fireEvent.click(inviteButton);
+
+    expect(await screen.findByRole("link", { name: "فتح رابط الدعوة" })).toHaveAttribute(
+      "href",
+      "/invite/generated-test-link",
+    );
+    const invitation = action.mock.calls[0]?.[1];
+    expect(invitation?.get("displayName")).toBe("سارة محمد");
+    expect(invitation?.get("email")).toBe("member@example.test");
+    expect(invitation?.getAll("roleKey")).toEqual([roleKey]);
+    expect(invitation?.getAll("clientIds")).toEqual([clients[0].id, clients[1].id]);
   });
 
   it("does not repeat accepted members in the invitation lifecycle list", () => {

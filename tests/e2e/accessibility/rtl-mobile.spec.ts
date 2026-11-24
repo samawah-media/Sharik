@@ -47,7 +47,7 @@ test("forms and dialogs keep labels and visible focus", async ({ page }) => {
   const emailInput = page.getByLabel("بريد العضو");
 
   await expect(emailInput).toBeVisible();
-  await expect(page.getByLabel("الدور")).toBeVisible();
+  await expect(page.getByRole("group", { name: "الدور", exact: true })).toBeVisible();
 
   for (let index = 0; index < 24; index += 1) {
     if (await emailInput.evaluate((element) => element === document.activeElement)) {

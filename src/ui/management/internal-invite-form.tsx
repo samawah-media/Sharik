@@ -1,12 +1,23 @@
 "use client";
 
 import { useActionState, useState, useSyncExternalStore } from "react";
-import { roleLabelAr } from "@/modules/roles/role-labels";
 import {
   initialInvitationActionState,
   type InvitationActionState,
 } from "@/modules/invitations/internal-team-invitation-state";
 import { Button } from "@/ui/core/button";
+import {
+  TeamAccessPreview,
+  TeamRolePicker,
+  type TeamRoleOption,
+} from "./team-role-access";
+
+const internalInviteRoleOptions = [
+  "project_manager",
+  "account_manager",
+  "content_writer",
+  "designer",
+] as const satisfies readonly TeamRoleOption[];
 
 const subscribeToHydration = () => () => undefined;
 
@@ -74,13 +85,17 @@ export function InternalInviteForm({
     action ?? (async () => initialInvitationActionState),
     initialInvitationActionState,
   );
-  const [selectedRoleKey, setSelectedRoleKey] = useState("");
+  const [selectedRoleKey, setSelectedRoleKey] = useState<TeamRoleOption | "">("");
   const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
   const hydrated = useSyncExternalStore(
     subscribeToHydration,
     () => true,
     () => false,
   );
+
+  const selectedClientNames = clients
+    .filter((client) => selectedClientIds.includes(client.id))
+    .map((client) => client.name);
 
   return (
     <form action={formAction} aria-label="دعوة عضو داخلي" dir="rtl">
@@ -108,25 +123,12 @@ export function InternalInviteForm({
             type="email"
           />
         </label>
-        <label className="grid gap-2 text-sm font-medium">
-          الدور
-          <select
-            className="min-h-11 rounded-xl border border-border bg-background px-3 py-2"
-            disabled={!hydrated || pending}
-            name="roleKey"
-            onChange={(event) => setSelectedRoleKey(event.target.value)}
-            required
-            value={selectedRoleKey}
-          >
-            <option disabled value="">
-              اختر الدور
-            </option>
-            <option value="project_manager">{roleLabelAr("project_manager")}</option>
-            <option value="account_manager">{roleLabelAr("account_manager")}</option>
-            <option value="content_writer">{roleLabelAr("content_writer")}</option>
-            <option value="designer">{roleLabelAr("designer")}</option>
-          </select>
-        </label>
+        <TeamRolePicker
+          disabled={!hydrated || pending}
+          onRoleChange={setSelectedRoleKey}
+          options={internalInviteRoleOptions}
+          selectedRole={selectedRoleKey}
+        />
         <fieldset
           aria-describedby="invitation-client-scope-help"
           className="grid gap-3 rounded-xl border border-border bg-background p-3"
@@ -176,13 +178,14 @@ export function InternalInviteForm({
           صلاحية قبل تسجيل الدخول بنفس البريد وقبول الدعوة. إرسال البريد غير
           مفعّل في هذه المرحلة.
         </p>
+        <TeamAccessPreview role={selectedRoleKey} scopeNames={selectedClientNames} />
         <InvitationActionFeedback state={state} />
         <Button
           className="w-fit"
           disabled={
             !hydrated ||
             selectedRoleKey === "" ||
-            selectedClientIds.length === 0 ||
+            selectedClientNames.length === 0 ||
             pending
           }
           type="submit"

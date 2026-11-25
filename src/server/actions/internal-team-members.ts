@@ -66,6 +66,7 @@ type InternalTeamMemberRow = {
   membership_id: string;
   user_id: string;
   display_name: string;
+  email: string | null;
   membership_status: "active" | "disabled";
   role_keys: string[];
   client_names: string[];
@@ -91,6 +92,7 @@ export type InternalTeamMember = {
   membershipId: string;
   userId: string;
   displayName: string;
+  email?: string | null;
   status: "active" | "disabled";
   roleKeys: string[];
   clientNames: string[];
@@ -100,7 +102,7 @@ export type InternalTeamMember = {
 
 export async function listInternalTeamMembers() {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.rpc("s015_list_internal_team_members");
+  const { data, error } = await supabase.rpc("s015_list_internal_team_members_v2");
 
   if (error) {
     return { ok: false as const, members: [] };
@@ -112,6 +114,7 @@ export async function listInternalTeamMembers() {
       membershipId: member.membership_id,
       userId: member.user_id,
       displayName: member.display_name,
+      email: member.email,
       status: member.membership_status,
       roleKeys: member.role_keys,
       clientNames: member.client_names,

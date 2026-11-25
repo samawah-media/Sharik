@@ -354,7 +354,14 @@ export function InternalTeamDirectory({
           >
             <div className="grid min-w-0 gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.25fr)] lg:items-center lg:gap-4">
               <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
-                <h3 className="min-w-0 flex-1 break-words font-semibold [overflow-wrap:anywhere] [unicode-bidi:plaintext]">{member.displayName}</h3>
+                <div className="min-w-0 flex-1">
+                  <h3 className="break-words font-semibold [overflow-wrap:anywhere] [unicode-bidi:plaintext]">{member.displayName}</h3>
+                  {member.email ? (
+                    <p className="mt-1 break-all text-sm text-muted">
+                      <bdi dir="ltr">{member.email}</bdi>
+                    </p>
+                  ) : null}
+                </div>
                 <span className="shrink-0 rounded-full border border-border px-3 py-1 text-xs">
                   {member.status === "active" ? "عضوية نشطة" : "عضوية معطلة"}
                 </span>

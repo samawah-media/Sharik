@@ -78,7 +78,7 @@ describe("member lifecycle UI", () => {
     );
   });
 
-  it("renders the persistent team directory with human roles and client scope", () => {
+  it("renders the member email with the name, role and client scope", () => {
     render(
       <InternalTeamDirectory
         members={[
@@ -86,6 +86,7 @@ describe("member lifecycle UI", () => {
             membershipId: "00000000-0000-4000-8000-000000000201",
             userId: "00000000-0000-4000-8000-000000000301",
             displayName: "سارة المصممة",
+            email: "designer@example.test",
             status: "active",
             roleKeys: ["designer"],
             clientNames: ["Glass"],
@@ -95,6 +96,7 @@ describe("member lifecycle UI", () => {
     );
 
     expect(screen.getByRole("heading", { name: "سارة المصممة" })).toBeInTheDocument();
+    expect(screen.getByText("designer@example.test")).toBeVisible();
     expect(screen.getByText("المصمم")).toBeInTheDocument();
     expect(screen.getByLabelText("عملاء العضو")).toHaveTextContent(
       "Glass",

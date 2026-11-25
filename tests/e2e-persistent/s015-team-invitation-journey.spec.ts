@@ -103,5 +103,5 @@ test("a scoped team invitation is created, denied to the wrong email, and accept
   await expect(
     invitedMemberCard.getByLabel("عملاء العضو").getByText("Glass", { exact: true }),
   ).toBeVisible();
-  await expect(invitedMemberCard.getByText(invitedActor.email)).toHaveCount(0);
+  await expect(invitedMemberCard.getByText(invitedActor.email, { exact: true })).toBeVisible();
 });

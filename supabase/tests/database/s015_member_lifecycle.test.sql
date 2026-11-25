@@ -9,6 +9,7 @@ select has_function('public', 's015_remove_internal_member_client_scope', array[
 select has_function('public', 's015_disable_internal_team_membership', array['uuid','text','uuid','text']);
 select ok(has_function_privilege('authenticated', 'public.s015_list_internal_team_members()', 'execute'), 'authenticated can execute the member directory');
 select ok(not has_function_privilege('anon', 'public.s015_list_internal_team_members()', 'execute'), 'anonymous cannot execute the member directory');
+select ok(not has_function_privilege('anon', 'public.s015_list_internal_team_members_v2()', 'execute'), 'anonymous cannot execute the email directory');
 select ok(has_function_privilege('authenticated', 'public.s015_update_internal_member_assignment(uuid,uuid,text,text,uuid,text,uuid,text)', 'execute'), 'authenticated can execute assignment updates');
 select ok(not has_function_privilege('anon', 'public.s015_update_internal_member_assignment(uuid,uuid,text,text,uuid,text,uuid,text)', 'execute'), 'anonymous cannot execute assignment updates');
 select ok(not has_function_privilege('anon', 'public.s015_remove_internal_member_client_scope(uuid,uuid,text,uuid,text)', 'execute'), 'anonymous cannot remove client scope');
@@ -45,7 +46,16 @@ insert into public.member_profiles (tenant_id, user_id, display_name) values
   ('18000000-0000-4000-8000-000000000001', '18000000-0000-4000-8000-000000000302', 'كاتبة المحتوى'),
   ('18000000-0000-4000-8000-000000000001', '18000000-0000-4000-8000-000000000303', 'مالك احتياطي');
 
+insert into auth.users (id,email) values
+  ('18000000-0000-4000-8000-000000000302', 'writer-lifecycle@example.test'),
+  ('18000000-0000-4000-8000-000000000304', 'other-tenant-lifecycle@example.test');
+
 set local role authenticated;
+select set_config('request.jwt.claim.sub', '18000000-0000-4000-8000-000000000302', true);
+select throws_ok(
+  $select * from public.s015_list_internal_team_members_v2()$,
+  '42501', 'not authorized', 'client-scoped staff cannot read the administrative email directory'
+);
 select set_config('request.jwt.claim.sub', '18000000-0000-4000-8000-000000000307', true);
 select throws_ok(
   $$select * from public.s015_list_internal_team_members()$$,
@@ -62,6 +72,24 @@ select is(
   (select count(*)::integer from public.s015_list_internal_team_members()),
   3,
   'the real directory remains tenant scoped'
+);
+select is(
+  (select email from public.s015_list_internal_team_members_v2()
+   where membership_id = '18000000-0000-4000-8000-000000000202'),
+  'writer-lifecycle@example.test',
+  'management sees the email attached to the exact member account'
+);
+select is(
+  (select count(*)::integer from public.s015_list_internal_team_members_v2()
+   where email = 'other-tenant-lifecycle@example.test'),
+  0,
+  'the administrative email directory excludes other tenants'
+);
+select is(
+  (select email from public.s015_list_internal_team_members_v2()
+   where membership_id = '18000000-0000-4000-8000-000000000201'),
+  null::text,
+  'records without an auth account keep their member row and have no email'
 );
 select is(
   public.s015_update_internal_member_assignment(

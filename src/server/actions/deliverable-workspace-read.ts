@@ -37,10 +37,15 @@ const TEAM_ROLES = [
   "performance_specialist",
 ] as const;
 
-type ActorTaskAuthority = { isManagement: boolean; isTeam: boolean };
+type ActorTaskAuthority = {
+  isManagement: boolean;
+  isAccountManager: boolean;
+  isTeam: boolean;
+};
 
 const NO_TASK_AUTHORITY: ActorTaskAuthority = {
   isManagement: false,
+  isAccountManager: false,
   isTeam: false,
 };
 
@@ -156,14 +161,17 @@ async function resolveActorTaskAuthority({
       ((role.scope_type === "tenant" && role.scope_id === tenantId) ||
         (role.scope_type === "client" && role.scope_id === clientId)),
   );
-  const isTeam = activeRoles.some(
-    (role) =>
-      TEAM_ROLES.includes(role.role_key as (typeof TEAM_ROLES)[number]) &&
-      role.scope_type === "client" &&
-      role.scope_id === clientId,
+  const clientRoles = activeRoles.filter(
+    (role) => role.scope_type === "client" && role.scope_id === clientId,
+  );
+  const isAccountManager = clientRoles.some(
+    (role) => role.role_key === "account_manager",
+  );
+  const isTeam = clientRoles.some((role) =>
+    TEAM_ROLES.includes(role.role_key as (typeof TEAM_ROLES)[number]),
   );
 
-  return { isManagement, isTeam };
+  return { isManagement, isAccountManager, isTeam };
 }
 
 function taskCapabilitiesForDeliverable({
@@ -182,10 +190,14 @@ function taskCapabilitiesForDeliverable({
       (deliverableContributorIds ?? []).includes(actorUserId)) &&
     authority.isTeam;
 
+  const canAssignOthers =
+    authority.isManagement ||
+    (authority.isAccountManager && deliverableOwnerUserId === actorUserId);
+
   return {
     canCreateTask: authority.isManagement || isOwnerOrContributor,
-    canAssignOthers: authority.isManagement,
-    canReassignTask: authority.isManagement,
+    canAssignOthers,
+    canReassignTask: canAssignOthers,
     canUpdateOwnTaskStatus:
       authority.isManagement || isOwnerOrContributor || authority.isTeam,
     canDeleteTask: authority.isManagement,
@@ -487,13 +499,13 @@ export async function listScopedDeliverableWorkspaces({
       .in("target_type", ["deliverable", "deliverable_version"])
       .order("created_at", { ascending: false })
       .limit(200),
-    actorTaskAuthority.isManagement
-      ? client.rpc("s015_list_task_eligible_assignees", {
+    actorTaskAuthority.isManagement || actorTaskAuthority.isAccountManager
+      ? client.rpc("s021_list_task_assignee_profiles", {
           target_tenant_id: tenantId,
           target_client_id: clientId,
         })
       : Promise.resolve({
-          data: [] as Array<{ user_id: string }>,
+          data: [],
           error: null,
         }),
     client
@@ -542,9 +554,6 @@ export async function listScopedDeliverableWorkspaces({
         ...(quality.data ?? []).map((row) => row.checked_by),
         ...(approvals.data ?? []).map((row) => row.actor_user_id),
         ...(audits.data ?? []).map((row) => row.actor_user_id),
-        ...(
-          (eligibleAssignees.data ?? []) as Array<{ user_id?: string | null }>
-        ).map((row) => row.user_id),
       ].filter((id): id is string => Boolean(id)),
     ),
   );
@@ -556,16 +565,18 @@ export async function listScopedDeliverableWorkspaces({
         .in("user_id", memberIds)
     : { data: [], error: null };
   if (profileResult.error) return {};
-  const directory = createMemberDirectory(profileResult.data ?? []);
-
-  const assigneeMembershipIds = new Set(
-    ((eligibleAssignees.data ?? []) as Array<{ user_id?: string | null }>)
-      .map((row) => row.user_id)
-      .filter((id): id is string => Boolean(id)),
-  );
-  const dedupedAssignees = Array.from(assigneeMembershipIds)
-    .map((id) => directory[id])
-    .filter((m): m is NonNullable<typeof m> => Boolean(m));
+  const eligibleProfiles = (eligibleAssignees.data ?? []) as Parameters<
+    typeof createMemberDirectory
+  >[0];
+  const directory = createMemberDirectory([
+    ...(profileResult.data ?? []),
+    ...eligibleProfiles,
+  ]);
+  const dedupedAssignees = eligibleProfiles
+    .map((profile) => directory[profile.user_id])
+    .filter((profile): profile is NonNullable<typeof profile> =>
+      Boolean(profile),
+    );
 
   const entries = await Promise.all(
     deliverables.map(async (deliverable) => {

@@ -593,6 +593,10 @@ export function TaskForm({
             })}
           >
             <option value="">بدون إسناد</option>
+            {editingTask?.assigneeUserId &&
+            !eligibleAssignees?.some((m) => m.userId === editingTask.assigneeUserId) ? (
+              <option value={editingTask.assigneeUserId}>المسند إليه الحالي</option>
+            ) : null}
             {eligibleAssignees!.map((m) => (
               <option key={m.userId} value={m.userId}>
                 {m.displayName}

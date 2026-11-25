@@ -3315,5 +3315,52 @@ select throws_ok(
 );
 reset role;
 
+-- S021: account managers distribute work on cards they own.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '21000000-0000-4000-8000-000000000201', true);
+select ok(
+  exists (select 1 from public.s021_list_task_assignee_profiles(
+    '21000000-0000-4000-8000-000000000001', '21000000-0000-4000-8000-000000000301'
+  ) where user_id = '21000000-0000-4000-8000-000000000205' and display_name <> ''),
+  'manager can list an unassigned same-client teammate'
+);
+select is((select count(*)::int from public.s021_list_task_assignee_profiles(
+  '22000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000301'
+)), 0, 'manager cannot read another tenant roster');
+select lives_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000511',
+    null, 'S021 owned card task', null, 'todo', 'normal',
+    '21000000-0000-4000-8000-000000000205', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 's021-manager-owned-create')$$,
+  'scoped account manager creates a task assigned to a teammate'
+);
+select lives_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000511',
+    (select id from public.deliverable_tasks where title = 'S021 owned card task'),
+    'S021 owned card task', null, 'todo', 'normal',
+    '21000000-0000-4000-8000-000000000204', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 's021-manager-owned-reassign')$$,
+  'scoped account manager reassigns an existing task on their own card'
+);
+select throws_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000511',
+    null, 'S021 out of scope assignee', null, 'todo', 'normal',
+    '22000000-0000-4000-8000-000000000201', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 's021-manager-external-assignee')$$,
+  '42501', 'invalid assignee', 'manager cannot assign to another tenant'
+);
+select throws_ok(
+  $$select public.s015_upsert_deliverable_task(
+    '21000000-0000-4000-8000-000000000301', '21000000-0000-4000-8000-000000000504',
+    null, 'S021 unmanaged card task', null, 'todo', 'normal',
+    '21000000-0000-4000-8000-000000000204', null, 0,
+    gen_random_uuid(), gen_random_uuid(), 's021-manager-unowned-card')$$,
+  '42501', 'task command denied', 'manager cannot assign on another owner''s card'
+);
+reset role;
+
 select * from finish();
 rollback;

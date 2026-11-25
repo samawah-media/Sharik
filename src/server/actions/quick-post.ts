@@ -143,6 +143,21 @@ export async function createQuickPostAction(
     }
   }
 
+  const ownerUserId = draft.ownerUserId || actor.userId;
+  const isScopedAccountManager = actor.roleAssignments.some(
+    (role) =>
+      role.roleKey === "account_manager" &&
+      role.status === "active" &&
+      role.tenantId === tenantId &&
+      role.scopeType === "client" &&
+      role.scopeId === clientId,
+  );
+  // Account managers follow cards through the same assignment rules as the board.
+  const contributorUserIds =
+    isScopedAccountManager && ownerUserId !== actor.userId
+      ? [actor.userId]
+      : [];
+
   const post = createDeliverableSchema.parse({
     clientId,
     contractId: context.contractId,
@@ -152,7 +167,8 @@ export async function createQuickPostAction(
     type: "post",
     reservedQuantity: 1,
     idempotencyKey,
-    ownerUserId: draft.ownerUserId,
+    ownerUserId,
+    contributorUserIds,
     finalDueDate: draft.finalDueDate,
   });
 

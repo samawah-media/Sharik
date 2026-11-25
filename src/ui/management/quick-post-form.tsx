@@ -140,7 +140,7 @@ export function QuickPostForm({
                   defaultValue=""
                   name="ownerUserId"
                 >
-                  <option value="">بدون مسؤول</option>
+                  <option value="">أنا (افتراضيًا)</option>
                   {options.members.map((member) => (
                     <option key={member.userId} value={member.userId}>
                       {member.displayName}

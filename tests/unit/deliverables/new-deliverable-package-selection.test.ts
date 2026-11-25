@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { loadActivePackageRows } from "@/app/(management)/clients/[clientId]/deliverables/new/page";
+import { loadActivePackageRows } from "@/server/actions/deliverable-package-read";
 
 const packageQuery = () => {
   const query = {

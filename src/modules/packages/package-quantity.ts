@@ -31,3 +31,20 @@ const countUnitLabels = new Set([
 export const isCountUnitLabel = (unitLabel: string) =>
   countUnitLabels.has(unitLabel.trim().toLocaleLowerCase("ar"));
 
+const postUnitLabels = new Set(["post", "posts", "منشور", "منشورات"]);
+
+export const isPostPackageLine = ({
+  unitLabel,
+  deliverableTypeHint,
+}: {
+  unitLabel: string;
+  deliverableTypeHint?: string;
+}) => {
+  const unit = unitLabel.trim().toLocaleLowerCase("ar");
+  const hint = deliverableTypeHint?.trim().toLowerCase();
+  if (hint && hint !== "post") return false;
+  return (
+    postUnitLabels.has(unit) ||
+    (hint === "post" && ["item", "items"].includes(unit))
+  );
+};

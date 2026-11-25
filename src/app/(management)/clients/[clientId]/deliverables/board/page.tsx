@@ -1,3 +1,8 @@
+import { isPostPackageLine } from "@/modules/packages/package-quantity";
+import { listEligibleDeliverableMembers } from "@/server/actions/deliverable-member-read";
+import { listFirstActivePackageLines } from "@/server/actions/deliverable-package-read";
+import { createQuickPostAction } from "@/server/actions/quick-post";
+import type { QuickPostOptions } from "@/ui/management/quick-post-form";
 import { evaluatePermission } from "@/modules/authorization/evaluator";
 import { PERMISSIONS } from "@/modules/authorization/permission-catalog";
 import { listScopedDeliverables } from "@/server/actions/deliverable-read";
@@ -96,7 +101,16 @@ export default async function ClientDeliverablesBoardPage({
     resource: { tenantId: client.tenantId, clientId: client.id },
   }).allowed;
 
+  const canCreatePost =
+    client.status === "active" &&
+    evaluatePermission({
+      actor: runtime.actor,
+      permission: PERMISSIONS.DELIVERABLE_CREATE,
+      resource: { tenantId: client.tenantId, clientId: client.id },
+    }).allowed;
+
   if (
+    !canCreatePost &&
     !canUpdateDeliverableStatus &&
     !canSubmitDeliverableVersion &&
     !canUseApprovalWorkflow
@@ -126,14 +140,19 @@ export default async function ClientDeliverablesBoardPage({
             }).allowed,
         );
   const displayClientName = formatMvpClientName(client.name);
-  const workspaces = await listScopedDeliverableWorkspaceSummaries({
-    tenantId: client.tenantId,
-    clientId: client.id,
-    deliverables: visibleDeliverables.map((deliverable) => ({
-      id: deliverable.id,
-      currentVersionId: deliverable.currentVersionId,
-    })),
-  });
+  const [workspaces, quickPost] = await Promise.all([
+    listScopedDeliverableWorkspaceSummaries({
+      tenantId: client.tenantId,
+      clientId: client.id,
+      deliverables: visibleDeliverables.map((deliverable) => ({
+        id: deliverable.id,
+        currentVersionId: deliverable.currentVersionId,
+      })),
+    }),
+    canCreatePost
+      ? loadQuickPostOptions(client.tenantId, client.id)
+      : undefined,
+  ]);
 
   return (
     <main className="grid gap-2" dir="rtl">
@@ -162,7 +181,7 @@ export default async function ClientDeliverablesBoardPage({
         }
         title="لوحة العمل"
       />
-      {visibleDeliverables.length > 0 ? (
+      {visibleDeliverables.length > 0 || quickPost ? (
         <DeliverableBoard
           actorUserId={runtime.actor.userId}
           action={
@@ -175,9 +194,17 @@ export default async function ClientDeliverablesBoardPage({
           }
           clientNames={{ [client.id]: displayClientName }}
           deliverables={visibleDeliverables}
-          key={visibleDeliverables
-            .map((deliverable) => `${deliverable.id}:${deliverable.revision}`)
-            .join("|")}
+          quickPost={quickPost}
+          key={
+            quickPost
+              ? client.id
+              : visibleDeliverables
+                  .map(
+                    (deliverable) =>
+                      `${deliverable.id}:${deliverable.revision}`,
+                  )
+                  .join("|")
+          }
           workspaces={workspaces}
         />
       ) : (
@@ -185,4 +212,42 @@ export default async function ClientDeliverablesBoardPage({
       )}
     </main>
   );
+}
+
+async function loadQuickPostOptions(
+  tenantId: string,
+  clientId: string,
+): Promise<QuickPostOptions> {
+  const [context, eligible] = await Promise.all([
+    listFirstActivePackageLines({ tenantId, clientId }),
+    listEligibleDeliverableMembers({ tenantId, clientId }),
+  ]);
+  const postLines = context.ok
+    ? context.packageLines.filter(isPostPackageLine)
+    : [];
+  const lines = postLines
+    .filter((line) => line.balance.available >= 1)
+    .map((line) => ({
+      id: line.id,
+      label: line.serviceLabel,
+      available: line.balance.available,
+    }));
+  let unavailableMessage;
+  if (!context.ok && context.reason === "unavailable") {
+    unavailableMessage = "تعذّر تحميل رصيد المنشورات. جرّب تحديث الرصيد.";
+  } else if (postLines.length === 0) {
+    unavailableMessage = "لا يوجد بند منشورات في الباقة الحالية لهذا العميل.";
+  } else if (lines.length === 0) {
+    unavailableMessage = "رصيد المنشورات في الباقة الحالية انتهى.";
+  }
+
+  return {
+    action: createQuickPostAction.bind(null, clientId),
+    lines,
+    members: eligible.members.map(({ userId, displayName }) => ({
+      userId,
+      displayName,
+    })),
+    unavailableMessage,
+  };
 }

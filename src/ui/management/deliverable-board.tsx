@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   DndContext,
@@ -36,6 +36,7 @@ import { deriveSlaStatus, type SlaStatus } from "@/modules/sla/sla-policy";
 import { Badge } from "@/ui/core/badge";
 import { Button } from "@/ui/core/button";
 import { EmptyState } from "@/ui/core/states";
+import { QuickPostForm, type QuickPostOptions } from "./quick-post-form";
 import { DeliverableStatusDisclosure } from "./deliverable-status-disclosure";
 import { UniversalDeliverableDrawer } from "@/ui/deliverables/universal-deliverable-drawer";
 import { formatArabicDate } from "@/modules/localization/arabic-display";
@@ -448,6 +449,7 @@ export function DeliverableBoard({
   actorUserId,
   capabilitiesByDeliverable,
   showFilters = true,
+  quickPost,
 }: {
   deliverables: DeliverableSafeSummary[];
   action?: StatusUpdateAction;
@@ -459,8 +461,16 @@ export function DeliverableBoard({
   actorUserId?: string;
   capabilitiesByDeliverable?: Record<string, TeamWorkCapabilities>;
   showFilters?: boolean;
+  quickPost?: QuickPostOptions;
 }) {
   const [items, setItems] = useState(deliverables);
+  const [previousDeliverables, setPreviousDeliverables] =
+    useState(deliverables);
+  if (previousDeliverables !== deliverables) {
+    setPreviousDeliverables(deliverables);
+    setItems(deliverables);
+  }
+  const [savedPostId, setSavedPostId] = useState<string>();
   const [search, setSearch] = useState("");
   const [assignee, setAssignee] = useState("all");
   const [priority, setPriority] = useState("all");
@@ -615,7 +625,7 @@ export function DeliverableBoard({
     return () => board.removeEventListener("wheel", scrollBoardWithMouseWheel);
   }, []);
 
-  if (deliverables.length === 0) {
+  if (deliverables.length === 0 && !quickPost) {
     return <DeliverableBoardEmptyState />;
   }
 
@@ -845,6 +855,9 @@ export function DeliverableBoard({
                 lane.statuses.includes(deliverable.status as never),
               );
 
+              const addPostHere =
+                lane.targetStatus === "not_started" && quickPost;
+
               return (
                 <MacroLaneColumn
                   activeDeliverable={activeDeliverable}
@@ -860,6 +873,33 @@ export function DeliverableBoard({
                     <Badge tone="muted">{laneItems.length}</Badge>
                   </div>
                   <div className="grid content-start gap-2.5 px-2 pb-3">
+                    {addPostHere && (
+                      <QuickPostForm
+                        options={addPostHere}
+                        onSaved={setSavedPostId}
+                      />
+                    )}
+                    {addPostHere && savedPostId && (
+                      <div className="flex flex-wrap items-center gap-2 rounded-lg bg-surface p-2 text-xs">
+                        <p role="status">تمت إضافة المنشور.</p>
+                        {items.some((item) => item.id === savedPostId) &&
+                          !laneItems.some(
+                            (item) => item.id === savedPostId,
+                          ) && (
+                            <button
+                              className="font-semibold text-accent"
+                              onClick={() => {
+                                setSearch("");
+                                setAssignee("all");
+                                setPriority("all");
+                              }}
+                              type="button"
+                            >
+                              عرض الكرت
+                            </button>
+                          )}
+                      </div>
+                    )}
                     {laneItems.length > 0 ? (
                       laneItems.map((deliverable) => {
                         const capabilities =
@@ -905,7 +945,7 @@ export function DeliverableBoard({
                           </DraggableDeliverableCard>
                         );
                       })
-                    ) : (
+                    ) : addPostHere ? null : (
                       <p className="rounded-lg border border-dashed border-border bg-surface p-4 text-sm leading-6 text-muted">
                         ما فيه مخرجات في هذه المرحلة.
                       </p>
